@@ -215,9 +215,6 @@
             <!-- readme -->
             <exclude>README.adoc</exclude>
             <exclude>README.md</exclude>
-            <!-- database -->
-            <exclude>database/journaldb.sql</exclude>
-            <exclude>database/streamdb.sql</exclude>
           </excludes>
         </configuration>
       </plugin>
