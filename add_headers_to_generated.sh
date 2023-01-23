@@ -1,10 +1,4 @@
 #!/bin/bash
-
-## debug
-ls -laF
-pwd
-## /debug
-
 find src/main/java/com/teragrep/pth06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
 do
     if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
