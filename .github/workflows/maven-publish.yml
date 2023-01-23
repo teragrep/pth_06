@@ -19,6 +19,9 @@ jobs:
           MYSQL_PASSWORD: streamdb_pass
         volumes:
           - ${{ github.workspace }}/database/:/docker-entrypoint-initdb.d/:ro
+        ports:
+          - 3306:3306
+
     steps:
     - uses: actions/checkout@v3
       with:
