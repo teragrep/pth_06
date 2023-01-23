@@ -1,3 +1,5 @@
+use streamdb;
+
 -- MariaDB dump 10.18  Distrib 10.5.8-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: streamdb

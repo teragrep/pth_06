@@ -35,9 +35,6 @@ jobs:
     - name: Get version
       run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
-    - name: Setup mariadb
-      run: bash setup_mariadb.sh
-
     - name: Generate sources
       run: mvn -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
       env:
