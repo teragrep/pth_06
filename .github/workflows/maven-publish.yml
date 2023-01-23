@@ -26,11 +26,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Verify MariaDB connection
-      env:
-        MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
-      run: for i in {1..30}; do mysqladmin ping -h127.0.0.1 -u root -P${MARIADB_PORT} && break; sleep 10; done
-
     - name: Initialize MariaDB
       env:
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
