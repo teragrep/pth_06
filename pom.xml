@@ -287,7 +287,7 @@
     <profile>
       <id>build</id>
       <properties>
-        <teragrep.rlo_06.version>3.2.1</teragrep.rlo_06.version>
+        <teragrep.rlo_06.version>4.1.0</teragrep.rlo_06.version>
         <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
         <teragrep.jue_01.version>0.4.1</teragrep.jue_01.version>
         <jooq.regenerate.skip>false</jooq.regenerate.skip>
@@ -296,7 +296,7 @@
     <profile>
       <id>build-nogenerate</id>
       <properties>
-        <teragrep.rlo_06.version>3.2.1</teragrep.rlo_06.version>
+        <teragrep.rlo_06.version>4.1.0</teragrep.rlo_06.version>
         <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
         <teragrep.jue_01.version>0.4.1</teragrep.jue_01.version>
         <jooq.regenerate.skip>true</jooq.regenerate.skip>
