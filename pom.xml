@@ -236,8 +236,8 @@
               <jdbc>
                 <driver>org.mariadb.jdbc.Driver</driver>
                 <url>jdbc:mariadb://127.0.0.1:${env.MARIADB_PORT}</url>
-                <user>root</user>
-                <password></password>
+                <user>streamdb</user>
+                <password>streamdb_pass</password>
               </jdbc>
               <generator>
                 <database>
