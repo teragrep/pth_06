@@ -211,11 +211,13 @@
             <exclude>toolchains.xml</exclude>
             <exclude>settings.xml</exclude>
             <exclude>dependencies.settings.xml</exclude>
-            <exclude>setup_mariadb.sh</exclude>
             <exclude>add_headers_to_generated.sh</exclude>
             <!-- readme -->
             <exclude>README.adoc</exclude>
             <exclude>README.md</exclude>
+            <!-- database -->
+            <exclude>database/journaldb.sql</exclude>
+            <exclude>database/streamdb.sql</exclude>
           </excludes>
         </configuration>
       </plugin>
