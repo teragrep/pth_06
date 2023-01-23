@@ -12,12 +12,13 @@ jobs:
       packages: write
 
     services:
-      mysql:
-        image: mysql:5.7
+      mariadb:
+        image: mariadb:10.5
         env:
           MYSQL_USER: streamdb
           MYSQL_PASSWORD: streamdb_pass
-
+        volumes:
+          - ./database/:/docker-entrypoint-initdb.d/:ro
     steps:
     - uses: actions/checkout@v3
       with:
