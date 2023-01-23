@@ -233,7 +233,7 @@
             <configuration>
               <jdbc>
                 <driver>org.mariadb.jdbc.Driver</driver>
-                <url>jdbc:mariadb://${env.MARIADB_PORT}:3306</url>
+                <url>jdbc:mariadb://mariadb:${env.MARIADB_PORT}</url>
                 <user>${env.MYSQL_USER}</user>
                 <password>${env.MYSQL_PASSWORD}</password>
               </jdbc>
