@@ -1,7 +1,6 @@
 #!/bin/bash
-# Recursive globbing
-shopt -s globstar
-for file in src/main/java/com/teragrep/pth06/jooq/generated/**/*.java; do
+find src/main/java/com/teragrep/pth06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
+do
     if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
         cat <<-EOF > "${file}.tmp";
 /*
