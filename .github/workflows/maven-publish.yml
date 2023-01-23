@@ -20,7 +20,7 @@ jobs:
         volumes:
           - ${{ github.workspace }}/database/:/docker-entrypoint-initdb.d/:ro
         ports:
-          - 3306:3306
+          - 3306
 
     steps:
     - uses: actions/checkout@v3
@@ -41,6 +41,9 @@ jobs:
     - name: Generate sources
       run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
       env:
+        MYSQL_USER: streamdb
+        MYSQL_PASSWORD: streamdb_pass
+        MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
         GITHUB_TOKEN: ${{ github.token }}
 
     - name: Inject licenses to generated files

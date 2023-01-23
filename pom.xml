@@ -216,8 +216,6 @@
             <!-- readme -->
             <exclude>README.adoc</exclude>
             <exclude>README.md</exclude>
-            <!-- jooq configuration file -->
-            <exclude>src/main/resources/library.xml</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -233,7 +231,24 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <configurationFile>src/main/resources/library.xml</configurationFile>
+              <jdbc>
+                <driver>org.mariadb.jdbc.Driver</driver>
+                <url>jdbc:mariadb://${env.MARIADB_PORT}:3306</url>
+                <user>${env.MYSQL_USER}</user>
+                <password>${env.MYSQL_PASSWORD}</password>
+              </jdbc>
+              <generator>
+                <database>
+                  <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile</includes>
+                </database>
+                <target>
+                  <packageName>com.teragrep.pth06.jooq.generated</packageName>
+                  <directory>src/main/java</directory>
+                </target>
+                <generate>
+                  <generatedAnnotationType>JAVAX_ANNOTATION_GENERATED</generatedAnnotationType>
+                </generate>
+              </generator>
               <skip>${jooq.regenerate.skip}</skip> <!-- on schema change set to false to re-render -->
             </configuration>
           </execution>
