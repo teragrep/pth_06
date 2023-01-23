@@ -18,8 +18,7 @@ jobs:
           MYSQL_USER: streamdb
           MYSQL_PASSWORD: streamdb_pass
         volumes:
-          - ./database/journaldb.sql:/docker-entrypoint-initdb.d/journaldb.sql:ro
-          - ./database/streamdb.sql:/docker-entrypoint-initdb.d/streamdb.sql:ro
+          - ${{ github.workspace }}/database/:/docker-entrypoint-initdb.d/:ro
     steps:
     - uses: actions/checkout@v3
       with:
