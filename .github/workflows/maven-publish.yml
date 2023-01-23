@@ -17,8 +17,6 @@ jobs:
         env:
           MYSQL_DB: pth_06
           MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
-          MYSQL_USER: streamdb
-          MYSQL_PASSWORD: streamdb_pass
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
@@ -64,8 +62,6 @@ jobs:
     - name: Generate sources
       run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
       env:
-        MYSQL_USER: streamdb
-        MYSQL_PASSWORD: streamdb_pass
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
         GITHUB_TOKEN: ${{ github.token }}
 

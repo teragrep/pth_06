@@ -234,8 +234,8 @@
               <jdbc>
                 <driver>org.mariadb.jdbc.Driver</driver>
                 <url>jdbc:mariadb://127.0.0.1:${env.MARIADB_PORT}</url>
-                <user>${env.MYSQL_USER}</user>
-                <password>${env.MYSQL_PASSWORD}</password>
+                <user>root</user>
+                <password></password>
               </jdbc>
               <generator>
                 <database>
