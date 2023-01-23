@@ -61,18 +61,13 @@ jobs:
     - name: Get version
       run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
-    - name: Generate sources
-      run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
+    - name: Build and publish
+      run: |
+        mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
+        bash add_headers_to_generated.sh
+        mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= deploy -s dependencies.settings.xml
       env:
         MYSQL_USER: streamdb
         MYSQL_PASSWORD: streamdb_pass
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
-        GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Inject licenses to generated files
-      run: bash add_headers_to_generated.sh
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= deploy -s dependencies.settings.xml
-      env:
         GITHUB_TOKEN: ${{ github.token }}
