@@ -19,8 +19,6 @@ jobs:
           MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
           MYSQL_USER: streamdb
           MYSQL_PASSWORD: streamdb_pass
-        volumes:
-          - ${{ github.workspace }}/database/:/docker-entrypoint-initdb.d/:ro
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
@@ -34,6 +32,23 @@ jobs:
       env:
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
       run: for i in {1..30}; do mysqladmin ping -h127.0.0.1 -u root -P${MARIADB_PORT} && break; sleep 10; done
+
+    - name: Initialize MariaDB
+      env:
+        MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
+      run: |
+        echo "Creating databases"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE streamdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE journaldb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        echo "Creating users"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on streamdb.* to streamdb@'127.0.0.1' identified by 'streamdb_pass';"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on journaldb.* to streamdb@'127.0.0.1' identified by 'streamdb_pass';"
+        echo "Importing journaldb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D journaldb < database/journaldb.sql
+        echo "Importing streamdb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D streamdb < database/streamdb.sql
+        echo "Flushing privileges"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
 
     - name: Set up JDK 8
       uses: actions/setup-java@v3
