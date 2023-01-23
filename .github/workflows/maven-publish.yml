@@ -15,6 +15,8 @@ jobs:
       mariadb:
         image: mariadb:10.5
         env:
+          MYSQL_DB: pth_06
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
           MYSQL_USER: streamdb
           MYSQL_PASSWORD: streamdb_pass
         volumes:
