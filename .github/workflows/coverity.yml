@@ -1,7 +1,7 @@
 name: coverity upload
 
 on:
-  workflow_call:
+  push:
     secrets:
       COVERITY_TOKEN:
         required: true
