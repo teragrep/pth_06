@@ -28,7 +28,7 @@ jobs:
       - name: Download Coverity
         if: steps.cache_coverity.outputs.cache-hit != 'true'
         run: |
-          wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${{ env.COVERITY }}.tgz
+          wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${{ env.COVERITY }}.tgz
           mkdir -p ${{ env.COVERITY }}
           tar zxvf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
 
