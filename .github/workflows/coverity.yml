@@ -1,0 +1,64 @@
+name: coverity upload
+
+on:
+  workflow_call:
+    secrets:
+      COVERITY_TOKEN:
+        required: true
+      COVERITY_EMAIL:
+        required: true
+jobs:
+  verify:
+    name: Verify Code
+    runs-on: ubuntu-latest
+
+    env:
+      COVERITY: coverity_tool
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: Cache Local Maven Repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Compile Test and Verify
+        run: mvn --batch-mode clean verify
+
+      - name: Cache Coverity
+        id: cache_coverity
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.COVERITY }}
+          key: coverity
+
+      - name: Download Coverity
+        if: steps.cache_coverity.outputs.cache-hit != 'true'
+        run: |
+          wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=teragrep%2Fpth_06" -O ${{ env.COVERITY }}.tgz
+          mkdir -p ${{ env.COVERITY }}
+          tar zxvf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
+
+      - name: Compile Coverity
+        run: |
+           ${{ env.COVERITY }}/bin/cov-build --dir cov-int --fs-capture-search . --no-command --fs-capture-search-exclude-regex '[/\\]coverity_tool[/\\]'
+           tar czvf pth_06.tgz cov-int
+
+      - name: Upload to Coverity
+        run: |
+            curl --silent --form token=${{ secrets.COVERITY_TOKEN }} \
+            --form email=${{ secrets.COVERITY_EMAIL }}  \
+            --form file=@pth_06.tgz \
+            --form version="${GITHUB_REF##*/}" \
+            --form description="automated upload" \
+            https://scan.coverity.com/builds?project=teragrep%2Fpth_06
