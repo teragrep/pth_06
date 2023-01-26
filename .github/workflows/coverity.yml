@@ -89,7 +89,7 @@ jobs:
 
       - name: Compile Coverity
         run: |
-           ${{ env.COVERITY }}/bin/cov-build --dir cov-int --fs-capture-search . --no-command --fs-capture-search-exclude-regex '[/\\]coverity_tool[/\\]'
+           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile -s dependencies.settings.xml
            tar czvf pth_06.tgz cov-int
 
       - name: Upload to Coverity
