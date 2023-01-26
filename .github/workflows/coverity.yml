@@ -1,4 +1,4 @@
-name: coverity upload
+name: Coverity Scan
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       - name: Download Coverity
         if: steps.cache_coverity.outputs.cache-hit != 'true'
         run: |
-          wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=teragrep%2Fpth_06" -O ${{ env.COVERITY }}.tgz
+          wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${{ env.COVERITY }}.tgz
           mkdir -p ${{ env.COVERITY }}
           tar zxvf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
 
@@ -44,4 +44,4 @@ jobs:
             --form file=@pth_06.tgz \
             --form version="${GITHUB_REF##*/}" \
             --form description="automated upload" \
-            https://scan.coverity.com/builds?project=teragrep%2Fpth_06
+            https://scan.coverity.com/builds?project=pth_06
