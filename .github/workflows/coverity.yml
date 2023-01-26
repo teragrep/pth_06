@@ -68,7 +68,7 @@ jobs:
         run: bash add_headers_to_generated.sh
 
       - name: Test run
-        run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean verify -s dependencies.settings.xml
+        run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= verify -s dependencies.settings.xml
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
