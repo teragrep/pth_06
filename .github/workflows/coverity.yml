@@ -1,9 +1,8 @@
 name: Coverity Scan
 
 on:
-  push:
-    branches:
-      - 'main'
+  pull_request_review:
+    types: [submitted]
     secrets:
       COVERITY_TOKEN:
         required: true
