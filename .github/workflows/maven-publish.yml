@@ -8,10 +8,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     services:
       mariadb:
         image: mariadb:10.5
@@ -57,11 +53,8 @@ jobs:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-    - name: Get version
-      run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
-
     - name: Generate sources
-      run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
+      run: mvn -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= generate-sources
       env:
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
         GITHUB_TOKEN: ${{ github.token }}
@@ -77,6 +70,6 @@ jobs:
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= deploy
+      run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
