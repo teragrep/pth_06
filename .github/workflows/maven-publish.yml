@@ -69,6 +69,12 @@ jobs:
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
+    - name: Setup GitHub Packages
+      uses: actions/setup-java@v2
+      with:
+        java-version: 8.0.292+10
+        distribution: 'adopt'
+
     - name: Publish to GitHub Packages Apache Maven
       run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
       env:
