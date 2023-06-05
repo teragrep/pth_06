@@ -18,12 +18,29 @@
     <changelist>-SNAPSHOT</changelist>
     <sha1/>
     <jclouds.version>2.3.0</jclouds.version>
+    <teragrep.rlo_06.version>4.3.0</teragrep.rlo_06.version>
+    <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
+    <teragrep.jue_01.version>0.4.3</teragrep.jue_01.version>
   </properties>
   <scm>
     <connection>scm:git:https://github.com/teragrep/pth_06.git</connection>
     <developerConnection>scm:git:git@github.com:teragrep/pth_06.git</developerConnection>
     <url>https://github.com/teragrep/pth_06/tree/master</url>
   </scm>
+  <licenses>
+    <license>
+      <name>GNU Affero General Public License v3.0</name>
+      <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Mikko Kortelainen</name>
+      <email>1@teragrep.com</email>
+      <organization>Teragrep</organization>
+      <organizationUrl>https://teragrep.com</organizationUrl>
+    </developer>
+  </developers>
   <dependencies>
     <!-- // JOOQ \\ -->
     <dependency>
@@ -176,6 +193,35 @@
     <finalName>pth_06</finalName>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <source>8</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <version>0.15</version>
@@ -208,6 +254,7 @@
             <exclude>.gitmodules</exclude>
             <!-- ci -->
             <exclude>.github/workflows/*.yml</exclude>
+            <exclude>.github/workflows/*.yaml</exclude>
             <exclude>toolchains.xml</exclude>
             <exclude>settings.xml</exclude>
             <exclude>dependencies.settings.xml</exclude>
@@ -299,50 +346,82 @@
   </build>
   <profiles>
     <profile>
-      <id>build</id>
-      <properties>
-        <teragrep.rlo_06.version>4.1.0</teragrep.rlo_06.version>
-        <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
-        <teragrep.jue_01.version>0.4.2</teragrep.jue_01.version>
-        <jooq.regenerate.skip>false</jooq.regenerate.skip>
-      </properties>
-    </profile>
-    <profile>
       <id>build-nogenerate</id>
       <properties>
-        <teragrep.rlo_06.version>4.1.0</teragrep.rlo_06.version>
-        <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
-        <teragrep.jue_01.version>0.4.2</teragrep.jue_01.version>
         <jooq.regenerate.skip>true</jooq.regenerate.skip>
       </properties>
     </profile>
     <profile>
-      <id>dev</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <teragrep.rlo_06.version>0.0.1-SNAPSHOT</teragrep.rlo_06.version>
-        <teragrep.rad_01.version>0.0.1-SNAPSHOT</teragrep.rad_01.version>
-        <teragrep.jue_01.version>0.0.1-SNAPSHOT</teragrep.jue_01.version>
-        <jooq.regenerate.skip>true</jooq.regenerate.skip>
-        <maven.compiler.release>8</maven.compiler.release>
-      </properties>
+      <id>publish-maven-central</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <name>Central Repository OSSRH</name>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
     </profile>
     <profile>
-      <id>dev-java-8</id>
-      <properties>
-        <teragrep.rlo_06.version>0.0.1-SNAPSHOT</teragrep.rlo_06.version>
-        <teragrep.rad_01.version>0.0.1-SNAPSHOT</teragrep.rad_01.version>
-        <teragrep.jue_01.version>0.0.1-SNAPSHOT</teragrep.jue_01.version>
-        <jooq.regenerate.skip>true</jooq.regenerate.skip>
-      </properties>
+      <id>publish-github-packages</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <distributionManagement>
+        <repository>
+          <id>github</id>
+          <name>GitHub Packages</name>
+          <url>https://maven.pkg.github.com/teragrep/pth_06</url>
+        </repository>
+      </distributionManagement>
     </profile>
   </profiles>
-  <distributionManagement>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/${env.GITHUB_REPOSITORY}</url>
-    </repository>
-  </distributionManagement>
 </project>
