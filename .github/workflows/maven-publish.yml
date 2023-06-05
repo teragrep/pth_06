@@ -44,19 +44,24 @@ jobs:
         echo "Flushing privileges"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
 
-    - name: Set up JDK 8
-      uses: actions/setup-java@v3
+    - name: Setup Maven Central
+      uses: actions/setup-java@v2
       with:
-        java-version: '8'
-        distribution: 'temurin'
-        server-id: github
-        settings-path: ${{ github.workspace }}
+        java-version: 8.0.292+10
+        distribution: 'adopt'
+
+        server-id: ossrh
+        server-username: MAVEN_CENTRAL_USERNAME
+        server-password: MAVEN_CENTRAL_TOKEN
+
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Get version
       run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
     - name: Generate sources
-      run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
+      run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
       env:
         MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
         GITHUB_TOKEN: ${{ github.token }}
@@ -64,7 +69,14 @@ jobs:
     - name: Inject licenses to generated files
       run: bash add_headers_to_generated.sh
 
+    - name: Publish to Maven Central
+      run: mvn -Pbuild-nogenerate,publish-maven-central --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
+      env:
+        MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= deploy -s dependencies.settings.xml
+      run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
