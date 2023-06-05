@@ -60,7 +60,7 @@ jobs:
         run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
       - name: Generate sources
-        run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources -s dependencies.settings.xml
+        run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -69,7 +69,7 @@ jobs:
         run: bash add_headers_to_generated.sh
 
       - name: Test run
-        run: mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= verify -s dependencies.settings.xml
+        run: mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= verify
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Compile Coverity
         run: |
-           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile -s dependencies.settings.xml
+           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile
            tar czvf pth_06.tgz cov-int
 
       - name: Upload to Coverity
