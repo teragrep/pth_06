@@ -194,7 +194,8 @@ public abstract class XmlWalker {
     /**
      * Abstract method which is called during traverse. Emits appropriate logical operation
      * @param <T> returned class
-     * @param current DOM-element
+     * @param left Object left
+     * @param right Object right
      * @return correct query according to implementation class
      */
     abstract <T> T emitLogicalOperation(String op, Object left, Object right) throws Exception;
