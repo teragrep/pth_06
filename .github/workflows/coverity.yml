@@ -60,7 +60,7 @@ jobs:
         run: echo "RELEASE_VERSION=$(git describe --tags)" >> $GITHUB_ENV
 
       - name: Generate sources
-        run: mvn -Pbuild -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
+        run: mvn -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
