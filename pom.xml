@@ -8,7 +8,7 @@
   <artifactId>pth_06</artifactId>
   <version>${revision}${sha1}${changelist}</version>
   <name>pth_06</name>
-  <description>Teragrep Archive Spark Datasource</description>
+  <description>Teragrep Datasource for Apache Spark</description>
   <url>https://teragrep.com</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
