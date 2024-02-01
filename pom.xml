@@ -14,7 +14,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.release>8</maven.compiler.release>
     <java.version>1.8</java.version>
     <revision>0.0.2</revision>
     <changelist>-SNAPSHOT</changelist>
@@ -219,7 +218,6 @@
             </goals>
             <configuration>
               <source>8</source>
-              <release>8</release>
             </configuration>
           </execution>
         </executions>
@@ -335,9 +333,8 @@
         <version>3.8.1</version>
         <configuration>
           <compilerArgument>-Xlint:all</compilerArgument>
-            <source>1.8</source>
-            <target>1.8</target>
-            <release>8</release>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -356,6 +353,15 @@
       <id>build-nogenerate</id>
       <properties>
         <jooq.regenerate.skip>true</jooq.regenerate.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>non-java8</id>
+      <activation>
+        <jdk>!1.8</jdk>
+      </activation>
+      <properties>
+        <maven.compiler.release>8</maven.compiler.release>
       </properties>
     </profile>
     <profile>
