@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 /**
- * <h1>Archive Source Provider</h1>
+ * <h2>Archive Source Provider</h2>
  *
  * Class for representing a structured source for accessing Spark data source.
  *

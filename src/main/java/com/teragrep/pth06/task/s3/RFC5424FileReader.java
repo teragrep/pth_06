@@ -68,7 +68,7 @@ import com.teragrep.rlo_06.RFC5424ParserSubscription;
 import com.teragrep.rlo_06.ParseException;
 
 /**
- * <h1>RFC5424 File Reader</h1>
+ * <h2>RFC5424 File Reader</h2>
  *
  * Class for reading RFC5424 files.
  *

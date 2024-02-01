@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * <h1>Config</h1>
+ * <h2>Config</h2>
  * Holds all the settings for the program. Including MariaDB, Kafka and Spark.
  *
  * @since 17/08/2021

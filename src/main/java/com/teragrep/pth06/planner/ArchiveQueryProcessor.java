@@ -58,7 +58,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 /**
- * <h1>Archive Query Processor</h1>
+ * <h2>Archive Query Processor</h2>
  *
  * Class for controlled execution of Archive query offsets.
  *

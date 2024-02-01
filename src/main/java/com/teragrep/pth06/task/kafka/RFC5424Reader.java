@@ -52,7 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * <h1>RFC5452 Reader</h1>
+ * <h2>RFC5452 Reader</h2>
  *
  * Class for reading data stream from com.teragrep.rlo_06
  *

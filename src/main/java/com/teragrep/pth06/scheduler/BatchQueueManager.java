@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 
 /**
- * <h1>Batch Queue Manager</h1>
+ * <h2>Batch Queue Manager</h2>
  *
  * Class for handling a queue of batch tasks.
  *

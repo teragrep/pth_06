@@ -60,7 +60,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 /**
- * <h1>Mock Kafka Consumer Factory</h1>
+ * <h2>Mock Kafka Consumer Factory</h2>
  *
  * Mocked Kafka Consumer factory used for testing.
  *

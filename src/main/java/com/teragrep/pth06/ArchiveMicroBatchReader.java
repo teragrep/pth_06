@@ -70,7 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <h1>Archive Micro Batch Reader</h1>
+ * <h2>Archive Micro Batch Reader</h2>
  * Custom Data source reader class that reads batches of data from Spark data stream. Implements
  * Spark micro batch interface that allows for streaming reads.
  *

@@ -61,7 +61,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * <h1>Kafka Offset Planner</h1>
+ * <h2>Kafka Offset Planner</h2>
  *
  * Class for controlled execution of kafka query offsets.
  *

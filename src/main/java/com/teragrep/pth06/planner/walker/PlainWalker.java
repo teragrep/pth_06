@@ -49,7 +49,7 @@ package com.teragrep.pth06.planner.walker;
 import org.w3c.dom.Element;
 
 /**
- * <h1>Plain Walker</h1>
+ * <h2>Plain Walker</h2>
  *
  * Regular walker.
  *

@@ -52,7 +52,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * <h1>Kafka Topic Partition Offset Metadata</h1>
+ * <h2>Kafka Topic Partition Offset Metadata</h2>
  *
  * Class for holding serializable metadata of Kafka topic partition.
  *

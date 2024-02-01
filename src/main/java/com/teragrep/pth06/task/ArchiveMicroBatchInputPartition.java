@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 
 /**
- * <h1>Kafka Micro Batch Input Partition Reader</h1>
+ * <h2>Kafka Micro Batch Input Partition Reader</h2>
  *
  * Class for holding micro batch partition of RFC5424 syslog data.
  *

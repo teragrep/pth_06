@@ -49,7 +49,7 @@ package com.teragrep.pth06.scheduler;
 import java.util.LinkedList;
 
 /**
- * <h1>Batch Task Queue</h1>
+ * <h2>Batch Task Queue</h2>
  *
  * Class for creating a queue of batch tasks.
  * Uses LinkedList with BatchSlices.

@@ -52,7 +52,7 @@ import com.teragrep.pth06.KafkaTopicPartitionOffsetMetadata;
 import java.io.Serializable;
 
 /**
- * <h1>Batch Slice</h1>
+ * <h2>Batch Slice</h2>
  *
  * Class for representing a serializable batch slice.
  * Can be constructed using S3 or Kafka partition metadata.

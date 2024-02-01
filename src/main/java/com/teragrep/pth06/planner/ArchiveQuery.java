@@ -53,7 +53,7 @@ import org.jooq.types.ULong;
 import java.sql.Date;
 
 /**
- * <h1>Archive Query</h1>
+ * <h2>Archive Query</h2>
  *
  * Interface for an archive query.
  *

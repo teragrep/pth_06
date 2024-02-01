@@ -57,7 +57,7 @@ import static com.teragrep.pth06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 import static com.teragrep.pth06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
 /**
- * <h1>Condition Walker</h1>
+ * <h2>Condition Walker</h2>
  *
  * Walker for conditions.
  *

@@ -64,7 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h1>Kafka Query Processor</h1>
+ * <h2>Kafka Query Processor</h2>
  *
  * Class for processing kafka queries.
  *

@@ -72,7 +72,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * <h1>Kafka Micro Batch Input Partition Reader</h1>
+ * <h2>Kafka Micro Batch Input Partition Reader</h2>
  *
  * Micro batch reader for kafka partition data source.
  *

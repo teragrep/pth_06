@@ -61,7 +61,7 @@ import java.time.Instant;
 import java.util.LinkedList;
 
 /**
- * <h1>Combined Offset Planner</h1>
+ * <h2>Combined Offset Planner</h2>
  *
  * Class that combines both Kafka and Archive offset planners. Initializes offset planners depending on the
  * settings set in the Config.

@@ -55,7 +55,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * <h1>Datasource Offset</h1>
+ * <h2>Datasource Offset</h2>
  *
  * Class for representing a serializable offset of data source.
  *

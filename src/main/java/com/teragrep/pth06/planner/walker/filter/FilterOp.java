@@ -47,7 +47,7 @@
 package com.teragrep.pth06.planner.walker.filter;
 
 /**
- * <h1>Filter Operation</h1>
+ * <h2>Filter Operation</h2>
  *
  * Abstract class to represent filter logical operator.
  *

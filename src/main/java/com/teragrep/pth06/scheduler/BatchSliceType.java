@@ -47,7 +47,7 @@
 package com.teragrep.pth06.scheduler;
 
 /**
- * <h1>Batch Slice Type</h1>
+ * <h2>Batch Slice Type</h2>
  *
  * either KAFKA or ARCHIVE.
  *

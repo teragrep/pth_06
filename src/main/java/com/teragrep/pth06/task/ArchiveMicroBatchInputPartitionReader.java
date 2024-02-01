@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
 // rfc5424
 
 /**
- * <h1>Archive Micro Batch Input Partition Reader</h1>
+ * <h2>Archive Micro Batch Input Partition Reader</h2>
  *
  * Class for holding micro batch partition of a RFC5424 syslog data.
  *

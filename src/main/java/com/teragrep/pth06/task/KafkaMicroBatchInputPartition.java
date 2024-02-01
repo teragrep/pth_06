@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * <h1>Kafka Micro Batch Input Partition</h1>
+ * <h2>Kafka Micro Batch Input Partition</h2>
  *
  *  Class for holding micro batch partition of a kafka topic.
  *

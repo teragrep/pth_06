@@ -57,7 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <h1>Kafka Offset</h1>
+ * <h2>Kafka Offset</h2>
  *
  * Class for representing a serializable offset of Kafka data source.
  *

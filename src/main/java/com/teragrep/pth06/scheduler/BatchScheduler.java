@@ -62,7 +62,7 @@ import java.util.LinkedList;
 import java.util.Map;
 
 /**
- * <h1>Batch Scheduler</h1>
+ * <h2>Batch Scheduler</h2>
  *
  * Class for scheduling execution of batches of data.
  *
