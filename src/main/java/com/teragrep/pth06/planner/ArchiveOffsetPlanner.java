@@ -62,7 +62,7 @@ import java.sql.Date;
 import java.util.LinkedList;
 
 /**
- * <h1>Archive Offset Planner</h1>
+ * <h2>Archive Offset Planner</h2>
  *
  * Class for processing archive query offsets.
  *

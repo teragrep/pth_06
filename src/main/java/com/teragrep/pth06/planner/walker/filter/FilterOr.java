@@ -47,7 +47,7 @@
 package com.teragrep.pth06.planner.walker.filter;
 
 /**
- * <h1>Filter Or</h1>
+ * <h2>Filter Or</h2>
  *
  * Filter or operator.
  *

@@ -50,7 +50,7 @@ import com.teragrep.jue_01.GlobToRegEx;
 import org.w3c.dom.Element;
 
 /**
- * <h1>Kafka Walker</h1>
+ * <h2>Kafka Walker</h2>
  *
  * @author Mikko Kortelainen
  * @since 08/06/2022

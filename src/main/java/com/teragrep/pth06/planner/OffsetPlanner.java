@@ -53,7 +53,7 @@ import org.apache.spark.sql.sources.v2.reader.streaming.Offset;
 import java.util.LinkedList;
 
 /**
- * <h1>Offset Planner</h1>
+ * <h2>Offset Planner</h2>
  *
  * Interface for BatchSlice offset.
  *

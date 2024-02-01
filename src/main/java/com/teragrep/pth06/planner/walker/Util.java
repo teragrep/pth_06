@@ -61,7 +61,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h1>Util</h1>
+ * <h2>Util</h2>
  *
  * Class for holding various util methods used by the walkers.
  *

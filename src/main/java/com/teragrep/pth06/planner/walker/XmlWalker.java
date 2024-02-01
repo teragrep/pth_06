@@ -65,7 +65,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <h1>XML Walker</h1>
+ * <h2>XML Walker</h2>
  *
  * Abstract class to represent XmlWalker.
  *

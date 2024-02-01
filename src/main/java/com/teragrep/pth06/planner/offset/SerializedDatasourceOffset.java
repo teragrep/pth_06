@@ -51,7 +51,7 @@ import org.apache.spark.sql.execution.streaming.LongOffset;
 import java.io.Serializable;
 
 /**
- * <h1>Serialized Datasource Offset</h1>
+ * <h2>Serialized Datasource Offset</h2>
  *
  * Class for representing a serialized offset of data source.
  *

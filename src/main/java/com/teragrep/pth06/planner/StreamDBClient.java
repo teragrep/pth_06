@@ -70,7 +70,7 @@ import static org.jooq.impl.DSL.select;
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
 
 /**
- * <h1>Stream DB Client</h1>
+ * <h2>Stream DB Client</h2>
  *
  * Class for creating a streamdb client.
  *

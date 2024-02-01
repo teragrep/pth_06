@@ -64,7 +64,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 /**
- * <h1>Row Converter</h1>
+ * <h2>Row Converter</h2>
  *
  * Converts S3 object rows.
  */

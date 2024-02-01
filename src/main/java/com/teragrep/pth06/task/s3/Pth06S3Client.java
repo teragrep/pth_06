@@ -60,7 +60,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <h1>PTH-06 S3 Client</h1>
+ * <h2>PTH-06 S3 Client</h2>
  *
  * Class for creating a Amazon S3 client with required settings.
  *

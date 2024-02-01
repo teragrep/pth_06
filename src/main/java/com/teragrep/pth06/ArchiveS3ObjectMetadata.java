@@ -49,7 +49,7 @@ package com.teragrep.pth06;
 import java.io.Serializable;
 
 /**
- * <h1>Archive S3 Object Metadata</h1>
+ * <h2>Archive S3 Object Metadata</h2>
  *
  * Class for holding a serializable S3 archive object metadata.
  *

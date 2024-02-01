@@ -65,7 +65,7 @@ import java.util.Map;
  */
 
 /**
- * <h1>No Op Scheduler</h1>
+ * <h2>No Op Scheduler</h2>
  *
  * Scheduler that only distributes the recived dataset
  * and leaves objects for Spark to schedule.

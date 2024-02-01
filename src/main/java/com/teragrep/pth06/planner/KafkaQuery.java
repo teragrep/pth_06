@@ -52,7 +52,7 @@ import org.apache.kafka.common.TopicPartition;
 import java.util.Map;
 
 /**
- * <h1>Kafka Query</h1>
+ * <h2>Kafka Query</h2>
  *
  * Interface for a Kafka query.
  *

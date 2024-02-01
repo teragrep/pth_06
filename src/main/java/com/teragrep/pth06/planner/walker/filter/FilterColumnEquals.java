@@ -47,7 +47,7 @@
 package com.teragrep.pth06.planner.walker.filter;
 
 /**
- * <h1>Filter Column Equals</h1>
+ * <h2>Filter Column Equals</h2>
  *
  * Filter logical operator for column equals.
  *

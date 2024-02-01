@@ -51,7 +51,7 @@ import org.apache.spark.sql.sources.v2.reader.streaming.Offset;
 import java.util.LinkedList;
 
 /**
- * <h1>Scheduler </h1>
+ * <h2>Scheduler </h2>
  *
  * Interface for scheduler that uses LinkedList for storing BatchSlices.
  *

@@ -58,7 +58,7 @@ import java.nio.charset.StandardCharsets;
 import static com.teragrep.pth06.task.s3.RowConverter.rfc3339ToEpoch;
 
 /**
- * <h1>Kafka Record Converter</h1>
+ * <h2>Kafka Record Converter</h2>
  *
  * Class for converting Kafka data into byte[].
  *

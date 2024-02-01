@@ -50,7 +50,7 @@ import com.teragrep.pth06.planner.walker.filter.*;
 import org.w3c.dom.Element;
 
 /**
- * <h1>Filter Walker</h1>
+ * <h2>Filter Walker</h2>
  *
  * Walker for filters.
  */

@@ -47,7 +47,7 @@
 package com.teragrep.pth06.planner.walker.filter;
 
 /**
- * <h1>Filter Not</h1>
+ * <h2>Filter Not</h2>
  *
  * Filter not logical operator.
  *
