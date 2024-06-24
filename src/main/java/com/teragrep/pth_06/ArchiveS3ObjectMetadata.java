@@ -1,11 +1,6 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
+ * Copyright (C) 2022  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -48,8 +43,48 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06;
+
+import java.io.Serializable;
+
+/**
+ * <h1>Archive S3 Object Metadata</h1>
+ *
+ * Class for holding a serializable S3 archive object metadata.
+ *
+ * @since 17/01/2022
+ * @author Mikko Kortelainen
+ */
+public class ArchiveS3ObjectMetadata implements Serializable {
+	public final String id;
+    public final String bucket;
+    public final String path;
+    public final String directory;
+    public final String stream;
+    public final String host;
+    public final long logtimeEpoch;
+    public final long compressedSize;
+
+    public ArchiveS3ObjectMetadata(String id, String bucket, String path, String directory, String stream, String host, long logtimeEpoch, long compressedSize) {
+        this.id = id;
+		this.bucket = bucket;
+        this.path = path;
+        this.directory = directory;
+        this.stream = stream;
+        this.host = host;
+        this.logtimeEpoch = logtimeEpoch;
+        this.compressedSize = compressedSize;
+    }
+    
+    @Override
+    public String toString() {
+        return "ArchiveS3ObjectMetadata{" +
+                "bucket='" + bucket + '\'' +
+                ", path='" + path + '\'' +
+                ", directory='" + directory + '\'' +
+                ", stream='" + stream + '\'' +
+                ", host='" + host + '\'' +
+                '}';
+    }
+}

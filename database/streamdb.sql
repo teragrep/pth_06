@@ -42,7 +42,7 @@
  * To the extent this program is licensed as part of the Commercial versions of
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
- */;
+ */
 
 -- MariaDB dump 10.18  Distrib 10.5.8-MariaDB, for Linux (x86_64)
 --

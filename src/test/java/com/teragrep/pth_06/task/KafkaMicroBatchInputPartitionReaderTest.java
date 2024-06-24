@@ -1,11 +1,8 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
+package com.teragrep.pth_06.task;
+
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
+ * Copyright (C) 2022  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -48,8 +45,43 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.spark.sql.catalyst.InternalRow;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class KafkaMicroBatchInputPartitionReaderTest {
+
+    private Consumer<byte[], byte[]> consumer;
+
+    @BeforeAll
+    public void setUp() {
+        consumer = MockKafkaConsumerFactory.getConsumer();
+    }
+
+    @Test
+    public void testConsumer() {
+        KafkaMicroBatchInputPartitionReader kafkaMicroBatchInputPartitionReader = new KafkaMicroBatchInputPartitionReader(
+                consumer,
+                new TopicPartition("testConsumerTopic", 0),
+                0L,
+                13L
+        );
+
+        long rowNum = 0L;
+        while (kafkaMicroBatchInputPartitionReader.next()) {
+            InternalRow internalRow = kafkaMicroBatchInputPartitionReader.get();
+            Assertions.assertEquals(rowNum, internalRow.getLong(7));
+            rowNum++;
+        }
+
+    }
+
+
+}

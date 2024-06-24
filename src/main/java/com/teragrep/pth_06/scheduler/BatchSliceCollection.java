@@ -1,11 +1,6 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
+ * Copyright (C) 2022  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -48,8 +43,12 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+package com.teragrep.pth_06.scheduler;
+
+import org.apache.spark.sql.connector.read.streaming.Offset;
+
+import java.util.LinkedList;
+
+public abstract class BatchSliceCollection extends LinkedList<BatchSlice> {
+    public abstract BatchSliceCollection processRange(Offset start, Offset end);
+}

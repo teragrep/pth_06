@@ -1,0 +1,26 @@
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="org.apache.spark.storage.ShuffleBlockFetcherIterator" level="WARN" />
+    <logger name="org.apache.spark.sql.execution.streaming.state.StateStore" level="WARN" />
+    <logger name="org.apache.spark.sql.execution.streaming.state.HDFSBackedStateStoreProvider" level="WARN" />
+    <logger name="org.apache.spark.executor.Executor" level="WARN" />
+    <logger name="org.apache.spark.sql.execution.streaming.CheckpointFileManager" level="WARN" />
+    <logger name="org.apache.spark.scheduler.TaskSetManager" level="WARN" />
+    <logger name="org.apache.spark.scheduler.DAGScheduler" level="WARN" />
+    <logger name="org.apache.spark.scheduler.TaskSchedulerImpl" level="WARN" />
+    <logger name="org.apache.spark.storage.memory.MemoryStore" level="WARN" />
+
+
+</configuration>

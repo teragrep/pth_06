@@ -1,11 +1,6 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
+ * Copyright (C) 2022  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -48,8 +43,30 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+package com.teragrep.pth_06.config;
+
+import java.util.Map;
+
+public final class AuditConfig {
+    public final String query;
+    public final String reason;
+    public final String user;
+    public final String pluginClassName;
+
+    public AuditConfig(Map<String, String> opts){
+        query = opts.getOrDefault("TeragrepAuditQuery", opts.getOrDefault("queryXML", ""));
+
+        reason = opts.getOrDefault("TeragrepAuditReason", "");
+
+        user = opts.getOrDefault("TeragrepAuditUser",
+                System.getProperty("user.name"));
+
+        if (!System.getProperty("user.name").equals(user)) {
+            throw new IllegalArgumentException("TeragrepAuditUser does not match user.name");
+        }
+
+        pluginClassName = opts.getOrDefault("TeragrepAuditPluginClassName",
+                "com.teragrep.rad_01.DefaultAuditPlugin");
+
+    }
+}
