@@ -1,8 +1,5 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
+package com.teragrep.pth_06.task.s3;
+
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +45,54 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
+import org.gaul.s3proxy.AuthenticationType;
+import org.gaul.s3proxy.S3Proxy;
+import org.jclouds.ContextBuilder;
+import org.jclouds.blobstore.BlobStoreContext;
+
+import java.net.URI;
+import java.util.Properties;
+
+public class MockS3 {
+
+    private final S3Proxy s3Proxy;
+
+    public MockS3(String url, String identity, String credential) {
+        Properties properties = new Properties();
+        properties.setProperty("jclouds.filesystem.basedir", "target/test-blobstore");
+
+        BlobStoreContext context = ContextBuilder
+                .newBuilder("filesystem")
+                .overrides(properties)
+                .build(BlobStoreContext.class);
+
+        this.s3Proxy = S3Proxy.builder()
+                .blobStore(context.getBlobStore())
+                .endpoint(URI.create(url))
+                .awsAuthentication(
+                        AuthenticationType.AWS_V2_OR_V4,
+                        identity,
+                        credential
+                )
+                .build();
+
+    }
+
+    public void start() throws Exception {
+        s3Proxy.start();
+        while (!s3Proxy.getState().equals(AbstractLifeCycle.STARTED)) {
+            Thread.sleep(1);
+        }
+    }
+
+    public void stop() throws Exception {
+        s3Proxy.stop();
+
+        while (!s3Proxy.getState().equals(AbstractLifeCycle.STOPPED)) {
+            Thread.sleep(1);
+        }
+    }
+
+}

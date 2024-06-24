@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,38 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06;
+
+import org.apache.kafka.common.TopicPartition;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
+/**
+ * <h1>Kafka Topic Partition Offset Metadata</h1>
+ *
+ * Class for holding serializable metadata of Kafka topic partition.
+ *
+ * @since 08/06/2022
+ * @author Mikko Kortelainen
+ */
+public class KafkaTopicPartitionOffsetMetadata implements Serializable {
+	public final TopicPartition topicPartition;
+    public final Long startOffset;
+    public final Long endOffset;
+
+    public KafkaTopicPartitionOffsetMetadata(TopicPartition topicPartition, Long startOffset, Long endOffset) {
+        this.topicPartition = topicPartition;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+    }
+
+    @Override
+    public String toString() {
+        return "KafkaTopicPartitionOffsetMetadata{" +
+                "topicPartition=" + topicPartition +
+                ", offset=[" + startOffset + ", " + endOffset + "]" +
+                '}';
+    }
+}

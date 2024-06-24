@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,49 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06.scheduler;
+
+import java.util.LinkedList;
+
+/**
+ * <h1>Batch Task Queue</h1>
+ *
+ * Class for creating a queue of batch tasks.
+ * Uses LinkedList with BatchSlices.
+ *
+ * @see BatchSlice
+ * @since 23/02/2022
+ * @author Mikko Kortelainen
+ */
+public final class BatchTaskQueue {
+
+    private final float compressionRatio = 15.5F;
+    private final float contextSwitchCost = 0.1F; // seconds
+    private final float processingSpeed = 273 / 2F; // rlo_06 273 megabytes per second, spark the half of it
+
+    private final LinkedList<BatchSlice> queue;
+    private float queueTime = 0L; // seconds how long the queue will take to process
+
+    BatchTaskQueue() {
+        this.queue = new LinkedList<>();
+    }
+
+    // give estimate on the queueTime after adding an object
+    float estimate(BatchSlice batchSlice) {
+        return queueTime + (batchSlice.getSize() * compressionRatio) / 1024 / 1024 / processingSpeed;
+    }
+
+    void add(BatchSlice batchSlice) {
+        queue.add(batchSlice);
+        queueTime = estimate(batchSlice);
+    }
+
+    public LinkedList<BatchSlice> getQueue() {
+        return queue;
+    }
+
+    public float getQueueTime() {
+        return queueTime;
+    }
+}

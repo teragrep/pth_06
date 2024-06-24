@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -47,9 +42,38 @@ do
  * To the extent this program is licensed as part of the Commercial versions of
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
- */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+ */;
+
+DROP TABLE IF EXISTS `filter_expected_100000_fpp_001`;
+DROP TABLE IF EXISTS `filter_expected_1000000_fpp_003`;
+DROP TABLE IF EXISTS `filter_expected_2500000_fpp_005`;
+
+CREATE TABLE `filter_expected_100000_fpp_001` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE,
+    `filter` LONGBLOB,
+    CONSTRAINT `fk_smallfilter_partition`
+        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `pk_small`
+        PRIMARY KEY (`id`)
+)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
+
+CREATE TABLE `filter_expected_1000000_fpp_003` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE ,
+    `filter` LONGBLOB,
+    CONSTRAINT `fk_mediumfilter_partition`
+        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `pk_medium`
+        PRIMARY KEY (`id`)
+)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
+
+CREATE TABLE `filter_expected_2500000_fpp_005` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE ,
+    `filter` LONGBLOB,
+    CONSTRAINT `fk_largefilter_partition`
+        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `pk_large`
+        PRIMARY KEY (`id`)
+)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;

@@ -1,8 +1,5 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
+package com.teragrep.pth_06.task.s3;
+
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +45,29 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+import com.teragrep.rlo_06.RFC5424Timestamp;
+import org.junit.jupiter.api.Test;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class RowConverterTests {
+
+    @Test
+    public void rfc3339ToEpochTest() {
+        // String s = "2021-01-28T00:00:00+02:00";
+        Instant instant = Instant.ofEpochSecond(1611784800);
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Helsinki"));
+        final long epochMicros = RowConverter.rfc3339ToEpoch(zonedDateTime);
+
+        assertEquals(1611784800000000L, epochMicros);
+    }
+
+}

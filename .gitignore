@@ -2,3 +2,14 @@ target/*
 .settings/*
 .vscode/*
 /.flattened-pom.xml
+target/*
+.vscode/*
+.classpath
+.factorypath
+.project
+src/main/antlr4/.antlr/DPLLexer.java
+src/main/antlr4/.antlr/DPLLexer.interp
+src/main/antlr4/.antlr/DPLLexer.tokens
+src/main/antlr4/.vscode/launch.json
+/.idea/
+/*.iml

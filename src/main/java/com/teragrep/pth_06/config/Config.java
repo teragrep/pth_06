@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,58 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06.config;
+
+import java.util.Map;
+
+/**
+ * <h1>Config</h1>
+ * Holds all the settings for the program. Including MariaDB, Kafka and Spark.
+ *
+ * @since 17/08/2021
+ * @author Mikko Kortelainen
+ * @author Eemeli Hukka
+ */
+public final class Config {
+
+    public final String query;
+    public final ArchiveConfig archiveConfig;
+    public final KafkaConfig kafkaConfig;
+
+    public final BatchConfig batchConfig;
+    public final AuditConfig auditConfig;
+
+    public final boolean isArchiveEnabled;
+    public final boolean isKafkaEnabled;
+
+    public Config(Map<String, String> opts) {
+        this.query = opts.get("queryXML");
+        if (this.query == null){
+            throw new IllegalArgumentException("no queryXML provided");
+        }
+
+        batchConfig = new BatchConfig(opts);
+        auditConfig = new AuditConfig(opts);
+
+        isArchiveEnabled = opts.getOrDefault("archive.enabled", "false").equalsIgnoreCase("true");
+        if (isArchiveEnabled){
+            archiveConfig = new ArchiveConfig(opts);
+        } else {
+            archiveConfig = new ArchiveConfig();
+        }
+
+        isKafkaEnabled = opts.getOrDefault("kafka.enabled", "false").equalsIgnoreCase("true");
+        if (isKafkaEnabled) {
+            kafkaConfig = new KafkaConfig(opts);
+        }
+        else {
+            kafkaConfig = new KafkaConfig();
+        }
+
+        // check that at least one datasource is enabled
+        if (!isArchiveEnabled && !isKafkaEnabled) {
+            throw new IllegalStateException("No datasources enabled");
+        }
+    }
+}

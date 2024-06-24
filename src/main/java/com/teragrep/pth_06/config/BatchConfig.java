@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,23 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+package com.teragrep.pth_06.config;
+
+import java.util.Map;
+
+public final class BatchConfig {
+    public final int numPartitions;
+    public final int quantumLength;
+    public final float fileCompressionRatio;
+    public final float processingSpeed;
+    public final long totalObjectCountLimit;
+
+    public BatchConfig(Map<String, String> opts) {
+        // TODO activeSession.get.sparkContext.defaultParallelism;
+        numPartitions = Integer.parseInt(opts.getOrDefault("num_partitions", "1"));
+        quantumLength = Integer.parseInt(opts.getOrDefault("quantumLength", "15"));
+        fileCompressionRatio = Float.parseFloat(opts.getOrDefault("batch.size.fileCompressionRatio", String.valueOf(15.5F)));
+        processingSpeed = Float.parseFloat(opts.getOrDefault("batch.size.processingSpeed", String.valueOf(273/2F)));
+        totalObjectCountLimit = Long.parseLong(opts.getOrDefault("batch.size.totalObjectCountLimit", String.valueOf(1000L)));
+    }
+}

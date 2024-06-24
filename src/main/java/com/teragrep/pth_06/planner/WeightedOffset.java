@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,70 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+package com.teragrep.pth_06.planner;
+
+/**
+ * Contains the file size and offset of a given event.
+ * Used to estimate the weight of that event.
+ */
+final class WeightedOffset {
+    private final long offset;
+    private final long fileSize;
+
+    final boolean isStub;
+
+    /**
+     * Creates a stub object. Used when the offset could not be found.
+     */
+    WeightedOffset() {
+        this(0, 0, true);
+    }
+
+    /**
+     * Creates a non-stub WeightedOffset object.
+     * @param offset Offset of event
+     * @param fileSize File size of event
+     */
+    WeightedOffset(long offset, long fileSize) {
+        this(offset, fileSize, false);
+    }
+
+    /**
+     * Creates a WeightedOffset object. Not to be used outside of this class.
+     * @param offset Offset of the event
+     * @param fileSize File size of the event
+     * @param isStub If this object is a stub object
+     */
+    private WeightedOffset(long offset, long fileSize, boolean isStub) {
+        this.offset = offset;
+        this.fileSize = fileSize;
+        this.isStub = isStub;
+    }
+
+    /**
+     * Estimates the weight of the event based on file size and processing speed.
+     * @return Estimated weight
+     * @param compressionRatio file compression ratio
+     * @param processingSpeed processing speed
+     * @throws IllegalStateException if the object is a stub
+     */
+    float estimateWeight(final float compressionRatio, final float processingSpeed) {
+        if (isStub) {
+            throw new IllegalStateException("WeightedOffset is stub");
+        }
+
+        return (fileSize * compressionRatio) / 1024 / 1024 / processingSpeed;
+    }
+
+    /**
+     * Returns the offset if the object is not a stub object.
+     * @return offset
+     * @throws IllegalStateException if the object is a stub
+     */
+    long offset() {
+        if (isStub) {
+            throw new IllegalStateException("WeightedOffset is stub");
+        }
+        return offset;
+    }
+}

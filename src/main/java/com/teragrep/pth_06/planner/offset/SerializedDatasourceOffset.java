@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,53 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06.planner.offset;
+
+import org.apache.spark.sql.execution.streaming.LongOffset;
+
+import java.io.Serializable;
+
+/**
+ * <h1>Serialized Datasource Offset</h1>
+ *
+ * Class for representing a serialized offset of data source.
+ *
+ * @see LongOffset
+ * @see KafkaOffset
+ * @since 08/06/2022
+ * @author Mikko Kortelainen
+ */
+public class SerializedDatasourceOffset implements Serializable {
+    private final Long version = 1L;
+
+    public final LongOffset archiveOffset;
+    public final KafkaOffset kafkaOffset;
+
+    public SerializedDatasourceOffset(
+            LongOffset archiveOffset,
+            KafkaOffset kafkaOffset
+    ) {
+        this.archiveOffset = archiveOffset;
+        this.kafkaOffset = kafkaOffset;
+    }
+
+    public SerializedDatasourceOffset(LongOffset archiveOffset) {
+        this.kafkaOffset = null;
+        this.archiveOffset = archiveOffset;
+    }
+
+    public SerializedDatasourceOffset(KafkaOffset kafkaOffset) {
+        this.kafkaOffset = kafkaOffset;
+        this.archiveOffset = null;
+    }
+
+    @Override
+    public String toString() {
+        return "SerializedDatasourceOffset{" +
+                "version=" + version +
+                ", archiveOffset=" + archiveOffset +
+                ", kafkaOffset=" + kafkaOffset +
+                '}';
+    }
+}

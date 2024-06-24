@@ -1,8 +1,3 @@
-#!/bin/bash
-find src/main/java/com/teragrep/pth_06/jooq/generated -type f -name "*.java" -print0 | while read -r -d $'\0' file
-do
-    if ! grep -q "https://github.com/teragrep/teragrep/blob/main/LICENSE" "${file}"; then
-        cat <<-EOF > "${file}.tmp";
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -48,8 +43,49 @@ do
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-EOF
-        cat "${file}" >> "${file}.tmp";
-        mv -f "${file}.tmp" "${file}";
-    fi;
-done
+
+package com.teragrep.pth_06.task;
+
+
+import org.apache.kafka.common.TopicPartition;
+import org.apache.spark.sql.connector.read.InputPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
+/**
+ * <h1>Kafka Micro Batch Input Partition</h1>
+ *
+ *  Class for holding micro batch partition of a kafka topic.
+ *
+ * @see InputPartition
+ * @since 08/06/2022
+ * @author Mikko Kortelainen
+ */
+public class KafkaMicroBatchInputPartition implements InputPartition {
+
+    public final Logger LOGGER = LoggerFactory.getLogger(KafkaMicroBatchInputPartition.class);
+
+    public final Map<String, Object> executorKafkaProperties;
+    public final TopicPartition topicPartition;
+    public final long startOffset;
+    public final long endOffset;
+    public final Map<String, String> executorConfig;
+    public final boolean skipNonRFC5424Records;
+
+    public KafkaMicroBatchInputPartition(
+            Map<String, Object> executorKafkaProperties,
+            TopicPartition topicPartition,
+            long startOffset,
+            long endOffset,
+            Map<String, String> executorConfig,
+            boolean skipNonRFC5424Records) {
+        this.executorKafkaProperties = executorKafkaProperties;
+        this.topicPartition = topicPartition;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
+        this.executorConfig = executorConfig;
+        this.skipNonRFC5424Records = skipNonRFC5424Records;
+    }
+}
