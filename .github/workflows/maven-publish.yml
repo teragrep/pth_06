@@ -44,18 +44,11 @@ jobs:
         echo "Flushing privileges"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
 
-    - name: Setup Maven Central
+    - name: Setup GitHub Packages
       uses: actions/setup-java@v2
       with:
         java-version: 8.0.292+10
         distribution: 'adopt'
-
-        server-id: ossrh
-        server-username: MAVEN_CENTRAL_USERNAME
-        server-password: MAVEN_CENTRAL_TOKEN
-
-        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Generate sources
       run: mvn -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= generate-sources
@@ -65,19 +58,6 @@ jobs:
 
     - name: Inject licenses to generated files
       run: bash add_headers_to_generated.sh
-
-    - name: Publish to Maven Central
-      run: mvn -Pbuild-nogenerate,publish-maven-central --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
-      env:
-        MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-
-    - name: Setup GitHub Packages
-      uses: actions/setup-java@v2
-      with:
-        java-version: 8.0.292+10
-        distribution: 'adopt'
 
     - name: Publish to GitHub Packages Apache Maven
       run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
