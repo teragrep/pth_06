@@ -44,12 +44,19 @@ jobs:
         echo "Flushing privileges"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
 
-    - name: Setup GitHub Packages
+    - name: Setup Signing
       uses: actions/setup-java@v2
       with:
         java-version: 8.0.292+10
         distribution: 'adopt'
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+    - name: Setup GitHub Packages
+      uses: actions/setup-java@v2
+      with:
+        java-version: 8.0.292+10
+        distribution: 'adopt'
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Generate sources
