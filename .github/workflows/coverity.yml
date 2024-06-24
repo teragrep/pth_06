@@ -1,13 +1,7 @@
 name: Coverity Scan
 
-on:
-  pull_request_review:
-    types: [submitted]
-    secrets:
-      COVERITY_TOKEN:
-        required: true
-      COVERITY_EMAIL:
-        required: true
+on: push
+
 jobs:
   verify:
     name: Verify Code
