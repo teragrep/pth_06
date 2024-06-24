@@ -49,6 +49,8 @@ jobs:
       with:
         java-version: 8.0.292+10
         distribution: 'adopt'
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Generate sources
       run: mvn -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= generate-sources
@@ -63,3 +65,4 @@ jobs:
       run: mvn -Pbuild-nogenerate,publish-github-packages -B -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= clean deploy
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
