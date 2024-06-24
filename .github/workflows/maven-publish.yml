@@ -30,13 +30,17 @@ jobs:
         echo "Creating databases"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE streamdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE journaldb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE bloomdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
         echo "Creating users"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on streamdb.* to streamdb@'%' identified by 'streamdb_pass';"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on journaldb.* to streamdb@'%' identified by 'streamdb_pass';"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on bloomdb.* to streamdb@'127.0.0.1' identified by 'streamdb_pass';"
         echo "Importing journaldb"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D journaldb < database/journaldb.sql
         echo "Importing streamdb"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D streamdb < database/streamdb.sql
+        echo "Importing bloomdb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D bloomdb < database/bloomdb.sql
         echo "Flushing privileges"
         mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
 
