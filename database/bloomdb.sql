@@ -42,7 +42,7 @@
  * To the extent this program is licensed as part of the Commercial versions of
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
- */;
+ */
 
 DROP TABLE IF EXISTS `filter_expected_100000_fpp_001`;
 DROP TABLE IF EXISTS `filter_expected_1000000_fpp_003`;
