@@ -51,7 +51,6 @@ import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Record;
-import org.jooq.Record10;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
