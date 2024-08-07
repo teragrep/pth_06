@@ -57,9 +57,12 @@ import org.apache.spark.sql.connector.read.PartitionReaderFactory;
  * @author p000043u
  */
 public final class TeragrepPartitionReaderFactory implements PartitionReaderFactory {
+    private static final long serialVersionUID = 1L;
+    public final boolean isMetadataQuery;
 
-    public TeragrepPartitionReaderFactory() {
+    public TeragrepPartitionReaderFactory(boolean isMetadataQuery) {
         super();
+        this.isMetadataQuery = isMetadataQuery;
     }
 
     /**
@@ -71,7 +74,18 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
     @Override
     public PartitionReader<InternalRow> createReader(InputPartition inputPartition) {
         // Use different PartitionReaders based on InputPartition type (Archive or Kafka)
-        if (inputPartition instanceof ArchiveMicroBatchInputPartition) {
+        if (isMetadataQuery && inputPartition instanceof ArchiveMicroBatchInputPartition) {
+            // metadata only
+            ArchiveMicroBatchInputPartition aip = (ArchiveMicroBatchInputPartition) inputPartition;
+            return new MetadataMicroBatchInputPartitionReader(
+                    aip.taskObjectList,
+                    aip.TeragrepAuditQuery,
+                    aip.TeragrepAuditReason,
+                    aip.TeragrepAuditUser,
+                    aip.TeragrepAuditPluginClassName
+            );
+        }
+        else if (inputPartition instanceof ArchiveMicroBatchInputPartition) {
             ArchiveMicroBatchInputPartition aip = (ArchiveMicroBatchInputPartition) inputPartition;
             return new ArchiveMicroBatchInputPartitionReader(
                     aip.S3endPoint,
@@ -84,7 +98,8 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
                     aip.TeragrepAuditPluginClassName,
                     aip.skipNonRFC5424Files
             );
-        } else if (inputPartition instanceof KafkaMicroBatchInputPartition) {
+        }
+        else if (inputPartition instanceof KafkaMicroBatchInputPartition) {
             KafkaMicroBatchInputPartition kip = (KafkaMicroBatchInputPartition) inputPartition;
             return new KafkaMicroBatchInputPartitionReader(
                     kip.executorKafkaProperties,
