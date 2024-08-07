@@ -49,7 +49,6 @@ import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.pth_06.planner.ArchiveQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.spark.sql.connector.read.streaming.Offset;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Record;
 import org.jooq.Record11;
 import org.jooq.Result;
@@ -75,7 +74,7 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
 
         this.clear(); // clear internal list
 
-        @NotNull Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>
                 result = aq.processBetweenUnixEpochHours(((DatasourceOffset)start).getArchiveOffset().offset(),
                                                         ((DatasourceOffset)end).getArchiveOffset().offset());
 
