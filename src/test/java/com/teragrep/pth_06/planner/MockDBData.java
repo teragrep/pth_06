@@ -46,10 +46,7 @@ package com.teragrep.pth_06.planner;
  * a licensee so wish it.
  */
 
-import org.jooq.DSLContext;
-import org.jooq.Record10;
-import org.jooq.Result;
-import org.jooq.SQLDialect;
+import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockDataProvider;
@@ -64,52 +61,52 @@ import java.util.TreeMap;
 
 public class MockDBData {
 
-    private final TreeMap<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> virtualDatabaseMap = new TreeMap<>();
+    private final TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new TreeMap<>();
 
 
 
     public MockDBData() {
-        virtualDatabaseMap.put(1262905200L, generateResult("19181","f17_v2","log:f17_v2:0","sc-99-99-14-40","f17_v2","2010-01-08","hundred-year","2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz","1262905200","28306039"));
-        virtualDatabaseMap.put(1263250800L, generateResult("19183","f17_v2","log:f17_v2:0","sc-99-99-14-140","f17_v2","2010-01-12","hundred-year","2010/01-12/sc-99-99-14-140/f17_v2/f17_v2.logGLOB-2010011201.log.gz","1263250800","28437606"));
-        virtualDatabaseMap.put(1262901600L, generateResult("19213","f17_v2","log:f17_v2:0","sc-99-99-14-43","f17_v2","2010-01-08","hundred-year","2010/01-08/sc-99-99-14-43/f17_v2/f17_v2.logGLOB-2010010800.log.gz","1262901600","28275031"));
-        virtualDatabaseMap.put(1263247200L, generateResult("19235","f17_v2","log:f17_v2:0","sc-99-99-14-139","f17_v2","2010-01-12","hundred-year","2010/01-12/sc-99-99-14-139/f17_v2/f17_v2.logGLOB-2010011200.log.gz","1263247200","28445548"));
-        virtualDatabaseMap.put(1262469600L, generateResult("19323","f17_v2","log:f17_v2:0","sc-99-99-14-228","f17_v2","2010-01-03","hundred-year","2010/01-03/sc-99-99-14-228/f17_v2/f17_v2.logGLOB-2010010300.log.gz","1262469600","28432476"));
-        virtualDatabaseMap.put(1263420000L, generateResult("19409","f17_v2","log:f17_v2:0","sc-99-99-14-5","f17_v2","2010-01-14","hundred-year","2010/01-14/sc-99-99-14-5/f17_v2/f17_v2.logGLOB-2010011400.log.gz","1263420000","28340118"));
-        virtualDatabaseMap.put(1262473200L, generateResult("19423","f17_v2","log:f17_v2:0","sc-99-99-14-131","f17_v2","2010-01-03","hundred-year","2010/01-03/sc-99-99-14-131/f17_v2/f17_v2.logGLOB-2010010301.log.gz","1262473200","28425247"));
-        virtualDatabaseMap.put(1263423600L, generateResult("19475","f17_v2","log:f17_v2:0","sc-99-99-14-66","f17_v2","2010-01-14","hundred-year","2010/01-14/sc-99-99-14-66/f17_v2/f17_v2.logGLOB-2010011401.log.gz","1263423600","28335303"));
-        virtualDatabaseMap.put(1263679200L, generateResult("22039","f17_v2","log:f17_v2:0","sc-99-99-14-26","f17_v2","2010-01-17","hundred-year","2010/01-17/sc-99-99-14-26/f17_v2/f17_v2.logGLOB-2010011700.log.gz","1263679200","28311253"));
-        virtualDatabaseMap.put(1262383200L, generateResult("22221","f17_v2","log:f17_v2:0","sc-99-99-14-33","f17_v2","2010-01-02","hundred-year","2010/01-02/sc-99-99-14-33/f17_v2/f17_v2.logGLOB-2010010200.log.gz","1262383200","28283307"));
-        virtualDatabaseMap.put(1262386800L, generateResult("22243","f17_v2","log:f17_v2:0","sc-99-99-14-254","f17_v2","2010-01-02","hundred-year","2010/01-02/sc-99-99-14-254/f17_v2/f17_v2.logGLOB-2010010201.log.gz","1262386800","28440136"));
-        virtualDatabaseMap.put(1262728800L, generateResult("22259","f17_v2","log:f17_v2:0","sc-99-99-14-201","f17_v2","2010-01-06","hundred-year","2010/01-06/sc-99-99-14-201/f17_v2/f17_v2.logGLOB-2010010600.log.gz","1262728800","28413194"));
-        virtualDatabaseMap.put(1262732400L, generateResult("22279","f17_v2","log:f17_v2:0","sc-99-99-14-252","f17_v2","2010-01-06","hundred-year","2010/01-06/sc-99-99-14-252/f17_v2/f17_v2.logGLOB-2010010601.log.gz","1262732400","28422986"));
-        virtualDatabaseMap.put(1263078000L, generateResult("22503","f17_v2","log:f17_v2:0","sc-99-99-14-233","f17_v2","2010-01-10","hundred-year","2010/01-10/sc-99-99-14-233/f17_v2/f17_v2.logGLOB-2010011001.log.gz","1263078000","28456873"));
-        virtualDatabaseMap.put(1263074400L, generateResult("22557","f17_v2","log:f17_v2:0","sc-99-99-14-163","f17_v2","2010-01-10","hundred-year","2010/01-10/sc-99-99-14-163/f17_v2/f17_v2.logGLOB-2010011000.log.gz","1263074400","28479632"));
-        virtualDatabaseMap.put(1263164400L, generateResult("23481","f17_v2","log:f17_v2:0","sc-99-99-14-229","f17_v2","2010-01-11","hundred-year","2010/01-11/sc-99-99-14-229/f17_v2/f17_v2.logGLOB-2010011101.log.gz","1263164400","28415774"));
-        virtualDatabaseMap.put(1263160800L, generateResult("23495","f17_v2","log:f17_v2:0","sc-99-99-14-193","f17_v2","2010-01-11","hundred-year","2010/01-11/sc-99-99-14-193/f17_v2/f17_v2.logGLOB-2010011100.log.gz","1263160800","28444834"));
-        virtualDatabaseMap.put(1262296800L, generateResult("28653","f17_v2","log:f17_v2:0","sc-99-99-14-148","f17_v2","2010-01-01","hundred-year","2010/01-01/sc-99-99-14-148/f17_v2/f17_v2.logGLOB-2010010100.log.gz","1262296800","28422002"));
-        virtualDatabaseMap.put(1262300400L, generateResult("28703","f17_v2","log:f17_v2:0","sc-99-99-14-84","f17_v2","2010-01-01","hundred-year","2010/01-01/sc-99-99-14-84/f17_v2/f17_v2.logGLOB-2010010101.log.gz","1262300400","28262884"));
-        virtualDatabaseMap.put(1262556000L, generateResult("28873","f17_v2","log:f17_v2:0","sc-99-99-14-226","f17_v2","2010-01-04","hundred-year","2010/01-04/sc-99-99-14-226/f17_v2/f17_v2.logGLOB-2010010400.log.gz","1262556000","28378705"));
-        virtualDatabaseMap.put(1262988000L, generateResult("28897","f17_v2","log:f17_v2:0","sc-99-99-14-4","f17_v2","2010-01-09","hundred-year","2010/01-09/sc-99-99-14-4/f17_v2/f17_v2.logGLOB-2010010900.log.gz","1262988000","28325370"));
-        virtualDatabaseMap.put(1262559600L, generateResult("28911","f17_v2","log:f17_v2:0","sc-99-99-14-112","f17_v2","2010-01-04","hundred-year","2010/01-04/sc-99-99-14-112/f17_v2/f17_v2.logGLOB-2010010401.log.gz","1262559600","28384499"));
-        virtualDatabaseMap.put(1262991600L, generateResult("28979","f17_v2","log:f17_v2:0","sc-99-99-14-20","f17_v2","2010-01-09","hundred-year","2010/01-09/sc-99-99-14-20/f17_v2/f17_v2.logGLOB-2010010901.log.gz","1262991600","28298372"));
-        virtualDatabaseMap.put(1263333600L, generateResult("29031","f17_v2","log:f17_v2:0","sc-99-99-14-210","f17_v2","2010-01-13","hundred-year","2010/01-13/sc-99-99-14-210/f17_v2/f17_v2.logGLOB-2010011300.log.gz","1263333600","28435159"));
-        virtualDatabaseMap.put(1263337200L, generateResult("29047","f17_v2","log:f17_v2:0","sc-99-99-14-35","f17_v2","2010-01-13","hundred-year","2010/01-13/sc-99-99-14-35/f17_v2/f17_v2.logGLOB-2010011301.log.gz","1263337200","28291081"));
-        virtualDatabaseMap.put(1262642400L, generateResult("35379","f17_v2","log:f17_v2:0","sc-99-99-14-18","f17_v2","2010-01-05","hundred-year","2010/01-05/sc-99-99-14-18/f17_v2/f17_v2.logGLOB-2010010500.log.gz","1262642400","28255532"));
-        virtualDatabaseMap.put(1262815200L, generateResult("35439","f17_v2","log:f17_v2:0","sc-99-99-14-23","f17_v2","2010-01-07","hundred-year","2010/01-07/sc-99-99-14-23/f17_v2/f17_v2.logGLOB-2010010700.log.gz","1262815200","28275870"));
-        virtualDatabaseMap.put(1262818800L, generateResult("35443","f17_v2","log:f17_v2:0","sc-99-99-14-105","f17_v2","2010-01-07","hundred-year","2010/01-07/sc-99-99-14-105/f17_v2/f17_v2.logGLOB-2010010701.log.gz","1262818800","28420114"));
-        virtualDatabaseMap.put(1263506400L, generateResult("35453","f17_v2","log:f17_v2:0","sc-99-99-14-5","f17_v2","2010-01-15","hundred-year","2010/01-15/sc-99-99-14-5/f17_v2/f17_v2.logGLOB-2010011500.log.gz","1263506400","28342297"));
-        virtualDatabaseMap.put(1262646000L, generateResult("35465","f17_v2","log:f17_v2:0","sc-99-99-14-46","f17_v2","2010-01-05","hundred-year","2010/01-05/sc-99-99-14-46/f17_v2/f17_v2.logGLOB-2010010501.log.gz","1262646000","28258332"));
-        virtualDatabaseMap.put(1263510000L, generateResult("35497","f17_v2","log:f17_v2:0","sc-99-99-14-175","f17_v2","2010-01-15","hundred-year","2010/01-15/sc-99-99-14-175/f17_v2/f17_v2.logGLOB-2010011501.log.gz","1263510000","28453461"));
-        virtualDatabaseMap.put(1263592800L, generateResult("35507","f17_v2","log:f17_v2:0","sc-99-99-14-108","f17_v2","2010-01-16","hundred-year","2010/01-16/sc-99-99-14-108/f17_v2/f17_v2.logGLOB-2010011600.log.gz","1263592800","28464374"));
-        virtualDatabaseMap.put(1263596400L, generateResult("35525","f17_v2","log:f17_v2:0","sc-99-99-14-125","f17_v2","2010-01-16","hundred-year","2010/01-16/sc-99-99-14-125/f17_v2/f17_v2.logGLOB-2010011601.log.gz","1263596400","28472164"));
+        virtualDatabaseMap.put(1262905200L, generateResult("19181","f17_v2","log:f17_v2:0","sc-99-99-14-40","f17_v2","2010-01-08","hundred-year","2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz","1262905200","28306039","283060390"));
+        virtualDatabaseMap.put(1263250800L, generateResult("19183","f17_v2","log:f17_v2:0","sc-99-99-14-140","f17_v2","2010-01-12","hundred-year","2010/01-12/sc-99-99-14-140/f17_v2/f17_v2.logGLOB-2010011201.log.gz","1263250800","28437606","284376060"));
+        virtualDatabaseMap.put(1262901600L, generateResult("19213","f17_v2","log:f17_v2:0","sc-99-99-14-43","f17_v2","2010-01-08","hundred-year","2010/01-08/sc-99-99-14-43/f17_v2/f17_v2.logGLOB-2010010800.log.gz","1262901600","28275031", "282750310"));
+        virtualDatabaseMap.put(1263247200L, generateResult("19235","f17_v2","log:f17_v2:0","sc-99-99-14-139","f17_v2","2010-01-12","hundred-year","2010/01-12/sc-99-99-14-139/f17_v2/f17_v2.logGLOB-2010011200.log.gz","1263247200","28445548","284455480"));
+        virtualDatabaseMap.put(1262469600L, generateResult("19323","f17_v2","log:f17_v2:0","sc-99-99-14-228","f17_v2","2010-01-03","hundred-year","2010/01-03/sc-99-99-14-228/f17_v2/f17_v2.logGLOB-2010010300.log.gz","1262469600","28432476", "284324760"));
+        virtualDatabaseMap.put(1263420000L, generateResult("19409","f17_v2","log:f17_v2:0","sc-99-99-14-5","f17_v2","2010-01-14","hundred-year","2010/01-14/sc-99-99-14-5/f17_v2/f17_v2.logGLOB-2010011400.log.gz","1263420000","28340118","283401180"));
+        virtualDatabaseMap.put(1262473200L, generateResult("19423","f17_v2","log:f17_v2:0","sc-99-99-14-131","f17_v2","2010-01-03","hundred-year","2010/01-03/sc-99-99-14-131/f17_v2/f17_v2.logGLOB-2010010301.log.gz","1262473200","28425247","284252470"));
+        virtualDatabaseMap.put(1263423600L, generateResult("19475","f17_v2","log:f17_v2:0","sc-99-99-14-66","f17_v2","2010-01-14","hundred-year","2010/01-14/sc-99-99-14-66/f17_v2/f17_v2.logGLOB-2010011401.log.gz","1263423600","28335303","283353030"));
+        virtualDatabaseMap.put(1263679200L, generateResult("22039","f17_v2","log:f17_v2:0","sc-99-99-14-26","f17_v2","2010-01-17","hundred-year","2010/01-17/sc-99-99-14-26/f17_v2/f17_v2.logGLOB-2010011700.log.gz","1263679200","28311253","283112530"));
+        virtualDatabaseMap.put(1262383200L, generateResult("22221","f17_v2","log:f17_v2:0","sc-99-99-14-33","f17_v2","2010-01-02","hundred-year","2010/01-02/sc-99-99-14-33/f17_v2/f17_v2.logGLOB-2010010200.log.gz","1262383200","28283307","282833070"));
+        virtualDatabaseMap.put(1262386800L, generateResult("22243","f17_v2","log:f17_v2:0","sc-99-99-14-254","f17_v2","2010-01-02","hundred-year","2010/01-02/sc-99-99-14-254/f17_v2/f17_v2.logGLOB-2010010201.log.gz","1262386800","28440136","284401360"));
+        virtualDatabaseMap.put(1262728800L, generateResult("22259","f17_v2","log:f17_v2:0","sc-99-99-14-201","f17_v2","2010-01-06","hundred-year","2010/01-06/sc-99-99-14-201/f17_v2/f17_v2.logGLOB-2010010600.log.gz","1262728800","28413194","284131940"));
+        virtualDatabaseMap.put(1262732400L, generateResult("22279","f17_v2","log:f17_v2:0","sc-99-99-14-252","f17_v2","2010-01-06","hundred-year","2010/01-06/sc-99-99-14-252/f17_v2/f17_v2.logGLOB-2010010601.log.gz","1262732400","28422986","284229860"));
+        virtualDatabaseMap.put(1263078000L, generateResult("22503","f17_v2","log:f17_v2:0","sc-99-99-14-233","f17_v2","2010-01-10","hundred-year","2010/01-10/sc-99-99-14-233/f17_v2/f17_v2.logGLOB-2010011001.log.gz","1263078000","28456873","284568730"));
+        virtualDatabaseMap.put(1263074400L, generateResult("22557","f17_v2","log:f17_v2:0","sc-99-99-14-163","f17_v2","2010-01-10","hundred-year","2010/01-10/sc-99-99-14-163/f17_v2/f17_v2.logGLOB-2010011000.log.gz","1263074400","28479632","284796320"));
+        virtualDatabaseMap.put(1263164400L, generateResult("23481","f17_v2","log:f17_v2:0","sc-99-99-14-229","f17_v2","2010-01-11","hundred-year","2010/01-11/sc-99-99-14-229/f17_v2/f17_v2.logGLOB-2010011101.log.gz","1263164400","28415774","284157740"));
+        virtualDatabaseMap.put(1263160800L, generateResult("23495","f17_v2","log:f17_v2:0","sc-99-99-14-193","f17_v2","2010-01-11","hundred-year","2010/01-11/sc-99-99-14-193/f17_v2/f17_v2.logGLOB-2010011100.log.gz","1263160800","28444834","284448340"));
+        virtualDatabaseMap.put(1262296800L, generateResult("28653","f17_v2","log:f17_v2:0","sc-99-99-14-148","f17_v2","2010-01-01","hundred-year","2010/01-01/sc-99-99-14-148/f17_v2/f17_v2.logGLOB-2010010100.log.gz","1262296800","28422002","284220020"));
+        virtualDatabaseMap.put(1262300400L, generateResult("28703","f17_v2","log:f17_v2:0","sc-99-99-14-84","f17_v2","2010-01-01","hundred-year","2010/01-01/sc-99-99-14-84/f17_v2/f17_v2.logGLOB-2010010101.log.gz","1262300400","28262884","282628840"));
+        virtualDatabaseMap.put(1262556000L, generateResult("28873","f17_v2","log:f17_v2:0","sc-99-99-14-226","f17_v2","2010-01-04","hundred-year","2010/01-04/sc-99-99-14-226/f17_v2/f17_v2.logGLOB-2010010400.log.gz","1262556000","28378705","283787050"));
+        virtualDatabaseMap.put(1262988000L, generateResult("28897","f17_v2","log:f17_v2:0","sc-99-99-14-4","f17_v2","2010-01-09","hundred-year","2010/01-09/sc-99-99-14-4/f17_v2/f17_v2.logGLOB-2010010900.log.gz","1262988000","28325370","283253700"));
+        virtualDatabaseMap.put(1262559600L, generateResult("28911","f17_v2","log:f17_v2:0","sc-99-99-14-112","f17_v2","2010-01-04","hundred-year","2010/01-04/sc-99-99-14-112/f17_v2/f17_v2.logGLOB-2010010401.log.gz","1262559600","28384499","283844990"));
+        virtualDatabaseMap.put(1262991600L, generateResult("28979","f17_v2","log:f17_v2:0","sc-99-99-14-20","f17_v2","2010-01-09","hundred-year","2010/01-09/sc-99-99-14-20/f17_v2/f17_v2.logGLOB-2010010901.log.gz","1262991600","28298372","282983720"));
+        virtualDatabaseMap.put(1263333600L, generateResult("29031","f17_v2","log:f17_v2:0","sc-99-99-14-210","f17_v2","2010-01-13","hundred-year","2010/01-13/sc-99-99-14-210/f17_v2/f17_v2.logGLOB-2010011300.log.gz","1263333600","28435159","284351590"));
+        virtualDatabaseMap.put(1263337200L, generateResult("29047","f17_v2","log:f17_v2:0","sc-99-99-14-35","f17_v2","2010-01-13","hundred-year","2010/01-13/sc-99-99-14-35/f17_v2/f17_v2.logGLOB-2010011301.log.gz","1263337200","28291081","282910810"));
+        virtualDatabaseMap.put(1262642400L, generateResult("35379","f17_v2","log:f17_v2:0","sc-99-99-14-18","f17_v2","2010-01-05","hundred-year","2010/01-05/sc-99-99-14-18/f17_v2/f17_v2.logGLOB-2010010500.log.gz","1262642400","28255532","282555320"));
+        virtualDatabaseMap.put(1262815200L, generateResult("35439","f17_v2","log:f17_v2:0","sc-99-99-14-23","f17_v2","2010-01-07","hundred-year","2010/01-07/sc-99-99-14-23/f17_v2/f17_v2.logGLOB-2010010700.log.gz","1262815200","28275870","282758700"));
+        virtualDatabaseMap.put(1262818800L, generateResult("35443","f17_v2","log:f17_v2:0","sc-99-99-14-105","f17_v2","2010-01-07","hundred-year","2010/01-07/sc-99-99-14-105/f17_v2/f17_v2.logGLOB-2010010701.log.gz","1262818800","28420114","284201140"));
+        virtualDatabaseMap.put(1263506400L, generateResult("35453","f17_v2","log:f17_v2:0","sc-99-99-14-5","f17_v2","2010-01-15","hundred-year","2010/01-15/sc-99-99-14-5/f17_v2/f17_v2.logGLOB-2010011500.log.gz","1263506400","28342297","283422970"));
+        virtualDatabaseMap.put(1262646000L, generateResult("35465","f17_v2","log:f17_v2:0","sc-99-99-14-46","f17_v2","2010-01-05","hundred-year","2010/01-05/sc-99-99-14-46/f17_v2/f17_v2.logGLOB-2010010501.log.gz","1262646000","28258332","282583320"));
+        virtualDatabaseMap.put(1263510000L, generateResult("35497","f17_v2","log:f17_v2:0","sc-99-99-14-175","f17_v2","2010-01-15","hundred-year","2010/01-15/sc-99-99-14-175/f17_v2/f17_v2.logGLOB-2010011501.log.gz","1263510000","28453461","284534610"));
+        virtualDatabaseMap.put(1263592800L, generateResult("35507","f17_v2","log:f17_v2:0","sc-99-99-14-108","f17_v2","2010-01-16","hundred-year","2010/01-16/sc-99-99-14-108/f17_v2/f17_v2.logGLOB-2010011600.log.gz","1263592800","28464374","284643740"));
+        virtualDatabaseMap.put(1263596400L, generateResult("35525","f17_v2","log:f17_v2:0","sc-99-99-14-125","f17_v2","2010-01-16","hundred-year","2010/01-16/sc-99-99-14-125/f17_v2/f17_v2.logGLOB-2010011601.log.gz","1263596400","28472164","284721640"));
     }
 
-    public TreeMap<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> getVirtualDatabaseMap() {
+    public TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> getVirtualDatabaseMap() {
         // id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize
         return virtualDatabaseMap;
     }
 
-    static Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> generateResult(
+    static Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> generateResult(
             String id,
             String directory,
             String stream,
@@ -119,7 +116,8 @@ public class MockDBData {
             String bucket,
             String path,
             String logtime,
-            String filesize
+            String filesize,
+            String uncompressedFilesize
     ) {
         MockDataProvider provider = new MockDataProvider() {
 
@@ -129,7 +127,7 @@ public class MockDBData {
                 // you can also use ordinary jooq api to load csv files or
                 // other formats, here!
                 DSLContext create = DSL.using(SQLDialect.DEFAULT);
-                Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> result =
+                Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result =
                         create.newResult(
                                 StreamDBClient.SliceTable.id,
                                 StreamDBClient.SliceTable.directory,
@@ -140,11 +138,12 @@ public class MockDBData {
                                 StreamDBClient.SliceTable.bucket,
                                 StreamDBClient.SliceTable.path,
                                 StreamDBClient.SliceTable.logtime,
-                                StreamDBClient.SliceTable.filesize
+                                StreamDBClient.SliceTable.filesize,
+                                StreamDBClient.SliceTable.uncompressedFilesize
                         );
                 //result.add(create.newRecord(1, "as", "asd", "as", "das", new Date(0), "sad", "path", 10, 10));
 
-                Record10<ULong, String, String, String, String, Date, String, String, Long, ULong> newRecord = create.newRecord(
+                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> newRecord = create.newRecord(
                         StreamDBClient.SliceTable.id,
                         StreamDBClient.SliceTable.directory,
                         StreamDBClient.SliceTable.stream,
@@ -154,7 +153,8 @@ public class MockDBData {
                         StreamDBClient.SliceTable.bucket,
                         StreamDBClient.SliceTable.path,
                         StreamDBClient.SliceTable.logtime,
-                        StreamDBClient.SliceTable.filesize
+                        StreamDBClient.SliceTable.filesize,
+                        StreamDBClient.SliceTable.uncompressedFilesize
                 );
 
                 if (
@@ -179,6 +179,7 @@ public class MockDBData {
                     newRecord.set(StreamDBClient.SliceTable.path, path);
                     newRecord.set(StreamDBClient.SliceTable.logtime, Long.valueOf(logtime));
                     newRecord.set(StreamDBClient.SliceTable.filesize, ULong.valueOf(filesize));
+                    newRecord.set(StreamDBClient.SliceTable.uncompressedFilesize, ULong.valueOf(uncompressedFilesize));
 
                     result.add(newRecord);
                 } // else empty set
@@ -205,7 +206,8 @@ public class MockDBData {
                 StreamDBClient.SliceTable.bucket,
                 StreamDBClient.SliceTable.path,
                 StreamDBClient.SliceTable.logtime,
-                StreamDBClient.SliceTable.filesize).fetch();
+                StreamDBClient.SliceTable.filesize,
+                StreamDBClient.SliceTable.uncompressedFilesize).fetch();
 
     }
 }

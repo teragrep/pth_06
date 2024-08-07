@@ -63,6 +63,7 @@ package com.teragrep.pth_06;
         import org.apache.spark.sql.streaming.StreamingQueryException;
         import org.apache.spark.sql.streaming.Trigger;
         import org.jooq.Record10;
+        import org.jooq.Record11;
         import org.jooq.Result;
         import org.jooq.types.ULong;
         import org.junit.jupiter.api.*;
@@ -256,13 +257,13 @@ public class ManualIntegrationTest {
         long rows = 0L;
         AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
 
-        TreeMap<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
+        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
 
-        for (Map.Entry<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> entry : virtualDatabaseMap.entrySet()) {
-            Iterator<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> it = entry.getValue().iterator();
+        for (Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap.entrySet()) {
+            Iterator<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> it = entry.getValue().iterator();
             while (it.hasNext()) {
                 // id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize
-                Record10<ULong, String, String, String, String, Date, String, String, Long, ULong> record10 = it.next();
+                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record10 = it.next();
                 Long id = record10.get(0, ULong.class).longValue();
                 String directory = record10.get(1, String.class);
                 String stream = record10.get(2, String.class);

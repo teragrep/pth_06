@@ -47,6 +47,7 @@
 package com.teragrep.pth_06.planner;
 
 import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 
@@ -61,7 +62,7 @@ import java.sql.Date;
  * @author Mikko Kortelainen
  */
 public interface ArchiveQuery {
-    Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> processBetweenUnixEpochHours(long startHour, long endHour);
+    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(long startHour, long endHour);
 
     void commit(long offset);
 

@@ -163,7 +163,7 @@ public class StreamDBClient {
 
     int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
-        SelectOnConditionStep<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> select =
+        @NotNull SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select =
                 ctx.select(
                                 JOURNALDB.LOGFILE.ID,
                                 nestedTopNQuery.directory,
@@ -174,7 +174,8 @@ public class StreamDBClient {
                                 JOURNALDB.BUCKET.NAME,
                                 JOURNALDB.LOGFILE.PATH,
                                 nestedTopNQuery.logtime,
-                                JOURNALDB.LOGFILE.FILE_SIZE
+                                JOURNALDB.LOGFILE.FILE_SIZE,
+                                JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                         )
                         .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                         .join(JOURNALDB.LOGFILE).on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id))
@@ -228,7 +229,7 @@ public class StreamDBClient {
                 .execute();
     }
 
-    Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> getHourRange(long excludedStartHour, long includedEndHour) {
+    @NotNull Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(long excludedStartHour, long includedEndHour) {
         return ctx.select(
                         SliceTable.id,
                         SliceTable.directory,
@@ -239,7 +240,8 @@ public class StreamDBClient {
                         SliceTable.bucket,
                         SliceTable.path,
                         SliceTable.logtime,
-                        SliceTable.filesize
+                        SliceTable.filesize,
+                        SliceTable.uncompressedFilesize
                 )
                 .from(SliceTable.SLICE_TABLE)
                 .where(
@@ -269,6 +271,9 @@ public class StreamDBClient {
         public static final Field<String> path = DSL.field(DSL.name(sliceTableName, "path"), String.class);
         public static final Field<Long> logtime = DSL.field(DSL.name(sliceTableName, "logtime"), Long.class);
         public static final Field<ULong> filesize = DSL.field(DSL.name(sliceTableName, "filesize"), ULong.class);
+        // additional metadata
+        public static final Field<ULong> uncompressedFilesize = DSL.field(DSL.name(sliceTableName, "uncompressed_filesize"), ULong.class);
+
 
         private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
 
@@ -286,7 +291,8 @@ public class StreamDBClient {
                             bucket,
                             path,
                             logtime,
-                            filesize
+                            filesize,
+                            uncompressedFilesize
                     );
             query.execute();
 

@@ -52,10 +52,13 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.SyslogMessage;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
+import org.apache.spark.internal.config.Streaming;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -64,6 +67,7 @@ import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.Trigger;
 import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
@@ -72,12 +76,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstantiationTest {
@@ -147,7 +152,6 @@ public class InstantiationTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-
         Dataset<Row> df2 = df.agg(functions.count("*"));
 
         StreamingQuery streamingQuery = df2
@@ -159,6 +163,11 @@ public class InstantiationTest {
                 .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .start();
+
+        StreamingQuery sq = df.writeStream().foreachBatch((ds,i) -> {ds.show(false);}).start();
+        sq.processAllAvailable();
+        sq.stop();
+        sq.awaitTermination();
 
         long rowCount = 0;
         while (!streamingQuery.awaitTermination(1000)) {
@@ -179,6 +188,55 @@ public class InstantiationTest {
             }
         }
         Assertions.assertEquals(expectedRows, rowCount);
+    }
+
+    @Test
+    public void metadataTest() throws StreamingQueryException, TimeoutException {
+        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
+        Dataset<Row> df = spark
+                .readStream()
+                .format("com.teragrep.pth_06.MockTeragrepDatasource")
+                .option("archive.enabled", "true")
+                .option("S3endPoint", s3endpoint)
+                .option("S3identity", s3identity)
+                .option("S3credential", s3credential)
+                .option("DBusername", "mock")
+                .option("DBpassword", "mock")
+                .option("DBurl", "mock")
+                .option("DBstreamdbname", "mock")
+                .option("DBjournaldbname", "mock")
+                .option("num_partitions", "1")
+                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
+                // audit information
+                .option("TeragrepAuditQuery", "index=f17")
+                .option("TeragrepAuditReason", "test run at fullScanTest()")
+                .option("TeragrepAuditUser", System.getProperty("user.name"))
+                // kafka options
+                .option("kafka.enabled", "false")
+                .option("kafka.bootstrap.servers", "")
+                .option("kafka.sasl.mechanism", "")
+                .option("kafka.security.protocol", "")
+                .option("kafka.sasl.jaas.config", "")
+                .option("kafka.useMockKafkaConsumer", "true")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                // metadata options
+                .option("metadataQuery.enabled", "true")
+                .load();
+
+        StreamingQuery sq = df.writeStream().foreachBatch((ds,i) -> {
+            ds.show(false);
+            List<String> rawCol = ds.select("_raw").collectAsList().stream().map(r -> r.getAs(0).toString()).collect(Collectors.toList());
+            assertFalse(rawCol.isEmpty());
+            for (String c : rawCol) {
+                assertFalse(c.isEmpty());
+                JsonObject jo = new Gson().fromJson(c, JsonObject.class);
+                assertTrue(jo.has("compressed"));
+                assertTrue(jo.has("uncompressed"));
+            }
+        }).start();
+        sq.processAllAvailable();
+        sq.stop();
+        sq.awaitTermination();
     }
 
     private boolean isArchiveDone(StreamingQuery outQ) {
@@ -213,13 +271,13 @@ public class InstantiationTest {
         long rows = 0L;
         AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
 
-        TreeMap<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
+        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
 
-        for (Map.Entry<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> entry : virtualDatabaseMap.entrySet()) {
-            Iterator<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> it = entry.getValue().iterator();
+        for (Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap.entrySet()) {
+            Iterator<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> it = entry.getValue().iterator();
             while (it.hasNext()) {
                 // id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize
-                Record10<ULong, String, String, String, String, Date, String, String, Long, ULong> record10 = it.next();
+                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record10 = it.next();
                 Long id = record10.get(0, ULong.class).longValue();
                 String directory = record10.get(1, String.class);
                 String stream = record10.get(2, String.class);

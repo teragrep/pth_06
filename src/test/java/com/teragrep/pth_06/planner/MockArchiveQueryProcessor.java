@@ -46,19 +46,15 @@ package com.teragrep.pth_06.planner;
  * a licensee so wish it.
  */
 
-import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
-import java.util.LinkedHashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.teragrep.pth_06.planner.MockDBData.generateResult;
 
@@ -71,7 +67,7 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
     private final String expectedQuery = "<index operation=\"EQUALS\" value=\"f17_v2\"/>";
 
     // epoch as key, resultSet as value
-    private final TreeMap<Long, Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>> virtualDatabaseMap;
+    private final TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap;
 
     private Long latestOffset = null;
     public MockArchiveQueryProcessor(String query) {
@@ -88,12 +84,12 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
 
 
     @Override
-    public Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> processBetweenUnixEpochHours(long startHour, long endHour) {
+    public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(long startHour, long endHour) {
         LOGGER.info("MockArchiveQueryProcessor.range> " + startHour + " to " + endHour);
         // start is inclusive and end is also inclusive
 
-        Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>> rv =
-                generateResult(null, null, null, null, null, null, null, null, null, null);
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> rv =
+                generateResult(null, null, null, null, null, null, null, null, null, null, null);
 
         for (long res : virtualDatabaseMap.keySet()) {
             if (res > startHour && res <= endHour) {

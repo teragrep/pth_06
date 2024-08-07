@@ -65,8 +65,9 @@ public class ArchiveS3ObjectMetadata implements Serializable {
     public final String host;
     public final long logtimeEpoch;
     public final long compressedSize;
+    public final long uncompressedSize;
 
-    public ArchiveS3ObjectMetadata(String id, String bucket, String path, String directory, String stream, String host, long logtimeEpoch, long compressedSize) {
+    public ArchiveS3ObjectMetadata(String id, String bucket, String path, String directory, String stream, String host, long logtimeEpoch, long compressedSize, long uncompressedSize) {
         this.id = id;
 		this.bucket = bucket;
         this.path = path;
@@ -75,6 +76,7 @@ public class ArchiveS3ObjectMetadata implements Serializable {
         this.host = host;
         this.logtimeEpoch = logtimeEpoch;
         this.compressedSize = compressedSize;
+        this.uncompressedSize = uncompressedSize;
     }
     
     @Override

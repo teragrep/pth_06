@@ -267,6 +267,6 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     @Override
     public PartitionReaderFactory createReaderFactory() {
-        return new TeragrepPartitionReaderFactory();
+        return new TeragrepPartitionReaderFactory(config.isMetadataQuery);
     }
 }

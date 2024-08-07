@@ -50,7 +50,7 @@ import com.teragrep.pth_06.planner.ArchiveQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.jooq.Record;
-import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -74,7 +74,7 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
 
         this.clear(); // clear internal list
 
-        Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>
                 result = aq.processBetweenUnixEpochHours(((DatasourceOffset)start).getArchiveOffset().offset(),
                                                         ((DatasourceOffset)end).getArchiveOffset().offset());
 
@@ -89,7 +89,8 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
                                     r.get(2, String.class), // stream
                                     r.get(3, String.class), // host
                                     r.get(8, Long.class), // logtime
-                                    r.get(9, Long.class) // compressedSize
+                                    r.get(9, Long.class), // compressedSize
+                                    r.get(10, Long.class) // uncompressedSize
                             )
                     )
             );
