@@ -56,7 +56,6 @@ import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.conf.MappedSchema;
 import org.jooq.conf.RenderMapping;
@@ -163,7 +162,7 @@ public class StreamDBClient {
 
     int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
-        @NotNull SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select =
+        SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select =
                 ctx.select(
                                 JOURNALDB.LOGFILE.ID,
                                 nestedTopNQuery.directory,
@@ -229,7 +228,7 @@ public class StreamDBClient {
                 .execute();
     }
 
-    @NotNull Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(long excludedStartHour, long includedEndHour) {
+    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(long excludedStartHour, long includedEndHour) {
         return ctx.select(
                         SliceTable.id,
                         SliceTable.directory,
