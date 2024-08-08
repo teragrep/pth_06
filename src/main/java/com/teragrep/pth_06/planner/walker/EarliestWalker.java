@@ -46,8 +46,6 @@
 
 package com.teragrep.pth_06.planner.walker;
 
-
-import com.teragrep.pth_06.planner.walker.XmlWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;

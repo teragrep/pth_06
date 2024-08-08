@@ -137,7 +137,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
             if (op.equalsIgnoreCase("NOT")) {
                 rv = rv.not();
             } else {
-                throw new Exception("Parse error, unsupported logical operation. op:" + op + " expression:" + rv.toString());
+                throw new Exception("Parse error, unsupported logical operation. op:" + op + " expression:" + rv);
             }
         }
         return rv;

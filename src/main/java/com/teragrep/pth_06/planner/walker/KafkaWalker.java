@@ -77,7 +77,7 @@ public class KafkaWalker extends XmlWalker<String> {
     }
 
     @Override
-    public String emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    public String emitLogicalOperation(String op, Object l, Object r) {
         String left = (String) l;
         String right = (String) r;
 
