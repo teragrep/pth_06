@@ -1,5 +1,3 @@
-package com.teragrep.pth_06.walker;
-
 /*
  * This program handles user requests that require archive access.
  * Copyright (C) 2022  Suomen Kanuuna Oy
@@ -46,230 +44,481 @@ package com.teragrep.pth_06.walker;
  * a licensee so wish it.
  */
 
+package com.teragrep.pth_06.walker;
+
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
-import com.teragrep.pth_06.planner.walker.PlainWalker;
+import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class XmlWalkerTest {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(XmlWalkerTest.class);
-
+    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+    final String userName = "sa";
+    final String password = "";
     ConditionWalker conditionWalker;
+    ConditionWalker streamWalker;
+    Connection conn;
 
-    @org.junit.jupiter.api.BeforeEach
-    void setUp() {
-        conditionWalker = new ConditionWalker();
+
+    @BeforeAll
+    public void setup() {
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+        Assertions.assertDoesNotThrow(() -> {
+            List<String> patternList = new ArrayList<>(Arrays.asList(
+                    "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+                    "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
+            ));
+            Connection conn = DriverManager.getConnection(url, userName, password);
+            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS bloomdb").execute();
+            conn.prepareStatement("USE bloomdb").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
+            String filtertype = "CREATE TABLE`filtertype`" +
+                    "(" +
+                    "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                    "    `expectedElements` bigint(20) unsigned NOT NULL," +
+                    "    `targetFpp`        DOUBLE(2) unsigned NOT NULL," +
+                    "    `pattern`          VARCHAR(2048) NOT NULL," +
+                    "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)" +
+                    ")";
+            String ip = "CREATE TABLE `pattern_test_ip`(" +
+                    "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                    "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE," +
+                    "    `filter_type_id` bigint(20) unsigned NOT NULL," +
+                    "    `filter`         longblob            NOT NULL)";
+            String ip255 = "CREATE TABLE `pattern_test_ip255`(" +
+                    "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+                    "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE," +
+                    "    `filter_type_id` bigint(20) unsigned NOT NULL," +
+                    "    `filter`         longblob            NOT NULL)";
+            conn.prepareStatement(filtertype).execute();
+            conn.prepareStatement(ip).execute();
+            conn.prepareStatement(ip255).execute();
+            String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
+            int id = 1;
+            for (String pattern : patternList) {
+                PreparedStatement filterType = conn.prepareStatement(typeSQL);
+                filterType.setInt(1, id);
+                filterType.setInt(2, 100);
+                filterType.setDouble(3, 0.01);
+                filterType.setString(4, pattern);
+                filterType.executeUpdate();
+                id++;
+            }
+            writeFilter("pattern_test_ip", 1, conn);
+            writeFilter("pattern_test_ip255", 2, conn);
+            this.conn = conn;
+        });
     }
 
-    @org.junit.jupiter.api.AfterEach
+    @BeforeEach
+    public void beforeEach() {
+        DSLContext ctx = DSL.using(conn);
+        this.conditionWalker = new ConditionWalker(ctx, false, true);
+        this.streamWalker = new ConditionWalker(ctx, true);
+    }
+
+    @AfterAll
     void tearDown() {
-        conditionWalker = null;
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
+            conn.close();
+        });
     }
 
     @Test
-    void fromStringIntendTest() throws Exception {
-        PlainWalker walker = new PlainWalker();
-        String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"2021-01-21T11:58:37\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        walker.fromString(q);
-        LOGGER.debug("---------------");
-        q = "<AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
-        walker.fromString(q);
-        LOGGER.debug("---------------");
+    void fromStringTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<index value=\"haproxy\" operation=\"NOT_EQUALS\"/>";
+            String e = "not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringTest() throws Exception {
-        String q = "<index value=\"haproxy\" operation=\"NOT_EQUALS\"/>";
-        String e = "not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')";
-        String result = conditionWalker.fromString(q, true).toString();
-        LOGGER.debug("Query   =" + q);
-        LOGGER.debug("Expected=" + e);
-        LOGGER.debug("Result  =" + result);
-        assertEquals(e, result);
+    void fromStringAndTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
+            String e = "(\n" +
+                    "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
+                    "  and \"streamdb\".\"stream\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    ")";
+            Condition cond = streamWalker.fromString(q);
+            String result = cond.toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringAndTest() throws Exception {
-        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
-        String e = "(\n" +
-                "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
-                "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                ")";
-
-        Condition cond = conditionWalker.fromString(q, true);
-        LOGGER.debug("ConditionWalkerResult=" + cond.toString());
-
-        String result = cond.toString();
-        LOGGER.debug("Query   =" + q);
-        LOGGER.debug("Expected=" + e);
-        LOGGER.debug("Result  =" + result);
-        assertEquals(e, result);
-    }
-
-    @Test
-    void fromStringOrNETest() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        e = "(\n" +
-                "  not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n" +
-                "  or \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void fromStringOrNETest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<OR><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
+            String e = "(\n" +
+                    "  not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n" +
+                    "  or \"streamdb\".\"stream\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
 
     @Test
-    void fromStringNotTest() throws Exception {
-        String q, e, result;
-        // index=cpu sourcetype=log:cpu:0 NOT src
-        q = "<OR><index value=\"cpu\" operation=\"EQUALS\"/><sourcetype value=\"log:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        e = "(\n" +
-                "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n" +
-                "  or \"streamdb\".\"stream\".\"stream\" like 'log:haproxy:haproxy'\n" +
-                ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void fromStringNotTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            // index=cpu sourcetype=log:cpu:0 NOT src
+            String q = "<OR><index value=\"cpu\" operation=\"EQUALS\"/><sourcetype value=\"log:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
+            String e = "(\n" +
+                    "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n" +
+                    "  or \"streamdb\".\"stream\".\"stream\" like 'log:haproxy:haproxy'\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringNot1Test() throws Exception {
-        String q,e,result;
-        q = "<AND><AND><index operation=\"EQUALS\" value=\"cpu\"/><sourcetype operation=\"EQUALS\" value=\"log:cpu:0\"/></AND><NOT><indexstatement operation=\"EQUALS\" value=\"src\"/></NOT></AND>";
-        e = "(\n" +
-                "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n" +
-                "  and \"streamdb\".\"stream\".\"stream\" like 'log:cpu:0'\n" +
-                ")";
-        result = conditionWalker.fromString(q,true).toString();
-        assertEquals(e,result);
+    void fromStringNot1Test() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<AND><AND><index operation=\"EQUALS\" value=\"cpu\"/><sourcetype operation=\"EQUALS\" value=\"log:cpu:0\"/></AND><NOT><indexstatement operation=\"EQUALS\" value=\"src\"/></NOT></AND>";
+            String e = "(\n" +
+                    "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n" +
+                    "  and \"streamdb\".\"stream\".\"stream\" like 'log:cpu:0'\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringOrAndTest() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        result = conditionWalker.fromString(q, true).toString();
-        LOGGER.debug("Query=" + q);
-        LOGGER.debug("Result=" + result);
-        LOGGER.debug("---------------");
-        q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" +
-                "  \"streamdb\".\"stream\".\"directory\" like '%'\n" +
-                "  or (\n" +
-                "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
-                "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                "  )\n" +
-                ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void fromStringOrAndTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
+            String e = "(\n" +
+                    "  \"streamdb\".\"stream\".\"directory\" like '%'\n" +
+                    "  or (\n" +
+                    "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
+                    "    and \"streamdb\".\"stream\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    "  )\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringOrAnd1Test() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" +
-                "  \"streamdb\".\"stream\".\"directory\" like '%'\n" +
-                "  or (\n" +
-                "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
-                "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                "  )\n" +
-                ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void fromStringOrAnd1Test() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
+            String e = "(\n" +
+                    "  \"streamdb\".\"stream\".\"directory\" like '%'\n" +
+                    "  or (\n" +
+                    "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" +
+                    "    and \"streamdb\".\"stream\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    "  )\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringDropTimesTest() throws Exception {
-        String q, e, result;
-        // Drop indexstring and earliest from query
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" +
-                "  (\n" +
-                "    not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n" +
-                "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    \"streamdb\".\"stream\".\"directory\" like '%'\n" +
-                "    and \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" +
-                "  )\n" +
-                ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void fromStringDropTimesTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            // Drop index string and earliest from query
+            String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"zong.xnet.fi\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"salengar.xnet.fi\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstatement value=\"Denied\" /></AND></OR>";
+            String e = "(\n" +
+                    "  (\n" +
+                    "    not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n" +
+                    "    and \"streamdb\".\"stream\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    "    and \"streamdb\".\"host\".\"name\" like 'zong.xnet.fi'\n" +
+                    "  )\n" +
+                    "  or (\n" +
+                    "    \"streamdb\".\"stream\".\"directory\" like '%'\n" +
+                    "    and \"streamdb\".\"host\".\"name\" like 'salengar.xnet.fi'\n" +
+                    "  )\n" +
+                    ")";
+            String result = streamWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringTimeRangesTest() throws Exception {
-        String q, e, result;
-        // Drop indexstring and earliest from query
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" +
-                "  (\n" +
-                "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n" +
-                "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n" +
-                "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n" +
-                "  )\n" +
-                ")";
-        result = conditionWalker.fromString(q, false).toString();
-        assertEquals(e, result);
+    void fromStringTimeRangesTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            // Drop index string and earliest from query
+            String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"zong.xnet.fi\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"salengar.xnet.fi\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstatement value=\"Denied\" /></AND></OR>";
+            String e = "(\n" +
+                    "  (\n" +
+                    "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"host\" like 'zong.xnet.fi'\n" +
+                    "  )\n" +
+                    "  or (\n" +
+                    "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"host\" like 'salengar.xnet.fi'\n" +
+                    "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
+                    "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n" +
+                    "  )\n" +
+                    ")";
+            String result = conditionWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringTimeRangesUsingEpochTest() throws Exception {
-        String q, e, result;
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" +
-                "  (\n" +
-                "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n" +
-                "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n" +
-                "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n" +
-                "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n" +
-                "  )\n" +
-                ")";
-        Condition cond = conditionWalker.fromString(q, false);
-        if (cond != null) {
-            result = conditionWalker.fromString(q, false).toString();
-        } else {
-            result = "illegal null condition";
-        }
-        assertEquals(e, result);
+    void fromStringTimeRangesUsingEpochTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"xnet:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"zong.xnet.fi\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"salengar.xnet.fi\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstatement value=\"Denied\" /></AND></OR>";
+            String e = "(\n" +
+                    "  (\n" +
+                    "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"stream\" like 'xnet:haproxy:haproxy'\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"host\" like 'zong.xnet.fi'\n" +
+                    "  )\n" +
+                    "  or (\n" +
+                    "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n" +
+                    "    and \"getArchivedObjects_filter_table\".\"host\" like 'salengar.xnet.fi'\n" +
+                    "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
+                    "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n" +
+                    "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n" +
+                    "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n" +
+                    "  )\n" +
+                    ")";
+            Condition cond = conditionWalker.fromString(q);
+            Assertions.assertNotNull(cond);
+            String result = cond.toString();
+            Assertions.assertEquals(e, result);
+        });
     }
 
     @Test
-    void fromStringTimeRanges0ToEpochTest() throws Exception {
-        String q, e, result;
-        q = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
-        e = "(\n" +
-                "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n" +
-                "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n" +
-                "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n" +
-                "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
-                "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n" +
-                ")";
-        Condition cond = conditionWalker.fromString(q, false);
-        result = cond.toString();
-        assertEquals(e, result);
+    void fromStringTimeRanges0ToEpochTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q, e, result;
+            q = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
+            e = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n" +
+                    "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n" +
+                    "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n" +
+                    "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n" +
+                    "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
+                    "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n" +
+                    "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n" +
+                    ")";
+            Condition cond = conditionWalker.fromString(q);
+            result = cond.toString();
+            Assertions.assertEquals(e, result);
+        });
+    }
+
+    @Test
+    void fromStringBloomConditionTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+            String eBloom = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                    "  and (\n" +
+                    "    (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                    "          from \"term_0_pattern_test_ip\"\n" +
+                    "          where (\n" +
+                    "            term_id = 0\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "  )\n" +
+                    ")";
+            String result = conditionWalker.fromString(q).toString();
+            Assertions.assertEquals(eBloom, result);
+            Assertions.assertEquals(1, conditionWalker.patternMatchTables().size());
+        });
+    }
+
+    @Test
+    void fromStringBloomMultipleTablesTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND>";
+            String e = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                    "  and (\n" +
+                    "    (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                    "          from \"term_0_pattern_test_ip\"\n" +
+                    "          where (\n" +
+                    "            term_id = 0\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_0_pattern_test_ip255\".\"filter\"\n" +
+                    "          from \"term_0_pattern_test_ip255\"\n" +
+                    "          where (\n" +
+                    "            term_id = 0\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or (\n" +
+                    "      \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" +
+                    "    )\n" +
+                    "  )\n" +
+                    ")";
+            String result = conditionWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+            Assertions.assertEquals(2, conditionWalker.patternMatchTables().size());
+        });
+    }
+
+    @Test
+    void fromStringBloomMultipleSearchTermTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            // first search term joins one table and second search term joins 2 tables
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><AND><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND></AND>";
+            String e = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                    "  and (\n" +
+                    "    (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                    "          from \"term_0_pattern_test_ip\"\n" +
+                    "          where (\n" +
+                    "            term_id = 0\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "  )\n" +
+                    "  and (\n" +
+                    "    (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_1_pattern_test_ip\".\"filter\"\n" +
+                    "          from \"term_1_pattern_test_ip\"\n" +
+                    "          where (\n" +
+                    "            term_id = 1\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or (\n" +
+                    "      bloommatch(\n" +
+                    "        (\n" +
+                    "          select \"term_1_pattern_test_ip255\".\"filter\"\n" +
+                    "          from \"term_1_pattern_test_ip255\"\n" +
+                    "          where (\n" +
+                    "            term_id = 1\n" +
+                    "            and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" +
+                    "          )\n" +
+                    "        ),\n" +
+                    "        \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" +
+                    "      ) = true\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" +
+                    "    )\n" +
+                    "    or (\n" +
+                    "      \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" +
+                    "    )\n" +
+                    "  )\n" +
+                    ")";
+            String result = conditionWalker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+            Assertions.assertEquals(2, conditionWalker.patternMatchTables().size());
+            Assertions.assertTrue(result.contains("term_0_"));
+            Assertions.assertTrue(result.contains("term_1_"));
+            Assertions.assertFalse(result.contains("term_2_"));
+        });
+    }
+
+    @Test
+    void fromStringBloomWithoutFiltersTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            DSLContext ctx = DSL.using(conn);
+            ConditionWalker walker = new ConditionWalker(ctx, false, true, true);
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+            String e = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                    "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    ")";
+            String result = walker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
+    }
+
+    @Test
+    void fromStringBloomWithoutFilterMultipleSearchTermsTest() {
+        Assertions.assertDoesNotThrow(() -> {
+            DSLContext ctx = DSL.using(conn);
+            ConditionWalker walker = new ConditionWalker(ctx, false, true, true);
+            String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><AND><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND></AND>";
+            String e = "(\n" +
+                    "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                    "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                    "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" +
+                    ")";
+            String result = walker.fromString(q).toString();
+            Assertions.assertEquals(e, result);
+        });
+    }
+
+    private void writeFilter(String tableName, int filterId, Connection conn) {
+        Assertions.assertDoesNotThrow(() -> {
+            String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) " +
+                    "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            BloomFilter filter = BloomFilter.create(1000, 0.01);
+            final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
+            Assertions.assertDoesNotThrow(() -> {
+                filter.writeTo(filterBAOS);
+                filterBAOS.close();
+            });
+            stmt.setInt(1, 1);
+            stmt.setInt(2, filterId);
+            stmt.setBytes(3, filterBAOS.toByteArray());
+            stmt.executeUpdate();
+        });
     }
 }
 

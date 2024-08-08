@@ -1,6 +1,6 @@
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -49,9 +49,7 @@
 package com.teragrep.pth_06.jooq.generated.bloomdb;
 
 
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_1000000Fpp_003;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_100000Fpp_001;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_2500000Fpp_005;
+import com.teragrep.pth_06.jooq.generated.bloomdb.tables.Filtertype;
 
 import javax.annotation.Generated;
 
@@ -77,23 +75,15 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
-    public static final Index FILTER_EXPECTED_1000000_FPP_003_PARTITION_ID = Indexes0.FILTER_EXPECTED_1000000_FPP_003_PARTITION_ID;
-    public static final Index FILTER_EXPECTED_1000000_FPP_003_PRIMARY = Indexes0.FILTER_EXPECTED_1000000_FPP_003_PRIMARY;
-    public static final Index FILTER_EXPECTED_100000_FPP_001_PARTITION_ID = Indexes0.FILTER_EXPECTED_100000_FPP_001_PARTITION_ID;
-    public static final Index FILTER_EXPECTED_100000_FPP_001_PRIMARY = Indexes0.FILTER_EXPECTED_100000_FPP_001_PRIMARY;
-    public static final Index FILTER_EXPECTED_2500000_FPP_005_PARTITION_ID = Indexes0.FILTER_EXPECTED_2500000_FPP_005_PARTITION_ID;
-    public static final Index FILTER_EXPECTED_2500000_FPP_005_PRIMARY = Indexes0.FILTER_EXPECTED_2500000_FPP_005_PRIMARY;
+    public static final Index FILTERTYPE_EXPECTEDELEMENTS = Indexes0.FILTERTYPE_EXPECTEDELEMENTS;
+    public static final Index FILTERTYPE_PRIMARY = Indexes0.FILTERTYPE_PRIMARY;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
 
     private static class Indexes0 {
-        public static Index FILTER_EXPECTED_1000000_FPP_003_PARTITION_ID = Internal.createIndex("partition_id", FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003, new OrderField[] { FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003.PARTITION_ID }, true);
-        public static Index FILTER_EXPECTED_1000000_FPP_003_PRIMARY = Internal.createIndex("PRIMARY", FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003, new OrderField[] { FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003.ID }, true);
-        public static Index FILTER_EXPECTED_100000_FPP_001_PARTITION_ID = Internal.createIndex("partition_id", FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001, new OrderField[] { FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001.PARTITION_ID }, true);
-        public static Index FILTER_EXPECTED_100000_FPP_001_PRIMARY = Internal.createIndex("PRIMARY", FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001, new OrderField[] { FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001.ID }, true);
-        public static Index FILTER_EXPECTED_2500000_FPP_005_PARTITION_ID = Internal.createIndex("partition_id", FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005, new OrderField[] { FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005.PARTITION_ID }, true);
-        public static Index FILTER_EXPECTED_2500000_FPP_005_PRIMARY = Internal.createIndex("PRIMARY", FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005, new OrderField[] { FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005.ID }, true);
+        public static Index FILTERTYPE_EXPECTEDELEMENTS = Internal.createIndex("expectedElements", Filtertype.FILTERTYPE, new OrderField[] { Filtertype.FILTERTYPE.EXPECTEDELEMENTS, Filtertype.FILTERTYPE.TARGETFPP, Filtertype.FILTERTYPE.PATTERN }, true);
+        public static Index FILTERTYPE_PRIMARY = Internal.createIndex("PRIMARY", Filtertype.FILTERTYPE, new OrderField[] { Filtertype.FILTERTYPE.ID }, true);
     }
 }

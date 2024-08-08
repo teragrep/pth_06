@@ -1,6 +1,6 @@
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Copyright (C) 2022, 2023, 2024  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -60,168 +60,132 @@ import org.xml.sax.InputSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <h1>XML Walker</h1>
- *
+ * <p>
  * Abstract class to represent XmlWalker.
  *
- * @since 23/09/2021
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
+ * @since 23/09/2021
  */
-public abstract class XmlWalker {
+public abstract class XmlWalker<T> {
     private final Logger LOGGER = LoggerFactory.getLogger(XmlWalker.class);
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public XmlWalker() {
-
     }
 
-    public <T> T fromString(String inXml) throws Exception {
-        Object rv;
+    public T fromString(String inXml) {
+        LOGGER.info("XmlWalker.fromString incoming: <{}>", inXml);
+        T rv;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder loader = factory.newDocumentBuilder();
-        Document document = loader.parse(new InputSource(new StringReader(inXml)));
-
-        DocumentTraversal traversal = (DocumentTraversal) document;
-        LOGGER.info("XmlWalker.fromString incoming:" + inXml);
-
-        TreeWalker walker = traversal.createTreeWalker(document.getDocumentElement(),
-                NodeFilter.SHOW_ELEMENT, null, true);
-        rv = traverse(walker, (String) null);
-//        if (rv != null) {
-//            System.out.println("XmlWalker.fromString() value:" + ((T) rv).toString());
-//        }
-        return (T)rv;
+        Document document;
+        try {
+            DocumentBuilder loader = factory.newDocumentBuilder();
+            document = loader.parse(new InputSource(new StringReader(inXml)));
+            DocumentTraversal traversal = (DocumentTraversal) document;
+            TreeWalker walker = traversal.createTreeWalker(document.getDocumentElement(),
+                    NodeFilter.SHOW_ELEMENT, null, true);
+            rv = traverse(walker, null);
+        } catch (Exception e) {
+            throw new RuntimeException("Error parsing Document from string");
+        }
+        return rv;
     }
 
     /**
      * Walk through tree using depth-first order and generate spark-query using appropriate emit-methods.
-     * @param walker
+     *
      * @param op operation String
      * @return Class which expr-part contains actual catalyst query tree
-     * @throws Exception
      */
-    public <T> T traverse(TreeWalker walker, String op) throws Exception {
-        Node parend = walker.getCurrentNode();
-        Element current = ((Element) parend);
-        Object rv = null;
-        LOGGER.debug(" traverse incoming:"+current.getTagName());
-
+    public T traverse(TreeWalker walker, String op) {
+        Node node = walker.getCurrentNode();
+        Element current;
+        current = ((Element) node);
+        T rv = null;
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(" traverse incoming: <{}> with op: <{}>", current.getTagName(), op);
+        }
+        if ("AND".equalsIgnoreCase(current.getTagName()) || "OR".equalsIgnoreCase(current.getTagName()) || "NOT".equalsIgnoreCase(current.getTagName())) {
+            op = current.getTagName();
+        }
         try {
-            if(current.getTagName().equalsIgnoreCase("AND") || current.getTagName().equalsIgnoreCase("OR") || current.getTagName().equalsIgnoreCase("NOT")){
-                op = current.getTagName();
-            }
-
-            if (parend.hasChildNodes()) {
-                NodeList children = parend.getChildNodes();
+            if (node.hasChildNodes()) {
+                NodeList children = node.getChildNodes();
                 int count = children.getLength();
-                if (count < 1 || count >2) {
-                    throw new Exception("Error, wrong number of children:"+count+ " op:"+op);
+                if (count < 1 || count > 2) {
+                    throw new Exception("Error, wrong number of children: <" + count + "> operation: <" + op + ">");
                 }
                 // get left and right
                 Node left = walker.firstChild();
-                Object lft;
-                switch (count){
-                    case 1:{
-                        LOGGER.debug("  1 child incoming:"+current+" left="+left+ " op:"+op);
-
-                        //rv = emitLogicalOperation(op, lft, null);
-                        walker.setCurrentNode(left);
-                        lft = traverse(walker, op);
-                        LOGGER.debug("--Traverse 1 child op:"+op+" lft="+lft);
-                        rv = lft;
-                        break;
+                T lft;
+                if (count == 1) {
+                    walker.setCurrentNode(left);
+                    lft = traverse(walker, op);
+                    rv = lft;
+                }
+                if (count == 2) {
+                    lft = traverse(walker, op);
+                    T rht = null;
+                    Node right = walker.nextSibling();
+                    walker.setCurrentNode(left);
+                    if (right != null) {
+                        walker.setCurrentNode(right);
+                        rht = traverse(walker, op);
                     }
-                    case 2:{
-                        lft = traverse(walker, op);
-                        Object rht = null;
-                        Node right = walker.nextSibling();
-                        walker.setCurrentNode(left);
-//                        System.out.println("traverse right:"+right);
-                        if(right != null){
-                            walker.setCurrentNode(right);
-                            rht = traverse(walker, op);
+                    if (lft != null && rht != null) {
+                        if (op == null) {
+                            throw new Exception("Parse error, unbalanced elements <" + lft + ">");
                         }
-                        if(lft != null && rht != null){
-                            if(op == null){
-                                throw new Exception("Parse error, unbalanced elements. "+lft.toString());
-                            }
-                            rv = emitLogicalOperation(op, lft, rht);
-                        } else if( lft == null){
-                            rv = rht;
-                        } else if(rht == null){
-                            rv = lft;
-                        }
-                        break;
+                        rv = emitLogicalOperation(op, lft, rht);
+                    } else if (lft == null) {
+                        rv = rht;
+                    } else {
+                        rv = lft;
                     }
                 }
             } else {
                 // leaf
-                if(op != null && op.equals("NOT")){
-                    LOGGER.debug("Emit Unary operation op:"+op+" l:"+current);
+                if (op != null && op.equals("NOT")) {
+                    LOGGER.debug("Emit Unary operation: <{}> l: <{}>", op, current);
                     rv = emitUnaryOperation(op, current);
                 } else {
                     LOGGER.debug("EmitElem");
                     rv = emitElem(current);
                 }
             }
-            walker.setCurrentNode(parend);
-            //if(rv != null)
-            //    System.out.println("XmlWalker.traverse type:"+rv.getClass().getName() +" returns:"+((T)rv).toString());
-            return (T)rv;
-        } catch(Exception e){
-            LOGGER.error(e.toString());
+        } catch (Exception e) {
+            LOGGER.error("Error traversing <{}>, operation: <{}>", e.getMessage(), op);
         }
-        return null;
+        walker.setCurrentNode(node);
+        return rv;
     }
 
     /**
      * Abstract method which is called during traverse. Emits appropriate element
      *
-     * @param <T>     returned class
      * @param current DOM-element
      * @return correct query according to implementation class
      */
-    abstract <T> T emitElem(Element current);
+    abstract T emitElem(Element current);
 
     /**
      * Abstract method which is called during traverse. Emits appropriate logical operation
-     * @param <T> returned class
+     *
      * @return correct query according to implementation class
      */
-    abstract <T> T emitLogicalOperation(String op, Object left, Object right) throws Exception;
+    abstract T emitLogicalOperation(String op, Object left, Object right) throws Exception;
 
     /**
      * Abstract method which is called during traverse. Emits appropriate unary operation
-     * @param <T> returned class
+     *
      * @param current DOM-element
      * @return correct query according to implementation class
      */
-    abstract <T> T emitUnaryOperation(String op, Element current) throws Exception;
-    // escape special chars inside value
-
-    /**
-     * Add escapes to special characters and replace '*' with '%'
-     *
-     * @param input string
-     * @return escaped string
-     */
-    public static String escapeSpecialCharacters(String input) {
-        final List<String> specialCharacters = Arrays.asList("\\", "*", "+", "?", "%");
-        if (input.equals("*")) {
-            return "%";
-        } else {
-            return Arrays.stream(input.split("")).map((c) -> {
-                if (specialCharacters.contains(c)) return "\\" + c;
-                else return c;
-            }).collect(Collectors.joining());
-        }
-    }
+    abstract T emitUnaryOperation(String op, Element current) throws Exception;
 }

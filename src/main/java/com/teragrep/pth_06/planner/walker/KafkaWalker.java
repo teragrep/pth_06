@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  * @author Mikko Kortelainen
  * @since 08/06/2022
  */
-public class KafkaWalker extends XmlWalker {
+public class KafkaWalker extends XmlWalker<String> {
     @Override
     String emitElem(Element current) {
         String tag = current.getTagName();
@@ -72,7 +72,7 @@ public class KafkaWalker extends XmlWalker {
         return queryCondition;
     }
 
-    public String fromString(String inXml) throws Exception {
+    public String fromString(String inXml) {
         return super.fromString(inXml);
     }
 

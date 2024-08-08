@@ -62,7 +62,7 @@ import java.time.Instant;
  * @author Mikko Kortelainen
  * @author Ville Manninen
  */
-public class EarliestWalker extends XmlWalker {
+public class EarliestWalker extends XmlWalker<Long> {
     private final Logger LOGGER = LoggerFactory.getLogger(EarliestWalker.class);
 
     // TODO a hack to get global earliest value, default -24h from now
