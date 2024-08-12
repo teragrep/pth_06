@@ -52,7 +52,7 @@ import org.w3c.dom.Element;
 
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
-public final class IndexCondition implements Conditionable {
+public final class IndexCondition implements QueryCondition {
     private final boolean streamQuery;
     private final Element element;
 

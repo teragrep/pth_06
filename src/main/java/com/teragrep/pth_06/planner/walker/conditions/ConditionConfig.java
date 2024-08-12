@@ -2,20 +2,20 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.DSLContext;
 
-public final class QueryConditionConfig {
+public final class ConditionConfig {
     private final DSLContext ctx;
     private final boolean streamQuery;
     private final boolean bloomEnabled;
     private final boolean withoutFilters;
 
-    public QueryConditionConfig(DSLContext ctx, boolean streamQuery) {
+    public ConditionConfig(DSLContext ctx, boolean streamQuery) {
         this.ctx = ctx;
         this.streamQuery = streamQuery;
         this.bloomEnabled = false;
         this.withoutFilters = false;
     }
 
-    public QueryConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
+    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
         this.ctx = ctx;
         this.streamQuery = streamQuery;
         this.bloomEnabled = bloomEnabled;

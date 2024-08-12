@@ -72,21 +72,21 @@ import java.io.StringReader;
  */
 public abstract class XmlWalker<T> {
     private final Logger LOGGER = LoggerFactory.getLogger(XmlWalker.class);
+    private final DocumentBuilderFactory factory;
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public XmlWalker() {
+        this.factory = DocumentBuilderFactory.newInstance();
     }
 
     public T fromString(String inXml) {
         LOGGER.info("XmlWalker.fromString incoming: <{}>", inXml);
         T rv;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        Document document;
         try {
             DocumentBuilder loader = factory.newDocumentBuilder();
-            document = loader.parse(new InputSource(new StringReader(inXml)));
+            Document document = loader.parse(new InputSource(new StringReader(inXml)));
             DocumentTraversal traversal = (DocumentTraversal) document;
             TreeWalker walker = traversal.createTreeWalker(document.getDocumentElement(),
                     NodeFilter.SHOW_ELEMENT, null, true);

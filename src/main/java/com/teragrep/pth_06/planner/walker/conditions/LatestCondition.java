@@ -54,7 +54,7 @@ import java.time.Instant;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
-public final class LatestCondition implements Conditionable {
+public final class LatestCondition implements QueryCondition {
     private final Element element;
 
     public LatestCondition(Element element) {

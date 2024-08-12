@@ -63,13 +63,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class QueryConditionTest {
+class ElementConditionTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
     Document document;
-    QueryConditionConfig streamConfig;
-    QueryConditionConfig bloomConfig;
+    ConditionConfig streamConfig;
+    ConditionConfig bloomConfig;
     Connection conn;
     List<String> patternList = new ArrayList<>(Arrays.asList(
             "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
@@ -109,8 +109,8 @@ class QueryConditionTest {
             }
             this.conn = conn;
             final DSLContext ctx = DSL.using(conn);
-            this.streamConfig = new QueryConditionConfig(ctx, true);
-            this.bloomConfig = new QueryConditionConfig(ctx, false, true, false);
+            this.streamConfig = new ConditionConfig(ctx, true);
+            this.bloomConfig = new ConditionConfig(ctx, false, true, false);
         });
     }
 
@@ -150,12 +150,12 @@ class QueryConditionTest {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        QueryCondition streamQueryCondition = new QueryCondition(element, streamConfig, 0);
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig, 0);
         String eBloom = "\"getArchivedObjects_filter_table\".\"directory\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"directory\" like 'f17'";
-        Assertions.assertEquals(eBloom, queryCondition.condition().toString());
-        Assertions.assertEquals(eStream, streamQueryCondition.condition().toString());
+        Assertions.assertEquals(eBloom, elementCondition.condition().toString());
+        Assertions.assertEquals(eStream, streamElementCondition.condition().toString());
     }
 
     @Test
@@ -163,12 +163,12 @@ class QueryConditionTest {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "NOT_EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        QueryCondition streamQueryCondition = new QueryCondition(element, streamConfig, 0);
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig, 0);
         String eBloom = "not (\"getArchivedObjects_filter_table\".\"directory\" like 'f17')";
         String eStream = "not (\"streamdb\".\"stream\".\"directory\" like 'f17')";
-        Assertions.assertEquals(eBloom, queryCondition.condition().toString());
-        Assertions.assertEquals(eStream, streamQueryCondition.condition().toString());
+        Assertions.assertEquals(eBloom, elementCondition.condition().toString());
+        Assertions.assertEquals(eStream, streamElementCondition.condition().toString());
     }
 
     @Test
@@ -176,12 +176,12 @@ class QueryConditionTest {
         Element element = document.createElement("sourcetype");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        QueryCondition streamQueryCondition = new QueryCondition(element, streamConfig, 0);
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig, 0);
         String eBloom = "\"getArchivedObjects_filter_table\".\"stream\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"stream\" like 'f17'";
-        Assertions.assertEquals(eBloom, queryCondition.condition().toString());
-        Assertions.assertEquals(eStream, streamQueryCondition.condition().toString());
+        Assertions.assertEquals(eBloom, elementCondition.condition().toString());
+        Assertions.assertEquals(eStream, streamElementCondition.condition().toString());
     }
 
     @Test
@@ -189,12 +189,12 @@ class QueryConditionTest {
         Element element = document.createElement("host");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        QueryCondition streamQueryCondition = new QueryCondition(element, streamConfig, 0);
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig, 0);
         String eBloom = "\"getArchivedObjects_filter_table\".\"host\" like 'f17'";
         String eStream = "\"streamdb\".\"host\".\"name\" like 'f17'";
-        Assertions.assertEquals(eBloom, queryCondition.condition().toString());
-        Assertions.assertEquals(eStream, streamQueryCondition.condition().toString());
+        Assertions.assertEquals(eBloom, elementCondition.condition().toString());
+        Assertions.assertEquals(eStream, streamElementCondition.condition().toString());
     }
 
     @Test
@@ -206,9 +206,9 @@ class QueryConditionTest {
                 "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n" +
                 "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
                 ")";
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        Assertions.assertEquals(1000L, queryCondition.earliest());
-        Assertions.assertEquals(e, queryCondition.condition().toString());
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        Assertions.assertEquals(1000L, elementCondition.earliest());
+        Assertions.assertEquals(e, elementCondition.condition().toString());
     }
 
     @Test
@@ -220,9 +220,9 @@ class QueryConditionTest {
                 "  \"journaldb\".\"logfile\".\"logdate\" >= date '2000-01-01'\n" +
                 "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 946677600)\n" +
                 ")";
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        Assertions.assertEquals(946677600L, queryCondition.earliest());
-        Assertions.assertEquals(e, queryCondition.condition().toString());
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        Assertions.assertEquals(946677600L, elementCondition.earliest());
+        Assertions.assertEquals(e, elementCondition.condition().toString());
     }
 
     @Test
@@ -234,8 +234,8 @@ class QueryConditionTest {
                 "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n" +
                 "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946677600)\n" +
                 ")";
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        Assertions.assertEquals(e, queryCondition.condition().toString());
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        Assertions.assertEquals(e, elementCondition.condition().toString());
     }
 
     @Test
@@ -244,7 +244,7 @@ class QueryConditionTest {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "192.124.0.0");
         element.setAttribute("operation", "EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
         String e = "(\n" +
                 "  (\n" +
                 "    bloommatch(\n" +
@@ -262,9 +262,9 @@ class QueryConditionTest {
                 "  )\n" +
                 "  or \"bloomdb\".\"target\".\"filter\" is null\n" +
                 ")";
-        Assertions.assertTrue(queryCondition.isIndexStatement());
-        Assertions.assertEquals(e, queryCondition.condition().toString());
-        Assertions.assertFalse(queryCondition.matchList().isEmpty());
+        Assertions.assertTrue(elementCondition.isIndexStatement());
+        Assertions.assertEquals(e, elementCondition.condition().toString());
+        Assertions.assertFalse(elementCondition.matchList().isEmpty());
     }
 
     @Test
@@ -272,10 +272,10 @@ class QueryConditionTest {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "192.124.0.0");
         element.setAttribute("operation", "EQUALS");
-        QueryCondition queryCondition = new QueryCondition(element, bloomConfig, 0);
-        Assertions.assertNull(queryCondition.condition());
-        Assertions.assertTrue(queryCondition.isIndexStatement());
-        Assertions.assertTrue(queryCondition.matchList().isEmpty());
+        ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        Assertions.assertNull(elementCondition.condition());
+        Assertions.assertTrue(elementCondition.isIndexStatement());
+        Assertions.assertTrue(elementCondition.matchList().isEmpty());
     }
 
     private void fillTargetTable() {

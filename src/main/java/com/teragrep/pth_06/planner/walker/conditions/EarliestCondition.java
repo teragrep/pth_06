@@ -54,7 +54,7 @@ import java.time.Instant;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
-public final class EarliestCondition implements Conditionable {
+public final class EarliestCondition implements QueryCondition {
     private final Element element;
 
     public EarliestCondition(Element element) {

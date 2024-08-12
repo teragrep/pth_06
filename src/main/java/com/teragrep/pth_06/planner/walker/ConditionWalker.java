@@ -46,8 +46,8 @@
 
 package com.teragrep.pth_06.planner.walker;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
-import com.teragrep.pth_06.planner.walker.conditions.QueryConditionConfig;
+import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
+import com.teragrep.pth_06.planner.walker.conditions.ConditionConfig;
 import org.jooq.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +70,7 @@ import java.util.Set;
 public final class ConditionWalker extends XmlWalker<Condition> {
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
 
-    private final QueryConditionConfig queryConfig;
+    private final ConditionConfig queryConfig;
     private long bloomTermId = 0;
     private long earliestEpoch;
     private final Set<Table<?>> tableSet;
@@ -83,21 +83,21 @@ public final class ConditionWalker extends XmlWalker<Condition> {
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery) {
         super();
-        this.queryConfig = new QueryConditionConfig(ctx, streamQuery, false, false);
+        this.queryConfig = new ConditionConfig(ctx, streamQuery, false, false);
         this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
         super();
-        this.queryConfig = new QueryConditionConfig(ctx, streamQuery, bloomEnabled, false);
+        this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, false);
         this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean bloomFilesWithoutFilter) {
         super();
-        this.queryConfig = new QueryConditionConfig(ctx, streamQuery, bloomEnabled, bloomFilesWithoutFilter);
+        this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, bloomFilesWithoutFilter);
         this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
@@ -144,12 +144,12 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(Element current) {
-        QueryCondition queryCondition = new QueryCondition(current, queryConfig, bloomTermId);
-        updateGlobalEarliestEpoch(queryCondition.earliest());
-        if (queryCondition.isIndexStatement()) {
-            patternMatchTables().addAll(queryCondition.matchList());
+        ElementCondition elementCondition = new ElementCondition(current, queryConfig, bloomTermId);
+        updateGlobalEarliestEpoch(elementCondition.earliest());
+        if (elementCondition.isIndexStatement()) {
+            patternMatchTables().addAll(elementCondition.matchList());
             bloomTermId++;
         }
-        return queryCondition.condition();
+        return elementCondition.condition();
     }
 }

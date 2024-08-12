@@ -59,15 +59,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public final class IndexStatementCondition implements Conditionable {
+public final class IndexStatementCondition implements QueryCondition {
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
     private final Condition condition;
     private final Element element;
-    private final QueryConditionConfig config;
+    private final ConditionConfig config;
     private final long bloomTermId;
     private List<Table<?>> tableList;
 
-    public IndexStatementCondition(Condition condition, Element element, QueryConditionConfig config, long bloomTermId) {
+    public IndexStatementCondition(Condition condition, Element element, ConditionConfig config, long bloomTermId) {
         this.condition = condition;
         this.element = element;
         this.config = config;
