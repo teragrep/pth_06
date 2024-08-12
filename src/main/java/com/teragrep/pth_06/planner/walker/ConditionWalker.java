@@ -69,26 +69,26 @@ import java.util.Set;
 public final class ConditionWalker extends XmlWalker<Condition> {
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
 
-    private final ConditionConfig queryConfig;
+    private final ConditionConfig config;
     private long bloomTermId = 0;
     private final Set<Table<?>> tableSet;
 
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery) {
         super();
-        this.queryConfig = new ConditionConfig(ctx, streamQuery, false, false);
+        this.config = new ConditionConfig(ctx, streamQuery, false, false);
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
         super();
-        this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, false);
+        this.config = new ConditionConfig(ctx, streamQuery, bloomEnabled, false);
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean bloomFilesWithoutFilter) {
         super();
-        this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, bloomFilesWithoutFilter);
+        this.config = new ConditionConfig(ctx, streamQuery, bloomEnabled, bloomFilesWithoutFilter);
         this.tableSet = new HashSet<>();
     }
 
@@ -134,7 +134,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(current, queryConfig, bloomTermId);
+        ElementCondition elementCondition = new ElementCondition(current, config, bloomTermId);
         if (elementCondition.isIndexStatement()) {
             patternMatchTables().addAll(elementCondition.matchList());
             bloomTermId++;
