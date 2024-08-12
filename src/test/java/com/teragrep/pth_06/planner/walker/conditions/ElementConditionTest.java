@@ -46,6 +46,7 @@
 
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.config.ConditionConfig;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;

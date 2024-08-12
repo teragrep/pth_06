@@ -1,4 +1,4 @@
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.config;
 
 import org.jooq.DSLContext;
 

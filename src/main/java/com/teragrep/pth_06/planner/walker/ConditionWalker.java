@@ -47,7 +47,7 @@
 package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
-import com.teragrep.pth_06.planner.walker.conditions.ConditionConfig;
+import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
