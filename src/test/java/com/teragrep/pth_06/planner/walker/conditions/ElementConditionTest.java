@@ -207,7 +207,6 @@ class ElementConditionTest {
                 "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
                 ")";
         ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
-        Assertions.assertEquals(1000L, elementCondition.earliest());
         Assertions.assertEquals(e, elementCondition.condition().toString());
     }
 
@@ -221,7 +220,6 @@ class ElementConditionTest {
                 "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 946677600)\n" +
                 ")";
         ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
-        Assertions.assertEquals(946677600L, elementCondition.earliest());
         Assertions.assertEquals(e, elementCondition.condition().toString());
     }
 

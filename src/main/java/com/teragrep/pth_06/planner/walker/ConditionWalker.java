@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,33 +71,24 @@ public final class ConditionWalker extends XmlWalker<Condition> {
 
     private final ConditionConfig queryConfig;
     private long bloomTermId = 0;
-    private long earliestEpoch;
     private final Set<Table<?>> tableSet;
 
-    private void updateGlobalEarliestEpoch(long newEarliest) {
-        if (earliestEpoch > newEarliest) {
-            earliestEpoch = newEarliest;
-        }
-    }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery) {
         super();
         this.queryConfig = new ConditionConfig(ctx, streamQuery, false, false);
-        this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
         super();
         this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, false);
-        this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
 
     public ConditionWalker(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean bloomFilesWithoutFilter) {
         super();
         this.queryConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, bloomFilesWithoutFilter);
-        this.earliestEpoch = Instant.now().getEpochSecond() - 24*3600;
         this.tableSet = new HashSet<>();
     }
 
@@ -145,7 +135,6 @@ public final class ConditionWalker extends XmlWalker<Condition> {
 
     Condition emitElem(Element current) {
         ElementCondition elementCondition = new ElementCondition(current, queryConfig, bloomTermId);
-        updateGlobalEarliestEpoch(elementCondition.earliest());
         if (elementCondition.isIndexStatement()) {
             patternMatchTables().addAll(elementCondition.matchList());
             bloomTermId++;

@@ -152,16 +152,4 @@ public final class ElementCondition {
         generateCondition();
         return tableSet;
     }
-
-    public long earliest() {
-        checkValidity(element);
-        String tag = element.getTagName();
-        int earliestFromElement = Integer.MAX_VALUE;
-        if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
-            String value = element.getAttribute("value");
-            earliestFromElement = Integer.parseInt(value);
-
-        }
-        return earliestFromElement;
-    }
 }
