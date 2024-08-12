@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
  * @author Mikko Kortelainen
  * @since 08/06/2022
  */
-public class KafkaWalker extends XmlWalker<String> {
+public final class KafkaWalker extends XmlWalker<String> {
     @Override
     String emitElem(Element current) {
         String tag = current.getTagName();

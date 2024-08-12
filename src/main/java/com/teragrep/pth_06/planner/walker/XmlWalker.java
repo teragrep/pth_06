@@ -151,7 +151,7 @@ public abstract class XmlWalker<T> {
                 }
             } else {
                 // leaf
-                if (op != null && op.equals("NOT")) {
+                if ("NOT".equals(op)) {
                     LOGGER.debug("Emit Unary operation: <{}> l: <{}>", op, current);
                     rv = emitUnaryOperation(op, current);
                 } else {
