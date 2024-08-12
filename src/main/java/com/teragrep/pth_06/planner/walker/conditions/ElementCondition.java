@@ -70,7 +70,7 @@ public final class ElementCondition {
     private final long bloomTermId;
     private final List<Condition> conditionCache;
 
-    private void checkValidity(Element element) {
+    private void validElement(Element element) {
         if (element.getTagName() == null) {
             throw new IllegalStateException("Tag name for Element was null");
         }
@@ -90,18 +90,11 @@ public final class ElementCondition {
         this.conditionCache = new ArrayList<>(1);
     }
 
-    public Condition condition() {
-        generateCondition();
-        Condition condition = conditionCache.get(0);
-        LOGGER.debug("Query condition: <{}>", condition);
-        return condition;
-    }
-
-    public void generateCondition() {
+    private void generateCondition() {
         if (!conditionCache.isEmpty()) {
             return;
         }
-        checkValidity(element);
+        validElement(element);
         String tag = element.getTagName();
         Condition condition = null;
         switch (tag.toLowerCase()) {
@@ -142,14 +135,21 @@ public final class ElementCondition {
         conditionCache.add(condition);
     }
 
+    public Condition condition() {
+        generateCondition();
+        Condition condition = conditionCache.get(0);
+        LOGGER.debug("Query condition: <{}>", condition);
+        return condition;
+    }
+
     public boolean isIndexStatement() {
-        checkValidity(element);
+        validElement(element);
         String tag = element.getTagName();
         return !config.streamQuery() && "indexstatement".equalsIgnoreCase(tag) && config.bloomEnabled();
     }
 
     public Set<Table<?>> matchList() {
-        checkValidity(element);
+        validElement(element);
         generateCondition();
         return tableSet;
     }

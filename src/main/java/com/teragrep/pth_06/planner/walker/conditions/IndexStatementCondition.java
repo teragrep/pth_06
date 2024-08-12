@@ -66,7 +66,7 @@ public final class IndexStatementCondition implements QueryCondition {
     private final Element element;
     private final ConditionConfig config;
     private final long bloomTermId;
-    private List<Table<?>> tableList;
+    private final List<Table<?>> tableList;
 
     public IndexStatementCondition(Condition condition, Element element, ConditionConfig config, long bloomTermId) {
         this.condition = condition;
@@ -83,7 +83,7 @@ public final class IndexStatementCondition implements QueryCondition {
             String value = element.getAttribute("value");
             LOGGER.info("indexstatement reached with search term <{}>", value);
             PatternMatch patternMatch = new PatternMatch(config.context(), value);
-            this.tableList = patternMatch.toList();
+            tableList.addAll(patternMatch.toList());
             if (!tableList.isEmpty()) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());

@@ -272,9 +272,9 @@ class ElementConditionTest {
         element.setAttribute("value", "192.124.0.0");
         element.setAttribute("operation", "EQUALS");
         ElementCondition elementCondition = new ElementCondition(element, bloomConfig, 0);
+        Assertions.assertTrue(elementCondition.matchList().isEmpty());
         Assertions.assertNull(elementCondition.condition());
         Assertions.assertTrue(elementCondition.isIndexStatement());
-        Assertions.assertTrue(elementCondition.matchList().isEmpty());
     }
 
     private void fillTargetTable() {

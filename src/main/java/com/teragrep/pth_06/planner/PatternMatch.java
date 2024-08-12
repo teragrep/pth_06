@@ -65,7 +65,7 @@ public class PatternMatch {
 
     private final DSLContext ctx;
     private final Set<Token> tokenSet;
-    private List<Table<?>> matchingTablesList;
+    private final List<Table<?>> matchingTablesList;
 
     public PatternMatch(DSLContext ctx, String input) {
         this.ctx = ctx;
@@ -97,7 +97,7 @@ public class PatternMatch {
                         .isNotEmpty())
                 .getTables();
         LOGGER.debug("Table(s) with a pattern match <{}>", tables);
-        matchingTablesList = tables;
+        matchingTablesList.addAll(tables);
     }
 
     public Set<Token> tokenSet() {
