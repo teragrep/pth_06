@@ -83,7 +83,9 @@ public final class IndexStatementCondition implements QueryCondition {
             String value = element.getAttribute("value");
             LOGGER.info("indexstatement reached with search term <{}>", value);
             PatternMatch patternMatch = new PatternMatch(config.context(), value);
-            tableList.addAll(patternMatch.toList());
+            if(tableList.isEmpty()) {
+                tableList.addAll(patternMatch.toList());
+            }
             if (!tableList.isEmpty()) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());
@@ -108,6 +110,9 @@ public final class IndexStatementCondition implements QueryCondition {
     }
 
     public List<Table<?>> matchList() {
+        if (tableList.isEmpty()) {
+            condition();
+        }
         return tableList;
     }
 }

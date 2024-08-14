@@ -74,7 +74,7 @@ public class PatternMatch {
                         new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))
                 )
         );
-        matchingTablesList = new ArrayList<>();
+        this.matchingTablesList = new ArrayList<>();
     }
 
     private void patternMatch() {

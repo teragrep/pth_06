@@ -157,8 +157,10 @@ public class PatternMatchTest {
             String input = "255.255.255.255";
             PatternMatch patternMatch = new PatternMatch(ctx, input);
             List<Table<?>> result = patternMatch.toList();
+            List<Table<?>> result2 = patternMatch.toList();
             List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
             Assertions.assertEquals(2, result.size());
+            Assertions.assertEquals(2, result2.size());
             Assertions.assertTrue(tableNames.contains("pattern_test_ip"));
             Assertions.assertTrue(tableNames.contains("pattern_test_ip255"));
         });

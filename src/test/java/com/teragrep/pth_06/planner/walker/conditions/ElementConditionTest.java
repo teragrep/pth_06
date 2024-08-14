@@ -262,8 +262,10 @@ class ElementConditionTest {
                 "  or \"bloomdb\".\"target\".\"filter\" is null\n" +
                 ")";
         Assertions.assertTrue(elementCondition.isIndexStatement());
-        Assertions.assertEquals(e, elementCondition.condition().toString());
         Assertions.assertFalse(elementCondition.matchList().isEmpty());
+        Assertions.assertEquals(e, elementCondition.condition().toString());
+        Assertions.assertEquals(e, elementCondition.condition().toString());
+        Assertions.assertEquals(1, elementCondition.matchList().size());
     }
 
     @Test
