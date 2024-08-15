@@ -51,12 +51,15 @@ import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
+import org.jooq.impl.SQLDataType.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
@@ -66,7 +69,7 @@ import static org.jooq.impl.SQLDataType.*;
  * SQL Temp table filled with bloom filters of the parent table filter types, search term token set is
  * inserted to each filter added to the table.
  */
-public class BloomFilterTempTable {
+public final class BloomFilterTempTable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BloomFilterTempTable.class);
 
     private final DSLContext ctx;
@@ -74,6 +77,7 @@ public class BloomFilterTempTable {
     private final Table<Record> tableName;
     private final long bloomTermId;
     private final Set<Token> tokenSet;
+    private final List<Condition> cache;
     // Table fields
     private final Field<ULong> termId;
     private final Field<ULong> typeId;
@@ -85,12 +89,13 @@ public class BloomFilterTempTable {
         this.tableName = DSL.table(DSL.name(("term_" + bloomtermId + "_" + parentTable.getName())));
         this.bloomTermId = bloomtermId;
         this.tokenSet = tokenSet;
+        this.cache = new ArrayList<>(1);
         this.termId = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
         this.typeId = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
         this.filter = DSL.field(DSL.name(tableName.getName(), "filter"), byte[].class);
     }
 
-    public void create() {
+    private void create() {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Creating temporary table <{}>", tableName.getName());
         }
@@ -104,36 +109,22 @@ public class BloomFilterTempTable {
         createIndexIncludeStep.execute();
     }
 
-    public Condition generateCondition() {
-        insertFilters();
-        SelectConditionStep<Record1<byte[]>> selectConditionStep =
-                DSL.select(filter)
-                        .from(tableName)
-                        .where(
-                                termId.eq(ULong.valueOf(bloomTermId))
-                        ).and(
-                                typeId.eq((Field<ULong>) parentTable.field("filter_type_id"))
-                        );
-        Field<byte[]> termFilterColumn = selectConditionStep.asField();
-        Condition filterFieldCondition = DSL.function("bloommatch", Boolean.class,
-                termFilterColumn,
-                parentTable.field("filter")
-        ).eq(true);
-        Condition notNullCondition = parentTable.field("filter").isNotNull();
-        return filterFieldCondition.and(notNullCondition);
-    }
-
     private void insertFilters() {
         Table<?> joined = parentTable;
         joined = joined.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(
                         (Field<ULong>) parentTable.field("filter_type_id")
                 )
         );
+        final Field<ULong> expectedField = DSL.field(DSL.name(tableName.getName(), "expectedElements"), ULong.class);
+        final Field<Double> fppField = DSL.field(DSL.name(tableName.getName(), "targetFpp"), Double.class);
+        final SelectField<?>[] resultFields = {
+                BLOOMDB.FILTERTYPE.ID,
+                joined.field("expectedElements").as(expectedField),
+                joined.field("targetFpp").as(fppField)
+        };
         // Fetch filtertype values
-        Result<? extends Record3<?, ?, ?>> records = ctx.select(
-                        BLOOMDB.FILTERTYPE.ID,
-                        joined.field("expectedElements"),
-                        joined.field("targetFpp"))
+        Result<Record> records = ctx
+                .select(resultFields)
                 .from(joined)
                 .groupBy(joined.field("filter_type_id"))
                 .fetch();
@@ -141,9 +132,9 @@ public class BloomFilterTempTable {
             throw new RuntimeException("Parent table was empty");
         }
         for (Record record : records) {
-            ULong filterTypeId = (ULong) record.getValue(0); // filter_type_id
-            ULong expected = (ULong) record.getValue(1);  // expectedElements
-            Double fpp = (Double) record.getValue(2);     // targetFpp
+            ULong filterTypeId = record.getValue(BLOOMDB.FILTERTYPE.ID); // filter_type_id
+            ULong expected = record.getValue(expectedField);  // expectedElements
+            Double fpp = record.getValue(fppField);     // targetFpp
             BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
             tokenSet.forEach(token -> filter.put(token.toString()));
 
@@ -165,5 +156,28 @@ public class BloomFilterTempTable {
                     )
                     .execute();
         }
+    }
+
+    public Condition generateCondition() {
+        if (cache.isEmpty()) {
+            create();
+            insertFilters();
+            SelectConditionStep<Record1<byte[]>> selectConditionStep =
+                    DSL.select(filter)
+                            .from(tableName)
+                            .where(
+                                    termId.eq(ULong.valueOf(bloomTermId))
+                            ).and(
+                                    typeId.eq((Field<ULong>) parentTable.field("filter_type_id"))
+                            );
+            Field<byte[]> termFilterColumn = selectConditionStep.asField();
+            Condition filterFieldCondition = DSL.function("bloommatch", Boolean.class,
+                    termFilterColumn,
+                    parentTable.field("filter")
+            ).eq(true);
+            Condition notNullCondition = parentTable.field("filter").isNotNull();
+            cache.add(filterFieldCondition.and(notNullCondition));
+        }
+        return cache.get(0);
     }
 }

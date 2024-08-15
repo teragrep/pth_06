@@ -95,7 +95,6 @@ public final class IndexStatementCondition implements QueryCondition {
 
                 for (Table<?> table : tableList) {
                     BloomFilterTempTable tempTable = new BloomFilterTempTable(config.context(), table, bloomTermId, patternMatch.tokenSet());
-                    tempTable.create();
                     Condition tableCondition = tempTable.generateCondition();
                     bloomCondition = bloomCondition.or(tableCondition);
                     noBloomCondition = noBloomCondition.and(table.field("filter").isNull());

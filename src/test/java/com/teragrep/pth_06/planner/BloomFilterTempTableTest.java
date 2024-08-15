@@ -130,20 +130,6 @@ public class BloomFilterTempTableTest {
     }
 
     @Test
-    public void testCreate() {
-        Assertions.assertDoesNotThrow(() -> {
-            Table<?> table = ctx.meta()
-                    .filterSchemas(s -> s.getName().equals("bloomdb"))
-                    .filterTables(t -> !t.getName().equals("filtertype"))
-                    .getTables()
-                    .get(0);
-            Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
-            BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-            tempTable.create();
-        });
-    }
-
-    @Test
     public void testEmptyParentTable() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             conn.prepareStatement("DROP TABLE IF EXISTS target").execute();
@@ -156,7 +142,6 @@ public class BloomFilterTempTableTest {
 
             Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
             BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-            tempTable.create();
             tempTable.generateCondition();
         });
     }
@@ -173,7 +158,6 @@ public class BloomFilterTempTableTest {
 
             Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
             BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-            tempTable.create();
             Condition condition = tempTable.generateCondition();
             String targetCondition = "(\n" +
                     "  bloommatch(\n" +
@@ -204,7 +188,6 @@ public class BloomFilterTempTableTest {
 
         Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
         BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 1L, tokenSet);
-        tempTable.create();
         Condition condition = tempTable.generateCondition();
         Assertions.assertTrue(condition.toString().contains("term_1_"));
     }
