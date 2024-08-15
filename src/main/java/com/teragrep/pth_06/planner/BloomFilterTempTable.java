@@ -62,11 +62,15 @@ import java.util.Set;
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 import static org.jooq.impl.SQLDataType.*;
 
+/**
+ * SQL Temp table filled with bloom filters of the parent table filter types, search term token set is
+ * inserted to each filter added to the table.
+ */
 public class BloomFilterTempTable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BloomFilterTempTable.class);
 
     private final DSLContext ctx;
-    private Table<?> parentTable;
+    private final Table<?> parentTable;
     private final Table<Record> tableName;
     private final long bloomTermId;
     private final Set<Token> tokenSet;
@@ -120,18 +124,18 @@ public class BloomFilterTempTable {
     }
 
     private void insertFilters() {
-        parentTable = parentTable.join(BLOOMDB.FILTERTYPE)
-                .on(BLOOMDB.FILTERTYPE.ID.eq(
-                                (Field<ULong>) parentTable.field("filter_type_id")
-                        )
-                );
+        Table<?> joined = parentTable;
+        joined = joined.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(
+                        (Field<ULong>) parentTable.field("filter_type_id")
+                )
+        );
         // Fetch filtertype values
         Result<? extends Record3<?, ?, ?>> records = ctx.select(
                         BLOOMDB.FILTERTYPE.ID,
-                        parentTable.field("expectedElements"),
-                        parentTable.field("targetFpp"))
-                .from(parentTable)
-                .groupBy(parentTable.field("filter_type_id"))
+                        joined.field("expectedElements"),
+                        joined.field("targetFpp"))
+                .from(joined)
+                .groupBy(joined.field("filter_type_id"))
                 .fetch();
         if (records.isEmpty()) {
             throw new RuntimeException("Parent table was empty");
