@@ -51,7 +51,6 @@ import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
-import org.jooq.impl.SQLDataType.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +66,29 @@ import static org.jooq.impl.SQLDataType.*;
 
 /**
  * SQL Temp table filled with bloom filters of the parent table filter types, search term token set is
- * inserted to each filter added to the table.
+ * inserted into the temp table filter columns. Each row of the parent table can be compared against this temp table.
+ * <p>
+ * Parent Table Schema:
+ * <ol>
+ *     <li>id PK</li>
+ *     <li>partition_id FK journaldb.logfile.id</li>
+ *     <li>filter_type_id FK bloomdb.filtertype.id</li>
+ *     <li>filter - bloomfilter byte array</li>
+ * </ol>
+ * <p>
+ * Temp Table Schema:
+ * <ol>
+ *     <li>id PK</li>
+ *     <li>termId - count of the current search term</li>
+ *     <li>typeId FK bloomdb.filtertype.id</li>
+ *     <li>filter - bloomfilter bytes with only the search term token set inserted</li>
+ * </ol>
+ * Parent table create table example:
+ * <p>
+ * <code>
+ *     CREATE TABLE `example` ( `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `partition_id` bigint(20) unsigned NOT NULL, `filter_type_id` bigint(20) unsigned NOT NULL, `filter` longblob NOT NULL, PRIMARY KEY (`id`), UNIQUE KEY `partition_id` (`partition_id`), KEY `example_ibfk_1` (`filter_type_id`), CONSTRAINT `example_ibfk_1` FOREIGN KEY (`filter_type_id`) REFERENCES `filtertype` (`id`) ON DELETE CASCADE, CONSTRAINT `example_ibfk_2` FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile` (`id`) ON DELETE CASCADE ) ENGINE=InnoDB AUTO_INCREMENT=54787 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+ * </code>
+ * @see com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb
  */
 public final class BloomFilterTempTable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BloomFilterTempTable.class);
@@ -83,11 +104,11 @@ public final class BloomFilterTempTable {
     private final Field<ULong> typeId;
     private final Field<byte[]> filter;
 
-    public BloomFilterTempTable(DSLContext ctx, Table<?> parentTable, long bloomtermId, Set<Token> tokenSet) {
+    public BloomFilterTempTable(DSLContext ctx, Table<?> parentTable, long bloomTermId, Set<Token> tokenSet) {
         this.ctx = ctx;
         this.parentTable = parentTable;
-        this.tableName = DSL.table(DSL.name(("term_" + bloomtermId + "_" + parentTable.getName())));
-        this.bloomTermId = bloomtermId;
+        this.tableName = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
+        this.bloomTermId = bloomTermId;
         this.tokenSet = tokenSet;
         this.cache = new ArrayList<>(1);
         this.termId = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
@@ -109,6 +130,11 @@ public final class BloomFilterTempTable {
         createIndexIncludeStep.execute();
     }
 
+    /**
+     * Inserts a record for each filtertype inside parent table into temp table.
+     * Filter is filled with search term token set and
+     * its size is selected using parent table filtertype expected and fpp values.
+     */
     private void insertFilters() {
         Table<?> joined = parentTable;
         joined = joined.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(
@@ -158,6 +184,15 @@ public final class BloomFilterTempTable {
         }
     }
 
+    /**
+     * Generates a condition that returns true if this temp tables search term tokens
+     * might be contained in the parent table or parent table bloom filter is null.
+     * Selects to same sized filter from the temp table for each parent table row.
+     * <p>
+     * expects the user defined function 'bloommatch' to be present to compare filter bytes
+     *
+     * @return Condition - generated condition
+     */
     public Condition generateCondition() {
         if (cache.isEmpty()) {
             create();
@@ -175,6 +210,7 @@ public final class BloomFilterTempTable {
                     termFilterColumn,
                     parentTable.field("filter")
             ).eq(true);
+            // null check allows SQL to optimize query
             Condition notNullCondition = parentTable.field("filter").isNotNull();
             cache.add(filterFieldCondition.and(notNullCondition));
         }
