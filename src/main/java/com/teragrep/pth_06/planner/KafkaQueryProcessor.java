@@ -76,10 +76,14 @@ public class KafkaQueryProcessor implements KafkaQuery {
     // NOTE, for Kafka: start is inclusive (GreaterOrEqualThan), end is exclusive
     private final Logger LOGGER = LoggerFactory.getLogger(KafkaQueryProcessor.class);
 
+    private final boolean continuousProcessing;
     private final Consumer<byte[], byte[]> kafkaConsumer;
     private final Set<TopicPartition> topicPartitionSet;
+    private final Map<TopicPartition, Long> persistedEndOffsetMap;
 
     public KafkaQueryProcessor(Config config) {
+        this.persistedEndOffsetMap = new HashMap<>();
+        this.continuousProcessing = config.kafkaConfig.kafkaContinuousProcessing;
         Map<String, Object> executorKafkaProperties = config.kafkaConfig.driverOpts;
         this.kafkaConsumer = new KafkaConsumer<>(executorKafkaProperties);
 
@@ -187,6 +191,8 @@ public class KafkaQueryProcessor implements KafkaQuery {
 
     @VisibleForTesting
     public KafkaQueryProcessor(Consumer<byte[],byte[]> consumer) {
+        this.persistedEndOffsetMap = new HashMap<>();
+        this.continuousProcessing = false;
         kafkaConsumer = consumer;
         topicPartitionSet = consumer.assignment();
         LOGGER.debug("@VisibleForTesting KafkaQueryProcessor");
@@ -194,29 +200,42 @@ public class KafkaQueryProcessor implements KafkaQuery {
 
     @Override
     public Map<TopicPartition, Long> getInitialEndOffsets() {
-        Map<TopicPartition, Long> topicPartitionEndOffsetMap = new HashMap<>();
-        Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitionSet, Duration.ofSeconds(60));
+        if (persistedEndOffsetMap.isEmpty() || continuousProcessing) {
 
-        for (TopicPartition topicPartition : topicPartitionSet) {
-            long partitionEnd = endOffsets.get(topicPartition);
-            topicPartitionEndOffsetMap.put(topicPartition, partitionEnd);
+            Map<TopicPartition, Long> topicPartitionEndOffsetMap = new HashMap<>();
+            Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitionSet, Duration.ofSeconds(60));
 
+            for (TopicPartition topicPartition : topicPartitionSet) {
+                long partitionEnd = endOffsets.get(topicPartition);
+                topicPartitionEndOffsetMap.put(topicPartition, partitionEnd);
+
+            }
+            persistedEndOffsetMap.putAll(topicPartitionEndOffsetMap);
+            return topicPartitionEndOffsetMap;
         }
-        return topicPartitionEndOffsetMap;
+        else {
+            return persistedEndOffsetMap;
+        }
     }
 
     @Override
     public Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset) {
-        Map<TopicPartition, Long> topicPartitionEndOffsetMap = new HashMap<>();
+        if (persistedEndOffsetMap.isEmpty() || continuousProcessing) {
+            Map<TopicPartition, Long> topicPartitionEndOffsetMap = new HashMap<>();
 
-        Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitionSet, Duration.ofSeconds(60)); // TODO parametrize
+            Map<TopicPartition, Long> endOffsets = kafkaConsumer.endOffsets(topicPartitionSet, Duration.ofSeconds(60)); // TODO parametrize
 
-        for (TopicPartition topicPartition : topicPartitionSet) {
-            long partitionEnd = endOffsets.get(topicPartition); // partition end becomes the current end
+            for (TopicPartition topicPartition : topicPartitionSet) {
+                long partitionEnd = endOffsets.get(topicPartition); // partition end becomes the current end
 
-            topicPartitionEndOffsetMap.put(topicPartition, partitionEnd);
+                topicPartitionEndOffsetMap.put(topicPartition, partitionEnd);
+            }
+            persistedEndOffsetMap.putAll(topicPartitionEndOffsetMap);
+            return topicPartitionEndOffsetMap;
         }
-        return topicPartitionEndOffsetMap;
+        else {
+            return persistedEndOffsetMap;
+        }
     }
 
     @Override
