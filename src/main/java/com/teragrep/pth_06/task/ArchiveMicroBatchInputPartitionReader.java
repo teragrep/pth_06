@@ -52,6 +52,7 @@ import com.teragrep.pth_06.task.s3.RowConverter;
 import com.teragrep.rad_01.AuditPlugin;
 import com.teragrep.rad_01.AuditPluginFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.PartitionReader;
 
 import java.io.IOException;
@@ -182,6 +183,13 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     @Override
     public InternalRow get() {
         return rowConverter.get();
+    }
+
+    @Override
+    public CustomTaskMetric[] currentMetricsValues() {
+        CustomTaskMetric[] customTaskMetrics = new CustomTaskMetric[1];
+        customTaskMetrics[0] = new DummyTaskMetric();
+        return customTaskMetrics;
     }
 
     @Override

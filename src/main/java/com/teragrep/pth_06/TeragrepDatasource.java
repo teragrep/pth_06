@@ -105,17 +105,9 @@ public final class TeragrepDatasource implements DataSourceRegister, TableProvid
 
     @Override
     public ScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
-        return () -> new Scan() {
-
-            @Override
-            public StructType readSchema() {
-                return schema;
-            }
-
-            @Override
-            public MicroBatchStream toMicroBatchStream(String checkpointLocation) {
-                return new ArchiveMicroStreamReader(new Config(options));
-            }
+        return () -> {
+            Config config = new Config(options);
+            return new TeragrepScan(schema, config);
         };
     }
 
