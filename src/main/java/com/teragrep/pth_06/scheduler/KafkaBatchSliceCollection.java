@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 public final class KafkaBatchSliceCollection extends BatchSliceCollection {
+
     private final Logger LOGGER = LoggerFactory.getLogger(ArchiveBatchSliceCollection.class);
     private final KafkaQuery kq;
 
@@ -66,10 +67,10 @@ public final class KafkaBatchSliceCollection extends BatchSliceCollection {
     }
 
     public KafkaBatchSliceCollection processRange(Offset start, Offset end) {
-        KafkaOffset kafkaStartOffset = ((DatasourceOffset)start).getKafkaOffset();
-        KafkaOffset kafkaEndOffset = ((DatasourceOffset)end).getKafkaOffset();
+        KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
+        KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
         KafkaBatchSliceCollection rv = generate(kafkaStartOffset, kafkaEndOffset);
-        LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv );
+        LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
         return rv;
     }
 
@@ -80,15 +81,16 @@ public final class KafkaBatchSliceCollection extends BatchSliceCollection {
             long topicEnd = end.getOffsetMap().get(topicPartition);
             if (topicStart != topicEnd) {
                 // new offsets available
-                this.add(
-                        new BatchSlice(
-                                new KafkaTopicPartitionOffsetMetadata(
-                                        entry.getKey(),
-                                        start.getOffsetMap().get(entry.getKey()),
-                                        end.getOffsetMap().get(entry.getKey())
+                this
+                        .add(
+                                new BatchSlice(
+                                        new KafkaTopicPartitionOffsetMetadata(
+                                                entry.getKey(),
+                                                start.getOffsetMap().get(entry.getKey()),
+                                                end.getOffsetMap().get(entry.getKey())
+                                        )
                                 )
-                        )
-                );
+                        );
 
             }
         }

@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -65,6 +65,7 @@ public final class KafkaConfig {
 
     public final boolean skipNonRFC5424Records;
     public final boolean isStub;
+
     public KafkaConfig(Map<String, String> opts) {
         consumerGroupId = UUID.randomUUID().toString();
         driverOpts = parseKafkaDriverOpts(opts);
@@ -100,28 +101,35 @@ public final class KafkaConfig {
         rv.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
         String saslMechanism = opts.get("kafka.sasl.mechanism");
-        if (saslMechanism == null){
+        if (saslMechanism == null) {
             throw new IllegalArgumentException("missing kafka.sasl.mechanism");
         }
         rv.put(SaslConfigs.SASL_MECHANISM, saslMechanism);
 
-
         String securityProtocol = opts.get("kafka.security.protocol");
-        if (securityProtocol == null){
+        if (securityProtocol == null) {
             throw new IllegalArgumentException("missing kafka.security.protocol");
         }
         rv.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, securityProtocol);
 
         String jaasConfig = opts.get("kafka.sasl.jaas.config");
-        if (jaasConfig == null){
+        if (jaasConfig == null) {
             throw new IllegalArgumentException("missing kafka.sasl.jaas.config");
         }
         rv.put(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig);
 
         // hardcoded values
-        rv.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        rv.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer");
-        rv.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG,"false");
+        rv
+                .put(
+                        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                        "org.apache.kafka.common.serialization.ByteArrayDeserializer"
+                );
+        rv
+                .put(
+                        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                        "org.apache.kafka.common.serialization.ByteArrayDeserializer"
+                );
+        rv.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         rv.put(ConsumerConfig.RECEIVE_BUFFER_CONFIG, 65536);
         rv.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 86400000); // avoid interrupt
 
@@ -151,7 +159,7 @@ public final class KafkaConfig {
         String fetchMaxBytes = opts.getOrDefault("kafka.fetch.max.bytes", "1024");
         rv.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, Integer.parseInt(fetchMaxBytes));
 
-        String fetchMaxWait = opts.getOrDefault("kafka.fetch.max.wait.ms", String.valueOf(120*1000));
+        String fetchMaxWait = opts.getOrDefault("kafka.fetch.max.wait.ms", String.valueOf(120 * 1000));
         rv.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Integer.parseInt(fetchMaxWait));
 
         String fetchMaxPartitionBytes = opts.getOrDefault("kafka.max.partition.fetch.bytes", "1024");
@@ -168,7 +176,8 @@ public final class KafkaConfig {
         rv.put("useMockKafkaConsumer", useMockKafkaConsumer);
 
         // cut-off epoch
-        String inludeEpochAndAfterString = opts.getOrDefault("kafka.includeEpochAndAfter", String.valueOf(Long.MIN_VALUE/(1000*1000)));
+        String inludeEpochAndAfterString = opts
+                .getOrDefault("kafka.includeEpochAndAfter", String.valueOf(Long.MIN_VALUE / (1000 * 1000)));
         rv.put("includeEpochAndAfter", inludeEpochAndAfterString);
 
         return rv;

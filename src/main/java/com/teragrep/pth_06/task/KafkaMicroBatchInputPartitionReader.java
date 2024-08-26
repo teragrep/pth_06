@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.task;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -70,15 +69,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * <h1>Kafka Micro Batch Input Partition Reader</h1>
- *
- * Micro batch reader for kafka partition data source.
+ * <h1>Kafka Micro Batch Input Partition Reader</h1> Micro batch reader for kafka partition data source.
  *
  * @see PartitionReader
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
 public class KafkaMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
+
     final Logger LOGGER = LoggerFactory.getLogger(KafkaMicroBatchInputPartitionReader.class);
 
     private Iterator<ConsumerRecord<byte[], byte[]>> kafkaRecordsIterator = Collections.emptyIterator();
@@ -101,7 +99,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             long startOffset,
             long endOffset,
             Map<String, String> executorConfig,
-            boolean skipNonRFC5424Records) {
+            boolean skipNonRFC5424Records
+    ) {
         this.skipNonRFC5424Records = skipNonRFC5424Records;
 
         startTime = Instant.now();
@@ -115,17 +114,19 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             hostname = "";
         }
 
-        LOGGER.info("KafkaMicroBatchInputPartitionReader instantiated for"
-                + " topic <" + topicPartition.topic() + ">"
-                + " partition <" + topicPartition.partition() + ">"
-                + " on host <" + hostname + ">"
+        LOGGER
+                .info(
+                        "KafkaMicroBatchInputPartitionReader instantiated for" + " topic <" + topicPartition.topic()
+                                + ">" + " partition <" + topicPartition.partition() + ">" + " on host <" + hostname
+                                + ">"
                 );
-
 
         this.kafkaRecordConverter = new KafkaRecordConverter();
 
-        if (executorConfig.containsKey("useMockKafkaConsumer")
-                && "true".equals(executorConfig.get("useMockKafkaConsumer"))) {
+        if (
+            executorConfig.containsKey("useMockKafkaConsumer")
+                    && "true".equals(executorConfig.get("useMockKafkaConsumer"))
+        ) {
             LOGGER.warn("useMockKafkaConsumer is set, initialized MockKafkaConsumer");
             this.kafkaConsumer = MockKafkaConsumerFactory.getConsumer();
         }
@@ -135,19 +136,12 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         }
 
         this.endOffset = endOffset;
-        LOGGER.debug(
-                "startOffset: " + startOffset + ", "
-                        + "endOffset: " + endOffset
-        );
+        LOGGER.debug("startOffset: " + startOffset + ", " + "endOffset: " + endOffset);
         this.kafkaConsumer.seek(topicPartition, startOffset);
 
         // set cut-off time
-        includeRowsAtAndAfterEpochMicros = Math.multiplyExact(
-                Long.parseLong(
-                        executorConfig.get("includeEpochAndAfter")
-                ),
-                1000L * 1000L
-        );
+        includeRowsAtAndAfterEpochMicros = Math
+                .multiplyExact(Long.parseLong(executorConfig.get("includeEpochAndAfter")), 1000L * 1000L);
     }
 
     @VisibleForTesting
@@ -155,7 +149,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             Consumer<byte[], byte[]> kafkaConsumer,
             TopicPartition topicPartition,
             long startOffset,
-            long endOffset) {
+            long endOffset
+    ) {
 
         this.skipNonRFC5424Records = false;
 
@@ -165,14 +160,11 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         this.endOffset = endOffset;
 
         this.currentOffset = startOffset;
-        LOGGER.debug("@VisibleForTesting " +
-                "startOffset: " + startOffset + ", "
-                        + "endOffset: " + endOffset
-        );
+        LOGGER.debug("@VisibleForTesting " + "startOffset: " + startOffset + ", " + "endOffset: " + endOffset);
         this.kafkaConsumer.seek(topicPartition, startOffset);
 
         // set cut-off time
-        includeRowsAtAndAfterEpochMicros = Math.multiplyExact(Long.MIN_VALUE/(1000*1000), 1000L * 1000L);
+        includeRowsAtAndAfterEpochMicros = Math.multiplyExact(Long.MIN_VALUE / (1000 * 1000), 1000L * 1000L);
     }
 
     @Override
@@ -203,13 +195,16 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
             try {
                 currentRow = convertToRow(consumerRecord);
-            } catch (IOException ioException) {
+            }
+            catch (IOException ioException) {
                 throw new UncheckedIOException(ioException);
-            } catch (ParseException parseException) {
-                LOGGER.warn(
-                        "Kafka Record at offset: " + currentOffset
-                        + " produced an exception while parsing: " + parseException
-                );
+            }
+            catch (ParseException parseException) {
+                LOGGER
+                        .warn(
+                                "Kafka Record at offset: " + currentOffset + " produced an exception while parsing: "
+                                        + parseException
+                        );
                 // skip
                 if (skipNonRFC5424Records) {
                     continue;
@@ -217,7 +212,6 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
                 else {
                     throw parseException;
                 }
-
 
             }
 
@@ -245,12 +239,7 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         // process rfc5424 provided data
         ByteArrayInputStream payload = new ByteArrayInputStream(value);
 
-
-        return kafkaRecordConverter.convert(
-                payload,
-                String.valueOf(partition),
-                offset
-        );
+        return kafkaRecordConverter.convert(payload, String.valueOf(partition), offset);
     }
 
     @Override
@@ -263,11 +252,11 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
     public void close() {
         kafkaConsumer.close(Duration.ofSeconds(60)); // TODO parametrize
 
-        long timeTaken =
-                Instant.now().getEpochSecond() - startTime.getEpochSecond();
-        LOGGER.warn(
-                "KafkaMicroBatchInputPartitionReader took <" + timeTaken + ">"
-                + " for processing dataLength <" + dataLength + ">"
-        );
+        long timeTaken = Instant.now().getEpochSecond() - startTime.getEpochSecond();
+        LOGGER
+                .warn(
+                        "KafkaMicroBatchInputPartitionReader took <" + timeTaken + ">" + " for processing dataLength <"
+                                + dataLength + ">"
+                );
     }
 }

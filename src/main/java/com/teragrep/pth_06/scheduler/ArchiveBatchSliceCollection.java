@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -68,32 +68,29 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
         this.aq = aq;
     }
 
-
     public ArchiveBatchSliceCollection processRange(Offset start, Offset end) {
         LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
 
         this.clear(); // clear internal list
 
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>
-                result = aq.processBetweenUnixEpochHours(((DatasourceOffset)start).getArchiveOffset().offset(),
-                                                        ((DatasourceOffset)end).getArchiveOffset().offset());
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
+                .processBetweenUnixEpochHours(
+                        ((DatasourceOffset) start).getArchiveOffset().offset(),
+                        ((DatasourceOffset) end).getArchiveOffset().offset()
+                );
 
         for (Record r : result) {
-            this.add(
-                    new BatchSlice(
-                            new ArchiveS3ObjectMetadata(
-                                    r.get(0, String.class), // id
-                                    r.get(6, String.class), // bucket
-                                    r.get(7, String.class), // path
-                                    r.get(1, String.class), // directory
-                                    r.get(2, String.class), // stream
-                                    r.get(3, String.class), // host
-                                    r.get(8, Long.class), // logtime
-                                    r.get(9, Long.class), // compressedSize
-                                    r.get(10, Long.class) // uncompressedSize
-                            )
-                    )
-            );
+            this
+                    .add(new BatchSlice(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
+                            r.get(6, String.class), // bucket
+                            r.get(7, String.class), // path
+                            r.get(1, String.class), // directory
+                            r.get(2, String.class), // stream
+                            r.get(3, String.class), // host
+                            r.get(8, Long.class), // logtime
+                            r.get(9, Long.class), // compressedSize
+                            r.get(10, Long.class) // uncompressedSize
+                    )));
         }
         return this;
     }

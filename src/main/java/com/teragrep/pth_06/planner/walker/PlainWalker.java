@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,28 +43,26 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.walker;
 
 import org.w3c.dom.Element;
 
 /**
- * <h1>Plain Walker</h1>
- *
- * Regular walker.
+ * <h1>Plain Walker</h1> Regular walker.
  *
  * @since 23/09/2021
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
  */
-public class PlainWalker extends XmlWalker{
+public class PlainWalker extends XmlWalker {
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
-    public PlainWalker(){
+    public PlainWalker() {
         super();
     }
+
     /*
             @Override
             public String traverse(TreeWalker walker, String indent) {
@@ -80,37 +78,38 @@ public class PlainWalker extends XmlWalker{
                 return null;
             }
     */
-    private String indent ="\t";
+    private String indent = "\t";
+
     @Override
-    public Element emitLogicalOperation(String op, Object l, Object r) throws Exception{
+    public Element emitLogicalOperation(String op, Object l, Object r) throws Exception {
         Element rv = null;
-        String left=(String)l;
-        String right=(String)r;
-        if(op == null){
-            throw new Exception("Parse error, unbalanced elements. "+l.toString());
+        String left = (String) l;
+        String right = (String) r;
+        if (op == null) {
+            throw new Exception("Parse error, unbalanced elements. " + l.toString());
         }
-        System.out.println(indent+op);
-        indent +="\t";
-        System.out.println(indent+left);
-        System.out.println(indent+right);
+        System.out.println(indent + op);
+        indent += "\t";
+        System.out.println(indent + left);
+        System.out.println(indent + right);
         return rv;
     }
 
     @Override
-    public Element emitUnaryOperation(String op, Element current) throws Exception{
+    public Element emitUnaryOperation(String op, Element current) throws Exception {
         Element rv = null;
-        if(op == null){
-            throw new Exception("Parse error, unknown operation: "+op+ " expression:"+current);
+        if (op == null) {
+            throw new Exception("Parse error, unknown operation: " + op + " expression:" + current);
         }
-        System.out.println(indent+op);
-        indent +="\t";
-        System.out.println(indent+emitElem(current));
+        System.out.println(indent + op);
+        indent += "\t";
+        System.out.println(indent + emitElem(current));
         return rv;
     }
 
     @Override
-    String emitElem(Element current){
-//            System.out.println(indent+"PlainEmitElem:"+current.getTagName());
+    String emitElem(Element current) {
+        //            System.out.println(indent+"PlainEmitElem:"+current.getTagName());
         return current.getTagName();
     }
 }

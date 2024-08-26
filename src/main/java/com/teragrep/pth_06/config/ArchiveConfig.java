@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -48,6 +48,7 @@ package com.teragrep.pth_06.config;
 import java.util.Map;
 
 public final class ArchiveConfig {
+
     public final String dbUsername;
     public final String dbPassword;
     public final String dbUrl;
@@ -69,6 +70,7 @@ public final class ArchiveConfig {
     public final String bloomDbName;
 
     public final boolean isStub;
+
     public ArchiveConfig(Map<String, String> opts) {
         s3EndPoint = getOrThrow(opts, "S3endPoint");
         s3Identity = getOrThrow(opts, "S3identity");
@@ -79,7 +81,7 @@ public final class ArchiveConfig {
         bloomEnabled = opts.getOrDefault("bloom.enabled", "false").equalsIgnoreCase("true");
         bloomDbName = opts.getOrDefault("DBbloomdbname", "bloomdb");
 
-        dbJournalDbName = opts.getOrDefault("DBjournaldbname","journaldb");
+        dbJournalDbName = opts.getOrDefault("DBjournaldbname", "journaldb");
         dbStreamDbName = opts.getOrDefault("DBstreamdbname", "streamdb");
 
         // hide exceptions
@@ -88,7 +90,8 @@ public final class ArchiveConfig {
         // skip not rfc5424 parseable files
         skipNonRFC5424Files = opts.getOrDefault("skipNonRFC5424Files", "false").equalsIgnoreCase("true");
 
-        archiveIncludeBeforeEpoch = Long.parseLong(opts.getOrDefault("archive.includeBeforeEpoch", String.valueOf(Long.MAX_VALUE)));
+        archiveIncludeBeforeEpoch = Long
+                .parseLong(opts.getOrDefault("archive.includeBeforeEpoch", String.valueOf(Long.MAX_VALUE)));
 
         isStub = false;
     }

@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.task.kafka;
 
 import com.teragrep.rlo_06.Fragment;
@@ -62,11 +61,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 
-
 /**
- * <h1>Kafka Record Converter</h1>
- *
- * Class for converting Kafka data into byte[].
+ * <h1>Kafka Record Converter</h1> Class for converting Kafka data into byte[].
  *
  * @since 08/06/2022
  * @author Mikko Kortelainen
@@ -94,22 +90,22 @@ public class KafkaRecordConverter {
     private final ByteBuffer sourceConcatenationBuffer;
 
     public KafkaRecordConverter() {
-        this.eventNodeSourceSource = new SDVector("event_node_source@48577","source");
-        this.eventNodeRelaySource = new SDVector("event_node_relay@48577","source");
-        this.eventNodeSourceSourceModule = new SDVector("event_node_source@48577","source_module");
-        this.eventNodeRelaySourceModule = new SDVector("event_node_relay@48577","source_module");
-        this.eventNodeSourceHostname = new SDVector("event_node_source@48577","hostname");
-        this.eventNodeRelayHostname = new SDVector("event_node_relay@48577","hostname");
+        this.eventNodeSourceSource = new SDVector("event_node_source@48577", "source");
+        this.eventNodeRelaySource = new SDVector("event_node_relay@48577", "source");
+        this.eventNodeSourceSourceModule = new SDVector("event_node_source@48577", "source_module");
+        this.eventNodeRelaySourceModule = new SDVector("event_node_relay@48577", "source_module");
+        this.eventNodeSourceHostname = new SDVector("event_node_source@48577", "hostname");
+        this.eventNodeRelayHostname = new SDVector("event_node_relay@48577", "hostname");
 
-        this.teragrepStreamName = new SDVector("teragrep@48577","streamname");
-        this.teragrepDirectory = new SDVector("teragrep@48577","directory");
+        this.teragrepStreamName = new SDVector("teragrep@48577", "streamname");
+        this.teragrepDirectory = new SDVector("teragrep@48577", "directory");
 
         // Origin
-        this.originHostname = new SDVector("origin@48577","hostname");
+        this.originHostname = new SDVector("origin@48577", "hostname");
 
         this.rfc5424Frame = new RFC5424Frame();
 
-        this.sourceConcatenationBuffer = ByteBuffer.allocateDirect(256*1024);
+        this.sourceConcatenationBuffer = ByteBuffer.allocateDirect(256 * 1024);
     }
 
     private long rfc3339ToEpoch(ZonedDateTime zonedDateTime) {
@@ -121,7 +117,6 @@ public class KafkaRecordConverter {
 
         return Math.addExact(sec, instant.getNano() / NANOS_PER_MICROS);
     }
-
 
     public UnsafeRow convert(InputStream inputStream, String partition, long offset) {
         rfc5424Frame.load(inputStream);
@@ -140,7 +135,6 @@ public class KafkaRecordConverter {
         // origin
         final byte[] origin = eventToOrigin();
 
-
         /*
         return RowFactory.create(
                 Timestamp.from(instant),                    // 0 "_time", DataTypes.TimestampType
@@ -153,14 +147,14 @@ public class KafkaRecordConverter {
                 offset,                                     // 7 "offset", DataTypes.LongType
                 UTF8String.fromBytes(origin).toString()     // 8 "origin", DataTypes.StringType
         );
-
+        
          */
 
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
         rowWriter.write(0, epochMicros);
         rowWriter.write(1, UTF8String.fromBytes(rfc5424Frame.msg.toBytes()));
-        rowWriter.write(2,  UTF8String.fromBytes(rfc5424Frame.structuredData.getValue(teragrepDirectory).toBytes()));
+        rowWriter.write(2, UTF8String.fromBytes(rfc5424Frame.structuredData.getValue(teragrepDirectory).toBytes()));
         rowWriter.write(3, UTF8String.fromBytes(rfc5424Frame.structuredData.getValue(teragrepStreamName).toBytes()));
         rowWriter.write(4, UTF8String.fromBytes(rfc5424Frame.hostname.toBytes()));
         rowWriter.write(5, UTF8String.fromBytes(source));
@@ -178,7 +172,7 @@ public class KafkaRecordConverter {
             origin = originFragment.toBytes();
         }
         else {
-            origin = new byte[]{};
+            origin = new byte[] {};
         }
         return origin;
     }
@@ -201,7 +195,7 @@ public class KafkaRecordConverter {
             source_module = sourceModuleFragment.toBytes();
         }
         else {
-            source_module = new byte[]{};
+            source_module = new byte[] {};
         }
 
         Fragment sourceHostnameFragment = rfc5424Frame.structuredData.getValue(eventNodeSourceHostname);
@@ -214,9 +208,8 @@ public class KafkaRecordConverter {
             source_hostname = sourceHostnameFragment.toBytes();
         }
         else {
-            source_hostname = new byte[]{};
+            source_hostname = new byte[] {};
         }
-
 
         Fragment sourceSourceFragment = rfc5424Frame.structuredData.getValue(eventNodeSourceSource);
         if (sourceHostnameFragment.isStub) {
@@ -228,15 +221,14 @@ public class KafkaRecordConverter {
             source_source = sourceSourceFragment.toBytes();
         }
         else {
-            source_source = new byte[]{};
+            source_source = new byte[] {};
         }
-
 
         // source_module:hostname:source"
         sourceConcatenationBuffer.put(source_module);
         sourceConcatenationBuffer.put((byte) ':');
         sourceConcatenationBuffer.put(source_hostname);
-        sourceConcatenationBuffer.put((byte)':');
+        sourceConcatenationBuffer.put((byte) ':');
         sourceConcatenationBuffer.put(source_source);
 
         sourceConcatenationBuffer.flip();

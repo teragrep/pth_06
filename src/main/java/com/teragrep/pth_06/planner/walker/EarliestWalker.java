@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,30 +43,26 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.walker;
 
-
-import com.teragrep.pth_06.planner.walker.XmlWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import java.time.Instant;
 
 /**
- * <h1>Earliest Walker</h1>
- *
- * Walker for earliest epoch.
+ * <h1>Earliest Walker</h1> Walker for earliest epoch.
  *
  * @since 30/08/2023
  * @author Mikko Kortelainen
  * @author Ville Manninen
  */
 public class EarliestWalker extends XmlWalker {
+
     private final Logger LOGGER = LoggerFactory.getLogger(EarliestWalker.class);
 
     // TODO a hack to get global earliest value, default -24h from now
-    public final long globalEarliestEpoch = Instant.now().getEpochSecond() - 24*3600;
+    public final long globalEarliestEpoch = Instant.now().getEpochSecond() - 24 * 3600;
 
     public EarliestWalker() {
         super();
@@ -97,11 +93,11 @@ public class EarliestWalker extends XmlWalker {
         Long left = (Long) l;
         Long right = (Long) r;
 
-        if(op == null){
+        if (op == null) {
             throw new Exception("Parse error, unbalanced elements. " + left);
         }
 
-        if(op.equalsIgnoreCase("AND") || op.equalsIgnoreCase("OR")) {
+        if (op.equalsIgnoreCase("AND") || op.equalsIgnoreCase("OR")) {
             rv = left < right ? left : right;
         }
 
@@ -116,18 +112,18 @@ public class EarliestWalker extends XmlWalker {
     public Long emitUnaryOperation(String op, Element current) throws Exception {
 
         Long rv = emitElem(current);
-        LOGGER.info("EarliestWalker.emitUnaryOperation incoming op: " + op + " element: "+current);
+        LOGGER.info("EarliestWalker.emitUnaryOperation incoming op: " + op + " element: " + current);
 
-        if(op == null){
+        if (op == null) {
             throw new Exception("Parse error op was null");
         }
-        if(rv != null) {
-            if(op.equalsIgnoreCase("NOT")){
+        if (rv != null) {
+            if (op.equalsIgnoreCase("NOT")) {
                 // Unary operations ignored
                 rv = null;
             }
             else {
-                throw new Exception("Parse error, unsupported logical operation: "+op+ " expression: " + rv);
+                throw new Exception("Parse error, unsupported logical operation: " + op + " expression: " + rv);
             }
         }
 

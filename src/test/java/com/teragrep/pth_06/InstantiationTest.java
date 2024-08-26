@@ -1,3 +1,48 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 package com.teragrep.pth_06;
 
 /*
@@ -58,7 +103,6 @@ import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
-import org.apache.spark.internal.config.Streaming;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -66,7 +110,6 @@ import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.Trigger;
-import org.jooq.Record10;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -86,6 +129,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstantiationTest {
+
     private SparkSession spark = null;
 
     private final String s3endpoint = "http://127.0.0.1:48080";
@@ -119,7 +163,6 @@ public class InstantiationTest {
 
         expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
     }
-
 
     @Test
     public void fullScanTest() throws StreamingQueryException, TimeoutException {
@@ -164,7 +207,9 @@ public class InstantiationTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .start();
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds,i) -> {ds.show(false);}).start();
+        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
+            ds.show(false);
+        }).start();
         sq.processAllAvailable();
         sq.stop();
         sq.awaitTermination();
@@ -177,8 +222,10 @@ public class InstantiationTest {
                 rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
                 System.out.println(rowCount);
             }
-            if (streamingQuery.lastProgress() == null ||
-                    streamingQuery.status().message().equals("Initializing sources")) {
+            if (
+                streamingQuery.lastProgress() == null
+                        || streamingQuery.status().message().equals("Initializing sources")
+            ) {
                 // query has not started
             }
             else if (streamingQuery.lastProgress().sources().length != 0) {
@@ -223,9 +270,14 @@ public class InstantiationTest {
                 .option("metadataQuery.enabled", "true")
                 .load();
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds,i) -> {
+        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
             ds.show(false);
-            List<String> rawCol = ds.select("_raw").collectAsList().stream().map(r -> r.getAs(0).toString()).collect(Collectors.toList());
+            List<String> rawCol = ds
+                    .select("_raw")
+                    .collectAsList()
+                    .stream()
+                    .map(r -> r.getAs(0).toString())
+                    .collect(Collectors.toList());
             assertFalse(rawCol.isEmpty());
             for (String c : rawCol) {
                 assertFalse(c.isEmpty());
@@ -255,7 +307,8 @@ public class InstantiationTest {
                 if (!startOffset.equalsIgnoreCase(endOffset)) {
                     archiveDone = false;
                 }
-            } else {
+            }
+            else {
                 archiveDone = false;
             }
         }
@@ -271,13 +324,20 @@ public class InstantiationTest {
         long rows = 0L;
         AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
 
-        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
+        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = mockDBData
+                .getVirtualDatabaseMap();
 
-        for (Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap.entrySet()) {
-            Iterator<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> it = entry.getValue().iterator();
+        for (
+            Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap
+                    .entrySet()
+        ) {
+            Iterator<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> it = entry
+                    .getValue()
+                    .iterator();
             while (it.hasNext()) {
                 // id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize
-                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record10 = it.next();
+                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record10 = it
+                        .next();
                 Long id = record10.get(0, ULong.class).longValue();
                 String directory = record10.get(1, String.class);
                 String stream = record10.get(2, String.class);
@@ -313,8 +373,7 @@ public class InstantiationTest {
 
                 // [event_format@48577 original_format="rfc5424"]
 
-                SDElement event_format_48577 = new SDElement("event_id@48577")
-                        .addSDParam("original_format", "rfc5424");
+                SDElement event_format_48577 = new SDElement("event_id@48577").addSDParam("original_format", "rfc5424");
 
                 syslog = syslog.withSDElement(event_format_48577);
 
@@ -351,7 +410,6 @@ public class InstantiationTest {
                 SDElement origin_48577 = new SDElement("origin@48577")
                         .addSDParam("hostname", "original.hostname.domain.tld");
                 syslog = syslog.withSDElement(origin_48577);
-
 
                 // check if this bucket exists
                 boolean bucketExists = false;

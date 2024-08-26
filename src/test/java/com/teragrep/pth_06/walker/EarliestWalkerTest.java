@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.walker;
 
 import com.teragrep.pth_06.planner.walker.EarliestWalker;
@@ -52,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EarliestWalkerTest {
+
     EarliestWalker earliestWalker;
 
     @org.junit.jupiter.api.BeforeEach
@@ -71,6 +71,7 @@ public class EarliestWalkerTest {
 
         assertEquals(1611657303L, result);
     }
+
     @Test
     void indexEarliestTest() throws Exception {
         String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><index_earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
@@ -93,7 +94,7 @@ public class EarliestWalkerTest {
         String q = "<OR><earliest value=\"2\" operation=\"GE\"/><earliest value=\"1\" operation=\"GE\"/></OR>";
         Long result = earliestWalker.fromString(q);
 
-        assertEquals(1L,result);
+        assertEquals(1L, result);
     }
 
     @Test
@@ -102,7 +103,7 @@ public class EarliestWalkerTest {
         Long result = earliestWalker.fromString(q);
         Long global = earliestWalker.globalEarliestEpoch;
 
-        assertEquals(global,result);
+        assertEquals(global, result);
     }
 
     @Test
@@ -111,14 +112,15 @@ public class EarliestWalkerTest {
         Long result = earliestWalker.fromString(q);
         Long global = earliestWalker.globalEarliestEpoch;
 
-        assertEquals(1000L,result);
+        assertEquals(1000L, result);
     }
+
     @Test
     void ignoreUnaryOperationsWithGlobalTest() throws Exception {
         String q = "<AND><OR><earliest value=\"2611657302\" operation=\"GE\"/><earliest value=\"2611657304\" operation=\"GE\"/></OR><NOT><earliest value=\"1\" operation=\"GE\"/></NOT></AND>";
         Long result = earliestWalker.fromString(q);
         Long global = earliestWalker.globalEarliestEpoch;
 
-        assertEquals(global,result);
+        assertEquals(global, result);
     }
 }

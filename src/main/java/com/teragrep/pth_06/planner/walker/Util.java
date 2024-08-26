@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.walker;
 
 import org.w3c.dom.Element;
@@ -61,9 +60,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h1>Util</h1>
- *
- * Class for holding various util methods used by the walkers.
+ * <h1>Util</h1> Class for holding various util methods used by the walkers.
  *
  * @since 23/09/2021
  * @author Mikko Kortelainen
@@ -79,7 +76,8 @@ public class Util {
         // check "-quotes
         if (m.find()) {
             strUnquoted = m.group(1);
-        } else {
+        }
+        else {
             // check '-quotes
             if (m1.find()) {
                 strUnquoted = m1.group(1);
@@ -117,16 +115,22 @@ public class Util {
 
         LocalDateTime now = timestamp.toLocalDateTime();
         rv = timestamp.toInstant();
-        if ("s".equalsIgnoreCase(unit) || "sec".equalsIgnoreCase(unit) || "secs".equalsIgnoreCase(unit)
-                || "second".equalsIgnoreCase(unit) || "seconds".equalsIgnoreCase(unit)) {
+        if (
+            "s".equalsIgnoreCase(unit) || "sec".equalsIgnoreCase(unit) || "secs".equalsIgnoreCase(unit)
+                    || "second".equalsIgnoreCase(unit) || "seconds".equalsIgnoreCase(unit)
+        ) {
             rv = rv.plusSeconds(v);
         }
-        if ("m".equalsIgnoreCase(unit) || "min".equalsIgnoreCase(unit) || "minute".equalsIgnoreCase(unit)
-                || "minutes".equalsIgnoreCase(unit)) {
+        if (
+            "m".equalsIgnoreCase(unit) || "min".equalsIgnoreCase(unit) || "minute".equalsIgnoreCase(unit)
+                    || "minutes".equalsIgnoreCase(unit)
+        ) {
             rv = rv.plus(v, ChronoUnit.MINUTES);
         }
-        if ("h".equalsIgnoreCase(unit) || "hr".equalsIgnoreCase(unit) || "hrs".equalsIgnoreCase(unit)
-                || "hour".equalsIgnoreCase(unit) || "hours".equalsIgnoreCase(unit)) {
+        if (
+            "h".equalsIgnoreCase(unit) || "hr".equalsIgnoreCase(unit) || "hrs".equalsIgnoreCase(unit)
+                    || "hour".equalsIgnoreCase(unit) || "hours".equalsIgnoreCase(unit)
+        ) {
             rv = rv.plus(v, ChronoUnit.HOURS);
         }
         if ("d".equalsIgnoreCase(unit) || "day".equalsIgnoreCase(unit) || "days".equalsIgnoreCase(unit)) {
@@ -142,8 +146,10 @@ public class Util {
             now = now.plusMonths(v);
             rv = now.toInstant(ZoneOffset.UTC);
         }
-        if ("y".equalsIgnoreCase(unit) || "yr".equalsIgnoreCase(unit) || "yrs".equalsIgnoreCase(unit)
-                || "year".equalsIgnoreCase(unit) || "years".equalsIgnoreCase(unit)) {
+        if (
+            "y".equalsIgnoreCase(unit) || "yr".equalsIgnoreCase(unit) || "yrs".equalsIgnoreCase(unit)
+                    || "year".equalsIgnoreCase(unit) || "years".equalsIgnoreCase(unit)
+        ) {
             now = now.plusYears(v);
             rv = now.toInstant(ZoneOffset.UTC);
         }
@@ -151,7 +157,6 @@ public class Util {
         // unixtime=" + rv.getEpochSecond());
         return rv.getEpochSecond();
     }
-
 
     public static long unixEpochFromString(String timevalue, String tf) {
         long rv = 0;
@@ -163,16 +168,19 @@ public class Util {
                     // unix-epoch string so
                     long epoch = Long.parseLong(timevalue);
                     rv = epoch;
-                } else {
+                }
+                else {
                     // Not yet implemented so use default
-                    LocalDateTime time = LocalDateTime.parse(timevalue, DateTimeFormatter.ofPattern("MM/dd/yyyy:HH:mm:ss"));
+                    LocalDateTime time = LocalDateTime
+                            .parse(timevalue, DateTimeFormatter.ofPattern("MM/dd/yyyy:HH:mm:ss"));
                     final ZonedDateTime zonedtime = ZonedDateTime.of(time, ZoneId.systemDefault()); // .atZone(fromZone);
                     final ZonedDateTime converted = zonedtime.withZoneSameInstant(ZoneOffset.UTC);
                     rv = converted.toEpochSecond();
                     //System.out.println("LocalDatetime="+time+ " TZ="+ZoneId.systemDefault());
                     //System.out.println("Datetime(UTC)="+converted+" timestamp="+rv);
                 }
-            } else {
+            }
+            else {
                 // Use default format
                 LocalDateTime time = LocalDateTime.parse(timevalue, DateTimeFormatter.ofPattern("MM/dd/yyyy:HH:mm:ss"));
                 final ZonedDateTime zonedtime = ZonedDateTime.of(time, ZoneId.systemDefault()); // .atZone(fromZone);
@@ -181,10 +189,12 @@ public class Util {
                 //System.out.println("LocalDatetime="+time+ " TZ="+ZoneId.systemDefault());
                 //System.out.println("Datetime(UTC)="+converted+" timestamp="+rv);
             }
-        } catch (NumberFormatException exn) {
+        }
+        catch (NumberFormatException exn) {
             exn.printStackTrace();
             throw new RuntimeException("TimeQualifier conversion error: <" + timevalue + "> can't be parsed.");
-        } catch (DateTimeParseException ex) {
+        }
+        catch (DateTimeParseException ex) {
             ex.printStackTrace();
             throw new RuntimeException("TimeQualifier conversion error: <" + timevalue + "> can't be parsed.");
         }
@@ -199,13 +209,14 @@ public class Util {
             Transformer transformer = transFactory.newTransformer();
             StringWriter buffer = new StringWriter();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            transformer.transform(new DOMSource(el),
-                    new StreamResult(buffer));
+            transformer.transform(new DOMSource(el), new StreamResult(buffer));
             str = buffer.toString();
-        } catch (TransformerConfigurationException tex) {
-        } catch (TransformerException ex) {
+        }
+        catch (TransformerConfigurationException tex) {
+        }
+        catch (TransformerException ex) {
         }
         return str;
     }
-    
+
 }

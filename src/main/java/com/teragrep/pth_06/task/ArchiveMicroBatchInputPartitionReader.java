@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.task;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -68,9 +67,7 @@ import org.slf4j.LoggerFactory;
 // rfc5424
 
 /**
- * <h1>Archive Micro Batch Input Partition Reader</h1>
- *
- * Class for holding micro batch partition of a RFC5424 syslog data.
+ * <h1>Archive Micro Batch Input Partition Reader</h1> Class for holding micro batch partition of a RFC5424 syslog data.
  *
  * @see PartitionReader
  * @since 02/03/2021
@@ -78,6 +75,7 @@ import org.slf4j.LoggerFactory;
  * @author Kimmo Leppinen
  */
 class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
+
     final Logger LOGGER = LoggerFactory.getLogger(ArchiveMicroBatchInputPartitionReader.class);
 
     private final AuditPlugin auditPlugin;
@@ -88,15 +86,17 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     private final boolean skipNonRFC5424Files;
 
-    public ArchiveMicroBatchInputPartitionReader(String S3endPoint,
-                                                 String S3identity,
-                                                 String S3credential,
-                                                 LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
-                                                 String TeragrepAuditQuery,
-                                                 String TeragrepAuditReason,
-                                                 String TeragrepAuditUser,
-                                                 String TeragrepAuditPluginClassName,
-                                                 boolean skipNonRFC5424Files) {
+    public ArchiveMicroBatchInputPartitionReader(
+            String S3endPoint,
+            String S3identity,
+            String S3credential,
+            LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
+            String TeragrepAuditQuery,
+            String TeragrepAuditReason,
+            String TeragrepAuditUser,
+            String TeragrepAuditPluginClassName,
+            boolean skipNonRFC5424Files
+    ) {
         this.taskObjectList = taskObjectList;
 
         this.s3client = new Pth06S3Client(S3endPoint, S3identity, S3credential).build();
@@ -109,7 +109,11 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
             this.auditPlugin.setReason(TeragrepAuditReason);
             this.auditPlugin.setUser(TeragrepAuditUser);
 
-        } catch (ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+        }
+        catch (
+                ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException
+                | NoSuchMethodException e
+        ) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -130,7 +134,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                 rowConverter = new RowConverter(
                         auditPlugin,
                         s3client,
-						taskObjectList.getFirst().id,
+                        taskObjectList.getFirst().id,
                         taskObjectList.getFirst().bucket,
                         taskObjectList.getFirst().path,
                         taskObjectList.getFirst().directory,
@@ -159,7 +163,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                     rowConverter = new RowConverter(
                             auditPlugin,
                             s3client,
-							taskObjectList.getFirst().id,
+                            taskObjectList.getFirst().id,
                             taskObjectList.getFirst().bucket,
                             taskObjectList.getFirst().path,
                             taskObjectList.getFirst().directory,
@@ -182,7 +186,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     @Override
     public void close() throws IOException {
-        if(LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
             LOGGER.debug("ArchiveMicroBatchInputPartitionReader.close>");
         if (rowConverter != null) {
             rowConverter.close();

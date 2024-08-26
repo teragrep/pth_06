@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06;
 
 import com.teragrep.pth_06.config.Config;
@@ -70,9 +69,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * <h1>TeragrepDatasource</h1>
- *
- * Class that represents the custom Teragrep Spark Datasource. It reports the capabilities
+ * <h1>TeragrepDatasource</h1> Class that represents the custom Teragrep Spark Datasource. It reports the capabilities
  * of the datasource, its name, the schema and initializes the micro stream.
  *
  * @see DataSourceRegister
@@ -83,16 +80,13 @@ import java.util.stream.Stream;
  * @author Mikko Kortelainen
  * @author Eemeli Hukka
  */
-public final class TeragrepDatasource implements
-        DataSourceRegister,
-        TableProvider, Table, SupportsRead {
+public final class TeragrepDatasource implements DataSourceRegister, TableProvider, Table, SupportsRead {
 
     private final Logger LOGGER = LoggerFactory.getLogger(TeragrepDatasource.class);
-    
+
     private final String name = "teragrep";
 
-    private final StructType schema = new StructType(
-        new StructField[]{
+    private final StructType schema = new StructType(new StructField[] {
             new StructField("_time", DataTypes.TimestampType, false, new MetadataBuilder().build()),
             new StructField("_raw", DataTypes.StringType, false, new MetadataBuilder().build()),
             new StructField("index", DataTypes.StringType, false, new MetadataBuilder().build()),
@@ -102,17 +96,17 @@ public final class TeragrepDatasource implements
             new StructField("partition", DataTypes.StringType, false, new MetadataBuilder().build()),
             new StructField("offset", DataTypes.LongType, false, new MetadataBuilder().build()),
             new StructField("origin", DataTypes.StringType, false, new MetadataBuilder().build()),
-        }
-    );
-    
-     @Override
-     public Table getTable(StructType schema, Transform[] partitioning, Map<String, String> properties) {
-         return this;
-     }
+    });
+
+    @Override
+    public Table getTable(StructType schema, Transform[] partitioning, Map<String, String> properties) {
+        return this;
+    }
 
     @Override
     public ScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
         return () -> new Scan() {
+
             @Override
             public StructType readSchema() {
                 return schema;
@@ -129,6 +123,7 @@ public final class TeragrepDatasource implements
     public String shortName() {
         return name;
     }
+
     @Override
     public String name() {
         return name;
@@ -146,8 +141,6 @@ public final class TeragrepDatasource implements
 
     @Override
     public Set<TableCapability> capabilities() {
-        return Stream.of(
-                TableCapability.MICRO_BATCH_READ
-        ).collect(Collectors.toSet());
+        return Stream.of(TableCapability.MICRO_BATCH_READ).collect(Collectors.toSet());
     }
 }

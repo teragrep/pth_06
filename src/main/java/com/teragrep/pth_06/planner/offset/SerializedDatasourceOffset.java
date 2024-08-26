@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.offset;
 
 import org.apache.spark.sql.execution.streaming.LongOffset;
@@ -51,9 +50,7 @@ import org.apache.spark.sql.execution.streaming.LongOffset;
 import java.io.Serializable;
 
 /**
- * <h1>Serialized Datasource Offset</h1>
- *
- * Class for representing a serialized offset of data source.
+ * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
  *
  * @see LongOffset
  * @see KafkaOffset
@@ -61,15 +58,13 @@ import java.io.Serializable;
  * @author Mikko Kortelainen
  */
 public class SerializedDatasourceOffset implements Serializable {
+
     private final Long version = 1L;
 
     public final LongOffset archiveOffset;
     public final KafkaOffset kafkaOffset;
 
-    public SerializedDatasourceOffset(
-            LongOffset archiveOffset,
-            KafkaOffset kafkaOffset
-    ) {
+    public SerializedDatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
         this.archiveOffset = archiveOffset;
         this.kafkaOffset = kafkaOffset;
     }
@@ -86,10 +81,7 @@ public class SerializedDatasourceOffset implements Serializable {
 
     @Override
     public String toString() {
-        return "SerializedDatasourceOffset{" +
-                "version=" + version +
-                ", archiveOffset=" + archiveOffset +
-                ", kafkaOffset=" + kafkaOffset +
-                '}';
+        return "SerializedDatasourceOffset{" + "version=" + version + ", archiveOffset=" + archiveOffset
+                + ", kafkaOffset=" + kafkaOffset + '}';
     }
 }

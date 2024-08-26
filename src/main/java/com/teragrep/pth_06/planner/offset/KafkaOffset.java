@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.offset;
 
 import com.google.common.reflect.TypeToken;
@@ -57,17 +56,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <h1>Kafka Offset</h1>
- *
- * Class for representing a serializable offset of Kafka data source.
+ * <h1>Kafka Offset</h1> Class for representing a serializable offset of Kafka data source.
  *
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
 public class KafkaOffset extends Offset implements Serializable {
 
-    private static final Type mapType = new TypeToken<Map<String, Long>>() {}.getType();
-
+    private static final Type mapType = new TypeToken<Map<String, Long>>() {
+    }.getType();
 
     private final Map<String, Long> serializedKafkaOffset;
 
@@ -108,8 +105,6 @@ public class KafkaOffset extends Offset implements Serializable {
 
     @Override
     public String toString() {
-        return "KafkaOffset{" +
-                "serializedKafkaOffset=" + serializedKafkaOffset +
-                '}';
+        return "KafkaOffset{" + "serializedKafkaOffset=" + serializedKafkaOffset + '}';
     }
 }

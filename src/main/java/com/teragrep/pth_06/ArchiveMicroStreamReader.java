@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -70,9 +69,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <h1>Archive Micro Stream Reader</h1>
- * Custom Spark Structured Streaming Datasource that reads data
- * from Archive and Kafka in micro-batches.
+ * <h1>Archive Micro Stream Reader</h1> Custom Spark Structured Streaming Datasource that reads data from Archive and
+ * Kafka in micro-batches.
  *
  * @see MicroBatchStream
  * @since 02/03/2021
@@ -80,6 +78,7 @@ import org.slf4j.LoggerFactory;
  * @author Eemeli Hukka
  */
 public final class ArchiveMicroStreamReader implements MicroBatchStream {
+
     private final Logger LOGGER = LoggerFactory.getLogger(ArchiveMicroStreamReader.class);
 
     /**
@@ -89,10 +88,11 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     private final ArchiveQuery aq;
     private final KafkaQuery kq;
 
-	/**
-	 * Constructor for ArchiveMicroStreamReader
-	 * @param config Datasource configuration object
-	 */
+    /**
+     * Constructor for ArchiveMicroStreamReader
+     * 
+     * @param config Datasource configuration object
+     */
     ArchiveMicroStreamReader(Config config) {
         LOGGER.debug("ArchiveMicroBatchReader>");
 
@@ -100,21 +100,23 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
         if (config.isArchiveEnabled) {
             this.aq = new ArchiveQueryProcessor(config);
-        } else {
+        }
+        else {
             this.aq = null;
         }
 
         if (config.isKafkaEnabled) {
             this.kq = new KafkaQueryProcessor(config);
-        } else {
+        }
+        else {
             this.kq = null;
         }
 
         LOGGER.debug("MicroBatchReader> initialized");
     }
 
-	/**
-	 * Used for testing.
+    /**
+     * Used for testing.
      */
     @VisibleForTesting
     ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
@@ -127,8 +129,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Used when Spark requests the initial offset when starting a new query.
-     * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled
-     * datasources.
+     * 
+     * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      * @throws IllegalStateException if no datasources were enabled
      */
     @Override
@@ -145,7 +147,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (this.config.isArchiveEnabled) {
             // both
-            rv =  new DatasourceOffset(
+            rv = new DatasourceOffset(
                     new LongOffset(this.aq.getInitialOffset() - 3600L),
                     new KafkaOffset(this.kq.getBeginningOffsets(null))
             );
@@ -164,15 +166,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         return new DatasourceOffset(json);
     }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public void commit(Offset offset) {
         if (this.config.isArchiveEnabled) {
-            this.aq.commit(((DatasourceOffset)offset).getArchiveOffset().offset());
+            this.aq.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
         }
     }
 
-	/** {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
     public void stop() {
         LOGGER.debug("ArchiveMicroStreamReader.stop>");
@@ -180,8 +182,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Used when Spark progresses the query further to fetch more data.
-     * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled
-     * datasources.
+     * 
+     * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      */
     @Override
     public Offset latestOffset() {
@@ -196,7 +198,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (this.config.isArchiveEnabled) {
             // both
-            rv =  new DatasourceOffset(
+            rv = new DatasourceOffset(
                     new LongOffset(this.aq.incrementAndGetLatestOffset()),
                     new KafkaOffset(this.kq.getInitialEndOffsets())
             );
@@ -211,10 +213,10 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     }
 
     /**
-     * Forms the batch between start and end offsets and forms the input partitions
-     * from that batch.
+     * Forms the batch between start and end offsets and forms the input partitions from that batch.
+     * 
      * @param start Start offset
-     * @param end End offset
+     * @param end   End offset
      * @return InputPartitions as an array
      */
     @Override
@@ -234,30 +236,36 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             if (!archiveTaskList.isEmpty()) {
-                inputPartitions.add(new ArchiveMicroBatchInputPartition(
-                        config.archiveConfig.s3EndPoint,
-                        config.archiveConfig.s3Identity,
-                        config.archiveConfig.s3Credential,
-                        archiveTaskList,
-                        config.auditConfig.query,
-                        config.auditConfig.reason,
-                        config.auditConfig.user,
-                        config.auditConfig.pluginClassName,
-                        config.archiveConfig.skipNonRFC5424Files
-                ));
+                inputPartitions
+                        .add(
+                                new ArchiveMicroBatchInputPartition(
+                                        config.archiveConfig.s3EndPoint,
+                                        config.archiveConfig.s3Identity,
+                                        config.archiveConfig.s3Credential,
+                                        archiveTaskList,
+                                        config.auditConfig.query,
+                                        config.auditConfig.reason,
+                                        config.auditConfig.user,
+                                        config.auditConfig.pluginClassName,
+                                        config.archiveConfig.skipNonRFC5424Files
+                                )
+                        );
             }
 
             // kafka tasks
             for (BatchSlice batchSlice : taskObjectList) {
                 if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
-                    inputPartitions.add(new KafkaMicroBatchInputPartition(
-                            config.kafkaConfig.executorOpts,
-                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
-                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
-                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
-                            config.kafkaConfig.executorConfig,
-                            config.kafkaConfig.skipNonRFC5424Records
-                    ));
+                    inputPartitions
+                            .add(
+                                    new KafkaMicroBatchInputPartition(
+                                            config.kafkaConfig.executorOpts,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
+                                            config.kafkaConfig.executorConfig,
+                                            config.kafkaConfig.skipNonRFC5424Records
+                                    )
+                            );
                 }
             }
         }

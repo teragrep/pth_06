@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -48,6 +48,7 @@ package com.teragrep.pth_06.config;
 import java.util.Map;
 
 public final class BatchConfig {
+
     public final int numPartitions;
     public final int quantumLength;
     public final float fileCompressionRatio;
@@ -58,8 +59,10 @@ public final class BatchConfig {
         // TODO activeSession.get.sparkContext.defaultParallelism;
         numPartitions = Integer.parseInt(opts.getOrDefault("num_partitions", "1"));
         quantumLength = Integer.parseInt(opts.getOrDefault("quantumLength", "15"));
-        fileCompressionRatio = Float.parseFloat(opts.getOrDefault("batch.size.fileCompressionRatio", String.valueOf(15.5F)));
-        processingSpeed = Float.parseFloat(opts.getOrDefault("batch.size.processingSpeed", String.valueOf(273/2F)));
-        totalObjectCountLimit = Long.parseLong(opts.getOrDefault("batch.size.totalObjectCountLimit", String.valueOf(1000L)));
+        fileCompressionRatio = Float
+                .parseFloat(opts.getOrDefault("batch.size.fileCompressionRatio", String.valueOf(15.5F)));
+        processingSpeed = Float.parseFloat(opts.getOrDefault("batch.size.processingSpeed", String.valueOf(273 / 2F)));
+        totalObjectCountLimit = Long
+                .parseLong(opts.getOrDefault("batch.size.totalObjectCountLimit", String.valueOf(1000L)));
     }
 }
