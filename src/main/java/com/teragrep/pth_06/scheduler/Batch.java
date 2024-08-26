@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -55,14 +55,14 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 
 /**
- * <h1>Batch</h1>
- * Contains the necessary operations to form a Spark batch.
- * It consists of Archive and/or Kafka data.
- * Each batch is constructed from a {@link BatchSliceCollection}, which in turn consists of
- * multiple {@link BatchSlice}s. Each of the slices contain the actual data.
+ * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
+ * Each batch is constructed from a {@link BatchSliceCollection}, which in turn consists of multiple
+ * {@link BatchSlice}s. Each of the slices contain the actual data.
+ * 
  * @author Eemeli Hukka
  */
 public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
+
     private final Logger LOGGER = LoggerFactory.getLogger(Batch.class);
     private long numberOfBatches = 0;
     private final LinkedList<BatchTaskQueue> runQueueArray;
@@ -70,8 +70,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
 
-    public Batch(Config config,
-                 ArchiveQuery aq, KafkaQuery kq) {
+    public Batch(Config config, ArchiveQuery aq, KafkaQuery kq) {
         this.config = config;
         this.runQueueArray = new LinkedList<>();
 
@@ -94,7 +93,8 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         if (config.isKafkaEnabled) {
             if (slice == null) {
                 slice = new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end);
-            } else {
+            }
+            else {
                 slice.addAll(new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end));
             }
         }
@@ -115,7 +115,8 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
             for (BatchSlice objectMetadata : sliceCollection) {
                 if (longestObject == null) {
                     longestObject = objectMetadata;
-                } else {
+                }
+                else {
                     if (longestObject.getSize() > objectMetadata.getSize()) {
                         longestObject = objectMetadata;
                     }
@@ -123,15 +124,16 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
             }
 
             // object found
-            if (longestObject != null){
+            if (longestObject != null) {
                 sliceCollection.remove(longestObject);
 
                 // find shortest queue
                 BatchTaskQueue shortestQueue = null;
                 for (BatchTaskQueue btq : runQueueArray) {
-                    if (shortestQueue == null){
+                    if (shortestQueue == null) {
                         shortestQueue = btq;
-                    } else {
+                    }
+                    else {
                         if (shortestQueue.getQueueTime() > btq.getQueueTime()) {
                             shortestQueue = btq;
                         }
@@ -139,7 +141,8 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
                 }
                 if (shortestQueue != null) {
                     shortestQueue.add(longestObject);
-                } else {
+                }
+                else {
                     throw new RuntimeException("shortestQueue was null");
                 }
 

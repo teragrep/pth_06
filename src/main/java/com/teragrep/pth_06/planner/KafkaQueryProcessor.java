@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -64,15 +63,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <h1>Kafka Query Processor</h1>
- *
- * Class for processing kafka queries.
+ * <h1>Kafka Query Processor</h1> Class for processing kafka queries.
  *
  * @see KafkaQuery
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
 public class KafkaQueryProcessor implements KafkaQuery {
+
     // NOTE, for Kafka: start is inclusive (GreaterOrEqualThan), end is exclusive
     private final Logger LOGGER = LoggerFactory.getLogger(KafkaQueryProcessor.class);
 
@@ -92,9 +90,13 @@ public class KafkaQueryProcessor implements KafkaQuery {
             try {
                 KafkaWalker parser = new KafkaWalker();
                 topicsRegexString = parser.fromString(config.query);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 ex.printStackTrace();
-                throw new RuntimeException("KafkaQueryProcessor problems when construction Query conditions query:" + config.query + " exception:" + ex);
+                throw new RuntimeException(
+                        "KafkaQueryProcessor problems when construction Query conditions query:" + config.query
+                                + " exception:" + ex
+                );
             }
         }
 
@@ -143,7 +145,10 @@ public class KafkaQueryProcessor implements KafkaQuery {
         LOGGER.debug("KafkaQueryProcessor");
     }
 
-    private void handleTopicAuthorizationException(String topicsRegexString, TopicAuthorizationException topicAuthorizationException) {
+    private void handleTopicAuthorizationException(
+            String topicsRegexString,
+            TopicAuthorizationException topicAuthorizationException
+    ) {
         // wildcard queries may match topics with no authorization
         Set<String> unauthorizedTopics = topicAuthorizationException.unauthorizedTopics();
 
@@ -170,13 +175,13 @@ public class KafkaQueryProcessor implements KafkaQuery {
 
         String negatedTopicRegexString = stringBuilder.toString();
 
-        Pattern negatedTopicRegexPattern =
-                Pattern.compile(negatedTopicRegexString);
+        Pattern negatedTopicRegexPattern = Pattern.compile(negatedTopicRegexString);
 
-        LOGGER.warn("Re-subscribing: <[" + negatedTopicRegexPattern + "]>"
-                + " after TopicAuthorizationException: "
-                + topicAuthorizationException
-        );
+        LOGGER
+                .warn(
+                        "Re-subscribing: <[" + negatedTopicRegexPattern + "]>" + " after TopicAuthorizationException: "
+                                + topicAuthorizationException
+                );
         kafkaConsumer.subscribe(negatedTopicRegexPattern);
 
         // it seems that kafka may not report all unauthorized topics in a
@@ -190,7 +195,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
     }
 
     @VisibleForTesting
-    public KafkaQueryProcessor(Consumer<byte[],byte[]> consumer) {
+    public KafkaQueryProcessor(Consumer<byte[], byte[]> consumer) {
         this.persistedEndOffsetMap = new HashMap<>();
         this.continuousProcessing = false;
         kafkaConsumer = consumer;
@@ -242,11 +247,12 @@ public class KafkaQueryProcessor implements KafkaQuery {
     public Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset) {
         Map<TopicPartition, Long> topicPartitionStartOffsetMap = new HashMap<>();
 
-        Map<TopicPartition, Long> beginningOffsets = kafkaConsumer.beginningOffsets(topicPartitionSet, Duration.ofSeconds(60));
+        Map<TopicPartition, Long> beginningOffsets = kafkaConsumer
+                .beginningOffsets(topicPartitionSet, Duration.ofSeconds(60));
 
         for (TopicPartition topicPartition : topicPartitionSet) {
             long partitionStart = beginningOffsets.get(topicPartition); // partition start becomes the current start
-                topicPartitionStartOffsetMap.put(topicPartition, partitionStart);
+            topicPartitionStartOffsetMap.put(topicPartition, partitionStart);
         }
         return topicPartitionStartOffsetMap;
     }

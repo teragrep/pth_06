@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.walker;
 
 import org.slf4j.Logger;
@@ -65,15 +64,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <h1>XML Walker</h1>
- *
- * Abstract class to represent XmlWalker.
+ * <h1>XML Walker</h1> Abstract class to represent XmlWalker.
  *
  * @since 23/09/2021
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
  */
 public abstract class XmlWalker {
+
     private final Logger LOGGER = LoggerFactory.getLogger(XmlWalker.class);
 
     /**
@@ -92,19 +90,20 @@ public abstract class XmlWalker {
         DocumentTraversal traversal = (DocumentTraversal) document;
         LOGGER.info("XmlWalker.fromString incoming:" + inXml);
 
-        TreeWalker walker = traversal.createTreeWalker(document.getDocumentElement(),
-                NodeFilter.SHOW_ELEMENT, null, true);
+        TreeWalker walker = traversal
+                .createTreeWalker(document.getDocumentElement(), NodeFilter.SHOW_ELEMENT, null, true);
         rv = traverse(walker, (String) null);
-//        if (rv != null) {
-//            System.out.println("XmlWalker.fromString() value:" + ((T) rv).toString());
-//        }
-        return (T)rv;
+        //        if (rv != null) {
+        //            System.out.println("XmlWalker.fromString() value:" + ((T) rv).toString());
+        //        }
+        return (T) rv;
     }
 
     /**
      * Walk through tree using depth-first order and generate spark-query using appropriate emit-methods.
+     * 
      * @param walker
-     * @param op operation String
+     * @param op     operation String
      * @return Class which expr-part contains actual catalyst query tree
      * @throws Exception
      */
@@ -112,62 +111,69 @@ public abstract class XmlWalker {
         Node parend = walker.getCurrentNode();
         Element current = ((Element) parend);
         Object rv = null;
-        LOGGER.debug(" traverse incoming:"+current.getTagName());
+        LOGGER.debug(" traverse incoming:" + current.getTagName());
 
         try {
-            if(current.getTagName().equalsIgnoreCase("AND") || current.getTagName().equalsIgnoreCase("OR") || current.getTagName().equalsIgnoreCase("NOT")){
+            if (
+                current.getTagName().equalsIgnoreCase("AND") || current.getTagName().equalsIgnoreCase("OR")
+                        || current.getTagName().equalsIgnoreCase("NOT")
+            ) {
                 op = current.getTagName();
             }
 
             if (parend.hasChildNodes()) {
                 NodeList children = parend.getChildNodes();
                 int count = children.getLength();
-                if (count < 1 || count >2) {
-                    throw new Exception("Error, wrong number of children:"+count+ " op:"+op);
+                if (count < 1 || count > 2) {
+                    throw new Exception("Error, wrong number of children:" + count + " op:" + op);
                 }
                 // get left and right
                 Node left = walker.firstChild();
                 Object lft;
-                switch (count){
-                    case 1:{
-                        LOGGER.debug("  1 child incoming:"+current+" left="+left+ " op:"+op);
+                switch (count) {
+                    case 1: {
+                        LOGGER.debug("  1 child incoming:" + current + " left=" + left + " op:" + op);
 
                         //rv = emitLogicalOperation(op, lft, null);
                         walker.setCurrentNode(left);
                         lft = traverse(walker, op);
-                        LOGGER.debug("--Traverse 1 child op:"+op+" lft="+lft);
+                        LOGGER.debug("--Traverse 1 child op:" + op + " lft=" + lft);
                         rv = lft;
                         break;
                     }
-                    case 2:{
+                    case 2: {
                         lft = traverse(walker, op);
                         Object rht = null;
                         Node right = walker.nextSibling();
                         walker.setCurrentNode(left);
-//                        System.out.println("traverse right:"+right);
-                        if(right != null){
+                        //                        System.out.println("traverse right:"+right);
+                        if (right != null) {
                             walker.setCurrentNode(right);
                             rht = traverse(walker, op);
                         }
-                        if(lft != null && rht != null){
-                            if(op == null){
-                                throw new Exception("Parse error, unbalanced elements. "+lft.toString());
+                        if (lft != null && rht != null) {
+                            if (op == null) {
+                                throw new Exception("Parse error, unbalanced elements. " + lft.toString());
                             }
                             rv = emitLogicalOperation(op, lft, rht);
-                        } else if( lft == null){
+                        }
+                        else if (lft == null) {
                             rv = rht;
-                        } else if(rht == null){
+                        }
+                        else if (rht == null) {
                             rv = lft;
                         }
                         break;
                     }
                 }
-            } else {
+            }
+            else {
                 // leaf
-                if(op != null && op.equals("NOT")){
-                    LOGGER.debug("Emit Unary operation op:"+op+" l:"+current);
+                if (op != null && op.equals("NOT")) {
+                    LOGGER.debug("Emit Unary operation op:" + op + " l:" + current);
                     rv = emitUnaryOperation(op, current);
-                } else {
+                }
+                else {
                     LOGGER.debug("EmitElem");
                     rv = emitElem(current);
                 }
@@ -175,8 +181,9 @@ public abstract class XmlWalker {
             walker.setCurrentNode(parend);
             //if(rv != null)
             //    System.out.println("XmlWalker.traverse type:"+rv.getClass().getName() +" returns:"+((T)rv).toString());
-            return (T)rv;
-        } catch(Exception e){
+            return (T) rv;
+        }
+        catch (Exception e) {
             LOGGER.error(e.toString());
         }
         return null;
@@ -185,7 +192,7 @@ public abstract class XmlWalker {
     /**
      * Abstract method which is called during traverse. Emits appropriate element
      *
-     * @param <T>     returned class
+     * @param         <T> returned class
      * @param current DOM-element
      * @return correct query according to implementation class
      */
@@ -193,6 +200,7 @@ public abstract class XmlWalker {
 
     /**
      * Abstract method which is called during traverse. Emits appropriate logical operation
+     * 
      * @param <T> returned class
      * @return correct query according to implementation class
      */
@@ -200,7 +208,8 @@ public abstract class XmlWalker {
 
     /**
      * Abstract method which is called during traverse. Emits appropriate unary operation
-     * @param <T> returned class
+     * 
+     * @param         <T> returned class
      * @param current DOM-element
      * @return correct query according to implementation class
      */
@@ -217,10 +226,13 @@ public abstract class XmlWalker {
         final List<String> specialCharacters = Arrays.asList("\\", "*", "+", "?", "%");
         if (input.equals("*")) {
             return "%";
-        } else {
+        }
+        else {
             return Arrays.stream(input.split("")).map((c) -> {
-                if (specialCharacters.contains(c)) return "\\" + c;
-                else return c;
+                if (specialCharacters.contains(c))
+                    return "\\" + c;
+                else
+                    return c;
             }).collect(Collectors.joining());
         }
     }

@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -45,10 +45,8 @@
  */
 package com.teragrep.pth_06.task;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.google.gson.Gson;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-import com.teragrep.pth_06.task.s3.Pth06S3Client;
 import com.teragrep.rad_01.AuditPlugin;
 import com.teragrep.rad_01.AuditPluginFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -66,6 +64,7 @@ import java.time.ZonedDateTime;
 import java.util.LinkedList;
 
 public class MetadataMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
+
     final Logger LOGGER = LoggerFactory.getLogger(MetadataMicroBatchInputPartitionReader.class);
 
     private final AuditPlugin auditPlugin;
@@ -75,11 +74,13 @@ public class MetadataMicroBatchInputPartitionReader implements PartitionReader<I
 
     private long currentOffset;
 
-    public MetadataMicroBatchInputPartitionReader(LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
-                                                  String TeragrepAuditQuery,
-                                                  String TeragrepAuditReason,
-                                                  String TeragrepAuditUser,
-                                                  String TeragrepAuditPluginClassName) {
+    public MetadataMicroBatchInputPartitionReader(
+            LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
+            String TeragrepAuditQuery,
+            String TeragrepAuditReason,
+            String TeragrepAuditUser,
+            String TeragrepAuditPluginClassName
+    ) {
         this.taskObjectList = taskObjectList;
 
         AuditPluginFactory auditPluginFactory = new AuditPluginFactory(TeragrepAuditPluginClassName);
@@ -90,7 +91,11 @@ public class MetadataMicroBatchInputPartitionReader implements PartitionReader<I
             this.auditPlugin.setReason(TeragrepAuditReason);
             this.auditPlugin.setUser(TeragrepAuditUser);
 
-        } catch (ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+        }
+        catch (
+                ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException
+                | NoSuchMethodException e
+        ) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -99,19 +104,23 @@ public class MetadataMicroBatchInputPartitionReader implements PartitionReader<I
         this.currentOffset = 0L;
 
     }
+
     @Override
     public boolean next() throws IOException {
         if (taskObjectList.isEmpty()) {
             return false;
-        } else {
+        }
+        else {
             rowWriter.reset();
             rowWriter.zeroOutNullBytes();
             ArchiveS3ObjectMetadata taskObject = taskObjectList.removeFirst();
 
             // Use metadata java object to easily form a json representation of metadata
-            final String rawColumn = new Gson().toJson(new Metadata(taskObject.uncompressedSize, taskObject.compressedSize));
+            final String rawColumn = new Gson()
+                    .toJson(new Metadata(taskObject.uncompressedSize, taskObject.compressedSize));
             // use logtimeEpoch as _time
-            rowWriter.write(0, rfc3339ToEpoch(Instant.ofEpochSecond(taskObject.logtimeEpoch).atZone(ZoneId.systemDefault())));
+            rowWriter
+                    .write(0, rfc3339ToEpoch(Instant.ofEpochSecond(taskObject.logtimeEpoch).atZone(ZoneId.systemDefault())));
             rowWriter.write(1, UTF8String.fromString(rawColumn));
             rowWriter.write(2, UTF8String.fromString(taskObject.directory));
             rowWriter.write(3, UTF8String.fromString(taskObject.stream));

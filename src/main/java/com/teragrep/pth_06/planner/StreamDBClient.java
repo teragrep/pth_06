@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner;
 
 import java.io.ByteArrayOutputStream;
@@ -73,17 +72,15 @@ import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.SQLDataType.BIGINT;
 
-
-
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
 
 /**
- * <h1>Stream DB Client</h1>
+ * <h1>Stream DB Client</h1> Class for creating a streamdb client.
  *
- * Class for creating a streamdb client.
- *
- * @see <a href=https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq>stackoverflow.com example</a>
+ * @see <a
+ *      href=https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq>stackoverflow.com
+ *      example</a>
  * @see <a href=https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/>jooq.org dynamic sql manual</a>
  * @since 08/04/2021
  * @author Mikko Kortelainen
@@ -92,6 +89,7 @@ import static org.jooq.impl.SQLDataType.BIGINT;
  * @author Ville Manninen
  */
 public class StreamDBClient {
+
     private final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
 
     private final DSLContext ctx;
@@ -111,16 +109,11 @@ public class StreamDBClient {
         final String journaldbName = config.archiveConfig.dbJournalDbName;
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
-        final boolean hideDatabaseExceptions= config.archiveConfig.hideDatabaseExceptions;
+        final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
 
         // https://blog.jooq.org/how-i-incorrectly-fetched-jdbc-resultsets-again/
         Settings settings = new Settings()
-                .withRenderMapping(new RenderMapping()
-                        .withSchemata(
-                                new MappedSchema().withInput("streamdb").withOutput(streamdbName),
-                                new MappedSchema().withInput("journaldb").withOutput(journaldbName),
-                                new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)
-                        ));
+                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
         if (hideDatabaseExceptions) {
             settings = settings.withThrowExceptions(ThrowExceptions.THROW_NONE);
             LOGGER.warn("StreamDBClient SQL Exceptions set to THROW_NONE");
@@ -145,7 +138,8 @@ public class StreamDBClient {
             // Construct both streamDB and journalDB query conditions
             streamdbCondition = walker.fromString(config.query, true);
             this.journaldbCondition = walker.fromString(config.query, false);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -162,51 +156,45 @@ public class StreamDBClient {
 
     int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
-        SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select =
-                ctx.select(
-                                JOURNALDB.LOGFILE.ID,
-                                nestedTopNQuery.directory,
-                                nestedTopNQuery.stream,
-                                JOURNALDB.HOST.NAME,
-                                JOURNALDB.LOGFILE.LOGTAG,
-                                JOURNALDB.LOGFILE.LOGDATE,
-                                JOURNALDB.BUCKET.NAME,
-                                JOURNALDB.LOGFILE.PATH,
-                                nestedTopNQuery.logtime,
-                                JOURNALDB.LOGFILE.FILE_SIZE,
-                                JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
-                        )
-                        .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
-                        .join(JOURNALDB.LOGFILE).on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id))
-                        .join(JOURNALDB.BUCKET).on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
-                        .join(JOURNALDB.HOST).on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
+        SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+                .select(
+                        JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory, nestedTopNQuery.stream, JOURNALDB.HOST.NAME,
+                        JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
+                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime, JOURNALDB.LOGFILE.FILE_SIZE,
+                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                )
+                .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
+                .join(JOURNALDB.LOGFILE)
+                .on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id))
+                .join(JOURNALDB.BUCKET)
+                .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
+                .join(JOURNALDB.HOST)
+                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
 
         LOGGER.trace("StreamDBClient.pullToSliceTable select <{}>", select);
         final Instant stopwatch = Instant.now();
         int rows = ctx.insertInto(SliceTable.SLICE_TABLE).select(select).execute();
 
-        LOGGER.info("StreamDBClient.pullToSliceTable" + ": took (" + (Instant.now().toEpochMilli() - stopwatch.toEpochMilli()) + "ms)");
+        LOGGER
+                .info(
+                        "StreamDBClient.pullToSliceTable" + ": took ("
+                                + (Instant.now().toEpochMilli() - stopwatch.toEpochMilli()) + "ms)"
+                );
         return rows;
 
     }
 
     WeightedOffset getNextHourAndSizeFromSliceTable(long previousHour) {
-        Result<Record2<Long, ULong>> hourAndFilesizeRecord = ctx.selectDistinct(SliceTable.logtime, SliceTable.filesize)
+        Result<Record2<Long, ULong>> hourAndFilesizeRecord = ctx
+                .selectDistinct(SliceTable.logtime, SliceTable.filesize)
                 .from(SliceTable.SLICE_TABLE)
-                .where(
-                        SliceTable.logtime.greaterThan(previousHour)
-                                .and(
-                                        SliceTable.logtime.lessThan(includeBeforeEpoch)
-                                )
-                )
-                .orderBy(SliceTable.logtime.asc())
-                .limit(1)
-                .fetch();
+                .where(SliceTable.logtime.greaterThan(previousHour).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).orderBy(SliceTable.logtime.asc()).limit(1).fetch();
 
         final WeightedOffset weightedOffset;
         if (hourAndFilesizeRecord.isEmpty()) {
             weightedOffset = new WeightedOffset();
-        } else {
+        }
+        else {
             long offset = hourAndFilesizeRecord.get(0).get(0, Long.class);
             long fileSize = hourAndFilesizeRecord.get(0).get(1, ULong.class).longValue();
 
@@ -218,41 +206,24 @@ public class StreamDBClient {
     }
 
     void deleteRangeFromSliceTable(long start, long end) {
-        ctx.deleteFrom(SliceTable.SLICE_TABLE)
-                .where(
-                        SliceTable.logtime.greaterThan(start)
-                                .and(
-                                        SliceTable.logtime.lessOrEqual(end)
-                                )
-                )
+        ctx
+                .deleteFrom(SliceTable.SLICE_TABLE)
+                .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)))
                 .execute();
     }
 
-    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(long excludedStartHour, long includedEndHour) {
-        return ctx.select(
-                        SliceTable.id,
-                        SliceTable.directory,
-                        SliceTable.stream,
-                        SliceTable.host,
-                        SliceTable.logtag,
-                        SliceTable.logdate,
-                        SliceTable.bucket,
-                        SliceTable.path,
-                        SliceTable.logtime,
-                        SliceTable.filesize,
+    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
+            long excludedStartHour,
+            long includedEndHour
+    ) {
+        return ctx
+                .select(
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
+                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
                         SliceTable.uncompressedFilesize
                 )
                 .from(SliceTable.SLICE_TABLE)
-                .where(
-                        SliceTable.logtime.greaterThan(excludedStartHour)
-                                .and(
-                                        SliceTable.logtime.lessOrEqual(includedEndHour)
-                                )
-                                .and(
-                                        SliceTable.logtime.lessThan(includeBeforeEpoch)
-                                )
-                )
-                .fetch();
+                .where(SliceTable.logtime.greaterThan(excludedStartHour).and(SliceTable.logtime.lessOrEqual(includedEndHour)).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).fetch();
     }
 
     public static class SliceTable {
@@ -271,26 +242,18 @@ public class StreamDBClient {
         public static final Field<Long> logtime = DSL.field(DSL.name(sliceTableName, "logtime"), Long.class);
         public static final Field<ULong> filesize = DSL.field(DSL.name(sliceTableName, "filesize"), ULong.class);
         // additional metadata
-        public static final Field<ULong> uncompressedFilesize = DSL.field(DSL.name(sliceTableName, "uncompressed_filesize"), ULong.class);
-
+        public static final Field<ULong> uncompressedFilesize = DSL
+                .field(DSL.name(sliceTableName, "uncompressed_filesize"), ULong.class);
 
         private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
 
         private static void create(DSLContext ctx) {
             DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(SLICE_TABLE);
             dropQuery.execute();
-            CreateTableColumnStep query = ctx.createTemporaryTable(SLICE_TABLE)
+            CreateTableColumnStep query = ctx
+                    .createTemporaryTable(SLICE_TABLE)
                     .columns(
-                            id,
-                            directory,
-                            stream,
-                            host,
-                            logtag,
-                            logdate,
-                            bucket,
-                            path,
-                            logtime,
-                            filesize,
+                            id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
                             uncompressedFilesize
                     );
             query.execute();
@@ -302,21 +265,26 @@ public class StreamDBClient {
 
     // TODO WIP
     public static class BloomFiltersTempTable {
+
         public static final String bloomTable = "bloomFiltersTable";
         public static final Table<Record> BLOOM_TABLE = DSL.table(DSL.name(bloomTable));
 
         public static final Field<Long> id = DSL.field("id", BIGINT.identity(true));
         public static final Field<byte[]> fe100kfp001 = DSL.field(DSL.name(bloomTable, "fe100kfp001"), byte[].class);
-        public static final Field<byte[]> fe1000kfpp003 = DSL.field(DSL.name(bloomTable, "fe1000kfpp003"), byte[].class);
-        public static final Field<byte[]> fe2500kfpp005 = DSL.field(DSL.name(bloomTable, "fe2500kfpp005"), byte[].class);
-
+        public static final Field<byte[]> fe1000kfpp003 = DSL
+                .field(DSL.name(bloomTable, "fe1000kfpp003"), byte[].class);
+        public static final Field<byte[]> fe2500kfpp005 = DSL
+                .field(DSL.name(bloomTable, "fe2500kfpp005"), byte[].class);
 
         private static void create(DSLContext ctx) {
 
             DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(BloomFiltersTempTable.BLOOM_TABLE);
             dropQuery.execute();
 
-            Query query = ctx.query("create temporary table bloomFiltersTable(id bigint auto_increment primary key, fe100kfp001 longblob, fe1000kfpp003 longblob, fe2500kfpp005 longblob)");
+            Query query = ctx
+                    .query(
+                            "create temporary table bloomFiltersTable(id bigint auto_increment primary key, fe100kfp001 longblob, fe1000kfpp003 longblob, fe2500kfpp005 longblob)"
+                    );
 
             /*CreateTableConstraintStep query = ctx.createTemporaryTable(BloomFiltersTempTable.BLOOM_TABLE)
                     .columns(
@@ -325,12 +293,18 @@ public class StreamDBClient {
                             fe1000kfpp003,
                             fe2500kfpp005)
                     .constraints(primaryKey(id));
-
+            
              */
             query.execute();
 
         }
-        public static long insert(DSLContext ctx, BloomFilter smallFilter, BloomFilter mediumFilter, BloomFilter largeFilter) {
+
+        public static long insert(
+                DSLContext ctx,
+                BloomFilter smallFilter,
+                BloomFilter mediumFilter,
+                BloomFilter largeFilter
+        ) {
 
             final ByteArrayOutputStream smallBaos = new ByteArrayOutputStream();
             final ByteArrayOutputStream mediumBaos = new ByteArrayOutputStream();
@@ -344,19 +318,15 @@ public class StreamDBClient {
                 smallBaos.close();
                 mediumBaos.close();
                 largeBaos.close();
-            } catch(IOException e) {
+            }
+            catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
 
-            ctx.insertInto(BLOOM_TABLE).columns(
-                            fe100kfp001,
-                            fe1000kfpp003,
-                            fe2500kfpp005
-                    ).values(
-                            DSL.val(smallBaos.toByteArray(), byte[].class),
-                            DSL.val(mediumBaos.toByteArray(), byte[].class),
-                            DSL.val(largeBaos.toByteArray(), byte[].class))
-                    .execute();
+            ctx
+                    .insertInto(BLOOM_TABLE)
+                    .columns(fe100kfp001, fe1000kfpp003, fe2500kfpp005)
+                    .values(DSL.val(smallBaos.toByteArray(), byte[].class), DSL.val(mediumBaos.toByteArray(), byte[].class), DSL.val(largeBaos.toByteArray(), byte[].class)).execute();
 
             long rv = ctx.lastID().longValue();
             return rv;
@@ -381,29 +351,38 @@ public class StreamDBClient {
             DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);
             dropQuery.execute();
 
-            CreateTableWithDataStep query = ctx.createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)
+            CreateTableWithDataStep query = ctx
+                    .createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)
                     .as(
                             select(
                                     // these are hardcoded for the procedure execution
-                                    STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory))
+                                    STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
+                            )
                                     .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
                                     .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))
                                     .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
                                     .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
                                     .from(STREAMDB.STREAM)
-                                    .innerJoin(STREAMDB.LOG_GROUP).on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                    .innerJoin(STREAMDB.HOST).on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                    .innerJoin(JOURNALDB.HOST).on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))
+                                    .innerJoin(STREAMDB.LOG_GROUP)
+                                    .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))
+                                    .innerJoin(STREAMDB.HOST)
+                                    .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
+                                    .innerJoin(JOURNALDB.HOST)
+                                    .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))
                                     // following change
                                     .where(streamdbCondition)
                     );
             query.execute();
 
-
             // this could be within tmpTableCreateSql but JOOQ can't (yet) https://github.com/jOOQ/jOOQ/issues/11752
-            ctx.createIndex(GetArchivedObjectsFilterTable.hostIndex)
+            ctx
+                    .createIndex(GetArchivedObjectsFilterTable.hostIndex)
                     //.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.
-                    .on(GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id, GetArchivedObjectsFilterTable.tag).execute();
+                    .on(
+                            GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,
+                            GetArchivedObjectsFilterTable.tag
+                    )
+                    .execute();
         }
 
     }
@@ -414,10 +393,11 @@ public class StreamDBClient {
         private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
 
         // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
-        public final Field<Long> logtimeFunction = DSL.field(
-                "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))",
-                Long.class,
-                JOURNALDB.LOGFILE.PATH);
+        public final Field<Long> logtimeFunction = DSL
+                .field(
+                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))",
+                        Long.class, JOURNALDB.LOGFILE.PATH
+                );
 
         private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
         private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
@@ -434,29 +414,25 @@ public class StreamDBClient {
 
         private Table<Record> getTableStatement(Condition journaldbCondition, Date day) {
 
-            SelectOnConditionStep<Record> selectOnConditionStep = select(resultFields).from(GetArchivedObjectsFilterTable.FILTER_TABLE)
-                    .innerJoin(JOURNALDB.LOGFILE).on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id)
-                            .and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag))
-                    );
+            SelectOnConditionStep<Record> selectOnConditionStep = select(resultFields)
+                    .from(GetArchivedObjectsFilterTable.FILTER_TABLE)
+                    .innerJoin(JOURNALDB.LOGFILE)
+                    .on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id).and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag)));
 
             if (bloomEnabled) {
 
-                selectOnConditionStep = selectOnConditionStep.leftJoin(
-                                Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001).on(
-                                JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001.PARTITION_ID))
-                        .leftJoin(
-                                Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003).on(
-                                JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.PARTITION_ID))
-                        .leftJoin(
-                                Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005).on(
-                                JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.PARTITION_ID));
+                selectOnConditionStep = selectOnConditionStep
+                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001)
+                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001.PARTITION_ID))
+                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003)
+                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.PARTITION_ID))
+                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005)
+                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.PARTITION_ID));
 
             }
 
             return selectOnConditionStep
-                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day)
-                            .and(journaldbCondition)
-                    )
+                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbCondition))
                     .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                     .asTable(innerTable);
         }

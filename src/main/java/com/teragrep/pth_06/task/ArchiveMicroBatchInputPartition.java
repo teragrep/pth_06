@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,11 +43,9 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.task;
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-
 
 // logger
 import org.apache.spark.sql.connector.read.InputPartition;
@@ -57,15 +55,14 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedList;
 
 /**
- * <h1>Kafka Micro Batch Input Partition Reader</h1>
- *
- * Class for holding micro batch partition of RFC5424 syslog data.
+ * <h1>Kafka Micro Batch Input Partition Reader</h1> Class for holding micro batch partition of RFC5424 syslog data.
  *
  * @see InputPartition
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
 public class ArchiveMicroBatchInputPartition implements InputPartition {
+
     final Logger LOGGER = LoggerFactory.getLogger(ArchiveMicroBatchInputPartition.class);
 
     public final String S3endPoint;
@@ -80,17 +77,17 @@ public class ArchiveMicroBatchInputPartition implements InputPartition {
 
     public final boolean skipNonRFC5424Files;
 
-
-    public ArchiveMicroBatchInputPartition(String S3endPoint,
-                                           String S3identity,
-                                           String S3credential,
-                                           LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
-                                           String TeragrepAuditQuery,
-                                           String TeragrepAuditReason,
-                                           String TeragrepAuditUser,
-                                           String TeragrepAuditPluginClassName,
-                                           boolean skipNonRFC5424Files)
-    {
+    public ArchiveMicroBatchInputPartition(
+            String S3endPoint,
+            String S3identity,
+            String S3credential,
+            LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
+            String TeragrepAuditQuery,
+            String TeragrepAuditReason,
+            String TeragrepAuditUser,
+            String TeragrepAuditPluginClassName,
+            boolean skipNonRFC5424Files
+    ) {
         LOGGER.debug("ArchiveMicroBatchInputPartition> init");
 
         this.S3endPoint = S3endPoint;
@@ -118,15 +115,10 @@ public class ArchiveMicroBatchInputPartition implements InputPartition {
 
     @Override
     public String toString() {
-        return "ArchiveMicroBatchInputPartition{" +
-                "S3endPoint='" + S3endPoint + '\'' +
-                ", S3identity='" + S3identity + '\'' +
-                ", S3credential='" + S3credential + '\'' +
-                ", taskObjectList=" + taskObjectList +
-                ", TeragrepAuditQuery='" + TeragrepAuditQuery + '\'' +
-                ", TeragrepAuditReason='" + TeragrepAuditReason + '\'' +
-                ", TeragrepAuditUser='" + TeragrepAuditUser + '\'' +
-                ", TeragrepAuditPluginClassName='" + TeragrepAuditPluginClassName + '\'' +
-                '}';
+        return "ArchiveMicroBatchInputPartition{" + "S3endPoint='" + S3endPoint + '\'' + ", S3identity='" + S3identity
+                + '\'' + ", S3credential='" + S3credential + '\'' + ", taskObjectList=" + taskObjectList
+                + ", TeragrepAuditQuery='" + TeragrepAuditQuery + '\'' + ", TeragrepAuditReason='" + TeragrepAuditReason
+                + '\'' + ", TeragrepAuditUser='" + TeragrepAuditUser + '\'' + ", TeragrepAuditPluginClassName='"
+                + TeragrepAuditPluginClassName + '\'' + '}';
     }
 }

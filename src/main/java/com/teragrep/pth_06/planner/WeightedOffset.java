@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -46,10 +46,10 @@
 package com.teragrep.pth_06.planner;
 
 /**
- * Contains the file size and offset of a given event.
- * Used to estimate the weight of that event.
+ * Contains the file size and offset of a given event. Used to estimate the weight of that event.
  */
 final class WeightedOffset {
+
     private final long offset;
     private final long fileSize;
 
@@ -64,7 +64,8 @@ final class WeightedOffset {
 
     /**
      * Creates a non-stub WeightedOffset object.
-     * @param offset Offset of event
+     * 
+     * @param offset   Offset of event
      * @param fileSize File size of event
      */
     WeightedOffset(long offset, long fileSize) {
@@ -73,9 +74,10 @@ final class WeightedOffset {
 
     /**
      * Creates a WeightedOffset object. Not to be used outside of this class.
-     * @param offset Offset of the event
+     * 
+     * @param offset   Offset of the event
      * @param fileSize File size of the event
-     * @param isStub If this object is a stub object
+     * @param isStub   If this object is a stub object
      */
     private WeightedOffset(long offset, long fileSize, boolean isStub) {
         this.offset = offset;
@@ -85,9 +87,10 @@ final class WeightedOffset {
 
     /**
      * Estimates the weight of the event based on file size and processing speed.
+     * 
      * @return Estimated weight
      * @param compressionRatio file compression ratio
-     * @param processingSpeed processing speed
+     * @param processingSpeed  processing speed
      * @throws IllegalStateException if the object is a stub
      */
     float estimateWeight(final float compressionRatio, final float processingSpeed) {
@@ -100,6 +103,7 @@ final class WeightedOffset {
 
     /**
      * Returns the offset if the object is not a stub object.
+     * 
      * @return offset
      * @throws IllegalStateException if the object is a stub
      */

@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,9 +43,7 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.task;
-
 
 import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.InputPartition;
@@ -55,9 +53,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * <h1>Kafka Micro Batch Input Partition</h1>
- *
- *  Class for holding micro batch partition of a kafka topic.
+ * <h1>Kafka Micro Batch Input Partition</h1> Class for holding micro batch partition of a kafka topic.
  *
  * @see InputPartition
  * @since 08/06/2022
@@ -80,7 +76,8 @@ public class KafkaMicroBatchInputPartition implements InputPartition {
             long startOffset,
             long endOffset,
             Map<String, String> executorConfig,
-            boolean skipNonRFC5424Records) {
+            boolean skipNonRFC5424Records
+    ) {
         this.executorKafkaProperties = executorKafkaProperties;
         this.topicPartition = topicPartition;
         this.startOffset = startOffset;

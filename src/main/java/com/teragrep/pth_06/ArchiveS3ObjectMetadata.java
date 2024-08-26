@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,21 +43,19 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06;
 
 import java.io.Serializable;
 
 /**
- * <h1>Archive S3 Object Metadata</h1>
- *
- * Class for holding a serializable S3 archive object metadata.
+ * <h1>Archive S3 Object Metadata</h1> Class for holding a serializable S3 archive object metadata.
  *
  * @since 17/01/2022
  * @author Mikko Kortelainen
  */
 public class ArchiveS3ObjectMetadata implements Serializable {
-	public final String id;
+
+    public final String id;
     public final String bucket;
     public final String path;
     public final String directory;
@@ -67,9 +65,19 @@ public class ArchiveS3ObjectMetadata implements Serializable {
     public final long compressedSize;
     public final long uncompressedSize;
 
-    public ArchiveS3ObjectMetadata(String id, String bucket, String path, String directory, String stream, String host, long logtimeEpoch, long compressedSize, long uncompressedSize) {
+    public ArchiveS3ObjectMetadata(
+            String id,
+            String bucket,
+            String path,
+            String directory,
+            String stream,
+            String host,
+            long logtimeEpoch,
+            long compressedSize,
+            long uncompressedSize
+    ) {
         this.id = id;
-		this.bucket = bucket;
+        this.bucket = bucket;
         this.path = path;
         this.directory = directory;
         this.stream = stream;
@@ -78,15 +86,10 @@ public class ArchiveS3ObjectMetadata implements Serializable {
         this.compressedSize = compressedSize;
         this.uncompressedSize = uncompressedSize;
     }
-    
+
     @Override
     public String toString() {
-        return "ArchiveS3ObjectMetadata{" +
-                "bucket='" + bucket + '\'' +
-                ", path='" + path + '\'' +
-                ", directory='" + directory + '\'' +
-                ", stream='" + stream + '\'' +
-                ", host='" + host + '\'' +
-                '}';
+        return "ArchiveS3ObjectMetadata{" + "bucket='" + bucket + '\'' + ", path='" + path + '\'' + ", directory='"
+                + directory + '\'' + ", stream='" + stream + '\'' + ", host='" + host + '\'' + '}';
     }
 }

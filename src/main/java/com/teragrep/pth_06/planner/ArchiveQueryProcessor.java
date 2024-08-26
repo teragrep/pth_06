@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.config.Config;
@@ -60,9 +59,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 /**
- * <h1>Archive Query Processor</h1>
- *
- * Class for controlled execution of Archive query offsets.
+ * <h1>Archive Query Processor</h1> Class for controlled execution of Archive query offsets.
  *
  * @since 08/04/2021
  * @author Mikko Kortelainen
@@ -104,13 +101,18 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
             // TODO hack to update startDay from query
             rollingDay = Instant.ofEpochSecond(this.earliestEpoch).atZone(ZoneId.systemDefault()).toLocalDate();
 
-        } catch (Exception ex) {
-            throw new RuntimeException("ArchiveQueryProcessor problems when construction Query conditions query:" + config.query+ " exception:" + ex);
+        }
+        catch (Exception ex) {
+            throw new RuntimeException(
+                    "ArchiveQueryProcessor problems when construction Query conditions query:" + config.query
+                            + " exception:" + ex
+            );
         }
 
         try {
             this.sdc = new StreamDBClient(config);
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new RuntimeException("StreamDB not connected.");
         }
 
@@ -118,8 +120,8 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
     }
 
     /**
-     * Increment the rolling day and pull data for that day into the sliceTable.
-     * Continued until endDay is reached or sliceTable has data for current day.
+     * Increment the rolling day and pull data for that day into the sliceTable. Continued until endDay is reached or
+     * sliceTable has data for current day.
      */
     private void seekToResults() {
         LOGGER.debug("ArchiveQueryProcessor.seekToResults>");
@@ -142,7 +144,9 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
      */
     @Override
     public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour, long endHour) {
+            long startHour,
+            long endHour
+    ) {
         LOGGER.debug("ArchiveQueryProcessor.processBetweenUnixEpochHours> [{}, {}[", startHour, endHour);
 
         // a retry, so everything must be within the temporaryTable as commit only cleans it
@@ -151,6 +155,7 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
 
     /**
      * Deletes the contents of the sliceTable up until commit offset.
+     * 
      * @param offset Last committed offset
      */
     @Override
@@ -161,6 +166,7 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
 
     /**
      * Returns the earliest offset, which always remains the same within a query.
+     * 
      * @return Earliest offset
      */
     @Override
@@ -169,8 +175,9 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
     }
 
     /**
-     * Increments the latest offset value and returns that incremented offset.
-     * Works by pulling data into the SliceTable until weight limit or endDay is reached.
+     * Increments the latest offset value and returns that incremented offset. Works by pulling data into the SliceTable
+     * until weight limit or endDay is reached.
+     * 
      * @return latest offset
      */
     @Override

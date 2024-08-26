@@ -1,3 +1,48 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 package com.teragrep.pth_06.task.s3;
 
 /*
@@ -67,11 +112,10 @@ import java.time.ZonedDateTime;
 import java.util.zip.GZIPInputStream;
 
 /**
- * <h1>Row Converter</h1>
- *
- * Converts S3 object rows.
+ * <h1>Row Converter</h1> Converts S3 object rows.
  */
 public final class RowConverter {
+
     private final Logger LOGGER = LoggerFactory.getLogger(RowConverter.class);
 
     // audit plugin
@@ -109,16 +153,18 @@ public final class RowConverter {
     final boolean skipNonRFC5424Files;
 
     private InputStream inputStream = null;
+
     public RowConverter(
-                        AuditPlugin auditPlugin,
-                        AmazonS3 s3client,
-                        String id,
-                        String bucket,
-                        String path,
-                        String directory,
-                        String stream,
-                        String host,
-                        boolean skipNonRFC5424Files) {
+            AuditPlugin auditPlugin,
+            AmazonS3 s3client,
+            String id,
+            String bucket,
+            String path,
+            String directory,
+            String stream,
+            String host,
+            boolean skipNonRFC5424Files
+    ) {
         this.auditPlugin = auditPlugin;
 
         this.bucket = bucket;
@@ -129,9 +175,8 @@ public final class RowConverter {
         this.stream = UTF8String.fromString(stream.toLowerCase());
         this.host = UTF8String.fromString(host.toLowerCase());
 
-        if(LOGGER.isDebugEnabled())
-            LOGGER.debug("RowConverter> created with partition:" + this.bucket +
-                " path: " + this.path );
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("RowConverter> created with partition:" + this.bucket + " path: " + this.path);
 
         this.rowWriter = new UnsafeRowWriter(11);
 
@@ -145,17 +190,17 @@ public final class RowConverter {
         // initial status
         this.currentOffset = 0L;
 
-        this.sourceConcatenationBuffer = ByteBuffer.allocateDirect(256*1024);
+        this.sourceConcatenationBuffer = ByteBuffer.allocateDirect(256 * 1024);
 
         this.rfc5424Frame = new RFC5424Frame(true);
 
-        this.eventNodeSourceSource = new SDVector("event_node_source@48577","source");
-        this.eventNodeRelaySource = new SDVector("event_node_relay@48577","source");
-        this.eventNodeSourceSourceModule = new SDVector("event_node_source@48577","source_module");
-        this.eventNodeRelaySourceModule = new SDVector("event_node_relay@48577","source_module");
-        this.eventNodeSourceHostname = new SDVector("event_node_source@48577","hostname");
-        this.eventNodeRelayHostname = new SDVector("event_node_relay@48577","hostname");
-        this.originHostname = new SDVector("origin@48577","hostname");
+        this.eventNodeSourceSource = new SDVector("event_node_source@48577", "source");
+        this.eventNodeRelaySource = new SDVector("event_node_relay@48577", "source");
+        this.eventNodeSourceSourceModule = new SDVector("event_node_source@48577", "source_module");
+        this.eventNodeRelaySourceModule = new SDVector("event_node_relay@48577", "source_module");
+        this.eventNodeSourceHostname = new SDVector("event_node_source@48577", "hostname");
+        this.eventNodeRelayHostname = new SDVector("event_node_relay@48577", "hostname");
+        this.originHostname = new SDVector("origin@48577", "hostname");
 
     }
 
@@ -171,10 +216,14 @@ public final class RowConverter {
             LOGGER.debug("Attempting to open file: " + logName);
             s3object = s3client.getObject(bucketName, keyName);
 
-            if(LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Open S3 stream bucket:" + bucketName + " keyname=" + keyName + " Metadata length:" + s3object.getObjectMetadata().getContentLength());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER
+                        .debug(
+                                "Open S3 stream bucket:" + bucketName + " keyname=" + keyName + " Metadata length:"
+                                        + s3object.getObjectMetadata().getContentLength()
+                        );
             }
-            this.inputStream = new BufferedInputStream(s3object.getObjectContent(), 8*1024*1024);
+            this.inputStream = new BufferedInputStream(s3object.getObjectContent(), 8 * 1024 * 1024);
             GZIPInputStream gz = new GZIPInputStream(inputStream);
             rfc5424Frame.load(gz);
 
@@ -186,8 +235,11 @@ public final class RowConverter {
         catch (AmazonServiceException amazonServiceException) {
 
             if (403 == amazonServiceException.getStatusCode()) {
-                LOGGER.error("Skipping file " + logName + " due to errorCode:" +
-                        amazonServiceException.getStatusCode());
+                LOGGER
+                        .error(
+                                "Skipping file " + logName + " due to errorCode:"
+                                        + amazonServiceException.getStatusCode()
+                        );
             }
             else {
                 throw amazonServiceException;
@@ -197,9 +249,8 @@ public final class RowConverter {
 
     // read zip until it ends
     public boolean next() throws IOException {
-        if(LOGGER.isDebugEnabled()) {
-            LOGGER.debug("RowConverter.next> currentOffset: " +
-                    currentOffset);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("RowConverter.next> currentOffset: " + currentOffset);
         }
 
         if (LOGGER.isTraceEnabled()) {
@@ -242,8 +293,11 @@ public final class RowConverter {
     public InternalRow get() {
         //System.out.println("RowConverter.get>");
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("RowConverter.get> Partition ("+this.id+"):" + bucket + "/" + path+ " Get("+currentOffset +")");
-
+            LOGGER
+                    .debug(
+                            "RowConverter.get> Partition (" + this.id + "):" + bucket + "/" + path + " Get("
+                                    + currentOffset + ")"
+                    );
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Parsersyslog event:" + rfc5424Frame.toString());
@@ -257,9 +311,12 @@ public final class RowConverter {
         // origin
         final byte[] origin = eventToOrigin();
 
-
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.trace("PARSED  epochMicros: " + epochMicros + "  message: " + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8));
+            LOGGER
+                    .trace(
+                            "PARSED  epochMicros: " + epochMicros + "  message: "
+                                    + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
+                    );
         }
 
         rowWriter.reset();
@@ -274,22 +331,15 @@ public final class RowConverter {
         rowWriter.write(7, currentOffset);
         rowWriter.write(8, UTF8String.fromBytes(origin));
 
-
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("Get Event,  row=written");
 
-        auditPlugin.audit(
-                epochMicros,
-                rfc5424Frame.msg.toBytes(),
-                this.directory.getBytes(),
-                this.stream.getBytes(),
-                this.host.getBytes(),
-                source,
-                this.id.toString(),
-                currentOffset
-        );
+        auditPlugin
+                .audit(
+                        epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
+                        this.host.getBytes(), source, this.id.toString(), currentOffset
+                );
         return rowWriter.getRow();
-
 
     }
 
@@ -300,11 +350,10 @@ public final class RowConverter {
             origin = originFragment.toBytes();
         }
         else {
-            origin = new byte[]{};
+            origin = new byte[] {};
         }
         return origin;
     }
-
 
     private byte[] eventToSource() {
         //input is produced from SD element event_node_source@48577 by
@@ -324,7 +373,7 @@ public final class RowConverter {
             source_module = sourceModuleFragment.toBytes();
         }
         else {
-            source_module = new byte[]{};
+            source_module = new byte[] {};
         }
 
         Fragment sourceHostnameFragment = rfc5424Frame.structuredData.getValue(eventNodeSourceHostname);
@@ -337,9 +386,8 @@ public final class RowConverter {
             source_hostname = sourceHostnameFragment.toBytes();
         }
         else {
-            source_hostname = new byte[]{};
+            source_hostname = new byte[] {};
         }
-
 
         Fragment sourceSourceFragment = rfc5424Frame.structuredData.getValue(eventNodeSourceSource);
         if (sourceHostnameFragment.isStub) {
@@ -351,15 +399,14 @@ public final class RowConverter {
             source_source = sourceSourceFragment.toBytes();
         }
         else {
-            source_source = new byte[]{};
+            source_source = new byte[] {};
         }
-
 
         // source_module:hostname:source"
         sourceConcatenationBuffer.put(source_module);
         sourceConcatenationBuffer.put((byte) ':');
         sourceConcatenationBuffer.put(source_hostname);
-        sourceConcatenationBuffer.put((byte)':');
+        sourceConcatenationBuffer.put((byte) ':');
         sourceConcatenationBuffer.put(source_source);
 
         sourceConcatenationBuffer.flip();

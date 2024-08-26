@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,10 +43,8 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner;
 
-import org.jooq.Record10;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -54,18 +52,21 @@ import org.jooq.types.ULong;
 import java.sql.Date;
 
 /**
- * <h1>Archive Query</h1>
- *
- * Interface for an archive query.
+ * <h1>Archive Query</h1> Interface for an archive query.
  *
  * @since 26/01/2022
  * @author Mikko Kortelainen
  */
 public interface ArchiveQuery {
-    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(long startHour, long endHour);
+
+    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+            long startHour,
+            long endHour
+    );
 
     void commit(long offset);
 
     Long getInitialOffset();
+
     Long incrementAndGetLatestOffset();
 }

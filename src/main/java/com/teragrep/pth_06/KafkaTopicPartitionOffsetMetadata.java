@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,24 +43,21 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06;
 
 import org.apache.kafka.common.TopicPartition;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
- * <h1>Kafka Topic Partition Offset Metadata</h1>
- *
- * Class for holding serializable metadata of Kafka topic partition.
+ * <h1>Kafka Topic Partition Offset Metadata</h1> Class for holding serializable metadata of Kafka topic partition.
  *
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
 public class KafkaTopicPartitionOffsetMetadata implements Serializable {
-	public final TopicPartition topicPartition;
+
+    public final TopicPartition topicPartition;
     public final Long startOffset;
     public final Long endOffset;
 
@@ -72,9 +69,7 @@ public class KafkaTopicPartitionOffsetMetadata implements Serializable {
 
     @Override
     public String toString() {
-        return "KafkaTopicPartitionOffsetMetadata{" +
-                "topicPartition=" + topicPartition +
-                ", offset=[" + startOffset + ", " + endOffset + "]" +
-                '}';
+        return "KafkaTopicPartitionOffsetMetadata{" + "topicPartition=" + topicPartition + ", offset=[" + startOffset
+                + ", " + endOffset + "]" + '}';
     }
 }

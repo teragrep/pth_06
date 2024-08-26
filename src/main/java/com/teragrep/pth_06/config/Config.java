@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,14 +43,12 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.config;
 
 import java.util.Map;
 
 /**
- * <h1>Config</h1>
- * Holds all the settings for the program. Including MariaDB, Kafka and Spark.
+ * <h1>Config</h1> Holds all the settings for the program. Including MariaDB, Kafka and Spark.
  *
  * @since 17/08/2021
  * @author Mikko Kortelainen
@@ -72,7 +70,7 @@ public final class Config {
 
     public Config(Map<String, String> opts) {
         this.query = opts.get("queryXML");
-        if (this.query == null){
+        if (this.query == null) {
             throw new IllegalArgumentException("no queryXML provided");
         }
 
@@ -80,9 +78,10 @@ public final class Config {
         auditConfig = new AuditConfig(opts);
 
         isArchiveEnabled = opts.getOrDefault("archive.enabled", "false").equalsIgnoreCase("true");
-        if (isArchiveEnabled){
+        if (isArchiveEnabled) {
             archiveConfig = new ArchiveConfig(opts);
-        } else {
+        }
+        else {
             archiveConfig = new ArchiveConfig();
         }
 
