@@ -70,89 +70,87 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 public final class IndexStatementCondition implements QueryCondition {
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
-    private final Condition condition;
     private final Element element;
     private final ConditionConfig config;
     private final Tokenizer tokenizer;
 
-    public IndexStatementCondition(Condition condition, Element element, ConditionConfig config) {
-        this.condition = condition;
+    public IndexStatementCondition(Element element, ConditionConfig config) {
+        this(element, config, new Tokenizer(32));
+    }
+
+    public IndexStatementCondition(Element element, ConditionConfig config, Tokenizer tokenizer) {
         this.element = element;
         this.config = config;
-        this.tokenizer = new Tokenizer(32);
+        this.tokenizer = tokenizer;
     }
 
     public Condition condition() {
-        String operation = element.getAttribute("operation");
-        String value = element.getAttribute("value");
-        Condition queryCondition = condition;
-        if ("EQUALS".equals(operation)) {
+        final String value = element.getAttribute("value");
+        final Set<Token> tokenSet = new HashSet<>(
+                tokenizer.tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
+        );
 
-            final Set<Token> tokenSet = new HashSet<>(
-                    tokenizer.tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
-            );
+        LOGGER.info("BloomFilter tokenSet <[{}]>", tokenSet);
 
-            LOGGER.info("BloomFilter tokenSet <[{}]>", tokenSet);
+        final BloomFilter smallFilter = BloomFilter.create(100000, 0.01);
+        final BloomFilter mediumFilter = BloomFilter.create(1000000, 0.03);
+        final BloomFilter largeFilter = BloomFilter.create(2500000, 0.05);
 
-            final BloomFilter smallFilter = BloomFilter.create(100000, 0.01);
-            final BloomFilter mediumFilter = BloomFilter.create(1000000, 0.03);
-            final BloomFilter largeFilter = BloomFilter.create(2500000, 0.05);
+        tokenSet.forEach(token -> {
+            smallFilter.put(token.toString());
+            mediumFilter.put(token.toString());
+            largeFilter.put(token.toString());
+        });
 
-            tokenSet.forEach(token -> {
-                smallFilter.put(token.toString());
-                mediumFilter.put(token.toString());
-                largeFilter.put(token.toString());
-            });
+        final long rowId = StreamDBClient.BloomFiltersTempTable
+                .insert(config.context(), smallFilter, mediumFilter, largeFilter);
 
-            long rowId = StreamDBClient.BloomFiltersTempTable
-                    .insert(config.context(), smallFilter, mediumFilter, largeFilter);
+        final Condition rowIdCondition = StreamDBClient.BloomFiltersTempTable.id.eq(rowId);
 
-            Condition rowIdCondition = StreamDBClient.BloomFiltersTempTable.id.eq(rowId);
+        final Field<byte[]> smallColumn = DSL
+                .select(StreamDBClient.BloomFiltersTempTable.fe100kfp001)
+                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
+                .where(rowIdCondition)
+                .asField();
+        final Field<byte[]> mediumColumn = DSL
+                .select(StreamDBClient.BloomFiltersTempTable.fe1000kfpp003)
+                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
+                .where(rowIdCondition)
+                .asField();
+        final Field<byte[]> largeColumn = DSL
+                .select(StreamDBClient.BloomFiltersTempTable.fe2500kfpp005)
+                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
+                .where(rowIdCondition)
+                .asField();
 
-            Field<byte[]> smallColumn = DSL
-                    .select(StreamDBClient.BloomFiltersTempTable.fe100kfp001)
-                    .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                    .where(rowIdCondition)
-                    .asField();
-            Field<byte[]> mediumColumn = DSL
-                    .select(StreamDBClient.BloomFiltersTempTable.fe1000kfpp003)
-                    .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                    .where(rowIdCondition)
-                    .asField();
-            Field<byte[]> largeColumn = DSL
-                    .select(StreamDBClient.BloomFiltersTempTable.fe2500kfpp005)
-                    .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                    .where(rowIdCondition)
-                    .asField();
+        final Field<Boolean> fe100kfp001 = DSL
+                .function(
+                        "bloommatch", Boolean.class, smallColumn,
+                        BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
+                );
+        final Field<Boolean> fe1000kfpp003 = DSL
+                .function(
+                        "bloommatch", Boolean.class, mediumColumn,
+                        BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
+                );
+        final Field<Boolean> fe2500kfpp005 = DSL
+                .function(
+                        "bloommatch", Boolean.class, largeColumn,
+                        BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER
+                );
 
-            final Field<Boolean> fe100kfp001 = DSL
-                    .function(
-                            "bloommatch", Boolean.class, smallColumn,
-                            BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
-                    );
-            final Field<Boolean> fe1000kfpp003 = DSL
-                    .function(
-                            "bloommatch", Boolean.class, mediumColumn,
-                            BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
-                    );
-            final Field<Boolean> fe2500kfpp005 = DSL
-                    .function(
-                            "bloommatch", Boolean.class, largeColumn,
-                            BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER
-                    );
+        final Condition noBloomFilter = BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
+                .isNull()
+                .and(
+                        BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
+                                .isNull()
+                                .and(BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER.isNull())
+                );
+        final Condition queryCondition = fe100kfp001
+                .eq(true)
+                .or(fe1000kfpp003.eq(true).or(fe2500kfpp005.eq(true).or(noBloomFilter)));
+        LOGGER.trace("ConditionWalker.emitElement bloomCondition part <{}>", queryCondition);
 
-            Condition noBloomFilter = BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
-                    .isNull()
-                    .and(
-                            BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
-                                    .isNull()
-                                    .and(BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER.isNull())
-                    );
-            queryCondition = fe100kfp001
-                    .eq(true)
-                    .or(fe1000kfpp003.eq(true).or(fe2500kfpp005.eq(true).or(noBloomFilter)));
-            LOGGER.trace("ConditionWalker.emitElement bloomCondition part <{}>", queryCondition);
-        }
         return queryCondition;
     }
 }

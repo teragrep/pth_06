@@ -57,14 +57,13 @@ public final class SourceTypeCondition implements QueryCondition {
     private final boolean streamQuery;
 
     public SourceTypeCondition(Element element, boolean streamQuery) {
-
         this.element = element;
         this.streamQuery = streamQuery;
     }
 
     public Condition condition() {
-        String value = element.getAttribute("value");
-        String operation = element.getAttribute("operation");
+        final String value = element.getAttribute("value");
+        final String operation = element.getAttribute("operation");
         Condition condition;
         if (streamQuery) {
             condition = STREAMDB.STREAM.STREAM_.like(

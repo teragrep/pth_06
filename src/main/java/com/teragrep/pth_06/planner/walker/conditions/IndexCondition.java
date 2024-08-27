@@ -62,8 +62,8 @@ public final class IndexCondition implements QueryCondition {
     }
 
     public Condition condition() {
-        String value = element.getAttribute("value");
-        String operation = element.getAttribute("operation");
+        final String value = element.getAttribute("value");
+        final String operation = element.getAttribute("operation");
         Condition condition;
         if (streamQuery) {
             condition =

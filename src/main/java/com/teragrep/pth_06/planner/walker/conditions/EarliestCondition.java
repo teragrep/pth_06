@@ -62,15 +62,25 @@ public final class EarliestCondition implements QueryCondition {
     }
 
     public Condition condition() {
-        String value = element.getAttribute("value");
-        int earliestFromElement = Integer.parseInt(value);
-        int earliestEpochHour = earliestFromElement - earliestFromElement % 3600;
-        Instant instant = Instant.ofEpochSecond(earliestEpochHour);
+        final String value = element.getAttribute("value");
+        // SQL connection uses localTime in the session, so we use unix to come over the conversions
+        // hour based files are being used so earliest needs conversion to the point of the last hour
+        final int earliestFromElement = Integer.parseInt(value);
+        final int earliestEpochHour = earliestFromElement - earliestFromElement % 3600;
+        final Instant instant = Instant.ofEpochSecond(earliestEpochHour);
+        final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
         Condition condition;
-        java.sql.Date timequalifier = new Date(instant.toEpochMilli());
-        condition = JOURNALDB.LOGFILE.LOGDATE.greaterOrEqual(timequalifier);
+        condition = JOURNALDB.LOGFILE.LOGDATE.greaterOrEqual(timeQualifier);
         condition = condition.and("UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))" +
                 " >= " + instant.getEpochSecond());
+        // raw SQL used here since following not supported for mariadb:
+        // queryCondition = queryCondition.and(toTimestamp(
+        // regexpReplaceAll(JOURNALDB.LOGFILE.PATH, "((^.*\\/.*-)|(\\.log\\.gz.*))", ""),
+        // "YYYYMMDDHH24").lessOrEqual(Timestamp.from(instant)));
+        // to match
+        // 2021/09-27/sc-99-99-14-244/messages/messages-2021092722.gz.4
+        // 2018/04-29/sc-99-99-14-245/f17/f17.logGLOB-2018042900.log.gz
+        // NOTE uses literal path
         return condition;
     }
 }
