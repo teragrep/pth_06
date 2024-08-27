@@ -1,6 +1,6 @@
 /*
- * Teragrep Archive Datasource (pth_06)
- * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ * This program handles user requests that require archive access.
+ * Copyright (C) 2024  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,59 +43,41 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker;
 
-import com.teragrep.jue_01.GlobToRegEx;
+package com.teragrep.pth_06.planner.walker.conditions;
+
+import com.teragrep.pth_06.planner.StreamDBClient;
+import org.jooq.Condition;
 import org.w3c.dom.Element;
 
-/**
- * <h1>Kafka Walker</h1>
- *
- * @author Mikko Kortelainen
- * @since 08/06/2022
- */
-public class KafkaWalker extends XmlWalker<String> {
+import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
-    @Override
-    String emitElem(Element current) {
-        String tag = current.getTagName();
-        String value = current.getAttribute("value");
-        String operation = current.getAttribute("operation");
+public final class HostCondition implements QueryCondition {
+    private final boolean streamQuery;
+    private final Element element;
 
-        String queryCondition = null;
-        // only index equals supported
-        if (tag.equalsIgnoreCase("index")) {
-            if (operation.equalsIgnoreCase("EQUALS")) {
-                queryCondition = GlobToRegEx.regexify(value);
-            }
+    public HostCondition(Element element, boolean streamQuery) {
+        this.streamQuery = streamQuery;
+        this.element = element;
+    }
+
+    public Condition condition() {
+        String value = element.getAttribute("value");
+        String operation = element.getAttribute("operation");
+        Condition condition;
+        if (streamQuery) {
+            condition = STREAMDB.HOST.NAME.like(
+                    value.replace('*', '%')
+            );
+        } else {
+            condition =
+                    StreamDBClient.GetArchivedObjectsFilterTable.host.like(
+                            value.replace('*', '%').toLowerCase()
+                    );
         }
-        return queryCondition;
-    }
-
-    public String fromString(String inXml) throws Exception {
-        return super.fromString(inXml);
-    }
-
-    @Override
-    public String emitLogicalOperation(String op, Object l, Object r) throws Exception {
-        String left = (String) l;
-        String right = (String) r;
-
-        String rv = null;
-        /*
-        index can not have two values at the same go therefore "AND".equals(op)
-        is not implemented
-         */
-        if ("OR".equals(op)) {
-            rv = "(" + left + "|" + right + ")";
+        if (operation.equalsIgnoreCase("NOT_EQUALS")) {
+            condition = condition.not();
         }
-
-        return rv;
-    }
-
-    @Override
-    String emitUnaryOperation(String op, Element current) {
-        // NOT is a filter, not a topic matcher
-        return null;
+        return condition;
     }
 }
