@@ -2,28 +2,16 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HostConditionTest {
-    Document document;
-
-    @BeforeAll
-    void setup() {
-        Assertions.assertDoesNotThrow(() -> {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            this.document = factory.newDocumentBuilder().newDocument();
-        });
-    }
 
     @Test
-    void conditionTest() {
+    @ExtendWith(DocumentExtension.class)
+    void conditionTest(final Document document) {
         Element element = document.createElement("test");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -38,7 +26,8 @@ public class HostConditionTest {
     }
 
     @Test
-    void negationTest() {
+    @ExtendWith(DocumentExtension.class)
+    void negationTest(final Document document) {
         Element element = document.createElement("test");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "NOT_EQUALS");
