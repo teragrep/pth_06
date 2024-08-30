@@ -87,4 +87,21 @@ class ElementConditionTest {
         }
         Assertions.assertEquals(5, loops);
     }
+
+    @Test
+    @ExtendWith(DocumentExtension.class)
+    void invalidElementNameTest(final Document document) {
+        Element element = document.createElement("test");
+        element.setAttribute("value", "1000");
+        element.setAttribute("operation", "EQUALS");
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> new ElementCondition(element, streamConfig).condition()
+        );
+        Element element2 = document.createElement("hostindex");
+        element2.setAttribute("value", "test");
+        element2.setAttribute("operation", "EQUALS");
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> new ElementCondition(element2, streamConfig).condition()
+        );
+    }
 }

@@ -49,11 +49,10 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
-
-import java.util.Optional;
 
 /**
  * Creates a query condition from provided dom element
@@ -85,43 +84,42 @@ public final class ElementCondition {
         validate(element);
         final String tag = element.getTagName();
         final String operation = element.getAttribute("operation");
-        Optional<Condition> optional = Optional.empty();
+        Condition condition = DSL.noCondition();
         switch (tag.toLowerCase()) {
             case "index":
                 QueryCondition index = new IndexCondition(element, config.streamQuery());
-                optional = Optional.of(index.condition());
+                condition = index.condition();
                 break;
             case "sourcetype":
                 QueryCondition sourceType = new SourceTypeCondition(element, config.streamQuery());
-                optional = Optional.of(sourceType.condition());
+                condition = sourceType.condition();
                 break;
             case "host":
                 QueryCondition host = new HostCondition(element, config.streamQuery());
-                optional = Optional.of(host.condition());
+                condition = host.condition();
                 break;
         }
         if (!config.streamQuery()) {
             // Handle also time qualifiers
             if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
                 QueryCondition earliest = new EarliestCondition(element);
-                optional = Optional.of(earliest.condition());
+                condition = earliest.condition();
             }
             if ("latest".equalsIgnoreCase(tag) || "index_latest".equalsIgnoreCase(tag)) {
                 QueryCondition latest = new LatestCondition(element);
-                optional = Optional.of(latest.condition());
+                condition = latest.condition();
             }
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
                 IndexStatementCondition indexStatementCondition =
                         new IndexStatementCondition(element, config, new Tokenizer(32));
-                optional = Optional.of(indexStatementCondition.condition());
+                condition = indexStatementCondition.condition();
             }
         }
-        if (!optional.isPresent()) {
+        if (condition.equals(DSL.noCondition())) {
             throw new IllegalStateException("Unsupported Element tag " + tag);
         }
-        Condition rv = optional.get();
-        LOGGER.debug("Query condition: <{}>", rv);
-        return rv;
+        LOGGER.debug("Query condition: <{}>", condition);
+        return condition;
     }
 }
