@@ -7,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class EarliestConditionTest {
 
     @Test
@@ -34,14 +32,11 @@ public class EarliestConditionTest {
         Element anotherElement = document.createElement("test");
         anotherElement.setAttribute("value", "1000");
         anotherElement.setAttribute("operation", "EQUALS");
-        EarliestCondition expected = new EarliestCondition(element);
-        EarliestCondition actual = new EarliestCondition(element);
-        actual.condition();
-        EarliestCondition notExpected = new EarliestCondition(anotherElement);
-        Assertions.assertTrue(new QueryCondition.Smart().compare(expected.condition(), actual.condition()));
-        Assertions.assertFalse(new QueryCondition.Smart().compare(expected.condition(), notExpected.condition()));
-        assertThat(expected).usingRecursiveComparison().isEqualTo(actual);
-        assertThat(expected.condition()).usingRecursiveComparison().isEqualTo(actual.condition());
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected);
+        EarliestCondition eq1 = new EarliestCondition(element);
+        eq1.condition();
+        EarliestCondition eq2 = new EarliestCondition(element);
+        EarliestCondition notEq = new EarliestCondition(anotherElement);
+        Assertions.assertEquals(eq1, eq2);
+        Assertions.assertNotEquals(eq1, notEq);
     }
 }

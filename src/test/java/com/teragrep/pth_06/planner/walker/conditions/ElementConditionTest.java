@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ElementConditionTest {
     final DSLContext mockCtx = DSL.using(new MockConnection(ctx -> new MockResult[0]));
     final ConditionConfig config = new ConditionConfig(mockCtx, false, true, false);
@@ -126,21 +124,19 @@ class ElementConditionTest {
     @ExtendWith(DocumentExtension.class)
     void equalityTest(final Document document) {
         Element element = document.createElement("index");
-        element.setAttribute("value", "1000");
+        element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        Element anotherElement = document.createElement("latest");
-        anotherElement.setAttribute("value", "1000");
+        Element anotherElement = document.createElement("index");
+        anotherElement.setAttribute("value", "f11");
         anotherElement.setAttribute("operation", "EQUALS");
-        ElementCondition expected = new ElementCondition(element, config);
-        ElementCondition actual = new ElementCondition(element, config);
-        actual.condition();
-        ElementCondition notExpected = new ElementCondition(anotherElement, config);
-        ElementCondition notExpected2 = new ElementCondition(element, streamConfig);
-        Assertions.assertTrue(new QueryCondition.Smart().compare(expected.condition(), actual.condition()));
-        Assertions.assertFalse(new QueryCondition.Smart().compare(expected.condition(), notExpected.condition()));
-        assertThat(expected).usingRecursiveComparison().isEqualTo(actual);
-        assertThat(expected.condition()).usingRecursiveComparison().isEqualTo(actual.condition());
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected);
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected2);
+        ElementCondition eq1 = new ElementCondition(element, config);
+        eq1.condition();
+        ElementCondition eq2 = new ElementCondition(element, config);
+        ElementCondition notEq = new ElementCondition(anotherElement, config);
+        ElementCondition notEq2 = new ElementCondition(element, streamConfig);
+        Assertions.assertEquals(eq1, eq2);
+        Assertions.assertNotEquals(eq1, notEq);
+        Assertions.assertNotEquals(eq1, notEq2);
+        Assertions.assertNotEquals(notEq, notEq2);
     }
 }

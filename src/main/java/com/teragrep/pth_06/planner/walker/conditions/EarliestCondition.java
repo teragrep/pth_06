@@ -83,4 +83,12 @@ public final class EarliestCondition implements QueryCondition {
         // NOTE uses literal path
         return condition;
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) return false;
+        if (object.getClass() != this.getClass()) return false;
+        final EarliestCondition cast = (EarliestCondition) object;
+        return this.condition().toString().equals(cast.condition().toString());
+    }
 }

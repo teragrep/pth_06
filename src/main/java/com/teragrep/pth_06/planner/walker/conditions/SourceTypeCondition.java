@@ -80,4 +80,12 @@ public final class SourceTypeCondition implements QueryCondition {
         }
         return condition;
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) return false;
+        if (object.getClass() != this.getClass()) return false;
+        final SourceTypeCondition cast = (SourceTypeCondition) object;
+        return this.condition().toString().equals(cast.condition().toString());
+    }
 }

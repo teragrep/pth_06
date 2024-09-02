@@ -7,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class HostConditionTest {
 
     @Test
@@ -47,21 +45,23 @@ public class HostConditionTest {
     @ExtendWith(DocumentExtension.class)
     void equalityTest(final Document document) {
         Element element = document.createElement("test");
-        element.setAttribute("value", "1000");
+        element.setAttribute("value", "946677600");
         element.setAttribute("operation", "EQUALS");
         Element anotherElement = document.createElement("test");
-        anotherElement.setAttribute("value", "500");
+        anotherElement.setAttribute("value", "1000");
         anotherElement.setAttribute("operation", "EQUALS");
-        HostCondition expected = new HostCondition(element, false);
-        HostCondition actual = new HostCondition(element, false);
-        actual.condition();
-        HostCondition notExpected = new HostCondition(anotherElement, false);
-        HostCondition notExpected2 = new HostCondition(element, true);
-        Assertions.assertTrue(new QueryCondition.Smart().compare(expected.condition(), actual.condition()));
-        Assertions.assertFalse(new QueryCondition.Smart().compare(expected.condition(), notExpected.condition()));
-        assertThat(expected).usingRecursiveComparison().isEqualTo(actual);
-        assertThat(expected.condition()).usingRecursiveComparison().isEqualTo(actual.condition());
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected);
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected2);
+        HostCondition eq1 = new HostCondition(element, false);
+        eq1.condition();
+        HostCondition eq2 = new HostCondition(element, false);
+        HostCondition eq3 = new HostCondition(element, true);
+        eq3.condition();
+        HostCondition eq4 = new HostCondition(element, true);
+        HostCondition notEq = new HostCondition(anotherElement, false);
+        HostCondition notEq2 = new HostCondition(element, true);
+        Assertions.assertEquals(eq1, eq2);
+        Assertions.assertEquals(eq3, eq4);
+        Assertions.assertNotEquals(eq1, notEq);
+        Assertions.assertNotEquals(eq1, notEq2);
+        Assertions.assertNotEquals(notEq, notEq2);
     }
 }

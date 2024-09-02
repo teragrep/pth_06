@@ -50,10 +50,4 @@ import org.jooq.Condition;
 
 public interface QueryCondition {
     Condition condition();
-
-    class Smart {
-        boolean compare(Condition origin, Condition to) {
-            return origin.toString().equals(to.toString());
-        }
-    }
 }

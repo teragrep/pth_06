@@ -122,4 +122,12 @@ public final class ElementCondition {
         LOGGER.debug("Query condition: <{}>", condition);
         return condition;
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) return false;
+        if (object.getClass() != this.getClass()) return false;
+        final ElementCondition cast = (ElementCondition) object;
+        return this.condition().toString().equals(cast.condition().toString());
+    }
 }

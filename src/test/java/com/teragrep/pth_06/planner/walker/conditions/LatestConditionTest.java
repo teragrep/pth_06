@@ -7,8 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class LatestConditionTest {
 
     @Test
@@ -48,17 +46,18 @@ class LatestConditionTest {
         Element anotherElement = document.createElement("test");
         anotherElement.setAttribute("value", "1000");
         anotherElement.setAttribute("operation", "EQUALS");
-        HostCondition expected = new HostCondition(element, false);
-        HostCondition actual = new HostCondition(element, false);
-        actual.condition();
-        HostCondition notExpected = new HostCondition(anotherElement, false);
-        HostCondition notExpected2 = new HostCondition(element, true);
-
-        Assertions.assertTrue(new QueryCondition.Smart().compare(expected.condition(), actual.condition()));
-        Assertions.assertFalse(new QueryCondition.Smart().compare(expected.condition(), notExpected.condition()));
-        assertThat(expected).usingRecursiveComparison().isEqualTo(actual);
-        assertThat(expected.condition()).usingRecursiveComparison().isEqualTo(actual.condition());
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected);
-        assertThat(expected).usingRecursiveComparison().isNotEqualTo(notExpected2);
+        IndexCondition eq1 = new IndexCondition(element, false);
+        eq1.condition();
+        IndexCondition eq2 = new IndexCondition(element, false);
+        IndexCondition eq3 = new IndexCondition(element, true);
+        eq3.condition();
+        IndexCondition eq4 = new IndexCondition(element, true);
+        IndexCondition notEq = new IndexCondition(anotherElement, false);
+        IndexCondition notEq2 = new IndexCondition(element, true);
+        Assertions.assertEquals(eq1, eq2);
+        Assertions.assertEquals(eq3, eq4);
+        Assertions.assertNotEquals(eq1, notEq);
+        Assertions.assertNotEquals(eq1, notEq2);
+        Assertions.assertNotEquals(notEq, notEq2);
     }
 }
