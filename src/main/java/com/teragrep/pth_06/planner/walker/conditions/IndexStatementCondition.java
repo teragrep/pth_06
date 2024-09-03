@@ -150,6 +150,10 @@ public final class IndexStatementCondition implements QueryCondition {
         return queryCondition;
     }
 
+    /**
+     * @param object object compared against
+     * @return true if object is same class and all object values are equal (tokenizer values are expected to point to same reference)
+     */
     @Override
     public boolean equals(final Object object) {
         if (this == object) return true;
@@ -158,6 +162,6 @@ public final class IndexStatementCondition implements QueryCondition {
         final IndexStatementCondition cast = (IndexStatementCondition) object;
         return this.value.equals(cast.value) &&
                 this.config.equals(cast.config) &&
-                this.tokenizer == cast.tokenizer;
+                this.tokenizer == cast.tokenizer; // expects same reference
     }
 }
