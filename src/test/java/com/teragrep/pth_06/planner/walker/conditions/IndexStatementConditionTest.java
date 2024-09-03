@@ -34,6 +34,7 @@ public class IndexStatementConditionTest {
         IndexStatementCondition eq1 = new IndexStatementCondition("946677600", config, tokenizer);
         IndexStatementCondition eq2 = new IndexStatementCondition("946677600", config, tokenizer);
         Assertions.assertEquals(eq1, eq2);
+        Assertions.assertEquals(eq2, eq1);
     }
 
     @Test
@@ -41,6 +42,7 @@ public class IndexStatementConditionTest {
         IndexStatementCondition eq1 = new IndexStatementCondition("946677600", config, tokenizer);
         IndexStatementCondition notEq = new IndexStatementCondition("1000", config, tokenizer);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(eq1, notEq);
+        Assertions.assertNotEquals(notEq, eq1);
+        Assertions.assertNotEquals(eq1, null);
     }
 }

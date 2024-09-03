@@ -44,7 +44,9 @@ public class IndexConditionTest {
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
         IndexCondition notEq2 = new IndexCondition("946677600", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
+        Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
+        Assertions.assertNotEquals(eq1, null);
     }
 }
