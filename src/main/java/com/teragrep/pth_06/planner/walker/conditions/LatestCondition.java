@@ -47,7 +47,6 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
-import org.w3c.dom.Element;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -55,14 +54,13 @@ import java.time.Instant;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
 public final class LatestCondition implements QueryCondition {
-    private final Element element;
+    private final String value;
 
-    public LatestCondition(Element element) {
-        this.element = element;
+    public LatestCondition(String value) {
+        this.value = value;
     }
 
     public Condition condition() {
-        final String value = element.getAttribute("value");
         // SQL connection uses localTime in the session, so we use unix to come over the conversions
         final Instant instant = Instant.ofEpochSecond(Integer.parseInt(value));
         final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
@@ -87,6 +85,6 @@ public final class LatestCondition implements QueryCondition {
         if (object == null) return false;
         if (object.getClass() != this.getClass()) return false;
         final LatestCondition cast = (LatestCondition) object;
-        return this.condition().toString().equals(cast.condition().toString());
+        return this.value.equals(cast.value);
     }
 }

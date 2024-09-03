@@ -9,18 +9,20 @@ import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 class ElementConditionTest {
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
     final DSLContext mockCtx = DSL.using(new MockConnection(ctx -> new MockResult[0]));
     final ConditionConfig config = new ConditionConfig(mockCtx, false, true, false);
     final ConditionConfig streamConfig = new ConditionConfig(mockCtx, true);
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testStreamTags(final Document document) {
+    void testStreamTags() {
         String[] streamTags = {"index", "host", "sourcetype"};
         int loops = 0;
         for (String tag : streamTags) {
@@ -35,8 +37,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testIndexStatement(final Document document) {
+    void testIndexStatement() {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "searchTerm");
         element.setAttribute("operation", "EQUALS");
@@ -49,8 +50,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testProvidedElementMissingValue(final Document document) {
+    void testProvidedElementMissingValue() {
         Element element = document.createElement("test");
         element.setAttribute("operation", "EQUALS");
         ElementCondition elementCondition = new ElementCondition(element, config);
@@ -60,8 +60,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testProvidedElementMissingOperation(final Document document) {
+    void testProvidedElementMissingOperation() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
         ElementCondition elementCondition = new ElementCondition(element, config);
@@ -71,8 +70,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testTimeQualifiers(final Document document) {
+    void testTimeQualifiers() {
         String[] tags = {"earliest", "latest", "index_earliest", "index_latest"};
         int loops = 0;
         for (String tag : tags) {
@@ -87,8 +85,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void testInvalidStreamTags(final Document document) {
+    void testInvalidStreamTags() {
         String[] tags = {"earliest", "latest", "index_earliest", "index_latest", "indexstatement"};
         int loops = 0;
         for (String tag : tags) {
@@ -104,8 +101,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void invalidElementNameTest(final Document document) {
+    void invalidElementNameTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
         element.setAttribute("operation", "EQUALS");
@@ -121,8 +117,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void equalsTest(final Document document) {
+    void equalsTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -133,8 +128,7 @@ class ElementConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void notEqualsTest(final Document document) {
+    void notEqualsTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -147,5 +141,35 @@ class ElementConditionTest {
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
+    }
+
+    @Test
+    void notEqualsDifferentConfigTest() {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        MockConnection conn = new MockConnection(ctx -> new MockResult[0]);
+        DSLContext ctx = DSL.using(conn);
+        ConditionConfig cfg1 = new ConditionConfig(ctx, false);
+        ConditionConfig cfg2 = new ConditionConfig(ctx, true);
+        ElementCondition eq = new ElementCondition(element, cfg1);
+        ElementCondition notEq = new ElementCondition(element, cfg2);
+        Assertions.assertNotEquals(eq, notEq);
+    }
+
+    @Test
+    void notEqualsDifferentConnectionTest() {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        MockConnection conn = new MockConnection(ctx -> new MockResult[0]);
+        MockConnection conn2 = new MockConnection(ctx -> new MockResult[0]);
+        DSLContext ctx = DSL.using(conn);
+        DSLContext ctx2 = DSL.using(conn2);
+        ConditionConfig cfg1 = new ConditionConfig(ctx, false);
+        ConditionConfig cfg2 = new ConditionConfig(ctx2, false);
+        ElementCondition eq = new ElementCondition(element, cfg1);
+        ElementCondition notEq = new ElementCondition(element, cfg2);
+        Assertions.assertNotEquals(eq, notEq);
     }
 }

@@ -1,5 +1,6 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.DSLContext;
 import org.jooq.exception.SQLDialectNotSupportedException;
@@ -8,64 +9,38 @@ import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 
 /**
  * Requires database setup for full test
  */
 public class IndexStatementConditionTest {
-
+    final ConditionConfig config = new ConditionConfig(DSL.using(new MockConnection(ctx -> new MockResult[0])), false, true, false);
+    final Tokenizer tokenizer = new Tokenizer(32);
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void conditionTest(final Document document) {
+    void conditionTest() {
         DSLContext ctx = DSL.using(new MockConnection(context -> new MockResult[0]));
-        Element element = document.createElement("indexstatement");
-        element.setAttribute("value", "192.124.0.0");
-        element.setAttribute("operation", "EQUALS");
         // only tests that database access is tried as expected
         Assertions.assertThrows(SQLDialectNotSupportedException.class, () ->
                 new IndexStatementCondition(
-                        element,
-                        new ConditionConfig(ctx, false, true, false)
+                        "value",
+                        new ConditionConfig(ctx, false, true, false),
+                        tokenizer
                 ).condition());
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void equalsTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "946677600");
-        element.setAttribute("operation", "EQUALS");
-        Element anotherElement = document.createElement("test");
-        anotherElement.setAttribute("value", "1000");
-        anotherElement.setAttribute("operation", "EQUALS");
-        IndexCondition eq1 = new IndexCondition(element, false);
-        eq1.condition();
-        IndexCondition eq2 = new IndexCondition(element, false);
-        IndexCondition eq3 = new IndexCondition(element, true);
-        eq3.condition();
-        IndexCondition eq4 = new IndexCondition(element, true);
+    void equalsTest() {
+        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", config, tokenizer);
+        IndexStatementCondition eq2 = new IndexStatementCondition("946677600", config, tokenizer);
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq3, eq4);
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void notEqualsTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "946677600");
-        element.setAttribute("operation", "EQUALS");
-        Element anotherElement = document.createElement("test");
-        anotherElement.setAttribute("value", "1000");
-        anotherElement.setAttribute("operation", "EQUALS");
-        IndexCondition eq1 = new IndexCondition(element, false);
-        IndexCondition notEq = new IndexCondition(anotherElement, false);
-        IndexCondition notEq2 = new IndexCondition(element, true);
+    void notEqualsTest() {
+        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", config, tokenizer);
+        IndexStatementCondition notEq = new IndexStatementCondition("1000", config, tokenizer);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(eq1, notEq2);
-        Assertions.assertNotEquals(notEq, notEq2);
+        Assertions.assertNotEquals(eq1, notEq);
     }
 }

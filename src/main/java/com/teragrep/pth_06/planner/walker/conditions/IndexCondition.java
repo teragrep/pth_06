@@ -48,22 +48,21 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.planner.StreamDBClient;
 import org.jooq.Condition;
-import org.w3c.dom.Element;
 
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
 public final class IndexCondition implements QueryCondition {
+    private final String value;
+    private final String operation;
     private final boolean streamQuery;
-    private final Element element;
 
-    public IndexCondition(Element element, boolean streamQuery) {
+    public IndexCondition(String value, String operation, boolean streamQuery) {
         this.streamQuery = streamQuery;
-        this.element = element;
+        this.value = value;
+        this.operation = operation;
     }
 
     public Condition condition() {
-        final String value = element.getAttribute("value");
-        final String operation = element.getAttribute("operation");
         Condition condition;
         if (streamQuery) {
             condition =

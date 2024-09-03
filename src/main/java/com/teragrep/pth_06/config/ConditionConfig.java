@@ -1,5 +1,6 @@
 package com.teragrep.pth_06.config;
 
+import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
 import org.jooq.DSLContext;
 
 public final class ConditionConfig {
@@ -36,5 +37,17 @@ public final class ConditionConfig {
 
     public boolean withoutFilter() {
         return withoutFilters;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null) return false;
+        if (object.getClass() != this.getClass()) return false;
+        final ConditionConfig cast = (ConditionConfig) object;
+        return this.bloomEnabled == cast.bloomEnabled &&
+                this.streamQuery == cast.streamQuery &&
+                this.withoutFilters == cast.withoutFilters &&
+                this.ctx == cast.ctx;
     }
 }

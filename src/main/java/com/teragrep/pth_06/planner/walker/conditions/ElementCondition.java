@@ -63,6 +63,11 @@ public final class ElementCondition {
     private final Element element;
     private final ConditionConfig config;
 
+    public ElementCondition(Element element, ConditionConfig config) {
+        this.element = element;
+        this.config = config;
+    }
+
     private void validate(Element element) {
         if (element.getTagName() == null) {
             throw new IllegalStateException("Tag name for Element was null");
@@ -75,44 +80,40 @@ public final class ElementCondition {
         }
     }
 
-    public ElementCondition(Element element, ConditionConfig config) {
-        this.element = element;
-        this.config = config;
-    }
-
     public Condition condition() {
         validate(element);
         final String tag = element.getTagName();
+        final String value = element.getAttribute("value");
         final String operation = element.getAttribute("operation");
         Condition condition = DSL.noCondition();
         switch (tag.toLowerCase()) {
             case "index":
-                QueryCondition index = new IndexCondition(element, config.streamQuery());
+                QueryCondition index = new IndexCondition(value, operation, config.streamQuery());
                 condition = index.condition();
                 break;
             case "sourcetype":
-                QueryCondition sourceType = new SourceTypeCondition(element, config.streamQuery());
+                QueryCondition sourceType = new SourceTypeCondition(value, operation, config.streamQuery());
                 condition = sourceType.condition();
                 break;
             case "host":
-                QueryCondition host = new HostCondition(element, config.streamQuery());
+                QueryCondition host = new HostCondition(value, operation, config.streamQuery());
                 condition = host.condition();
                 break;
         }
         if (!config.streamQuery()) {
             // Handle also time qualifiers
             if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
-                QueryCondition earliest = new EarliestCondition(element);
+                QueryCondition earliest = new EarliestCondition(value);
                 condition = earliest.condition();
             }
             if ("latest".equalsIgnoreCase(tag) || "index_latest".equalsIgnoreCase(tag)) {
-                QueryCondition latest = new LatestCondition(element);
+                QueryCondition latest = new LatestCondition(value);
                 condition = latest.condition();
             }
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
                 IndexStatementCondition indexStatementCondition =
-                        new IndexStatementCondition(element, config, new Tokenizer(32));
+                        new IndexStatementCondition(value, config, new Tokenizer(32));
                 condition = indexStatementCondition.condition();
             }
         }
@@ -129,6 +130,9 @@ public final class ElementCondition {
         if (object == null) return false;
         if (object.getClass() != this.getClass()) return false;
         final ElementCondition cast = (ElementCondition) object;
-        return this.condition().toString().equals(cast.condition().toString());
+        boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
+        boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));
+        boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
+        return equalName && equalOperation && equalValue && this.config.equals(cast.config);
     }
 }

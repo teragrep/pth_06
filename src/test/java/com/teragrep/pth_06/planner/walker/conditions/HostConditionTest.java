@@ -3,20 +3,13 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class HostConditionTest {
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void conditionTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "f17");
-        element.setAttribute("operation", "EQUALS");
-        HostCondition elementCondition = new HostCondition(element, false);
-        HostCondition streamElementCondition = new HostCondition(element, true);
+    void conditionTest() {
+        HostCondition elementCondition = new HostCondition("f17", "EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("f17", "EQUALS", true);
         String e = "\"getArchivedObjects_filter_table\".\"host\" like 'f17'";
         String eStream = "\"streamdb\".\"host\".\"name\" like 'f17'";
         Condition elementResult = elementCondition.condition();
@@ -26,13 +19,9 @@ public class HostConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void negationTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "f17");
-        element.setAttribute("operation", "NOT_EQUALS");
-        HostCondition elementCondition = new HostCondition(element, false);
-        HostCondition streamElementCondition = new HostCondition(element, true);
+    void negationTest() {
+        HostCondition elementCondition = new HostCondition("f17", "NOT_EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("f17", "NOT_EQUALS", true);
         String e = "not (\"getArchivedObjects_filter_table\".\"host\" like 'f17')";
         String eStream = "not (\"streamdb\".\"host\".\"name\" like 'f17')";
         Condition elementResult = elementCondition.condition();
@@ -42,33 +31,22 @@ public class HostConditionTest {
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void equalsTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "946677600");
-        element.setAttribute("operation", "EQUALS");
-        HostCondition eq1 = new HostCondition(element, false);
+    void equalsTest() {
+        HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
         eq1.condition();
-        HostCondition eq2 = new HostCondition(element, false);
-        HostCondition eq3 = new HostCondition(element, true);
+        HostCondition eq2 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition eq3 = new HostCondition("946677600", "EQUALS", true);
         eq3.condition();
-        HostCondition eq4 = new HostCondition(element, true);
+        HostCondition eq4 = new HostCondition("946677600", "EQUALS", true);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq3, eq4);
     }
 
     @Test
-    @ExtendWith(DocumentExtension.class)
-    void notEqualsTest(final Document document) {
-        Element element = document.createElement("test");
-        element.setAttribute("value", "946677600");
-        element.setAttribute("operation", "EQUALS");
-        Element anotherElement = document.createElement("test");
-        anotherElement.setAttribute("value", "1000");
-        anotherElement.setAttribute("operation", "EQUALS");
-        HostCondition eq1 = new HostCondition(element, false);
-        HostCondition notEq = new HostCondition(anotherElement, false);
-        HostCondition notEq2 = new HostCondition(element, true);
+    void notEqualsTest() {
+        HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition notEq = new HostCondition("1000", "EQUALS", false);
+        HostCondition notEq2 = new HostCondition("946677600", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);

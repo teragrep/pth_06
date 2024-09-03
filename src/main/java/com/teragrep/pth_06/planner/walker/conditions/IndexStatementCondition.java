@@ -47,6 +47,7 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.blf_01.Token;
+import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.StreamDBClient;
 import org.apache.spark.util.sketch.BloomFilter;
@@ -55,14 +56,11 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.teragrep.blf_01.Tokenizer;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
@@ -70,22 +68,20 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 public final class IndexStatementCondition implements QueryCondition {
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
-    private final Element element;
+    private final String value;
     private final ConditionConfig config;
     private final Tokenizer tokenizer;
+    // default to use so object equality can be compared
 
-    public IndexStatementCondition(Element element, ConditionConfig config) {
-        this(element, config, new Tokenizer(32));
-    }
 
-    public IndexStatementCondition(Element element, ConditionConfig config, Tokenizer tokenizer) {
-        this.element = element;
+
+    public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {
+        this.value = value;
         this.config = config;
         this.tokenizer = tokenizer;
     }
 
     public Condition condition() {
-        final String value = element.getAttribute("value");
         final Set<Token> tokenSet = new HashSet<>(
                 tokenizer.tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
         );
@@ -160,6 +156,8 @@ public final class IndexStatementCondition implements QueryCondition {
         if (object == null) return false;
         if (object.getClass() != this.getClass()) return false;
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.condition().toString().equals(cast.condition().toString());
+        return this.value.equals(cast.value) &&
+                this.config.equals(cast.config) &&
+                this.tokenizer == cast.tokenizer;
     }
 }

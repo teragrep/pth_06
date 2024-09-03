@@ -47,7 +47,6 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
-import org.w3c.dom.Element;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -55,14 +54,13 @@ import java.time.Instant;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
 public final class EarliestCondition implements QueryCondition {
-    private final Element element;
+    private final String value;
 
-    public EarliestCondition(Element element) {
-        this.element = element;
+    public EarliestCondition(String value) {
+        this.value = value;
     }
 
     public Condition condition() {
-        final String value = element.getAttribute("value");
         // SQL connection uses localTime in the session, so we use unix to come over the conversions
         // hour based files are being used so earliest needs conversion to the point of the last hour
         final int earliestFromElement = Integer.parseInt(value);
@@ -90,6 +88,6 @@ public final class EarliestCondition implements QueryCondition {
         if (object == null) return false;
         if (object.getClass() != this.getClass()) return false;
         final EarliestCondition cast = (EarliestCondition) object;
-        return this.condition().toString().equals(cast.condition().toString());
+        return this.value.equals(cast.value);
     }
 }
