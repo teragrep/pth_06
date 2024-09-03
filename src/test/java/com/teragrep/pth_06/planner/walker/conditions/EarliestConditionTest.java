@@ -25,7 +25,19 @@ public class EarliestConditionTest {
 
     @Test
     @ExtendWith(DocumentExtension.class)
-    void equalityTest(final Document document) {
+    void equalsTest(final Document document) {
+        Element element = document.createElement("test");
+        element.setAttribute("value", "946677600");
+        element.setAttribute("operation", "EQUALS");
+        EarliestCondition eq1 = new EarliestCondition(element);
+        eq1.condition();
+        EarliestCondition eq2 = new EarliestCondition(element);
+        Assertions.assertEquals(eq1, eq2);
+    }
+
+    @Test
+    @ExtendWith(DocumentExtension.class)
+    void notEqualsTest(final Document document) {
         Element element = document.createElement("test");
         element.setAttribute("value", "946677600");
         element.setAttribute("operation", "EQUALS");
@@ -33,10 +45,7 @@ public class EarliestConditionTest {
         anotherElement.setAttribute("value", "1000");
         anotherElement.setAttribute("operation", "EQUALS");
         EarliestCondition eq1 = new EarliestCondition(element);
-        eq1.condition();
-        EarliestCondition eq2 = new EarliestCondition(element);
         EarliestCondition notEq = new EarliestCondition(anotherElement);
-        Assertions.assertEquals(eq1, eq2);
         Assertions.assertNotEquals(eq1, notEq);
     }
 }

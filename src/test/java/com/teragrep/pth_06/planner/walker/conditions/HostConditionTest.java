@@ -43,7 +43,23 @@ public class HostConditionTest {
 
     @Test
     @ExtendWith(DocumentExtension.class)
-    void equalityTest(final Document document) {
+    void equalsTest(final Document document) {
+        Element element = document.createElement("test");
+        element.setAttribute("value", "946677600");
+        element.setAttribute("operation", "EQUALS");
+        HostCondition eq1 = new HostCondition(element, false);
+        eq1.condition();
+        HostCondition eq2 = new HostCondition(element, false);
+        HostCondition eq3 = new HostCondition(element, true);
+        eq3.condition();
+        HostCondition eq4 = new HostCondition(element, true);
+        Assertions.assertEquals(eq1, eq2);
+        Assertions.assertEquals(eq3, eq4);
+    }
+
+    @Test
+    @ExtendWith(DocumentExtension.class)
+    void notEqualsTest(final Document document) {
         Element element = document.createElement("test");
         element.setAttribute("value", "946677600");
         element.setAttribute("operation", "EQUALS");
@@ -51,15 +67,8 @@ public class HostConditionTest {
         anotherElement.setAttribute("value", "1000");
         anotherElement.setAttribute("operation", "EQUALS");
         HostCondition eq1 = new HostCondition(element, false);
-        eq1.condition();
-        HostCondition eq2 = new HostCondition(element, false);
-        HostCondition eq3 = new HostCondition(element, true);
-        eq3.condition();
-        HostCondition eq4 = new HostCondition(element, true);
         HostCondition notEq = new HostCondition(anotherElement, false);
         HostCondition notEq2 = new HostCondition(element, true);
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq3, eq4);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);

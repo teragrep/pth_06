@@ -122,7 +122,19 @@ class ElementConditionTest {
 
     @Test
     @ExtendWith(DocumentExtension.class)
-    void equalityTest(final Document document) {
+    void equalsTest(final Document document) {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        ElementCondition eq1 = new ElementCondition(element, config);
+        eq1.condition();
+        ElementCondition eq2 = new ElementCondition(element, config);
+        Assertions.assertEquals(eq1, eq2);
+    }
+
+    @Test
+    @ExtendWith(DocumentExtension.class)
+    void notEqualsTest(final Document document) {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -130,11 +142,8 @@ class ElementConditionTest {
         anotherElement.setAttribute("value", "f11");
         anotherElement.setAttribute("operation", "EQUALS");
         ElementCondition eq1 = new ElementCondition(element, config);
-        eq1.condition();
-        ElementCondition eq2 = new ElementCondition(element, config);
         ElementCondition notEq = new ElementCondition(anotherElement, config);
         ElementCondition notEq2 = new ElementCondition(element, streamConfig);
-        Assertions.assertEquals(eq1, eq2);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
