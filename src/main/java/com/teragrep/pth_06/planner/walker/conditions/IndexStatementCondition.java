@@ -71,9 +71,6 @@ public final class IndexStatementCondition implements QueryCondition {
     private final String value;
     private final ConditionConfig config;
     private final Tokenizer tokenizer;
-    // default to use so object equality can be compared
-
-
 
     public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {
         this.value = value;
