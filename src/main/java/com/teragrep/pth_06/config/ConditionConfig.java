@@ -1,26 +1,20 @@
 package com.teragrep.pth_06.config;
 
-import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
 import org.jooq.DSLContext;
 
 public final class ConditionConfig {
     private final DSLContext ctx;
     private final boolean streamQuery;
     private final boolean bloomEnabled;
-    private final boolean withoutFilters;
 
     public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this.ctx = ctx;
-        this.streamQuery = streamQuery;
-        this.bloomEnabled = false;
-        this.withoutFilters = false;
+        this(ctx, streamQuery, false);
     }
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
+    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
         this.ctx = ctx;
         this.streamQuery = streamQuery;
         this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
     }
 
     public DSLContext context() {
@@ -35,10 +29,6 @@ public final class ConditionConfig {
         return streamQuery;
     }
 
-    public boolean withoutFilter() {
-        return withoutFilters;
-    }
-
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
@@ -47,7 +37,6 @@ public final class ConditionConfig {
         final ConditionConfig cast = (ConditionConfig) object;
         return this.bloomEnabled == cast.bloomEnabled &&
                 this.streamQuery == cast.streamQuery &&
-                this.withoutFilters == cast.withoutFilters &&
                 this.ctx == cast.ctx;
     }
 }

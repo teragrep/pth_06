@@ -1,12 +1,56 @@
-package com.teragrep.pth_06.planner.walker.conditions;
+/*
+ * This program handles user requests that require archive access.
+ * Copyright (C) 2022, 2023, 2024  Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 
-import com.teragrep.blf_01.Tokenizer;
-import com.teragrep.pth_06.config.ConditionConfig;
+package com.teragrep.pth_06.planner;
+
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
+import org.jooq.Named;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.tools.jdbc.MockConnection;
-import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
@@ -16,9 +60,10 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class IndexStatementConditionTest {
+public class PatternMatchTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
@@ -26,13 +71,11 @@ public class IndexStatementConditionTest {
             "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
             "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
     ));
-    final ConditionConfig mockConfig = new ConditionConfig(
-            DSL.using(new MockConnection(ctx -> new MockResult[0])), false, true);
-    final Tokenizer tokenizer = new Tokenizer(32);
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
     void setup() {
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -79,93 +122,52 @@ public class IndexStatementConditionTest {
     @AfterAll
     void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
+            conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
         });
     }
 
     @Test
-    void oneMatchingTableTest() {
+    public void testSingleMatch() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config, tokenizer);
-        String e = "(\n" +
-                "  (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
-                ")";
-        Assertions.assertEquals(e, cond.condition().toString());
+        String input = "192.168.1.1";
+        PatternMatch patternMatch = new PatternMatch(ctx, input);
+        List<Table<?>> result = patternMatch.toList();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
 
     @Test
-    void twoMatchingTableTest() {
+    public void testSearchTermTokenizedMatch() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config, tokenizer);
-        String e = "(\n" +
-                "  (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip255\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip255\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
-                "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" +
-                "  )\n" +
-                ")";
-        Assertions.assertEquals(e, cond.condition().toString());
+        String input = "target_ip=192.168.1.1";
+        PatternMatch patternMatch = new PatternMatch(ctx, input);
+        List<Table<?>> result = patternMatch.toList();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
 
     @Test
-    void equalsTest() {
-        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig, tokenizer);
-        IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig, tokenizer);
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
+    public void testMultipleMatch() {
+        DSLContext ctx = DSL.using(conn);
+        String input = "255.255.255.255";
+        PatternMatch patternMatch = new PatternMatch(ctx, input);
+        List<Table<?>> result = patternMatch.toList();
+        List<Table<?>> result2 = patternMatch.toList();
+        List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(2, result2.size());
+        Assertions.assertTrue(tableNames.contains("pattern_test_ip"));
+        Assertions.assertTrue(tableNames.contains("pattern_test_ip255"));
     }
 
     @Test
-    void notEqualsTest() {
-        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig, tokenizer);
-        IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig, tokenizer);
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
+    public void testNoMatch() {
+        DSLContext ctx = DSL.using(conn);
+        String input = "testinput";
+        PatternMatch patternMatch = new PatternMatch(ctx, input);
+        List<Table<?>> result = patternMatch.toList();
+        Assertions.assertTrue(result.isEmpty());
     }
 
     private void writeFilter(String tableName, int filterId) {
@@ -185,7 +187,6 @@ public class IndexStatementConditionTest {
             stmt.setInt(2, filterId);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
-            stmt.close();
         });
     }
 }

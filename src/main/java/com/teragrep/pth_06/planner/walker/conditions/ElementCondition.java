@@ -49,10 +49,14 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Creates a query condition from provided dom element
@@ -62,10 +66,18 @@ public final class ElementCondition {
 
     private final Element element;
     private final ConditionConfig config;
+    private final long bloomTermId;
+    private final Set<Table<?>> tableSet;
 
     public ElementCondition(Element element, ConditionConfig config) {
+        this(element, config, 0L);
+    }
+
+    public ElementCondition(Element element, ConditionConfig config, long bloomTermId) {
         this.element = element;
         this.config = config;
+        this.bloomTermId = bloomTermId;
+        this.tableSet = new HashSet<>();
     }
 
     private void validate(Element element) {
@@ -113,7 +125,7 @@ public final class ElementCondition {
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
                 IndexStatementCondition indexStatementCondition =
-                        new IndexStatementCondition(value, config, new Tokenizer(32));
+                        new IndexStatementCondition(value, config, new Tokenizer(32), condition, bloomTermId);
                 condition = indexStatementCondition.condition();
             }
         }
@@ -122,6 +134,19 @@ public final class ElementCondition {
         }
         LOGGER.debug("Query condition: <{}>", condition);
         return condition;
+    }
+
+    public boolean isIndexStatement() {
+        validate(element);
+        String tag = element.getTagName();
+        return !config.streamQuery() && "indexstatement".equalsIgnoreCase(tag) && config.bloomEnabled();
+    }
+
+    public Set<Table<?>> matchSet() {
+        if (tableSet.isEmpty()) {
+            condition();
+        }
+        return tableSet;
     }
 
     @Override
