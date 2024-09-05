@@ -53,20 +53,18 @@ class LatestConditionTest {
 
     @Test
     void conditionTest() {
-        String e = "(\n" +
-                "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n" +
-                ")";
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
+                + ")";
         Condition elementCondition = new LatestCondition("1000").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }
 
     @Test
     void conditionUpdatedTest() {
-        String e = "(\n" +
-                "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946677600)\n" +
-                ")";
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946677600)\n"
+                + ")";
         Condition elementCondition = new LatestCondition("946677600").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }

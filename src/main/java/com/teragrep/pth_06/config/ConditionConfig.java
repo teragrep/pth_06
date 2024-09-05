@@ -48,6 +48,7 @@ package com.teragrep.pth_06.config;
 import org.jooq.DSLContext;
 
 public final class ConditionConfig {
+
     private final DSLContext ctx;
     private final boolean streamQuery;
     private final boolean bloomEnabled;
@@ -85,13 +86,14 @@ public final class ConditionConfig {
 
     @Override
     public boolean equals(Object object) {
-        if (this == object) return true;
-        if (object == null) return false;
-        if (object.getClass() != this.getClass()) return false;
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
         final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled &&
-                this.streamQuery == cast.streamQuery &&
-                this.withoutFilters == cast.withoutFilters &&
-                this.ctx == cast.ctx;
+        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
+                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
     }
 }

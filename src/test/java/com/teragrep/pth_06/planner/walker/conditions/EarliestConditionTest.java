@@ -53,10 +53,9 @@ public class EarliestConditionTest {
 
     @Test
     void conditionTest() {
-        String e = "(\n" +
-                "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
-                ")";
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
+                + ")";
         Condition elementCondition = new EarliestCondition("1000").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }

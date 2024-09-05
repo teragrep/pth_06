@@ -139,8 +139,10 @@ public class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(current,
-                new ConditionConfig(ctx, streamQuery, bloomEnabled, false));
+        ElementCondition elementCondition = new ElementCondition(
+                current,
+                new ConditionConfig(ctx, streamQuery, bloomEnabled, false)
+        );
         return elementCondition.condition();
     }
 }

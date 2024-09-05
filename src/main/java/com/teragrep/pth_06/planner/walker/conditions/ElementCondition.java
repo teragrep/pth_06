@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2024  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -57,6 +57,7 @@ import org.w3c.dom.Element;
  * Creates a query condition from provided dom element
  */
 public final class ElementCondition {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ElementCondition.class);
 
     private final Element element;
@@ -72,10 +73,14 @@ public final class ElementCondition {
             throw new IllegalStateException("Tag name for Element was null");
         }
         if (!element.hasAttribute("operation")) {
-            throw new IllegalStateException("Could not find specified or default value for 'operation' attribute from Element");
+            throw new IllegalStateException(
+                    "Could not find specified or default value for 'operation' attribute from Element"
+            );
         }
         if (!element.hasAttribute("value")) {
-            throw new IllegalStateException("Could not find specified or default value for 'value' attribute from Element");
+            throw new IllegalStateException(
+                    "Could not find specified or default value for 'value' attribute from Element"
+            );
         }
     }
 
@@ -111,8 +116,11 @@ public final class ElementCondition {
             }
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
-                IndexStatementCondition indexStatementCondition =
-                        new IndexStatementCondition(value, config, new Tokenizer(32));
+                IndexStatementCondition indexStatementCondition = new IndexStatementCondition(
+                        value,
+                        config,
+                        new Tokenizer(32)
+                );
                 condition = indexStatementCondition.condition();
             }
         }
@@ -125,9 +133,12 @@ public final class ElementCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object) return true;
-        if (object == null) return false;
-        if (object.getClass() != this.getClass()) return false;
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
         final ElementCondition cast = (ElementCondition) object;
         boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
         boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));

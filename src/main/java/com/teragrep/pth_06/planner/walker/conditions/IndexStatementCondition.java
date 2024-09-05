@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2024  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -63,8 +63,8 @@ import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-
 public final class IndexStatementCondition implements QueryCondition {
+
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
     private final String value;
@@ -116,20 +116,11 @@ public final class IndexStatementCondition implements QueryCondition {
                 .asField();
 
         final Field<Boolean> fe100kfp001 = DSL
-                .function(
-                        "bloommatch", Boolean.class, smallColumn,
-                        BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
-                );
+                .function("bloommatch", Boolean.class, smallColumn, BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER);
         final Field<Boolean> fe1000kfpp003 = DSL
-                .function(
-                        "bloommatch", Boolean.class, mediumColumn,
-                        BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
-                );
+                .function("bloommatch", Boolean.class, mediumColumn, BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER);
         final Field<Boolean> fe2500kfpp005 = DSL
-                .function(
-                        "bloommatch", Boolean.class, largeColumn,
-                        BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER
-                );
+                .function("bloommatch", Boolean.class, largeColumn, BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER);
 
         final Condition noBloomFilter = BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
                 .isNull()
@@ -148,16 +139,18 @@ public final class IndexStatementCondition implements QueryCondition {
 
     /**
      * @param object object compared against
-     * @return true if object is same class and all object values are equal (tokenizer values are expected to point to same reference)
+     * @return true if object is same class and all object values are equal (tokenizer values are expected to point to
+     *         same reference)
      */
     @Override
     public boolean equals(final Object object) {
-        if (this == object) return true;
-        if (object == null) return false;
-        if (object.getClass() != this.getClass()) return false;
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) &&
-                this.config.equals(cast.config) &&
-                this.tokenizer == cast.tokenizer; // expects same reference
+        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.tokenizer == cast.tokenizer; // expects same reference
     }
 }

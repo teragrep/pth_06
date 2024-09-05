@@ -55,23 +55,31 @@ import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 /**
  * Requires database setup for full test
  */
 public class IndexStatementConditionTest {
-    final ConditionConfig config = new ConditionConfig(DSL.using(new MockConnection(ctx -> new MockResult[0])), false, true, false);
+
+    final ConditionConfig config = new ConditionConfig(
+            DSL.using(new MockConnection(ctx -> new MockResult[0])),
+            false,
+            true,
+            false
+    );
     final Tokenizer tokenizer = new Tokenizer(32);
+
     @Test
     void conditionTest() {
         DSLContext ctx = DSL.using(new MockConnection(context -> new MockResult[0]));
         // only tests that database access is tried as expected
-        Assertions.assertThrows(SQLDialectNotSupportedException.class, () ->
-                new IndexStatementCondition(
-                        "value",
-                        new ConditionConfig(ctx, false, true, false),
-                        tokenizer
-                ).condition());
+        Assertions
+                .assertThrows(
+                        SQLDialectNotSupportedException.class, () -> new IndexStatementCondition(
+                                "value",
+                                new ConditionConfig(ctx, false, true, false),
+                                tokenizer
+                        ).condition()
+                );
     }
 
     @Test

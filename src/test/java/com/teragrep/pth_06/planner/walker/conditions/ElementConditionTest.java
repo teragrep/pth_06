@@ -60,6 +60,7 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 class ElementConditionTest {
+
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
     final DSLContext mockCtx = DSL.using(new MockConnection(ctx -> new MockResult[0]));
@@ -68,7 +69,9 @@ class ElementConditionTest {
 
     @Test
     void testStreamTags() {
-        String[] streamTags = {"index", "host", "sourcetype"};
+        String[] streamTags = {
+                "index", "host", "sourcetype"
+        };
         int loops = 0;
         for (String tag : streamTags) {
             Element element = document.createElement(tag);
@@ -89,7 +92,8 @@ class ElementConditionTest {
         Element element2 = document.createElement("indexstatement");
         element2.setAttribute("value", "searchTerm");
         element2.setAttribute("operation", "NOT_EQUALS");
-        Assertions.assertThrows(SQLDialectNotSupportedException.class, new ElementCondition(element, config)::condition);
+        Assertions
+                .assertThrows(SQLDialectNotSupportedException.class, new ElementCondition(element, config)::condition);
         Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element, streamConfig)::condition);
         Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element2, config)::condition);
     }
@@ -116,7 +120,9 @@ class ElementConditionTest {
 
     @Test
     void testTimeQualifiers() {
-        String[] tags = {"earliest", "latest", "index_earliest", "index_latest"};
+        String[] tags = {
+                "earliest", "latest", "index_earliest", "index_latest"
+        };
         int loops = 0;
         for (String tag : tags) {
             Element element = document.createElement(tag);
@@ -131,15 +137,16 @@ class ElementConditionTest {
 
     @Test
     void testInvalidStreamTags() {
-        String[] tags = {"earliest", "latest", "index_earliest", "index_latest", "indexstatement"};
+        String[] tags = {
+                "earliest", "latest", "index_earliest", "index_latest", "indexstatement"
+        };
         int loops = 0;
         for (String tag : tags) {
             Element element = document.createElement(tag);
             element.setAttribute("value", "1000");
             element.setAttribute("operation", "EQUALS");
-            Assertions.assertThrows(IllegalStateException.class,
-                    () -> new ElementCondition(element, streamConfig).condition()
-            );
+            Assertions
+                    .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, streamConfig).condition());
             loops++;
         }
         Assertions.assertEquals(5, loops);
@@ -150,15 +157,13 @@ class ElementConditionTest {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
         element.setAttribute("operation", "EQUALS");
-        Assertions.assertThrows(IllegalStateException.class,
-                () -> new ElementCondition(element, streamConfig).condition()
-        );
+        Assertions
+                .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, streamConfig).condition());
         Element element2 = document.createElement("hostindex");
         element2.setAttribute("value", "test");
         element2.setAttribute("operation", "EQUALS");
-        Assertions.assertThrows(IllegalStateException.class,
-                () -> new ElementCondition(element2, streamConfig).condition()
-        );
+        Assertions
+                .assertThrows(IllegalStateException.class, () -> new ElementCondition(element2, streamConfig).condition());
     }
 
     @Test

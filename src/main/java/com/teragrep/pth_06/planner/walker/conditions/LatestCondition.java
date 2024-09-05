@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2024  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -53,6 +53,7 @@ import java.time.Instant;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
 public final class LatestCondition implements QueryCondition {
+
     private final String value;
 
     public LatestCondition(String value) {
@@ -65,8 +66,11 @@ public final class LatestCondition implements QueryCondition {
         final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
         Condition condition;
         condition = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);
-        condition = condition.and("UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))" +
-                " <= " + instant.getEpochSecond());
+        condition = condition
+                .and(
+                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))"
+                                + " <= " + instant.getEpochSecond()
+                );
         // raw SQL used here since following not supported for mariadb:
         // queryCondition = queryCondition.and(toTimestamp(
         // regexpReplaceAll(JOURNALDB.LOGFILE.PATH, "((^.*\\/.*-)|(\\.log\\.gz.*))", ""),
@@ -80,9 +84,12 @@ public final class LatestCondition implements QueryCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object) return true;
-        if (object == null) return false;
-        if (object.getClass() != this.getClass()) return false;
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
         final LatestCondition cast = (LatestCondition) object;
         return this.value.equals(cast.value);
     }
