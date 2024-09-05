@@ -335,6 +335,9 @@
             <licenseHeader>
               <file>${project.basedir}/license-header</file>
             </licenseHeader>
+            <excludes>
+              <exclude>src/main/java/com/teragrep/pth_06/jooq/generated/**/*.*</exclude>
+            </excludes>
           </java>
           <pom>
             <sortPom>
