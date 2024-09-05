@@ -248,7 +248,7 @@
             <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
               <notes>Also allow the license url to be https.</notes>
               <patterns>
-                <pattern>https://github.com/teragrep/teragrep/blob/main/LICENSE</pattern>
+                <pattern>GNU Affero General Public License</pattern>
               </patterns>
             </license>
           </licenses>
