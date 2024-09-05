@@ -57,7 +57,7 @@ import java.time.Instant;
  * @author Mikko Kortelainen
  * @author Ville Manninen
  */
-public class EarliestWalker extends XmlWalker {
+public class EarliestWalker extends XmlWalker<Long> {
 
     private final Logger LOGGER = LoggerFactory.getLogger(EarliestWalker.class);
 

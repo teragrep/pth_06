@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
  */
-public abstract class XmlWalker {
+public abstract class XmlWalker<T> {
 
     private final Logger LOGGER = LoggerFactory.getLogger(XmlWalker.class);
 
@@ -81,8 +81,8 @@ public abstract class XmlWalker {
 
     }
 
-    public <T> T fromString(String inXml) throws Exception {
-        Object rv;
+    public T fromString(String inXml) throws Exception {
+        T rv;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder loader = factory.newDocumentBuilder();
         Document document = loader.parse(new InputSource(new StringReader(inXml)));
@@ -92,25 +92,22 @@ public abstract class XmlWalker {
 
         TreeWalker walker = traversal
                 .createTreeWalker(document.getDocumentElement(), NodeFilter.SHOW_ELEMENT, null, true);
-        rv = traverse(walker, (String) null);
-        //        if (rv != null) {
-        //            System.out.println("XmlWalker.fromString() value:" + ((T) rv).toString());
-        //        }
-        return (T) rv;
+        rv = traverse(walker, null);
+        return rv;
     }
 
     /**
      * Walk through tree using depth-first order and generate spark-query using appropriate emit-methods.
-     * 
+     *
      * @param walker
      * @param op     operation String
      * @return Class which expr-part contains actual catalyst query tree
      * @throws Exception
      */
-    public <T> T traverse(TreeWalker walker, String op) throws Exception {
+    public T traverse(TreeWalker walker, String op) throws Exception {
         Node parend = walker.getCurrentNode();
         Element current = ((Element) parend);
-        Object rv = null;
+        T rv = null;
         LOGGER.debug(" traverse incoming:" + current.getTagName());
 
         try {
@@ -129,7 +126,7 @@ public abstract class XmlWalker {
                 }
                 // get left and right
                 Node left = walker.firstChild();
-                Object lft;
+                T lft;
                 switch (count) {
                     case 1: {
                         LOGGER.debug("  1 child incoming:" + current + " left=" + left + " op:" + op);
@@ -143,7 +140,7 @@ public abstract class XmlWalker {
                     }
                     case 2: {
                         lft = traverse(walker, op);
-                        Object rht = null;
+                        T rht = null;
                         Node right = walker.nextSibling();
                         walker.setCurrentNode(left);
                         //                        System.out.println("traverse right:"+right);
@@ -192,28 +189,25 @@ public abstract class XmlWalker {
     /**
      * Abstract method which is called during traverse. Emits appropriate element
      *
-     * @param         <T> returned class
      * @param current DOM-element
      * @return correct query according to implementation class
      */
-    abstract <T> T emitElem(Element current);
+    abstract T emitElem(Element current);
 
     /**
      * Abstract method which is called during traverse. Emits appropriate logical operation
-     * 
-     * @param <T> returned class
+     *
      * @return correct query according to implementation class
      */
-    abstract <T> T emitLogicalOperation(String op, Object left, Object right) throws Exception;
+    abstract T emitLogicalOperation(String op, Object left, Object right) throws Exception;
 
     /**
      * Abstract method which is called during traverse. Emits appropriate unary operation
-     * 
-     * @param         <T> returned class
+     *
      * @param current DOM-element
      * @return correct query according to implementation class
      */
-    abstract <T> T emitUnaryOperation(String op, Element current) throws Exception;
+    abstract T emitUnaryOperation(String op, Element current) throws Exception;
     // escape special chars inside value
 
     /**
