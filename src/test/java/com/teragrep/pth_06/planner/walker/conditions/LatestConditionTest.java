@@ -63,20 +63,20 @@ class LatestConditionTest {
     @Test
     void conditionUpdatedTest() {
         String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946677600)\n"
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
                 + ")";
-        Condition elementCondition = new LatestCondition("946677600").condition();
+        Condition elementCondition = new LatestCondition("946720800").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }
 
     @Test
     void equalsTest() {
-        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq1 = new IndexCondition("946720800", "EQUALS", false);
         eq1.condition();
-        IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
-        IndexCondition eq3 = new IndexCondition("946677600", "EQUALS", true);
+        IndexCondition eq2 = new IndexCondition("946720800", "EQUALS", false);
+        IndexCondition eq3 = new IndexCondition("946720800", "EQUALS", true);
         eq3.condition();
-        IndexCondition eq4 = new IndexCondition("946677600", "EQUALS", true);
+        IndexCondition eq4 = new IndexCondition("946720800", "EQUALS", true);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq2, eq1);
         Assertions.assertEquals(eq3, eq4);
@@ -84,9 +84,9 @@ class LatestConditionTest {
 
     @Test
     void notEqualsTest() {
-        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq1 = new IndexCondition("946720800", "EQUALS", false);
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
-        IndexCondition notEq2 = new IndexCondition("946677600", "EQUALS", true);
+        IndexCondition notEq2 = new IndexCondition("946720800", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, null);
