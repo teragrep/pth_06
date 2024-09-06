@@ -68,7 +68,6 @@ class ElementConditionTest {
 
     @Test
     void testStreamTags() {
-        String[] streamTags = {"index", "host", "sourcetype"};
         String[] streamTags = {
                 "index", "host", "sourcetype"
         };

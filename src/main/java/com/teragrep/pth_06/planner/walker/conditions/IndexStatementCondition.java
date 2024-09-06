@@ -58,8 +58,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public final class IndexStatementCondition implements QueryCondition {
+
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
     private final String value;
@@ -70,18 +70,24 @@ public final class IndexStatementCondition implements QueryCondition {
     private final List<Table<?>> tableList;
 
     public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config,  new Tokenizer(32), DSL.noCondition(), 0L);
+        this(value, config, new Tokenizer(32), DSL.noCondition(), 0L);
     }
 
     public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {
-        this(value, config,  tokenizer, DSL.noCondition(), 0L);
+        this(value, config, tokenizer, DSL.noCondition(), 0L);
     }
 
     public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer, long bloomTermId) {
-        this(value, config,  tokenizer, DSL.noCondition(), bloomTermId);
+        this(value, config, tokenizer, DSL.noCondition(), bloomTermId);
     }
 
-    public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer, Condition condition, long bloomTermId) {
+    public IndexStatementCondition(
+            String value,
+            ConditionConfig config,
+            Tokenizer tokenizer,
+            Condition condition,
+            long bloomTermId
+    ) {
         this.value = value;
         this.config = config;
         this.tokenizer = tokenizer;
@@ -92,26 +98,31 @@ public final class IndexStatementCondition implements QueryCondition {
 
     public Condition condition() {
         Condition newCondition = condition;
-            LOGGER.info("indexstatement reached with search term <{}>", value);
-            PatternMatch patternMatch = new PatternMatch(config.context(), value);
-            if(tableList.isEmpty()) {
-                tableList.addAll(patternMatch.toList());
+        LOGGER.info("indexstatement reached with search term <{}>", value);
+        PatternMatch patternMatch = new PatternMatch(config.context(), value);
+        if (tableList.isEmpty()) {
+            tableList.addAll(patternMatch.toList());
+        }
+        if (!tableList.isEmpty()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());
             }
-            if (!tableList.isEmpty()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());
-                }
-                Condition bloomCondition = DSL.noCondition();
-                Condition noBloomCondition = DSL.noCondition();
+            Condition bloomCondition = DSL.noCondition();
+            Condition noBloomCondition = DSL.noCondition();
 
-                for (Table<?> table : tableList) {
-                    BloomFilterTempTable tempTable = new BloomFilterTempTable(config.context(), table, bloomTermId, patternMatch.tokenSet());
-                    Condition tableCondition = tempTable.generateCondition();
-                    bloomCondition = bloomCondition.or(tableCondition);
-                    noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
-                }
-                newCondition = bloomCondition.or(noBloomCondition);
+            for (Table<?> table : tableList) {
+                BloomFilterTempTable tempTable = new BloomFilterTempTable(
+                        config.context(),
+                        table,
+                        bloomTermId,
+                        patternMatch.tokenSet()
+                );
+                Condition tableCondition = tempTable.generateCondition();
+                bloomCondition = bloomCondition.or(tableCondition);
+                noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
             }
+            newCondition = bloomCondition.or(noBloomCondition);
+        }
         return newCondition;
     }
 

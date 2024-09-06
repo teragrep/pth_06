@@ -64,15 +64,22 @@ import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IndexStatementConditionTest {
+
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(
-            "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
-            "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
-    ));
+    final List<String> patternList = new ArrayList<>(
+            Arrays
+                    .asList(
+                            "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+                            "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
+                    )
+    );
     final ConditionConfig mockConfig = new ConditionConfig(
-            DSL.using(new MockConnection(ctx -> new MockResult[0])), false, true);
+            DSL.using(new MockConnection(ctx -> new MockResult[0])),
+            false,
+            true
+    );
     final Tokenizer tokenizer = new Tokenizer(32);
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
@@ -84,24 +91,22 @@ public class IndexStatementConditionTest {
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
-            String filtertype = "CREATE TABLE`filtertype`" +
-                    "(" +
-                    "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                    "    `expectedElements` bigint(20) unsigned NOT NULL," +
-                    "    `targetFpp`        DOUBLE(2) unsigned NOT NULL," +
-                    "    `pattern`          VARCHAR(2048) NOT NULL," +
-                    "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)" +
-                    ")";
-            String ip = "CREATE TABLE `pattern_test_ip`(" +
-                    "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                    "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE," +
-                    "    `filter_type_id` bigint(20) unsigned NOT NULL," +
-                    "    `filter`         longblob            NOT NULL)";
-            String ip255 = "CREATE TABLE `pattern_test_ip255`(" +
-                    "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                    "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE," +
-                    "    `filter_type_id` bigint(20) unsigned NOT NULL," +
-                    "    `filter`         longblob            NOT NULL)";
+            String filtertype = "CREATE TABLE`filtertype`" + "("
+                    + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `expectedElements` bigint(20) unsigned NOT NULL,"
+                    + "    `targetFpp`        DOUBLE(2) unsigned NOT NULL,"
+                    + "    `pattern`          VARCHAR(2048) NOT NULL,"
+                    + "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)" + ")";
+            String ip = "CREATE TABLE `pattern_test_ip`("
+                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
+                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
+                    + "    `filter`         longblob            NOT NULL)";
+            String ip255 = "CREATE TABLE `pattern_test_ip255`("
+                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
+                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
+                    + "    `filter`         longblob            NOT NULL)";
             conn.prepareStatement(filtertype).execute();
             conn.prepareStatement(ip).execute();
             conn.prepareStatement(ip255).execute();
@@ -134,23 +139,13 @@ public class IndexStatementConditionTest {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
         IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config, tokenizer);
-        String e = "(\n" +
-                "  (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
-                ")";
+        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
+                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
+                + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
+                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
     }
 
@@ -159,40 +154,19 @@ public class IndexStatementConditionTest {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
         IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config, tokenizer);
-        String e = "(\n" +
-                "  (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    bloommatch(\n" +
-                "      (\n" +
-                "        select \"term_0_pattern_test_ip255\".\"filter\"\n" +
-                "        from \"term_0_pattern_test_ip255\"\n" +
-                "        where (\n" +
-                "          term_id = 0\n" +
-                "          and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" +
-                "        )\n" +
-                "      ),\n" +
-                "      \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" +
-                "    ) = true\n" +
-                "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" +
-                "  )\n" +
-                "  or (\n" +
-                "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
-                "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" +
-                "  )\n" +
-                ")";
+        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
+                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
+                + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
+                + "    bloommatch(\n" + "      (\n" + "        select \"term_0_pattern_test_ip255\".\"filter\"\n"
+                + "        from \"term_0_pattern_test_ip255\"\n" + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
+                + "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  )\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
     }
 
@@ -217,8 +191,8 @@ public class IndexStatementConditionTest {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) " +
-                    "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
+            String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
+                    + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             BloomFilter filter = BloomFilter.create(1000, 0.01);
             final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();

@@ -349,7 +349,8 @@ public class StreamDBClient {
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("Left join pattern match table: <{}>", table.getName());
                         }
-                        selectOnConditionStep = selectOnConditionStep.leftJoin(table)
+                        selectOnConditionStep = selectOnConditionStep
+                                .leftJoin(table)
                                 .on(JOURNALDB.LOGFILE.ID.eq((Field<ULong>) table.field("partition_id")));
                     }
                 }

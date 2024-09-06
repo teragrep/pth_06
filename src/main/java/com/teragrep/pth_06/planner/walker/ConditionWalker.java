@@ -109,11 +109,14 @@ public class ConditionWalker extends XmlWalker<Condition> {
         }
         if (op.equalsIgnoreCase("AND")) {
             rv = left.and(right);
-        } else if (op.equalsIgnoreCase("OR")) {
+        }
+        else if (op.equalsIgnoreCase("OR")) {
             rv = left.or(right);
-        } else if (op.equalsIgnoreCase("NOT")) {
+        }
+        else if (op.equalsIgnoreCase("NOT")) {
             rv = left.not();
-        } else {
+        }
+        else {
             throw new Exception(
                     "Parse error, unssorted logical operation. op:" + op + " expression:" + left.toString()
             );
@@ -134,7 +137,8 @@ public class ConditionWalker extends XmlWalker<Condition> {
         if (rv != null) {
             if (op.equalsIgnoreCase("NOT")) {
                 rv = rv.not();
-            } else {
+            }
+            else {
                 throw new Exception(
                         "Parse error, unsupported logical operation. op:" + op + " expression:" + rv.toString()
                 );
@@ -144,9 +148,11 @@ public class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(current,
+        ElementCondition elementCondition = new ElementCondition(
+                current,
                 new ConditionConfig(ctx, streamQuery, bloomEnabled),
-                bloomTermId);
+                bloomTermId
+        );
         if (elementCondition.isIndexStatement()) {
             patternMatchTables().addAll(elementCondition.matchSet());
             bloomTermId++;
