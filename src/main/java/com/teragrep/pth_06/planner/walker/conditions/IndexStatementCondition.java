@@ -70,7 +70,7 @@ public final class IndexStatementCondition implements QueryCondition {
     private final List<Table<?>> tableList;
 
     public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config, new Tokenizer(32), DSL.noCondition(), 0L);
+        this(value, config, new Tokenizer(0), DSL.noCondition(), 0L);
     }
 
     public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {

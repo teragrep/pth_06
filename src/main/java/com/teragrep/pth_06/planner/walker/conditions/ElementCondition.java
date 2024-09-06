@@ -114,7 +114,7 @@ public final class ElementCondition {
                 IndexStatementCondition indexStatementCondition = new IndexStatementCondition(
                         value,
                         config,
-                        new Tokenizer(32),
+                        new Tokenizer(0),
                         condition,
                         bloomTermId
                 );

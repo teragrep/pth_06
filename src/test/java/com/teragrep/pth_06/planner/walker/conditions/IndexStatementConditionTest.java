@@ -81,7 +81,7 @@ public class IndexStatementConditionTest {
             false,
             true
     );
-    final Tokenizer tokenizer = new Tokenizer(32);
+    final Tokenizer tokenizer = new Tokenizer(0);
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
