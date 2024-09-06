@@ -158,7 +158,11 @@ public final class BloomFilterTempTable {
         }
     }
 
-    private void insertFilterFromRecord(final Record record, final Field<ULong> expectedField, final Field<Double> fppField) {
+    private void insertFilterFromRecord(
+            final Record record,
+            final Field<ULong> expectedField,
+            final Field<Double> fppField
+    ) {
         final ULong filterTypeId = record.getValue(BLOOMDB.FILTERTYPE.ID); // filter_type_id
         final ULong expected = record.getValue(expectedField); // expectedElements
         final Double fpp = record.getValue(fppField); // targetFpp
@@ -168,7 +172,8 @@ public final class BloomFilterTempTable {
         try {
             filter.writeTo(filterBAOS);
             filterBAOS.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         ctx

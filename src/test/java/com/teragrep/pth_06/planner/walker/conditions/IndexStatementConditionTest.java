@@ -134,6 +134,7 @@ public class IndexStatementConditionTest {
             conn.close();
         });
     }
+
     @Test
     void noMatchesTest() {
         DSLContext ctx = DSL.using(conn);

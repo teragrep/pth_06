@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
+import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -154,7 +155,7 @@ public class ConditionWalker extends XmlWalker<Condition> {
 
     Condition emitElem(final Element current) {
         final ElementCondition elementCondition = new ElementCondition(
-                current,
+                new ValidElement(current),
                 new ConditionConfig(ctx, streamQuery, bloomEnabled),
                 bloomTermId
         );
