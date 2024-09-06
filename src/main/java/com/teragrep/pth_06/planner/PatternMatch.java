@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2022, 2023, 2024  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,12 +43,15 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.blf_01.Token;
 import com.teragrep.blf_01.Tokenizer;
-import org.jooq.*;
+
+import org.jooq.Condition;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -56,58 +59,79 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 public class PatternMatch {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatch.class);
 
     private final DSLContext ctx;
-    private final Set<Token> tokenSet;
-    private final List<Table<?>> matchingTablesList;
+    private final String input;
 
     public PatternMatch(DSLContext ctx, String input) {
         this.ctx = ctx;
-        this.tokenSet = new HashSet<>(
-                new Tokenizer(0).tokenize(
-                        new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))
-                )
-        );
-        this.matchingTablesList = new ArrayList<>();
+        this.input = input;
     }
 
-    private void patternMatch() {
+    /**
+     * Finds all non-empty Tables from bloomdb that are not filtertype and that match regex condition from token set
+     * Note: Table records are not fetched fully
+     *
+     * @return List of tables that matched condition and were not empty
+     */
+    public List<Table<?>> toList() {
+        final Set<Token> tokenSet = tokenSet();
         Condition patternCondition = DSL.noCondition();
+        // tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like BLOOMDB.FILTERTYPE.PATTERN)
         for (Token token : tokenSet) {
             Field<String> tokenStringField = DSL.val(token.toString());
             patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
         }
         final Condition finalPatternCondition = patternCondition;
-        List<Table<?>> tables = ctx.meta()
-                .filterSchemas(s -> s.equals(BLOOMDB))
-                .filterTables(t -> !t.equals(BLOOMDB.FILTERTYPE))
-                .filterTables(t -> ctx.select((Field<ULong>) t.field("id"))
+        // SQL metadata
+        List<Table<?>> tables = ctx
+                .meta()
+                .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
+                .filterTables(t -> !t.equals(BLOOMDB.FILTERTYPE)) // remove filtertype table
+                .filterTables(t -> ctx.select((Field<ULong>) t.field("id"))// for each table left
                         .from(t)
-                        .leftJoin(BLOOMDB.FILTERTYPE)
+                        .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access pattern
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(finalPatternCondition)
-                        .limit(1)
+                        .where(finalPatternCondition)// select tables that match pattern
+                        .limit(1)// limit 1 since we are checking only if table is not empty
                         .fetch()
-                        .isNotEmpty())
-                .getTables();
+                        .isNotEmpty()
+                ) // select table if not empty
+                .getTables(); // get tables after filtering
         LOGGER.debug("Table(s) with a pattern match <{}>", tables);
-        matchingTablesList.addAll(tables);
+        return tables;
     }
 
     public Set<Token> tokenSet() {
-        return tokenSet;
+        return new HashSet<>(
+                new Tokenizer(0).tokenize(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)))
+        );
     }
 
-    public List<Table<?>> toList() {
-        if (matchingTablesList.isEmpty()) {
-            patternMatch();
-        }
-        return matchingTablesList;
+    /**
+     * Equal only if same instance of DSLContext
+     * 
+     * @param object object compared against
+     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     */
+    @Override
+    public boolean equals(Object object) {
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
+        final PatternMatch cast = (PatternMatch) object;
+        return this.input.equals(cast.input) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
     }
 }
