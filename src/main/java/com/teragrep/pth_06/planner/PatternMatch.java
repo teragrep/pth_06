@@ -93,7 +93,7 @@ public class PatternMatch {
         }
         final Condition finalPatternCondition = patternCondition;
         // SQL metadata
-        List<Table<?>> tables = ctx
+        final List<Table<?>> tables = ctx
                 .meta()
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
                 .filterTables(t -> !t.equals(BLOOMDB.FILTERTYPE)) // remove filtertype table

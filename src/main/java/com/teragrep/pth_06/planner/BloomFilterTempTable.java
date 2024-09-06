@@ -118,13 +118,13 @@ public final class BloomFilterTempTable {
             LOGGER.info("Creating temporary table <{}>", table.getName());
         }
         ctx.dropTemporaryTableIfExists(table).execute();
-        String sql = "create temporary table " + table.getName()
+        final String sql = "create temporary table " + table.getName()
                 + "(id bigint auto_increment primary key, term_id bigint, type_id bigint, filter longblob, unique key "
                 + table.getName() + "_unique_key (term_id, type_id))";
-        Query query = ctx.query(sql);
+        final Query query = ctx.query(sql);
         query.execute();
-        Index logtimeIndex = DSL.index(DSL.name(table.getName() + "_ix_type_id"));
-        CreateIndexIncludeStep createIndexIncludeStep = ctx.createIndex(logtimeIndex).on(table, typeIdField);
+        final Index logtimeIndex = DSL.index(DSL.name(table.getName() + "_ix_type_id"));
+        final CreateIndexIncludeStep createIndexIncludeStep = ctx.createIndex(logtimeIndex).on(table, typeIdField);
         LOGGER.trace("BloomFilterTempTable create index <{}>", createIndexIncludeStep);
         createIndexIncludeStep.execute();
     }
@@ -134,8 +134,7 @@ public final class BloomFilterTempTable {
      * set and its size is selected using parent table filtertype expected and fpp values.
      */
     private void insertFilters() {
-        Table<?> joined = parentTable;
-        joined = joined
+        final Table<?> joined = parentTable
                 .join(BLOOMDB.FILTERTYPE)
                 .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) parentTable.field("filter_type_id")));
         final Field<ULong> expectedField = DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class);
@@ -146,27 +145,30 @@ public final class BloomFilterTempTable {
                 joined.field("targetFpp").as(fppField)
         };
         // Fetch filtertype values
-        Result<Record> records = ctx.select(resultFields).from(joined).groupBy(joined.field("filter_type_id")).fetch();
+        final Result<Record> records = ctx
+                .select(resultFields)
+                .from(joined)
+                .groupBy(joined.field("filter_type_id"))
+                .fetch();
         if (records.isEmpty()) {
             throw new RuntimeException("Parent table was empty");
         }
         for (Record record : records) {
-            ULong filterTypeId = record.getValue(BLOOMDB.FILTERTYPE.ID); // filter_type_id
-            ULong expected = record.getValue(expectedField); // expectedElements
-            Double fpp = record.getValue(fppField); // targetFpp
-            BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
-            tokenSet.forEach(token -> filter.put(token.toString()));
-            insertOneFilter(filter, filterTypeId);
+            insertFilterFromRecord(record, expectedField, fppField);
         }
     }
 
-    private void insertOneFilter(BloomFilter filter, ULong filterTypeId) {
+    private void insertFilterFromRecord(final Record record, final Field<ULong> expectedField, final Field<Double> fppField) {
+        final ULong filterTypeId = record.getValue(BLOOMDB.FILTERTYPE.ID); // filter_type_id
+        final ULong expected = record.getValue(expectedField); // expectedElements
+        final Double fpp = record.getValue(fppField); // targetFpp
+        final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
+        tokenSet.forEach(token -> filter.put(token.toString()));
         final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         try {
             filter.writeTo(filterBAOS);
             filterBAOS.close();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         ctx
@@ -187,24 +189,23 @@ public final class BloomFilterTempTable {
     public Condition generateCondition() {
         create();
         insertFilters();
-        SelectConditionStep<Record1<byte[]>> selectConditionStep = DSL
+        final SelectConditionStep<Record1<byte[]>> selectConditionStep = DSL
                 .select(filterField)
                 .from(table)
                 .where(termIdField.eq(ULong.valueOf(bloomTermId)))
                 .and(typeIdField.eq((Field<ULong>) parentTable.field("filter_type_id")));
-        Field<byte[]> termFilterColumn = selectConditionStep.asField();
-        Condition filterFieldCondition = DSL
+        final Field<byte[]> termFilterColumn = selectConditionStep.asField();
+        final Condition filterFieldCondition = DSL
                 .function("bloommatch", Boolean.class, termFilterColumn, parentTable.field("filter"))
                 .eq(true);
         // null check allows SQL to optimize query
-        Condition notNullCondition = parentTable.field("filter").isNotNull();
-
+        final Condition notNullCondition = parentTable.field("filter").isNotNull();
         return filterFieldCondition.and(notNullCondition);
     }
 
     /**
      * Equal only if same instance of DSLContext
-     * 
+     *
      * @param object object compared against
      * @return true if all object is same class, object fields are equal and DSLContext is same instance
      */

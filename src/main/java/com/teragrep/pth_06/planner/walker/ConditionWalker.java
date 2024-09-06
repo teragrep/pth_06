@@ -72,7 +72,7 @@ public class ConditionWalker extends XmlWalker<Condition> {
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
-    private final Set<Table<?>> tableSet;
+    private final Set<Table<?>> patternMatchSet;
     private long bloomTermId = 0;
 
     /**
@@ -86,7 +86,7 @@ public class ConditionWalker extends XmlWalker<Condition> {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
-        this.tableSet = new HashSet<>();
+        this.patternMatchSet = new HashSet<>();
     }
 
     public Condition fromString(String inXml, boolean streamQuery) throws Exception {
@@ -94,8 +94,13 @@ public class ConditionWalker extends XmlWalker<Condition> {
         return fromString(inXml);
     }
 
+    /**
+     * Set of all the tables that pattern matched with tokenized search terms the walkers has visited
+     *
+     * @return Set of Tables that had a pattern match
+     */
     public Set<Table<?>> patternMatchTables() {
-        return tableSet;
+        return patternMatchSet;
     }
 
     @Override
@@ -147,8 +152,8 @@ public class ConditionWalker extends XmlWalker<Condition> {
         return rv;
     }
 
-    Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(
+    Condition emitElem(final Element current) {
+        final ElementCondition elementCondition = new ElementCondition(
                 current,
                 new ConditionConfig(ctx, streamQuery, bloomEnabled),
                 bloomTermId
