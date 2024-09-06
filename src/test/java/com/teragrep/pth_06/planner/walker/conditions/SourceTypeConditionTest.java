@@ -73,12 +73,12 @@ class SourceTypeConditionTest {
 
     @Test
     void equalsTest() {
-        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
+        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         eq1.condition();
-        IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
-        IndexCondition eq3 = new IndexCondition("946677600", "EQUALS", true);
+        SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition eq3 = new SourceTypeCondition("946677600", "EQUALS", true);
         eq3.condition();
-        IndexCondition eq4 = new IndexCondition("946677600", "EQUALS", true);
+        SourceTypeCondition eq4 = new SourceTypeCondition("946677600", "EQUALS", true);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq2, eq1);
         Assertions.assertEquals(eq3, eq4);
@@ -86,9 +86,9 @@ class SourceTypeConditionTest {
 
     @Test
     void notEqualsTest() {
-        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
-        IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
-        IndexCondition notEq2 = new IndexCondition("1000", "EQUALS", true);
+        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition notEq = new SourceTypeCondition("1000", "EQUALS", false);
+        SourceTypeCondition notEq2 = new SourceTypeCondition("1000", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, null);
