@@ -1,6 +1,6 @@
 /*
- * This program handles user requests that require archive access.
- * Copyright (C) 2024  Suomen Kanuuna Oy
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -43,7 +43,6 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.planner.StreamDBClient;
@@ -52,6 +51,7 @@ import org.jooq.Condition;
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
 public final class SourceTypeCondition implements QueryCondition {
+
     private final String value;
     private final String operation;
     private final boolean streamQuery;
@@ -65,14 +65,10 @@ public final class SourceTypeCondition implements QueryCondition {
     public Condition condition() {
         Condition condition;
         if (streamQuery) {
-            condition = STREAMDB.STREAM.STREAM_.like(
-                    value.replace('*', '%')
-            );
-        } else {
-            condition =
-                    StreamDBClient.GetArchivedObjectsFilterTable.stream.like(
-                            value.replace('*', '%').toLowerCase()
-                    );
+            condition = STREAMDB.STREAM.STREAM_.like(value.replace('*', '%'));
+        }
+        else {
+            condition = StreamDBClient.GetArchivedObjectsFilterTable.stream.like(value.replace('*', '%').toLowerCase());
         }
         if (operation.equalsIgnoreCase("NOT_EQUALS")) {
             condition = condition.not();
@@ -82,12 +78,14 @@ public final class SourceTypeCondition implements QueryCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object) return true;
-        if (object == null) return false;
-        if (object.getClass() != this.getClass()) return false;
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
         final SourceTypeCondition cast = (SourceTypeCondition) object;
-        return this.streamQuery == cast.streamQuery &&
-                this.value.equals(cast.value) &&
-                this.operation.equals(cast.operation);
+        return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
+                && this.operation.equals(cast.operation);
     }
 }
