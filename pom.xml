@@ -304,7 +304,7 @@
             <configuration>
               <jdbc>
                 <driver>org.mariadb.jdbc.Driver</driver>
-                <url>jdbc:mariadb://192.168.49.2:31685</url>
+                <url>jdbc:mariadb://localhost:${env.MARIADB_PORT}</url>
                 <user>streamdb</user>
                 <password>streamdb_pass</password>
               </jdbc>
