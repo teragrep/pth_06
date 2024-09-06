@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -118,11 +119,15 @@ public final class ElementCondition {
                         condition,
                         bloomTermId
                 );
-                matchSet().addAll(indexStatementCondition.matchList());
                 condition = indexStatementCondition.condition();
+                List<Table<?>> newMatches = indexStatementCondition.matchList();
+                if (!newMatches.isEmpty()) {
+                    tableSet.addAll(newMatches);
+                }
             }
         }
-        if (condition.equals(DSL.noCondition())) {
+        // indexstatement can return condition unmodified
+        if (condition.equals(DSL.noCondition()) && !isIndexStatement()) {
             throw new IllegalStateException("Unsupported Element tag " + tag);
         }
         LOGGER.debug("Query condition: <{}>", condition);

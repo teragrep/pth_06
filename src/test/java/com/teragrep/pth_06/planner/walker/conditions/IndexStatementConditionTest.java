@@ -141,17 +141,19 @@ public class IndexStatementConditionTest {
         Condition e1 = DSL.falseCondition();
         Condition e2 = DSL.trueCondition();
         ConditionConfig config = new ConditionConfig(ctx, false, true);
-        Condition cond1 = new IndexStatementCondition("test", config, tokenizer, e1, 0L).condition();
-        Condition cond2 = new IndexStatementCondition("test", config, tokenizer, e2, 1L).condition();
-        Assertions.assertEquals(e1, cond1);
-        Assertions.assertEquals(e2, cond2);
+        IndexStatementCondition cond1 = new IndexStatementCondition("test", config, tokenizer, e1, 0L);
+        IndexStatementCondition cond2 = new IndexStatementCondition("test", config, tokenizer, e2, 1L);
+        Assertions.assertEquals(e1, cond1.condition());
+        Assertions.assertEquals(e2, cond2.condition());
+        Assertions.assertTrue(cond1.matchList().isEmpty());
+        Assertions.assertTrue(cond2.matchList().isEmpty());
     }
 
     @Test
     void oneMatchingTableTest() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
-        Condition cond = new IndexStatementCondition("192.168.1.1", config, tokenizer).condition();
+        IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config, tokenizer);
         String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
                 + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
                 + "        where (\n" + "          term_id = 0\n"
@@ -159,14 +161,15 @@ public class IndexStatementConditionTest {
                 + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
                 + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
                 + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
-        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(e, cond.condition().toString());
+        Assertions.assertEquals(1, cond.matchList().size());
     }
 
     @Test
     void twoMatchingTableTest() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
-        Condition cond = new IndexStatementCondition("255.255.255.255", config, tokenizer).condition();
+        IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config, tokenizer);
         String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
                 + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
                 + "        where (\n" + "          term_id = 0\n"
@@ -180,7 +183,8 @@ public class IndexStatementConditionTest {
                 + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
                 + "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
                 + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  )\n" + ")";
-        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(e, cond.condition().toString());
+        Assertions.assertEquals(2, cond.matchList().size());
     }
 
     @Test
