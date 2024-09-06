@@ -118,6 +118,7 @@ public final class ElementCondition {
                         condition,
                         bloomTermId
                 );
+                matchSet().addAll(indexStatementCondition.matchList());
                 condition = indexStatementCondition.condition();
             }
         }
