@@ -62,8 +62,9 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
- * Class to represent a SQL Temp. Filled with bloom filters of all the parent tables records filter types. Search term token set parameter is inserted into
- * each filter. Used to generate bloommatch condition that compares this filter column against parent table filter column row by row using bloommatch UDF.
+ * Class to represent a SQL Temp. Filled with bloom filters of all the parent tables records filter types. Search term
+ * token set parameter is inserted into each filter. Used to generate bloommatch condition that compares this filter
+ * column against parent table filter column row by row using bloommatch UDF.
  * <p>
  * Parent Table Schema:
  * <ol>
@@ -130,8 +131,8 @@ public final class BloomFilterTempTable {
     }
 
     /**
-     * Inserts a filter for each filtertype inside parent table records. Filter is filled with search term token
-     * set, filter size is selected using parent table filtertype expected and fpp values.
+     * Inserts a filter for each filtertype inside parent table records. Filter is filled with search term token set,
+     * filter size is selected using parent table filtertype expected and fpp values.
      */
     private void insertFilters() {
         final Table<?> joined = parentTable
@@ -187,8 +188,8 @@ public final class BloomFilterTempTable {
      * table or parent table bloom filter is null. Selects to same sized filter from the temp table for each parent
      * table row.
      * <p>
-     * expects the user defined function 'bloommatch' to be present to compare filter bytes.
-     * expects the parent table to be joined in the query that uses the generated Condition.
+     * expects the user defined function 'bloommatch' to be present to compare filter bytes. expects the parent table to
+     * be joined in the query that uses the generated Condition.
      *
      * @return Condition - generated condition
      */

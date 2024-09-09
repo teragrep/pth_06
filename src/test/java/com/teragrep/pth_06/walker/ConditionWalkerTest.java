@@ -144,6 +144,7 @@ public class ConditionWalkerTest {
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(0, walker.patternMatchTables().size());
     }
+
     @Test
     void singleTablePatternMatchStreamQueryTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
