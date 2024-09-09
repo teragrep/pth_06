@@ -147,7 +147,7 @@ public class StreamDBClient {
         this.includeBeforeEpoch = includeBeforeEpoch;
     }
 
-    int pullToSliceTable(Date day) {
+    public int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(

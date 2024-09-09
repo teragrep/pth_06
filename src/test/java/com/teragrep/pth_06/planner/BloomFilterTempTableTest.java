@@ -239,6 +239,24 @@ public class BloomFilterTempTableTest {
         Assertions.assertNotEquals(table2, table1);
     }
 
+    @Test
+    public void testDifferentDSLContextNotEquals() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        DSLContext ctx2 = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Set<Token> set = new PatternMatch(ctx, "one").tokenSet();
+        BloomFilterTempTable table1 = new BloomFilterTempTable(ctx, table, 0L, set);
+        BloomFilterTempTable table2 = new BloomFilterTempTable(ctx2, table, 0L, set);
+        Assertions.assertNotEquals(table1, table2);
+        Assertions.assertNotEquals(table2, table1);
+    }
+
     void fillTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
