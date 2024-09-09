@@ -97,16 +97,16 @@ public class PatternMatch {
                 .meta()
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
                 .filterTables(t -> !t.equals(BLOOMDB.FILTERTYPE)) // remove filtertype table
-                .filterTables(t -> ctx.select((Field<ULong>) t.field("id"))// for each table left
+                .filterTables(t -> ctx.select((Field<ULong>) t.field("id"))// for each remaining table
                         .from(t)
-                        .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access pattern
+                        .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(finalPatternCondition)// select tables that match pattern
+                        .where(finalPatternCondition)// select tables that match pattern condition
                         .limit(1)// limit 1 since we are checking only if table is not empty
                         .fetch()
-                        .isNotEmpty()
-                ) // select table if not empty
-                .getTables(); // get tables after filtering
+                        .isNotEmpty() // select table if not empty
+                )
+                .getTables();
         LOGGER.debug("Table(s) with a pattern match <{}>", tables);
         return tables;
     }
@@ -118,7 +118,7 @@ public class PatternMatch {
     }
 
     /**
-     * Equal only if same instance of DSLContext
+     * Equal only if all values are equal and same instance of DSLContext
      * 
      * @param object object compared against
      * @return true if all object is same class, object fields are equal and DSLContext is same instance
