@@ -136,7 +136,26 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void bloomSingleTableMatchTest() {
+    void bloomNoMatchStreamQueryTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
+        String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(0, walker.patternMatchTables().size());
+    }
+    @Test
+    void singleTablePatternMatchStreamQueryTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+        String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(0, walker.patternMatchTables().size());
+    }
+
+    @Test
+    void singleTalbePatternMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + "  and (\n"
@@ -155,7 +174,7 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void bloomTwoTableMatchTest() {
+    void twoTablePatternMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + "  and (\n"
@@ -182,7 +201,7 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void bloomFirstStatementNoMatchSecondStatementOneMatchTest() {
+    void multipleSearchTermTestoneMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><indexstatement operation=\"EQUALS\" value=\"nomatch\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
@@ -200,7 +219,7 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void bloomFirstStatementTwoMatchesTablesSecondOneMAtchTest() {
+    void multipleSearchTermTwoAndOneMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         String e = "(\n" + "  (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
