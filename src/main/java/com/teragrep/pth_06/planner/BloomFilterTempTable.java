@@ -95,26 +95,18 @@ public final class BloomFilterTempTable {
 
     private final DSLContext ctx;
     private final Table<?> parentTable;
-    private final Table<Record> table;
     private final long bloomTermId;
     private final Set<Token> tokenSet;
-    // Table fields
-    private final Field<ULong> termIdField;
-    private final Field<ULong> typeIdField;
-    private final Field<byte[]> filterField;
 
     public BloomFilterTempTable(DSLContext ctx, Table<?> parentTable, long bloomTermId, Set<Token> tokenSet) {
         this.ctx = ctx;
         this.parentTable = parentTable;
-        this.table = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
         this.bloomTermId = bloomTermId;
         this.tokenSet = tokenSet;
-        this.termIdField = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
-        this.typeIdField = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
-        this.filterField = DSL.field(DSL.name(table.getName(), "filter"), byte[].class);
     }
 
     private void create() {
+        final Table<Record> table = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Creating temporary table <{}>", table.getName());
         }
@@ -122,12 +114,14 @@ public final class BloomFilterTempTable {
         final String sql = "create temporary table " + table.getName()
                 + "(id bigint auto_increment primary key, term_id bigint, type_id bigint, filter longblob, unique key "
                 + table.getName() + "_unique_key (term_id, type_id))";
-        final Query query = ctx.query(sql);
-        query.execute();
-        final Index logtimeIndex = DSL.index(DSL.name(table.getName() + "_ix_type_id"));
-        final CreateIndexIncludeStep createIndexIncludeStep = ctx.createIndex(logtimeIndex).on(table, typeIdField);
-        LOGGER.trace("BloomFilterTempTable create index <{}>", createIndexIncludeStep);
-        createIndexIncludeStep.execute();
+        final Query createQuery = ctx.query(sql);
+        createQuery.execute();
+        final Index typeIndex = DSL.index(DSL.name(table.getName() + "_ix_type_id"));
+        final CreateIndexIncludeStep indexStep = ctx
+                .createIndex(typeIndex)
+                .on(table, DSL.field("type_id", BIGINTUNSIGNED.nullable(false)));
+        LOGGER.trace("BloomFilterTempTable create index <{}>", indexStep);
+        indexStep.execute();
     }
 
     /**
@@ -138,6 +132,7 @@ public final class BloomFilterTempTable {
         final Table<?> joined = parentTable
                 .join(BLOOMDB.FILTERTYPE)
                 .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) parentTable.field("filter_type_id")));
+        final Table<Record> table = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
         final Field<ULong> expectedField = DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class);
         final Field<Double> fppField = DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class);
         final SelectField<?>[] resultFields = {
@@ -175,11 +170,17 @@ public final class BloomFilterTempTable {
             filterBAOS.close();
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException(new IOException("Error writing filter bytes: " + e.getMessage()));
         }
+        final Table<Record> table = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
+        final Field<?>[] insertFields = {
+                DSL.field("term_id", BIGINTUNSIGNED.nullable(false)),
+                DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
+                DSL.field(DSL.name(table.getName(), "filter"), byte[].class)
+        };
         ctx
                 .insertInto(table)
-                .columns(this.termIdField, this.typeIdField, this.filterField)
+                .columns(insertFields)
                 .values(DSL.val(bloomTermId, ULong.class), DSL.val(filterTypeId, ULong.class), DSL.val(filterBAOS.toByteArray(), byte[].class)).execute();
     }
 
@@ -196,14 +197,18 @@ public final class BloomFilterTempTable {
     public Condition generateCondition() {
         create();
         insertFilters();
-        final SelectConditionStep<Record1<byte[]>> selectConditionStep = DSL
+        final Table<Record> table = DSL.table(DSL.name(("term_" + bloomTermId + "_" + parentTable.getName())));
+        final Field<ULong> termIdField = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
+        final Field<ULong> typeIdField = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
+        final Field<byte[]> filterField = DSL.field(DSL.name(table.getName(), "filter"), byte[].class);
+        final SelectConditionStep<Record1<byte[]>> selectFilterStep = DSL
                 .select(filterField)
                 .from(table)
                 .where(termIdField.eq(ULong.valueOf(bloomTermId)))
                 .and(typeIdField.eq((Field<ULong>) parentTable.field("filter_type_id")));
-        final Field<byte[]> termFilterColumn = selectConditionStep.asField();
+        final Field<byte[]> filterColumn = selectFilterStep.asField();
         final Condition filterFieldCondition = DSL
-                .function("bloommatch", Boolean.class, termFilterColumn, parentTable.field("filter"))
+                .function("bloommatch", Boolean.class, filterColumn, parentTable.field("filter"))
                 .eq(true);
         // null check allows SQL to optimize query
         final Condition notNullCondition = parentTable.field("filter").isNotNull();
@@ -225,7 +230,7 @@ public final class BloomFilterTempTable {
         if (object.getClass() != this.getClass())
             return false;
         final BloomFilterTempTable cast = (BloomFilterTempTable) object;
-        return this.parentTable.equals(cast.parentTable) && this.table.equals(cast.table) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
+        return this.parentTable.equals(cast.parentTable) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
                 this.bloomTermId == cast.bloomTermId && this.tokenSet.equals(cast.tokenSet);
     }
 }
