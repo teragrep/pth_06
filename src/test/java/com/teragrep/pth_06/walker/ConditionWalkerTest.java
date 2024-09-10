@@ -156,7 +156,7 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void singleTalbePatternMatchTest() {
+    void singleTablePatternMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + "  and (\n"
@@ -202,7 +202,7 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void multipleSearchTermTestoneMatchTest() {
+    void multipleSearchTermTestOneMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><indexstatement operation=\"EQUALS\" value=\"nomatch\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"

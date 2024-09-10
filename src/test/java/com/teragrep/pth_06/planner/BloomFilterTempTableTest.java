@@ -139,7 +139,8 @@ public class BloomFilterTempTableTest {
 
         Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
         BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-        Assertions.assertThrows(RuntimeException.class, tempTable::generateCondition);
+        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::generateCondition);
+        Assertions.assertEquals("Parent table was empty", ex.getMessage());
     }
 
     @Test
