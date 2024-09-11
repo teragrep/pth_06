@@ -126,6 +126,13 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
             public MicroBatchStream toMicroBatchStream(String checkpointLocation) {
                 Config config = new Config(options);
 
+                HdfsQuery hdfsQueryProcessor;
+                if (config.isHdfsEnabled) {
+                    hdfsQueryProcessor = new HdfsQueryProcessor(config);
+                } else {
+                    hdfsQueryProcessor = null;
+                }
+
                 ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(
                         "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
                 );
@@ -140,7 +147,7 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
                     kafkaQueryProcessor = null;
                 }
 
-                return new ArchiveMicroStreamReader(archiveQueryProcessor, kafkaQueryProcessor, config);
+                return new ArchiveMicroStreamReader(hdfsQueryProcessor, archiveQueryProcessor, kafkaQueryProcessor, config);
             }
         };
     }

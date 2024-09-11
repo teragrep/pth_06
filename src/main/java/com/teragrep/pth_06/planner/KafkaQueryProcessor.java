@@ -46,6 +46,9 @@
 package com.teragrep.pth_06.planner;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import com.teragrep.pth_06.planner.walker.KafkaWalker;
@@ -263,5 +266,38 @@ public class KafkaQueryProcessor implements KafkaQuery {
     @Override
     public void commit(KafkaOffset offset) {
         // no-op
+    }
+
+    @Override
+    public void seekToHdfsOffsets(JsonArray startOffsets) {
+        // startOffsets holds the new starting offsets for Kafka in JsonArray format:
+        //  [{"topic":"testConsumerTopic", "partition":"7", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"8", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"5", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"6", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"3", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"4", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"1", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"2", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"0", "offset":"13"}, {"topic":"testConsumerTopic", "partition":"9", "offset":"13"}]
+        // Deserialize JsonArray back to Map<TopicPartition, Long>:
+        Map<TopicPartition, Long> hdfsStartOffsets = new HashMap<>();
+        for (JsonElement pa : startOffsets) {
+            JsonObject offsetObject  = pa.getAsJsonObject();
+            TopicPartition topicPartition = new TopicPartition(offsetObject.get("topic").getAsString(), offsetObject.get("partition").getAsInt());
+            Long offset = offsetObject.get("offset").getAsLong();
+            hdfsStartOffsets.put(topicPartition, offset);
+        }
+
+        // Seek the consumer to the new starting offsets defined by startOffsets for all the topic partitions.
+        for (TopicPartition topicPartition : topicPartitionSet) {
+            if (hdfsStartOffsets.containsKey(topicPartition)) {
+                kafkaConsumer.seek(topicPartition, hdfsStartOffsets.get(topicPartition));
+            }
+        }
+
+    }
+
+    @Override
+    public Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets) {
+        // Get the consumer position for all available topic partitions.
+        Map<TopicPartition, Long> topicPartitionStartOffsetMap = new HashMap<>();
+        for (TopicPartition topicPartition : topicPartitionSet) {
+            long position = kafkaConsumer.position(topicPartition, Duration.ofSeconds(60));
+            topicPartitionStartOffsetMap.put(topicPartition, position);
+        }
+        return topicPartitionStartOffsetMap;
     }
 }

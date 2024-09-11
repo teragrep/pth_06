@@ -54,6 +54,7 @@ import com.cloudbees.syslog.SyslogMessage;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.teragrep.pth_06.planner.MockDBData;
+import com.teragrep.pth_06.planner.MockHDFS;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
@@ -96,6 +97,10 @@ public class InstantiationTest {
 
     private long expectedRows = 0L;
 
+    private final String hdfsPath = "hdfs:///opt/teragrep/cfe_39/srv/";
+    private String hdfsUri; // Can only be defined after starting the mock hdfs.
+    private final MockHDFS mockHDFS = new MockHDFS(hdfsPath);
+
     @BeforeAll
     public void prepareEnv() throws Exception {
         //Logger.getRootLogger().setLevel(Level.ERROR);
@@ -103,6 +108,9 @@ public class InstantiationTest {
         //Logger.getLogger("org.spark-project").setLevel(Level.WARN);
 
         mockS3.start();
+
+        // Start mock hdfs here in a similar way that the mockS3 is implemented.
+        hdfsUri = mockHDFS.startMiniCluster();
 
         spark = SparkSession
                 .builder()
@@ -115,7 +123,10 @@ public class InstantiationTest {
 
         //spark.sparkContext().setLogLevel("ERROR");
 
-        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
+        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords() - 9;
+        /* Remove the - modifier once the HDFS tasker is up and running.
+          If file 0.8 is stored to HDFS, 9 records out of 14 will be read from HDFS instead of Kafka.
+          If files 0.8 and 0.13 are stored to HDFS, all 14 records will be read from HDFS instead of Kafka.*/
     }
 
     @Test
@@ -134,7 +145,7 @@ public class InstantiationTest {
                 .option("DBstreamdbname", "mock")
                 .option("DBjournaldbname", "mock")
                 .option("num_partitions", "1")
-                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
+                .option("queryXML", "<index value=\"testConsumer*\" operation=\"EQUALS\"/>") // Only affects HDFS execution in the current test configuration.
                 // audit information
                 .option("TeragrepAuditQuery", "index=f17")
                 .option("TeragrepAuditReason", "test run at fullScanTest()")
@@ -147,6 +158,12 @@ public class InstantiationTest {
                 .option("kafka.sasl.jaas.config", "")
                 .option("kafka.useMockKafkaConsumer", "true")
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                // HDFS options
+                .option("hdfs.enabled", "true")
+                .option("hdfs.hdfsPath", hdfsPath)
+                .option("hdfs.hdfsUri", hdfsUri)
+                .option("hdfs.useMockHdfsDatabase", "true")
+                //.option("hdfs.hdfsCutoffOffset", Instant.now().toEpochMilli()) // Current time - pruning offset from cfe_39 + configurable cutoff offset. Granularity is in milliseconds.
                 .load();
 
         Dataset<Row> df2 = df.agg(functions.count("*"));

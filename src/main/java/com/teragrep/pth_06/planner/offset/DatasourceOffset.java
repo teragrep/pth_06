@@ -63,8 +63,24 @@ public class DatasourceOffset extends Offset implements Serializable {
 
     private final SerializedDatasourceOffset serializedDatasourceOffset;
 
+    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset, KafkaOffset kafkaOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset);
+    }
+
     public DatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
         this.serializedDatasourceOffset = new SerializedDatasourceOffset(archiveOffset, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset);
     }
 
     public DatasourceOffset(LongOffset archiveOffset) {
@@ -78,6 +94,10 @@ public class DatasourceOffset extends Offset implements Serializable {
     public DatasourceOffset(String s) {
         Gson gson = new Gson();
         this.serializedDatasourceOffset = gson.fromJson(s, SerializedDatasourceOffset.class);
+    }
+
+    public HdfsOffset getHdfsOffset() {
+        return serializedDatasourceOffset.hdfsOffset;
     }
 
     public LongOffset getArchiveOffset() {
