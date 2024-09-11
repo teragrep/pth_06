@@ -303,6 +303,10 @@
                 <password>streamdb_pass</password>
               </jdbc>
               <generator>
+                <name>org.jooq.codegen.JavaGenerator</name>
+                <java>
+
+                </java>
                 <database>
                   <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile|bloomdb.filter_expected_100000_fpp_001|bloomdb.filter_expected_1000000_fpp_003|bloomdb.filter_expected_2500000_fpp_005</includes>
                 </database>
