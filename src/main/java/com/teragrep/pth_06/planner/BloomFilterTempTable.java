@@ -96,13 +96,13 @@ public final class BloomFilterTempTable {
     private final DSLContext ctx;
     private final Table<?> parentTable;
     private final long bloomTermId;
-    private final Set<Token> tokenSet;
+    private final Set<Token> searchTermTokenSet;
 
-    public BloomFilterTempTable(DSLContext ctx, Table<?> parentTable, long bloomTermId, Set<Token> tokenSet) {
+    public BloomFilterTempTable(DSLContext ctx, Table<?> parentTable, long bloomTermId, Set<Token> searchTermTokenSet) {
         this.ctx = ctx;
         this.parentTable = parentTable;
         this.bloomTermId = bloomTermId;
-        this.tokenSet = tokenSet;
+        this.searchTermTokenSet = searchTermTokenSet;
     }
 
     private void create() {
@@ -163,7 +163,7 @@ public final class BloomFilterTempTable {
         final ULong expected = record.getValue(expectedField); // expectedElements
         final Double fpp = record.getValue(fppField); // targetFpp
         final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
-        tokenSet.forEach(token -> filter.put(token.toString()));
+        searchTermTokenSet.forEach(token -> filter.put(token.toString()));
         final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         try {
             filter.writeTo(filterBAOS);
@@ -231,6 +231,6 @@ public final class BloomFilterTempTable {
             return false;
         final BloomFilterTempTable cast = (BloomFilterTempTable) object;
         return this.parentTable.equals(cast.parentTable) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
-                this.bloomTermId == cast.bloomTermId && this.tokenSet.equals(cast.tokenSet);
+                this.bloomTermId == cast.bloomTermId && this.searchTermTokenSet.equals(cast.searchTermTokenSet);
     }
 }
