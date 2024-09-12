@@ -126,20 +126,24 @@ public final class ElementCondition {
                 }
             }
         }
-        // indexstatement can return condition unmodified
-        if (condition.equals(DSL.noCondition()) && !isIndexStatement()) {
+        // bloom search can return condition unmodified
+        if (condition.equals(DSL.noCondition()) && !isBloomSearchCondition()) {
             throw new IllegalStateException("Unsupported Element tag " + tag);
         }
         LOGGER.debug("Query condition: <{}>", condition);
         return condition;
     }
 
-    public boolean isIndexStatement() {
-        String tag = element.tag();
-        return !config.streamQuery() && "indexstatement".equalsIgnoreCase(tag) && config.bloomEnabled();
+    public boolean isBloomSearchCondition() {
+        final String tag = element.tag();
+        final String operation = element.tag();
+        return "indexstatement".equalsIgnoreCase(tag) &&
+                "EQUALS".equals(operation) &&
+                !config.streamQuery() &&
+                config.bloomEnabled();
     }
 
-    public Set<Table<?>> matchSet() {
+    public Set<Table<?>> patternMatchTables() {
         if (tableSet.isEmpty()) {
             condition();
         }

@@ -159,8 +159,8 @@ public final class ConditionWalker extends XmlWalker<Condition> {
                 new ConditionConfig(ctx, streamQuery, bloomEnabled),
                 bloomTermId
         );
-        if (elementCondition.isIndexStatement()) {
-            patternMatchTables().addAll(elementCondition.matchSet());
+        if (elementCondition.isBloomSearchCondition()) {
+            patternMatchTables().addAll(elementCondition.patternMatchTables());
             bloomTermId++;
         }
         return elementCondition.condition();
