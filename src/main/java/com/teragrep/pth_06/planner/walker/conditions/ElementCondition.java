@@ -137,10 +137,8 @@ public final class ElementCondition {
     public boolean isBloomSearchCondition() {
         final String tag = element.tag();
         final String operation = element.operation();
-        return "indexstatement".equalsIgnoreCase(tag) &&
-                "EQUALS".equals(operation) &&
-                !config.streamQuery() &&
-                config.bloomEnabled();
+        return "indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && !config.streamQuery()
+                && config.bloomEnabled();
     }
 
     public Set<Table<?>> patternMatchTables() {
