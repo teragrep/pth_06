@@ -52,6 +52,11 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * @see org.jooq.QueryPart
+ */
 class ValidElementTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

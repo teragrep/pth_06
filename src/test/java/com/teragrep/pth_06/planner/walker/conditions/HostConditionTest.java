@@ -49,6 +49,11 @@ import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * @see org.jooq.QueryPart
+ */
 public class HostConditionTest {
 
     @Test

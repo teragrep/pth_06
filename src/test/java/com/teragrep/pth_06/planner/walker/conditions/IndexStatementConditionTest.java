@@ -64,6 +64,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * @see org.jooq.QueryPart
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IndexStatementConditionTest {
 
