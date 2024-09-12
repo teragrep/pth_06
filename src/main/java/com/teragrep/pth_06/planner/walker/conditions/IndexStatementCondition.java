@@ -45,23 +45,18 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.blf_01.Token;
 import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.StreamDBClient;
-import org.apache.spark.util.sketch.BloomFilter;
+import com.teragrep.pth_06.planner.BloomFilterTempTable;
+import com.teragrep.pth_06.planner.PatternMatch;
 import org.jooq.Condition;
-import org.jooq.Field;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
-
-import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class IndexStatementCondition implements QueryCondition {
 
@@ -70,71 +65,72 @@ public final class IndexStatementCondition implements QueryCondition {
     private final String value;
     private final ConditionConfig config;
     private final Tokenizer tokenizer;
+    private final Condition condition;
+    private final long bloomTermId;
+    private final List<Table<?>> tableList;
+
+    public IndexStatementCondition(String value, ConditionConfig config) {
+        this(value, config, new Tokenizer(0), DSL.noCondition(), 0L);
+    }
 
     public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {
+        this(value, config, tokenizer, DSL.noCondition(), 0L);
+    }
+
+    public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer, long bloomTermId) {
+        this(value, config, tokenizer, DSL.noCondition(), bloomTermId);
+    }
+
+    public IndexStatementCondition(
+            String value,
+            ConditionConfig config,
+            Tokenizer tokenizer,
+            Condition condition,
+            long bloomTermId
+    ) {
         this.value = value;
         this.config = config;
         this.tokenizer = tokenizer;
+        this.condition = condition;
+        this.bloomTermId = bloomTermId;
+        this.tableList = new ArrayList<>();
     }
 
     public Condition condition() {
-        final Set<Token> tokenSet = new HashSet<>(
-                tokenizer.tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
-        );
+        Condition newCondition = condition;
+        LOGGER.info("indexstatement reached with search term <{}>", value);
+        PatternMatch patternMatch = new PatternMatch(config.context(), value);
+        if (tableList.isEmpty()) {
+            tableList.addAll(patternMatch.toList());
+        }
+        if (!tableList.isEmpty()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());
+            }
+            Condition bloomCondition = DSL.noCondition();
+            Condition noBloomCondition = DSL.noCondition();
 
-        LOGGER.info("BloomFilter tokenSet <[{}]>", tokenSet);
-
-        final BloomFilter smallFilter = BloomFilter.create(100000, 0.01);
-        final BloomFilter mediumFilter = BloomFilter.create(1000000, 0.03);
-        final BloomFilter largeFilter = BloomFilter.create(2500000, 0.05);
-
-        tokenSet.forEach(token -> {
-            smallFilter.put(token.toString());
-            mediumFilter.put(token.toString());
-            largeFilter.put(token.toString());
-        });
-
-        final long rowId = StreamDBClient.BloomFiltersTempTable
-                .insert(config.context(), smallFilter, mediumFilter, largeFilter);
-
-        final Condition rowIdCondition = StreamDBClient.BloomFiltersTempTable.id.eq(rowId);
-
-        final Field<byte[]> smallColumn = DSL
-                .select(StreamDBClient.BloomFiltersTempTable.fe100kfp001)
-                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                .where(rowIdCondition)
-                .asField();
-        final Field<byte[]> mediumColumn = DSL
-                .select(StreamDBClient.BloomFiltersTempTable.fe1000kfpp003)
-                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                .where(rowIdCondition)
-                .asField();
-        final Field<byte[]> largeColumn = DSL
-                .select(StreamDBClient.BloomFiltersTempTable.fe2500kfpp005)
-                .from(StreamDBClient.BloomFiltersTempTable.BLOOM_TABLE)
-                .where(rowIdCondition)
-                .asField();
-
-        final Field<Boolean> fe100kfp001 = DSL
-                .function("bloommatch", Boolean.class, smallColumn, BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER);
-        final Field<Boolean> fe1000kfpp003 = DSL
-                .function("bloommatch", Boolean.class, mediumColumn, BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER);
-        final Field<Boolean> fe2500kfpp005 = DSL
-                .function("bloommatch", Boolean.class, largeColumn, BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER);
-
-        final Condition noBloomFilter = BLOOMDB.FILTER_EXPECTED_100000_FPP_001.FILTER
-                .isNull()
-                .and(
-                        BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.FILTER
-                                .isNull()
-                                .and(BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.FILTER.isNull())
+            for (Table<?> table : tableList) {
+                BloomFilterTempTable tempTable = new BloomFilterTempTable(
+                        config.context(),
+                        table,
+                        bloomTermId,
+                        patternMatch.tokenSet()
                 );
-        final Condition queryCondition = fe100kfp001
-                .eq(true)
-                .or(fe1000kfpp003.eq(true).or(fe2500kfpp005.eq(true).or(noBloomFilter)));
-        LOGGER.trace("ConditionWalker.emitElement bloomCondition part <{}>", queryCondition);
+                Condition tableCondition = tempTable.generateCondition();
+                bloomCondition = bloomCondition.or(tableCondition);
+                noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
+            }
+            newCondition = bloomCondition.or(noBloomCondition);
+        }
+        return newCondition;
+    }
 
-        return queryCondition;
+    public List<Table<?>> matchList() {
+        if (tableList.isEmpty()) {
+            condition();
+        }
+        return tableList;
     }
 
     /**

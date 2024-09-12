@@ -48,7 +48,6 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.exception.SQLDialectNotSupportedException;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
@@ -64,7 +63,7 @@ class ElementConditionTest {
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
     final DSLContext mockCtx = DSL.using(new MockConnection(ctx -> new MockResult[0]));
-    final ConditionConfig config = new ConditionConfig(mockCtx, false, true, false);
+    final ConditionConfig config = new ConditionConfig(mockCtx, false, true);
     final ConditionConfig streamConfig = new ConditionConfig(mockCtx, true);
 
     @Test
@@ -82,20 +81,6 @@ class ElementConditionTest {
             loops++;
         }
         Assertions.assertEquals(loops, streamTags.length);
-    }
-
-    @Test
-    void testIndexStatement() {
-        Element element = document.createElement("indexstatement");
-        element.setAttribute("value", "searchTerm");
-        element.setAttribute("operation", "EQUALS");
-        Element element2 = document.createElement("indexstatement");
-        element2.setAttribute("value", "searchTerm");
-        element2.setAttribute("operation", "NOT_EQUALS");
-        Assertions
-                .assertThrows(SQLDialectNotSupportedException.class, new ElementCondition(element, config)::condition);
-        Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element, streamConfig)::condition);
-        Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element2, config)::condition);
     }
 
     @Test

@@ -48,10 +48,15 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Creates a query condition from provided dom element
@@ -60,35 +65,26 @@ public final class ElementCondition {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElementCondition.class);
 
-    private final Element element;
+    private final ValidElement element;
     private final ConditionConfig config;
+    private final long bloomTermId;
+    private final Set<Table<?>> tableSet;
 
     public ElementCondition(Element element, ConditionConfig config) {
-        this.element = element;
-        this.config = config;
+        this(new ValidElement(element), config, 0L);
     }
 
-    private void validate(Element element) {
-        if (element.getTagName() == null) {
-            throw new IllegalStateException("Tag name for Element was null");
-        }
-        if (!element.hasAttribute("operation")) {
-            throw new IllegalStateException(
-                    "Could not find specified or default value for 'operation' attribute from Element"
-            );
-        }
-        if (!element.hasAttribute("value")) {
-            throw new IllegalStateException(
-                    "Could not find specified or default value for 'value' attribute from Element"
-            );
-        }
+    public ElementCondition(ValidElement element, ConditionConfig config, long bloomTermId) {
+        this.element = element;
+        this.config = config;
+        this.bloomTermId = bloomTermId;
+        this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
-        validate(element);
-        final String tag = element.getTagName();
-        final String value = element.getAttribute("value");
-        final String operation = element.getAttribute("operation");
+        final String tag = element.tag();
+        final String value = element.value();
+        final String operation = element.operation();
         Condition condition = DSL.noCondition();
         switch (tag.toLowerCase()) {
             case "index":
@@ -119,16 +115,35 @@ public final class ElementCondition {
                 IndexStatementCondition indexStatementCondition = new IndexStatementCondition(
                         value,
                         config,
-                        new Tokenizer(32)
+                        new Tokenizer(0),
+                        condition,
+                        bloomTermId
                 );
                 condition = indexStatementCondition.condition();
+                List<Table<?>> newMatches = indexStatementCondition.matchList();
+                if (!newMatches.isEmpty()) {
+                    tableSet.addAll(newMatches);
+                }
             }
         }
-        if (condition.equals(DSL.noCondition())) {
+        // indexstatement can return condition unmodified
+        if (condition.equals(DSL.noCondition()) && !isIndexStatement()) {
             throw new IllegalStateException("Unsupported Element tag " + tag);
         }
         LOGGER.debug("Query condition: <{}>", condition);
         return condition;
+    }
+
+    public boolean isIndexStatement() {
+        String tag = element.tag();
+        return !config.streamQuery() && "indexstatement".equalsIgnoreCase(tag) && config.bloomEnabled();
+    }
+
+    public Set<Table<?>> matchSet() {
+        if (tableSet.isEmpty()) {
+            condition();
+        }
+        return tableSet;
     }
 
     @Override
@@ -140,9 +155,6 @@ public final class ElementCondition {
         if (object.getClass() != this.getClass())
             return false;
         final ElementCondition cast = (ElementCondition) object;
-        boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
-        boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));
-        boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
-        return equalName && equalOperation && equalValue && this.config.equals(cast.config);
+        return this.element.equals(cast.element) && this.config.equals(cast.config);
     }
 }

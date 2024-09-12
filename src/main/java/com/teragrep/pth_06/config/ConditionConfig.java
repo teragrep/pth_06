@@ -52,20 +52,15 @@ public final class ConditionConfig {
     private final DSLContext ctx;
     private final boolean streamQuery;
     private final boolean bloomEnabled;
-    private final boolean withoutFilters;
 
     public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this.ctx = ctx;
-        this.streamQuery = streamQuery;
-        this.bloomEnabled = false;
-        this.withoutFilters = false;
+        this(ctx, streamQuery, false);
     }
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
+    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
         this.ctx = ctx;
         this.streamQuery = streamQuery;
         this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
     }
 
     public DSLContext context() {
@@ -80,10 +75,6 @@ public final class ConditionConfig {
         return streamQuery;
     }
 
-    public boolean withoutFilter() {
-        return withoutFilters;
-    }
-
     @Override
     public boolean equals(Object object) {
         if (this == object)
@@ -93,7 +84,6 @@ public final class ConditionConfig {
         if (object.getClass() != this.getClass())
             return false;
         final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
+        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery && this.ctx == cast.ctx;
     }
 }

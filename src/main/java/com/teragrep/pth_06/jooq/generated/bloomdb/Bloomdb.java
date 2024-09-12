@@ -1,6 +1,6 @@
 /*
- * Teragrep Archive Datasource (pth_06)
- * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ * This program handles user requests that require archive access.
+ * Copyright (C) 2022, 2023, 2024 Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -13,7 +13,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://github.com/teragrep/teragrep/blob/main/LICENSE>.
  *
  *
  * Additional permission under GNU Affero General Public License version 3
@@ -50,9 +50,7 @@ package com.teragrep.pth_06.jooq.generated.bloomdb;
 
 
 import com.teragrep.pth_06.jooq.generated.DefaultCatalog;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_1000000Fpp_003;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_100000Fpp_001;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_2500000Fpp_005;
+import com.teragrep.pth_06.jooq.generated.bloomdb.tables.Filtertype;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +76,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Bloomdb extends SchemaImpl {
 
-    private static final long serialVersionUID = 1310856944;
+    private static final long serialVersionUID = -1839179080;
 
     /**
      * The reference instance of <code>bloomdb</code>
@@ -86,19 +84,9 @@ public class Bloomdb extends SchemaImpl {
     public static final Bloomdb BLOOMDB = new Bloomdb();
 
     /**
-     * The table <code>bloomdb.filter_expected_1000000_fpp_003</code>.
+     * The table <code>bloomdb.filtertype</code>.
      */
-    public final FilterExpected_1000000Fpp_003 FILTER_EXPECTED_1000000_FPP_003 = com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003;
-
-    /**
-     * The table <code>bloomdb.filter_expected_100000_fpp_001</code>.
-     */
-    public final FilterExpected_100000Fpp_001 FILTER_EXPECTED_100000_FPP_001 = com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001;
-
-    /**
-     * The table <code>bloomdb.filter_expected_2500000_fpp_005</code>.
-     */
-    public final FilterExpected_2500000Fpp_005 FILTER_EXPECTED_2500000_FPP_005 = com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005;
+    public final Filtertype FILTERTYPE = com.teragrep.pth_06.jooq.generated.bloomdb.tables.Filtertype.FILTERTYPE;
 
     /**
      * No further instances allowed
@@ -122,8 +110,6 @@ public class Bloomdb extends SchemaImpl {
 
     private final List<Table<?>> getTables0() {
         return Arrays.<Table<?>>asList(
-            FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003,
-            FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001,
-            FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005);
+            Filtertype.FILTERTYPE);
     }
 }

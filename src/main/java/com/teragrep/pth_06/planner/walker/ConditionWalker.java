@@ -47,19 +47,24 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
+import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * <h1>Condition Walker</h1> Walker for conditions.
  *
- * @since 23/09/2021
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
  * @author Ville Manninen
+ * @since 23/09/2021
  */
 public class ConditionWalker extends XmlWalker<Condition> {
 
@@ -68,25 +73,35 @@ public class ConditionWalker extends XmlWalker<Condition> {
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
+    private final Set<Table<?>> patternMatchSet;
+    private long bloomTermId = 0;
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        super();
-        this.ctx = null;
-        this.bloomEnabled = false;
+        this(null, false);
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
+        this.patternMatchSet = new HashSet<>();
     }
 
     public Condition fromString(String inXml, boolean streamQuery) throws Exception {
         this.streamQuery = streamQuery;
         return fromString(inXml);
+    }
+
+    /**
+     * Set of all the tables that pattern matched with tokenized search terms the walkers has visited
+     *
+     * @return Set of Tables that had a pattern match
+     */
+    public Set<Table<?>> patternMatchTables() {
+        return patternMatchSet;
     }
 
     @Override
@@ -138,11 +153,16 @@ public class ConditionWalker extends XmlWalker<Condition> {
         return rv;
     }
 
-    Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(
-                current,
-                new ConditionConfig(ctx, streamQuery, bloomEnabled, false)
+    Condition emitElem(final Element current) {
+        final ElementCondition elementCondition = new ElementCondition(
+                new ValidElement(current),
+                new ConditionConfig(ctx, streamQuery, bloomEnabled),
+                bloomTermId
         );
+        if (elementCondition.isIndexStatement()) {
+            patternMatchTables().addAll(elementCondition.matchSet());
+            bloomTermId++;
+        }
         return elementCondition.condition();
     }
 }

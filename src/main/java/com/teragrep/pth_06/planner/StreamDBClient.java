@@ -45,16 +45,12 @@
  */
 package com.teragrep.pth_06.planner;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.sql.*;
 import java.time.Instant;
+import java.util.Set;
 
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
-import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.*;
 import org.jooq.conf.MappedSchema;
 import org.jooq.conf.RenderMapping;
@@ -70,7 +66,6 @@ import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
 import static org.jooq.impl.DSL.select;
-import static org.jooq.impl.SQLDataType.BIGINT;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
@@ -96,6 +91,7 @@ public class StreamDBClient {
     private long includeBeforeEpoch;
     private final boolean bloomEnabled;
     private final Condition journaldbCondition;
+    private final ConditionWalker walker;
 
     public StreamDBClient(Config config) throws SQLException {
 
@@ -128,10 +124,7 @@ public class StreamDBClient {
             ctx.execute("SET sql_mode = 'NO_ENGINE_SUBSTITUTION';");
         }
         // -- TODO use dslContext.batch for all initial operations
-        BloomFiltersTempTable.create(ctx);
-
-        final ConditionWalker walker = new ConditionWalker(ctx, bloomEnabled);
-
+        this.walker = new ConditionWalker(ctx, bloomEnabled);
         Condition streamdbCondition;
 
         try {
@@ -154,7 +147,7 @@ public class StreamDBClient {
         this.includeBeforeEpoch = includeBeforeEpoch;
     }
 
-    int pullToSliceTable(Date day) {
+    public int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
@@ -263,76 +256,6 @@ public class StreamDBClient {
 
     }
 
-    // TODO WIP
-    public static class BloomFiltersTempTable {
-
-        public static final String bloomTable = "bloomFiltersTable";
-        public static final Table<Record> BLOOM_TABLE = DSL.table(DSL.name(bloomTable));
-
-        public static final Field<Long> id = DSL.field("id", BIGINT.identity(true));
-        public static final Field<byte[]> fe100kfp001 = DSL.field(DSL.name(bloomTable, "fe100kfp001"), byte[].class);
-        public static final Field<byte[]> fe1000kfpp003 = DSL
-                .field(DSL.name(bloomTable, "fe1000kfpp003"), byte[].class);
-        public static final Field<byte[]> fe2500kfpp005 = DSL
-                .field(DSL.name(bloomTable, "fe2500kfpp005"), byte[].class);
-
-        private static void create(DSLContext ctx) {
-
-            DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(BloomFiltersTempTable.BLOOM_TABLE);
-            dropQuery.execute();
-
-            Query query = ctx
-                    .query(
-                            "create temporary table bloomFiltersTable(id bigint auto_increment primary key, fe100kfp001 longblob, fe1000kfpp003 longblob, fe2500kfpp005 longblob)"
-                    );
-
-            /*CreateTableConstraintStep query = ctx.createTemporaryTable(BloomFiltersTempTable.BLOOM_TABLE)
-                    .columns(
-                            id,
-                            fe100kfp001,
-                            fe1000kfpp003,
-                            fe2500kfpp005)
-                    .constraints(primaryKey(id));
-            
-             */
-            query.execute();
-
-        }
-
-        public static long insert(
-                DSLContext ctx,
-                BloomFilter smallFilter,
-                BloomFilter mediumFilter,
-                BloomFilter largeFilter
-        ) {
-
-            final ByteArrayOutputStream smallBaos = new ByteArrayOutputStream();
-            final ByteArrayOutputStream mediumBaos = new ByteArrayOutputStream();
-            final ByteArrayOutputStream largeBaos = new ByteArrayOutputStream();
-
-            try {
-                smallFilter.writeTo(smallBaos);
-                mediumFilter.writeTo(mediumBaos);
-                largeFilter.writeTo(largeBaos);
-
-                smallBaos.close();
-                mediumBaos.close();
-                largeBaos.close();
-            }
-            catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-
-            ctx
-                    .insertInto(BLOOM_TABLE)
-                    .columns(fe100kfp001, fe1000kfpp003, fe2500kfpp005)
-                    .values(DSL.val(smallBaos.toByteArray(), byte[].class), DSL.val(mediumBaos.toByteArray(), byte[].class), DSL.val(largeBaos.toByteArray(), byte[].class)).execute();
-
-            long rv = ctx.lastID().longValue();
-            return rv;
-        }
-    }
-
     public static class GetArchivedObjectsFilterTable {
         // temporary table created from streamdb
 
@@ -420,15 +343,17 @@ public class StreamDBClient {
                     .on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id).and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag)));
 
             if (bloomEnabled) {
-
-                selectOnConditionStep = selectOnConditionStep
-                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001)
-                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_100000_FPP_001.PARTITION_ID))
-                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003)
-                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_1000000_FPP_003.PARTITION_ID))
-                        .leftJoin(Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005)
-                        .on(JOURNALDB.LOGFILE.ID.eq(Bloomdb.BLOOMDB.FILTER_EXPECTED_2500000_FPP_005.PARTITION_ID));
-
+                Set<Table<?>> tables = walker.patternMatchTables();
+                if (!tables.isEmpty()) {
+                    for (Table<?> table : tables) {
+                        if (LOGGER.isInfoEnabled()) {
+                            LOGGER.info("Left join pattern match table: <{}>", table.getName());
+                        }
+                        selectOnConditionStep = selectOnConditionStep
+                                .leftJoin(table)
+                                .on(JOURNALDB.LOGFILE.ID.eq((Field<ULong>) table.field("partition_id")));
+                    }
+                }
             }
 
             return selectOnConditionStep

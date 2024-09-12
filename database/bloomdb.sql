@@ -1,6 +1,6 @@
 /*
  * This program handles user requests that require archive access.
- * Copyright (C) 2022  Suomen Kanuuna Oy
+ * Copyright (C) 2024  Suomen Kanuuna Oy
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -44,36 +44,15 @@
  * a licensee so wish it.
  */
 
-DROP TABLE IF EXISTS `filter_expected_100000_fpp_001`;
-DROP TABLE IF EXISTS `filter_expected_1000000_fpp_003`;
-DROP TABLE IF EXISTS `filter_expected_2500000_fpp_005`;
+DROP TABLE IF EXISTS `filtertype`;
 
-CREATE TABLE `filter_expected_100000_fpp_001` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE,
-    `filter` LONGBLOB,
-    CONSTRAINT `fk_smallfilter_partition`
-        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `pk_small`
-        PRIMARY KEY (`id`)
-)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
-
-CREATE TABLE `filter_expected_1000000_fpp_003` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE ,
-    `filter` LONGBLOB,
-    CONSTRAINT `fk_mediumfilter_partition`
-        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `pk_medium`
-        PRIMARY KEY (`id`)
-)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
-
-CREATE TABLE `filter_expected_2500000_fpp_005` (
-    `id` INT NOT NULL AUTO_INCREMENT,
-    `partition_id` BIGINT(20) unsigned NOT NULL UNIQUE ,
-    `filter` LONGBLOB,
-    CONSTRAINT `fk_largefilter_partition`
-        FOREIGN KEY (`partition_id`) REFERENCES `journaldb`.`logfile`(`id`) ON DELETE CASCADE,
-    CONSTRAINT `pk_large`
-        PRIMARY KEY (`id`)
-)ENGINE=InnoDB ROW_FORMAT=COMPRESSED;
+CREATE TABLE `filtertype`
+(
+    `id`               bigint(20) UNSIGNED   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `expectedElements` bigint(20) UNSIGNED   NOT NULL,
+    `targetFpp`        DOUBLE(2, 2) UNSIGNED NOT NULL,
+    `pattern`          VARCHAR(2048)         NOT NULL,
+    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
