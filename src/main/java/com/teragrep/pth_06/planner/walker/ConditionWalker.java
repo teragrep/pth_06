@@ -66,7 +66,7 @@ import java.util.Set;
  * @author Ville Manninen
  * @since 23/09/2021
  */
-public class ConditionWalker extends XmlWalker<Condition> {
+public final class ConditionWalker extends XmlWalker<Condition> {
 
     private final boolean bloomEnabled;
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);

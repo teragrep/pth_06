@@ -47,7 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.w3c.dom.Element;
 
-public class ValidElement {
+public final class ValidElement {
 
     private final Element element;
 
