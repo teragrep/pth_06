@@ -136,7 +136,7 @@ public final class ElementCondition {
 
     public boolean isBloomSearchCondition() {
         final String tag = element.tag();
-        final String operation = element.tag();
+        final String operation = element.operation();
         return "indexstatement".equalsIgnoreCase(tag) &&
                 "EQUALS".equals(operation) &&
                 !config.streamQuery() &&

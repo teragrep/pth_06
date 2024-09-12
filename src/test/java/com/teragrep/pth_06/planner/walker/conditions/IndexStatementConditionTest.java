@@ -50,6 +50,7 @@ import com.teragrep.pth_06.config.ConditionConfig;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
@@ -133,6 +134,14 @@ public class IndexStatementConditionTest {
             conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
             conn.close();
         });
+    }
+
+    @Test
+    void testConnectionException() {
+        DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
+        ConditionConfig config = new ConditionConfig(ctx, false);
+        IndexStatementCondition cond = new IndexStatementCondition("test", config, tokenizer, DSL.trueCondition(), 0L);
+        Assertions.assertThrows(DataAccessException.class, cond::condition);
     }
 
     @Test

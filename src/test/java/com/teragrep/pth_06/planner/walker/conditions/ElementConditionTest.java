@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
@@ -101,6 +102,35 @@ class ElementConditionTest {
         ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
+    }
+
+    @Test
+    void testIsIndexStatement() {
+        Element element = document.createElement("indexstatement");
+        element.setAttribute("value", "searchTerm");
+        element.setAttribute("operation", "EQUALS");
+        Element element2 = document.createElement("index");
+        element2.setAttribute("value", "searchTerm");
+        element2.setAttribute("operation", "EQUALS");
+        ElementCondition condition = new ElementCondition(element, config);
+        Assertions.assertTrue(condition.isBloomSearchCondition());
+        element.setAttribute("operation", "NOT_EQUALS");
+        ElementCondition condition2 = new ElementCondition(element, config);
+        Assertions.assertFalse(condition2.isBloomSearchCondition());
+        ElementCondition condition3 = new ElementCondition(element, streamConfig);
+        Assertions.assertFalse(condition3.isBloomSearchCondition());
+        ElementCondition condition4 = new ElementCondition(element2, streamConfig);
+        Assertions.assertFalse(condition4.isBloomSearchCondition());
+    }
+
+    @Test
+    void testIndexStatementWithBadConnection() {
+        Element element = document.createElement("indexstatement");
+        element.setAttribute("value", "searchTerm");
+        element.setAttribute("operation", "EQUALS");
+        ElementCondition condition = new ElementCondition(element, config);
+        Assertions.assertTrue(condition.isBloomSearchCondition());
+        Assertions.assertThrows(DataAccessException.class, condition::condition);
     }
 
     @Test
