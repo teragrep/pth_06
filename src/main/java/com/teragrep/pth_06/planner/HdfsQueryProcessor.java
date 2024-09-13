@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -67,9 +68,17 @@ public class HdfsQueryProcessor implements HdfsQuery {
     private LinkedList<HdfsTopicPartitionOffsetMetadata> topicPartitionList;
     private final HdfsDBClient hdfsDBClient;
     private String topicsRegexString;
-    private Map<TopicPartition, Long> hdfsOffsetMap;
+    private final Map<TopicPartition, Long> hdfsOffsetMap;
+    private final Map<TopicPartition, Long> latestHdfsOffsetMap;
+    private final long quantumLength;
+    private final long numPartitions;
+    private final long totalObjectCountLimit;
 
     public HdfsQueryProcessor(Config config) {
+        // get configs from config object
+        this.quantumLength = config.batchConfig.quantumLength;
+        this.numPartitions = config.batchConfig.numPartitions;
+        this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
         // Filter only topics using regex pattern
         topicsRegexString = null;
         if (config.query != null) {
@@ -114,6 +123,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 }
             }
         }
+        latestHdfsOffsetMap = new HashMap<>();
         LOGGER.debug("HdfsQueryProcessor.HdfsQueryProcessor>");
     }
 
@@ -237,4 +247,26 @@ public class HdfsQueryProcessor implements HdfsQuery {
         }
         return new HdfsOffset(endOffset);
     }
+
+    // Increments the latest offset values and returns that incremented offsets. Works by pulling data from the topicPartitionList until weight limit is reached.
+    public HdfsOffset incrementAndGetLatestOffset() {
+        if (this.latestHdfsOffsetMap.isEmpty()) {
+            HdfsOffset beginningOffsets = getBeginningOffsets();
+            this.latestHdfsOffsetMap.putAll(beginningOffsets.getOffsetMap());
+        }
+        // Initialize the batchSizeLimit object to split the data into appropriate sized batches
+        BatchSizeLimit batchSizeLimit = new BatchSizeLimit(quantumLength * numPartitions, totalObjectCountLimit);
+        // Keep loading more offsets from topicPartitionList until the limit is reached
+        Iterator<HdfsTopicPartitionOffsetMetadata> iterator = topicPartitionList.iterator();
+        while (!batchSizeLimit.isOverLimit() && iterator.hasNext()) {
+            HdfsTopicPartitionOffsetMetadata r = iterator.next();
+            // When going through the result, store the topic partition with the highest offset to the latestHdfsOffsetMap.
+            if (latestHdfsOffsetMap.get(r.topicPartition) < r.endOffset) {
+                latestHdfsOffsetMap.replace(r.topicPartition, r.endOffset);
+                batchSizeLimit.add(r.hdfsFileSize);
+            }
+        }
+        return new HdfsOffset(latestHdfsOffsetMap);
+    }
+
 }
