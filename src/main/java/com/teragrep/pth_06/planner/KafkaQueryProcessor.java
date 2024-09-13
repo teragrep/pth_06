@@ -275,8 +275,11 @@ public class KafkaQueryProcessor implements KafkaQuery {
         // Deserialize JsonArray back to Map<TopicPartition, Long>:
         Map<TopicPartition, Long> hdfsStartOffsets = new HashMap<>();
         for (JsonElement pa : startOffsets) {
-            JsonObject offsetObject  = pa.getAsJsonObject();
-            TopicPartition topicPartition = new TopicPartition(offsetObject.get("topic").getAsString(), offsetObject.get("partition").getAsInt());
+            JsonObject offsetObject = pa.getAsJsonObject();
+            TopicPartition topicPartition = new TopicPartition(
+                    offsetObject.get("topic").getAsString(),
+                    offsetObject.get("partition").getAsInt()
+            );
             Long offset = offsetObject.get("offset").getAsLong();
             hdfsStartOffsets.put(topicPartition, offset);
         }

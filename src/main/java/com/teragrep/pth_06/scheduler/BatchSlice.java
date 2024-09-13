@@ -111,7 +111,8 @@ public final class BatchSlice implements Serializable {
                 // The files in HDFS have a default size limiter set to them during creation. Use that limit (64000000) or hdfsTopicPartitionOffsetMetadata.getFileSize().
                 if (hdfsTopicPartitionOffsetMetadata != null) {
                     return hdfsTopicPartitionOffsetMetadata.hdfsFileSize;
-                } else {
+                }
+                else {
                     throw new RuntimeException("Expected HDFS file metadata, instead was null");
                 }
             default:
@@ -122,6 +123,7 @@ public final class BatchSlice implements Serializable {
     @Override
     public String toString() {
         return "BatchSlice{" + "batchSliceType=" + type + ", archiveS3ObjectMetadata=" + archiveS3ObjectMetadata
-                + ", kafkaTopicPartitionOffsetMetadata=" + kafkaTopicPartitionOffsetMetadata + ", hdfsTopicPartitionOffsetMetadata=" + hdfsTopicPartitionOffsetMetadata + '}';
+                + ", kafkaTopicPartitionOffsetMetadata=" + kafkaTopicPartitionOffsetMetadata
+                + ", hdfsTopicPartitionOffsetMetadata=" + hdfsTopicPartitionOffsetMetadata + '}';
     }
 }

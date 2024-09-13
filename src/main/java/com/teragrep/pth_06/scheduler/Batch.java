@@ -96,7 +96,8 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         if (config.isArchiveEnabled) {
             if (slice == null) {
                 slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
-            } else {
+            }
+            else {
                 slice.addAll(new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end));
             }
         }

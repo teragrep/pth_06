@@ -1,3 +1,48 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 package com.teragrep.pth_06.planner;
 
 import com.google.gson.JsonArray;
@@ -17,6 +62,7 @@ import java.util.Map;
 
 // Class for processing hdfs queries.
 public class HdfsQueryProcessor implements HdfsQuery {
+
     private final Logger LOGGER = LoggerFactory.getLogger(HdfsQueryProcessor.class);
     private LinkedList<HdfsTopicPartitionOffsetMetadata> topicPartitionList;
     private final HdfsDBClient hdfsDBClient;
@@ -30,8 +76,12 @@ public class HdfsQueryProcessor implements HdfsQuery {
             try {
                 HdfsConditionWalker parser = new HdfsConditionWalker();
                 topicsRegexString = parser.fromString(config.query);
-            } catch (Exception e) {
-                throw new RuntimeException("HdfsQueryProcessor problems when construction Query conditions query:" + config.query + " exception:" + e);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(
+                        "HdfsQueryProcessor problems when construction Query conditions query:" + config.query
+                                + " exception:" + e
+                );
             }
         }
         if (topicsRegexString == null) {
@@ -44,7 +94,8 @@ public class HdfsQueryProcessor implements HdfsQuery {
                     config,
                     topicsRegexString // topicsRegexString only searches for the given topic/topics (aka. directories).
             );
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -55,10 +106,11 @@ public class HdfsQueryProcessor implements HdfsQuery {
         for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
             long partitionStart = r.endOffset;
             if (!hdfsOffsetMap.containsKey(r.topicPartition)) {
-                hdfsOffsetMap.put(r.topicPartition, partitionStart+1);
-            } else {
+                hdfsOffsetMap.put(r.topicPartition, partitionStart + 1);
+            }
+            else {
                 if (hdfsOffsetMap.get(r.topicPartition) < partitionStart) {
-                    hdfsOffsetMap.replace(r.topicPartition, partitionStart+1);
+                    hdfsOffsetMap.replace(r.topicPartition, partitionStart + 1);
                 }
             }
         }
@@ -71,20 +123,35 @@ public class HdfsQueryProcessor implements HdfsQuery {
         try {
             topicPartitionList = hdfsDBClient.pullToPartitionList(); // queries the list of topic partitions based on the topic name condition filtering.
             LOGGER.debug("HdfsQueryProcessor.seekToResults>");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     // Returns all the available HDFS file metadata between the given topic partition offsets.
     @Override
-    public LinkedList<HdfsTopicPartitionOffsetMetadata> processBetweenHdfsFileMetadata(HdfsOffset startOffset, HdfsOffset endOffset) {
+    public LinkedList<HdfsTopicPartitionOffsetMetadata> processBetweenHdfsFileMetadata(
+            HdfsOffset startOffset,
+            HdfsOffset endOffset
+    ) {
         LinkedList<HdfsTopicPartitionOffsetMetadata> rv = new LinkedList<>();
         Map<TopicPartition, Long> endOffsetMap = endOffset.getOffsetMap();
         Map<TopicPartition, Long> startOffsetMap = startOffset.getOffsetMap();
         for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
-            if ( (endOffsetMap.get(r.topicPartition) >= r.endOffset) & (startOffsetMap.get(r.topicPartition) <= r.endOffset) ) {
-                rv.add(new HdfsTopicPartitionOffsetMetadata(r.topicPartition, r.endOffset, r.hdfsFilePath, r.hdfsFileSize));
+            if (
+                (endOffsetMap.get(r.topicPartition) >= r.endOffset)
+                        & (startOffsetMap.get(r.topicPartition) <= r.endOffset)
+            ) {
+                rv
+                        .add(
+                                new HdfsTopicPartitionOffsetMetadata(
+                                        r.topicPartition,
+                                        r.endOffset,
+                                        r.hdfsFilePath,
+                                        r.hdfsFileSize
+                                )
+                        );
             }
         }
         return rv;
@@ -98,7 +165,15 @@ public class HdfsQueryProcessor implements HdfsQuery {
         // Generate new topicPartitionList where the metadata with offset values lower than the offset values given as input parameter are filtered out.
         for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
             if (offsetMap.get(r.topicPartition) < r.endOffset) {
-                newTopicPartitionList.add(new HdfsTopicPartitionOffsetMetadata(r.topicPartition, r.endOffset, r.hdfsFilePath, r.hdfsFileSize));
+                newTopicPartitionList
+                        .add(
+                                new HdfsTopicPartitionOffsetMetadata(
+                                        r.topicPartition,
+                                        r.endOffset,
+                                        r.hdfsFilePath,
+                                        r.hdfsFileSize
+                                )
+                        );
             }
         }
         topicPartitionList = newTopicPartitionList;
@@ -132,7 +207,8 @@ public class HdfsQueryProcessor implements HdfsQuery {
             long partitionOffset = r.endOffset;
             if (!startOffset.containsKey(r.topicPartition)) {
                 startOffset.put(r.topicPartition, partitionOffset);
-            } else {
+            }
+            else {
                 if (startOffset.get(r.topicPartition) > partitionOffset) {
                     startOffset.replace(r.topicPartition, partitionOffset);
                 }
@@ -152,7 +228,8 @@ public class HdfsQueryProcessor implements HdfsQuery {
             // When going through the result, store the topic partition with the highest offset to the endOffset object.
             if (!endOffset.containsKey(r.topicPartition)) {
                 endOffset.put(r.topicPartition, partitionOffset);
-            } else {
+            }
+            else {
                 if (endOffset.get(r.topicPartition) < partitionOffset) {
                     endOffset.replace(r.topicPartition, partitionOffset);
                 }

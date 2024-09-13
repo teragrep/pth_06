@@ -98,7 +98,8 @@ public final class Config {
         isHdfsEnabled = opts.getOrDefault("hdfs.enabled", "false").equalsIgnoreCase("true");
         if (isHdfsEnabled) {
             hdfsConfig = new HdfsConfig(opts);
-        } else {
+        }
+        else {
             hdfsConfig = new HdfsConfig();
         }
 
