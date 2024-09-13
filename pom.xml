@@ -29,9 +29,9 @@
   </scm>
   <properties>
     <changelist>-SNAPSHOT</changelist>
+    <hadoop.version>3.3.6</hadoop.version>
     <java.version>1.8</java.version>
     <jclouds.version>2.3.0</jclouds.version>
-    <hadoop.version>3.3.6</hadoop.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

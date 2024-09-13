@@ -71,28 +71,19 @@ public class SerializedDatasourceOffset implements Serializable {
         this.kafkaOffset = kafkaOffset;
     }
 
-    public SerializedDatasourceOffset(
-            LongOffset archiveOffset,
-            KafkaOffset kafkaOffset
-    ) {
+    public SerializedDatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
         this.hdfsOffset = null;
         this.archiveOffset = archiveOffset;
         this.kafkaOffset = kafkaOffset;
     }
 
-    public SerializedDatasourceOffset(
-            HdfsOffset hdfsOffset,
-            LongOffset archiveOffset
-    ) {
+    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset) {
         this.hdfsOffset = hdfsOffset;
         this.archiveOffset = archiveOffset;
         this.kafkaOffset = null;
     }
 
-    public SerializedDatasourceOffset(
-            HdfsOffset hdfsOffset,
-            KafkaOffset kafkaOffset
-    ) {
+    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, KafkaOffset kafkaOffset) {
         this.hdfsOffset = hdfsOffset;
         this.archiveOffset = null;
         this.kafkaOffset = kafkaOffset;
@@ -118,7 +109,7 @@ public class SerializedDatasourceOffset implements Serializable {
 
     @Override
     public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset=" + archiveOffset
-                + ", kafkaOffset=" + kafkaOffset + '}';
+        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
+                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
     }
 }

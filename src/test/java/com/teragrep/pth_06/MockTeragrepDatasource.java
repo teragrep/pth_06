@@ -129,7 +129,8 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
                 HdfsQuery hdfsQueryProcessor;
                 if (config.isHdfsEnabled) {
                     hdfsQueryProcessor = new HdfsQueryProcessor(config);
-                } else {
+                }
+                else {
                     hdfsQueryProcessor = null;
                 }
 
@@ -147,7 +148,12 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
                     kafkaQueryProcessor = null;
                 }
 
-                return new ArchiveMicroStreamReader(hdfsQueryProcessor, archiveQueryProcessor, kafkaQueryProcessor, config);
+                return new ArchiveMicroStreamReader(
+                        hdfsQueryProcessor,
+                        archiveQueryProcessor,
+                        kafkaQueryProcessor,
+                        config
+                );
             }
         };
     }

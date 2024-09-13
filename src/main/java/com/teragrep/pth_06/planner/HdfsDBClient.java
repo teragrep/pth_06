@@ -1,3 +1,48 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.config.Config;
@@ -51,10 +96,12 @@ public class HdfsDBClient {
             // filesystem for HDFS access is set here
             try {
                 fs = FileSystem.get(URI.create(hdfsuri), conf);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }else {
+        }
+        else {
             // Code for initializing the class with kerberos.
             hdfsuri = config.hdfsConfig.hdfsUri; // Get from config.
 
@@ -62,7 +109,6 @@ public class HdfsDBClient {
             // In other words the directory named topic_name holds files that are named and arranged based on partition and the partition's offset. Every partition has its own set of unique offset values.
             // The values are fetched from config and input parameters (topic+partition+offset).
             path = config.hdfsConfig.hdfsPath;
-
 
             // Set HADOOP user here, Kerberus parameters most likely needs to be added here too.
             // System.setProperty("HADOOP_USER_NAME", "hdfs"); // Not needed because user authentication is done by kerberos?
@@ -120,19 +166,27 @@ public class HdfsDBClient {
                     String[] split = r2.getPath().getName().split("\\."); // The file name can be split to partition parameter and offset parameter. First value is partition and second is offset.
                     String partition = split[0];
                     String offset = split[1];
-                    HdfsTopicPartitionOffsetMetadata temp = new HdfsTopicPartitionOffsetMetadata(new TopicPartition(topic, Integer.parseInt(partition)), Integer.parseInt(offset), r2.getPath().toString(), r2.getLen());
+                    HdfsTopicPartitionOffsetMetadata temp = new HdfsTopicPartitionOffsetMetadata(
+                            new TopicPartition(topic, Integer.parseInt(partition)),
+                            Integer.parseInt(offset),
+                            r2.getPath().toString(),
+                            r2.getLen()
+                    );
                     // Add the HdfsTopicPartitionOffsetMetadata object to the rv only if the file's modification timestamp is above ignoreBeforeEpoch. Timestamps are in milliseconds.
                     if (r2.getModificationTime() >= ignoreBeforeEpoch) {
                         rv.add(temp);
                     }
                 }
             }
-        }else {
+        }
+        else {
             LOGGER.info("No matching directories found");
         }
         return rv;
     }
+
     private final PathFilter topicFilter = new PathFilter() {
+
         @Override
         public boolean accept(Path path) {
             return path.getName().matches(topicsRegexString); // Catches the directory names.
