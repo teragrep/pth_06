@@ -275,7 +275,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (!this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
             // only hdfs
-            rv = new DatasourceOffset(new HdfsOffset(this.hq.getInitialEndOffsets().getOffsetMap()));
+            rv = new DatasourceOffset(new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()));
         }
         else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
             // kafka and archive
@@ -287,21 +287,21 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         else if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
             // archive and hdfs
             rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.getInitialEndOffsets().getOffsetMap()),
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
                     new LongOffset(this.aq.incrementAndGetLatestOffset())
             );
         }
         else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
             // Kafka and HDFS
             rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.getInitialEndOffsets().getOffsetMap()),
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
                     new KafkaOffset(this.kq.getInitialEndOffsets())
             );
         }
         else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
             // all three
             rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.getInitialEndOffsets().getOffsetMap()),
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
                     new LongOffset(this.aq.incrementAndGetLatestOffset()),
                     new KafkaOffset(this.kq.getInitialEndOffsets())
             );
