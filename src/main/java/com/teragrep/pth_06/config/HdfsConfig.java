@@ -54,7 +54,20 @@ public final class HdfsConfig {
     public final long cutoffOffset; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
     public final String hdfsUri; // Represents the address of the HDFS server.
+    public final String UseHdfsHostname;
+    public final String hdfsTransferProtection;
+    public final String hdfsCipherSuites;
     public final boolean useMockHdfsDatabase; // Represents the configuration parameter if mock database should be used or not. Used only for testing.
+
+    // Kerberos
+    public final String kerberosAuthentication;
+    public final String kerberosAuthorization;
+    public final String kerberosPrincipalPattern;
+    public final String kerberosKdc;
+    public final String kerberosRealm;
+    public final String kerberosKeytabUser;
+    public final String kerberosKeytabPath;
+    public final String kerberosAutorenewal;
 
     public final boolean isStub;
 
@@ -69,8 +82,19 @@ public final class HdfsConfig {
                 ); // Default is -72h from now
         hdfsPath = getOrThrow(opts, "hdfs.hdfsPath");
         hdfsUri = getOrThrow(opts, "hdfs.hdfsUri");
-        String useMockHdfsDatabaseString = opts.getOrDefault("useMockHdfsDatabase", "false");
+        UseHdfsHostname = getOrThrow(opts, "hdfs.UseHostName");
+        hdfsTransferProtection = getOrThrow(opts, "hdfs.transferProtection");
+        hdfsCipherSuites = getOrThrow(opts, "hdfs.cipherSuites");
+        String useMockHdfsDatabaseString = opts.getOrDefault("hdfs.useMockHdfsDatabase", "false");
         useMockHdfsDatabase = "true".equals(useMockHdfsDatabaseString);
+        kerberosAuthentication = getOrThrow(opts, "hdfs.krbAuthentication");
+        kerberosAuthorization = getOrThrow(opts, "hdfs.krbAuthorization");
+        kerberosPrincipalPattern = getOrThrow(opts, "hdfs.krbPrincipalPattern");
+        kerberosKdc = getOrThrow(opts, "hdfs.krbKdc");
+        kerberosRealm = getOrThrow(opts, "hdfs.krbRealm");
+        kerberosKeytabUser = getOrThrow(opts, "hdfs.krbKeytabUser");
+        kerberosKeytabPath = getOrThrow(opts, "hdfs.krbKeytabPath");
+        kerberosAutorenewal = opts.getOrDefault("hdfs.useKerberosAutorenewal", "false");
         isStub = false;
     }
 
@@ -78,7 +102,18 @@ public final class HdfsConfig {
         cutoffOffset = 0L;
         hdfsPath = "";
         hdfsUri = "";
+        UseHdfsHostname = "";
+        hdfsTransferProtection = "";
+        hdfsCipherSuites = "";
         useMockHdfsDatabase = false;
+        kerberosAuthentication = "";
+        kerberosAuthorization = "";
+        kerberosPrincipalPattern = "";
+        kerberosKdc = "";
+        kerberosRealm = "";
+        kerberosKeytabUser = "";
+        kerberosKeytabPath = "";
+        kerberosAutorenewal = "false";
         isStub = true;
     }
 
