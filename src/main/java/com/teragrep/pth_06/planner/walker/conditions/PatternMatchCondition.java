@@ -72,7 +72,9 @@ public final class PatternMatchCondition implements QueryCondition {
     }
 
     /**
-     * tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like BLOOMDB.FILTERTYPE.PATTERN)
+     * tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like
+     * BLOOMDB.FILTERTYPE.PATTERN)
+     * 
      * @return combined condition regex matching any of the tokens against filtertype.pattern
      */
     public Condition condition() {

@@ -96,18 +96,17 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             Condition noBloomCondition = DSL.noCondition();
 
             for (final Table<?> table : tableSet) {
-                final CategoryTable categoryTable =
-                        new Created(
-                                new FiltersInserted(
-                                        new CategoryTableImpl(config, table, tokenizedValue))
-                        );
+                final CategoryTable categoryTable = new Created(
+                        new FiltersInserted(new CategoryTableImpl(config, table, tokenizedValue))
+                );
                 final QueryCondition tableCondition = categoryTable.bloommatchCondition();
                 bloomCondition = bloomCondition.or(tableCondition.condition());
                 noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
             }
             if (config.withoutFilters()) {
                 newCondition = noBloomCondition;
-            } else {
+            }
+            else {
                 newCondition = bloomCondition.or(noBloomCondition);
             }
         }

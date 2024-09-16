@@ -52,7 +52,6 @@ import org.jooq.types.ULong;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
@@ -88,8 +87,8 @@ public final class TableFilters {
     }
 
     /**
-     * Extracts filter information from record,
-     * creates a bloom filter and returns the filter byte array
+     * Extracts filter information from record, creates a bloom filter and returns the filter byte array
+     * 
      * @param record record with filter info
      * @return byte[] of the created filter
      */
@@ -121,13 +120,8 @@ public final class TableFilters {
                 DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
                 DSL.val(filterBAOSFromRecord(record), byte[].class)
         };
-        ctx
-                .insertInto(namedTable)
-                .columns(insertFields)
-                .values(valueFields)
-                .execute();
+        ctx.insertInto(namedTable).columns(insertFields).values(valueFields).execute();
     }
-
 
     public void insert() {
         recordsInMetadata.toResult().forEach(this::insertFilterType);
