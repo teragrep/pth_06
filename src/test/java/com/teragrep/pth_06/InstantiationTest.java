@@ -162,8 +162,18 @@ public class InstantiationTest {
                 .option("hdfs.enabled", "true")
                 .option("hdfs.hdfsPath", hdfsPath)
                 .option("hdfs.hdfsUri", hdfsUri)
+                .option("hdfs.UseHostName", "false")
+                .option("hdfs.transferProtection", "test")
+                .option("hdfs.cipherSuites", "test")
                 .option("hdfs.useMockHdfsDatabase", "true")
-                //.option("hdfs.hdfsCutoffOffset", Instant.now().toEpochMilli()) // Current time - pruning offset from cfe_39 + configurable cutoff offset. Granularity is in milliseconds.
+                .option("hdfs.krbAuthentication", "false")
+                .option("hdfs.krbAuthorization", "test")
+                .option("hdfs.krbPrincipalPattern", "test")
+                .option("hdfs.krbKdc", "test")
+                .option("hdfs.krbRealm", "test")
+                .option("hdfs.krbKeytabUser", "test")
+                .option("hdfs.krbKeytabPath", "test")
+                .option("hdfs.useKerberosAutorenewal", "true")
                 .load();
 
         Dataset<Row> df2 = df.agg(functions.count("*"));
