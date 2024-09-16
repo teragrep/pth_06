@@ -43,78 +43,39 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.config;
+package com.teragrep.pth_06.planner;
 
-import org.jooq.DSLContext;
+import com.teragrep.blf_01.Token;
+import com.teragrep.blf_01.Tokenizer;
 
-public final class ConditionConfig {
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
 
-    private final DSLContext ctx;
-    private final boolean streamQuery;
-    private final boolean bloomEnabled;
-    private final boolean withoutFilters;
-    private final long bloomTermId;
+public final class TokenizedValue {
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this(ctx, streamQuery, false, false, 0L);
+    public final String value;
+
+    public TokenizedValue(String value) {
+        this.value = value;
     }
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
-        this(ctx, streamQuery, bloomEnabled, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
-        this(ctx, streamQuery, bloomEnabled, withoutFilters, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, long bloomTermId) {
-        this(ctx, streamQuery, bloomEnabled, false, bloomTermId);
-    }
-
-    public ConditionConfig(
-            DSLContext ctx,
-            boolean streamQuery,
-            boolean bloomEnabled,
-            boolean withoutFilters,
-            long bloomTermId
-    ) {
-        this.ctx = ctx;
-        this.streamQuery = streamQuery;
-        this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
-        this.bloomTermId = bloomTermId;
-    }
-
-    public DSLContext context() {
-        return ctx;
-    }
-
-    public boolean bloomEnabled() {
-        return bloomEnabled;
-    }
-
-    public boolean withoutFilters() {
-        return withoutFilters;
-    }
-
-    public long bloomTermId() {
-        return bloomTermId;
-    }
-
-    public boolean streamQuery() {
-        return streamQuery;
+    public Set<Token> tokens() {
+        return new HashSet<>(
+                new Tokenizer(0).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
+        );
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null)
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
+        final TokenizedValue cast = (TokenizedValue) object;
+        return this.value.equals(cast.value);
     }
 }

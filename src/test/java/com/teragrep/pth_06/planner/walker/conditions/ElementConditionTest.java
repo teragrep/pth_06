@@ -62,6 +62,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
+ * 
  * @see org.jooq.QueryPart
  */
 class ElementConditionTest {
@@ -93,8 +94,8 @@ class ElementConditionTest {
     void testProvidedElementMissingValue() {
         Element element = document.createElement("test");
         element.setAttribute("operation", "EQUALS");
-        ElementCondition elementCondition = new ElementCondition(element, config);
-        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
+        BloomQueryCondition elementCondition = new ElementCondition(element, config);
+        BloomQueryCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
     }
@@ -103,8 +104,8 @@ class ElementConditionTest {
     void testProvidedElementMissingOperation() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
-        ElementCondition elementCondition = new ElementCondition(element, config);
-        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
+        BloomQueryCondition elementCondition = new ElementCondition(element, config);
+        BloomQueryCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
     }
@@ -117,14 +118,14 @@ class ElementConditionTest {
         Element element2 = document.createElement("index");
         element2.setAttribute("value", "searchTerm");
         element2.setAttribute("operation", "EQUALS");
-        ElementCondition condition = new ElementCondition(element, config);
+        BloomQueryCondition condition = new ElementCondition(element, config);
         Assertions.assertTrue(condition.isBloomSearchCondition());
         element.setAttribute("operation", "NOT_EQUALS");
-        ElementCondition condition2 = new ElementCondition(element, config);
+        BloomQueryCondition condition2 = new ElementCondition(element, config);
         Assertions.assertFalse(condition2.isBloomSearchCondition());
-        ElementCondition condition3 = new ElementCondition(element, streamConfig);
+        BloomQueryCondition condition3 = new ElementCondition(element, streamConfig);
         Assertions.assertFalse(condition3.isBloomSearchCondition());
-        ElementCondition condition4 = new ElementCondition(element2, streamConfig);
+        BloomQueryCondition condition4 = new ElementCondition(element2, streamConfig);
         Assertions.assertFalse(condition4.isBloomSearchCondition());
     }
 
@@ -133,7 +134,7 @@ class ElementConditionTest {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "searchTerm");
         element.setAttribute("operation", "EQUALS");
-        ElementCondition condition = new ElementCondition(element, config);
+        BloomQueryCondition condition = new ElementCondition(element, config);
         Assertions.assertTrue(condition.isBloomSearchCondition());
         Assertions.assertThrows(DataAccessException.class, condition::condition);
     }
@@ -191,9 +192,9 @@ class ElementConditionTest {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        ElementCondition eq1 = new ElementCondition(element, config);
+        BloomQueryCondition eq1 = new ElementCondition(element, config);
         eq1.condition();
-        ElementCondition eq2 = new ElementCondition(element, config);
+        BloomQueryCondition eq2 = new ElementCondition(element, config);
         Assertions.assertEquals(eq1, eq2);
     }
 
@@ -205,9 +206,9 @@ class ElementConditionTest {
         Element anotherElement = document.createElement("index");
         anotherElement.setAttribute("value", "f11");
         anotherElement.setAttribute("operation", "EQUALS");
-        ElementCondition eq1 = new ElementCondition(element, config);
-        ElementCondition notEq = new ElementCondition(anotherElement, config);
-        ElementCondition notEq2 = new ElementCondition(element, streamConfig);
+        BloomQueryCondition eq1 = new ElementCondition(element, config);
+        BloomQueryCondition notEq = new ElementCondition(anotherElement, config);
+        BloomQueryCondition notEq2 = new ElementCondition(element, streamConfig);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, notEq2);
@@ -224,8 +225,8 @@ class ElementConditionTest {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig cfg1 = new ConditionConfig(ctx, false);
         ConditionConfig cfg2 = new ConditionConfig(ctx, true);
-        ElementCondition eq = new ElementCondition(element, cfg1);
-        ElementCondition notEq = new ElementCondition(element, cfg2);
+        BloomQueryCondition eq = new ElementCondition(element, cfg1);
+        BloomQueryCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
     }
 
@@ -240,8 +241,8 @@ class ElementConditionTest {
         DSLContext ctx2 = DSL.using(conn2);
         ConditionConfig cfg1 = new ConditionConfig(ctx, false);
         ConditionConfig cfg2 = new ConditionConfig(ctx2, false);
-        ElementCondition eq = new ElementCondition(element, cfg1);
-        ElementCondition notEq = new ElementCondition(element, cfg2);
+        BloomQueryCondition eq = new ElementCondition(element, cfg1);
+        BloomQueryCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
     }
 }

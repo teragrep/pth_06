@@ -45,55 +45,55 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Token;
+import com.teragrep.pth_06.planner.TokenizedValue;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+
+import java.util.Set;
+
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
+ * Combined regex match condition
+ * <p>
+ * true if any of the tokens regex match against bloomdb.filtertype.pattern
  */
-class LatestConditionTest {
+public final class PatternMatchCondition implements QueryCondition {
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    private final TokenizedValue tokenizedValue;
+
+    public PatternMatchCondition(String value) {
+        this(new TokenizedValue(value));
     }
 
-    @Test
-    void conditionUpdatedTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("946720800").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    public PatternMatchCondition(TokenizedValue tokenizedValue) {
+        this.tokenizedValue = tokenizedValue;
     }
 
-    @Test
-    void equalsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        eq1.condition();
-        LatestCondition eq2 = new LatestCondition("946720800");
-        LatestCondition eq3 = new LatestCondition("946720800");
-        eq3.condition();
-        LatestCondition eq4 = new LatestCondition("946720800");
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
-        Assertions.assertEquals(eq3, eq4);
+    /**
+     * tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like BLOOMDB.FILTERTYPE.PATTERN)
+     * @return combined condition regex matching any of the tokens against filtertype.pattern
+     */
+    public Condition condition() {
+        final Set<Token> tokenSet = tokenizedValue.tokens();
+        Condition patternCondition = DSL.noCondition();
+        for (Token token : tokenSet) {
+            Field<String> tokenStringField = DSL.val(token.toString());
+            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
+        }
+        return patternCondition;
     }
 
-    @Test
-    void notEqualsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        LatestCondition notEq = new LatestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
+        final PatternMatchCondition cast = (PatternMatchCondition) object;
+        return this.tokenizedValue.equals(cast.tokenizedValue);
     }
 }

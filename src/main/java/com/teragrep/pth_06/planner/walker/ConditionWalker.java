@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.config.ConditionConfig;
+import com.teragrep.pth_06.planner.walker.conditions.BloomQueryCondition;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
 import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
@@ -69,25 +70,31 @@ import java.util.Set;
 public final class ConditionWalker extends XmlWalker<Condition> {
 
     private final boolean bloomEnabled;
+    private final boolean withoutFilters;
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
-    private final Set<Table<?>> patternMatchSet;
+    private final Set<Table<?>> combinedMatchSet;
     private long bloomTermId = 0;
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        this(null, false);
+        this(null, false, false);
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
+        this(ctx, bloomEnabled, false);
+    }
+
+    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters) {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
-        this.patternMatchSet = new HashSet<>();
+        this.withoutFilters = withoutFilters;
+        this.combinedMatchSet = new HashSet<>();
     }
 
     public Condition fromString(String inXml, boolean streamQuery) throws Exception {
@@ -101,7 +108,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
      * @return Set of Tables that had a pattern match
      */
     public Set<Table<?>> patternMatchTables() {
-        return patternMatchSet;
+        return combinedMatchSet;
     }
 
     @Override
@@ -154,15 +161,14 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(final Element current) {
-        final ElementCondition elementCondition = new ElementCondition(
+        final BloomQueryCondition bloomQueryCondition = new ElementCondition(
                 new ValidElement(current),
-                new ConditionConfig(ctx, streamQuery, bloomEnabled),
-                bloomTermId
+                new ConditionConfig(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId)
         );
-        if (elementCondition.isBloomSearchCondition()) {
-            patternMatchTables().addAll(elementCondition.patternMatchTables());
+        if (bloomQueryCondition.isBloomSearchCondition()) {
+            patternMatchTables().addAll(bloomQueryCondition.patternMatchTables());
             bloomTermId++;
         }
-        return elementCondition.condition();
+        return bloomQueryCondition.condition();
     }
 }

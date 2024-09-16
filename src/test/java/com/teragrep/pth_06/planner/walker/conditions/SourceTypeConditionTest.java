@@ -52,6 +52,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
+ * 
  * @see org.jooq.QueryPart
  */
 class SourceTypeConditionTest {

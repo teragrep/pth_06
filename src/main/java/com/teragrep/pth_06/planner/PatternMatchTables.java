@@ -45,36 +45,39 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.blf_01.Token;
-import com.teragrep.blf_01.Tokenizer;
-
-import org.jooq.Condition;
+import com.teragrep.pth_06.planner.walker.conditions.PatternMatchCondition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-public class PatternMatch {
+/**
+ * Class to get a collection of Tables that match the given PatternMatchCondition
+ */
+public final class PatternMatchTables {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatch.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatchTables.class);
 
     private final DSLContext ctx;
-    private final String input;
+    private final PatternMatchCondition patternMatchCondition;
 
-    public PatternMatch(DSLContext ctx, String input) {
+    public PatternMatchTables(DSLContext ctx, String pattern) {
+        this(ctx, new PatternMatchCondition(new TokenizedValue(pattern)));
+    }
+
+    public PatternMatchTables(DSLContext ctx, TokenizedValue tokenizedValue) {
+        this(ctx, new PatternMatchCondition(tokenizedValue));
+    }
+
+    public PatternMatchTables(DSLContext ctx, PatternMatchCondition patternMatchCondition) {
         this.ctx = ctx;
-        this.input = input;
+        this.patternMatchCondition = patternMatchCondition;
     }
 
     /**
@@ -84,15 +87,6 @@ public class PatternMatch {
      * @return List of tables that matched condition and were not empty
      */
     public List<Table<?>> toList() {
-        final Set<Token> tokenSet = tokenSet();
-        Condition patternCondition = DSL.noCondition();
-        // tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like BLOOMDB.FILTERTYPE.PATTERN)
-        for (Token token : tokenSet) {
-            Field<String> tokenStringField = DSL.val(token.toString());
-            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
-        }
-        final Condition finalPatternCondition = patternCondition;
-        // SQL metadata
         final List<Table<?>> tables = ctx
                 .meta()
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
@@ -101,7 +95,7 @@ public class PatternMatch {
                         .from(t)
                         .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(finalPatternCondition)// select tables that match pattern condition
+                        .where(patternMatchCondition.condition())// select tables that match pattern condition
                         .limit(1)// limit 1 since we are checking only if table is not empty
                         .fetch()
                         .isNotEmpty() // select table if not empty
@@ -111,27 +105,21 @@ public class PatternMatch {
         return tables;
     }
 
-    public Set<Token> tokenSet() {
-        return new HashSet<>(
-                new Tokenizer(0).tokenize(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)))
-        );
-    }
-
     /**
      * Equal only if all values are equal and same instance of DSLContext
-     * 
+     *
      * @param object object compared against
      * @return true if all object is same class, object fields are equal and DSLContext is same instance
      */
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null)
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final PatternMatch cast = (PatternMatch) object;
-        return this.input.equals(cast.input) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+        final PatternMatchTables cast = (PatternMatchTables) object;
+        return this.patternMatchCondition.equals(cast.patternMatchCondition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
     }
 }

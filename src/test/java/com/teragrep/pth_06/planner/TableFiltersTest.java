@@ -47,8 +47,8 @@ package com.teragrep.pth_06.planner;
 
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
-import org.jooq.Named;
 import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
@@ -59,10 +59,9 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PatternMatchTest {
+class TableFiltersTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -77,45 +76,44 @@ public class PatternMatchTest {
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
-    void setup() {
+    public void setup() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
                     + "    `targetFpp`        DOUBLE(2) unsigned NOT NULL,"
                     + "    `pattern`          VARCHAR(2048) NOT NULL,"
                     + "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)" + ")";
-            String ip = "CREATE TABLE `pattern_test_ip`("
-                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
-                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
-                    + "    `filter`         longblob            NOT NULL)";
-            String ip255 = "CREATE TABLE `pattern_test_ip255`("
-                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
-                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
-                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
-                    + "    `filter`         longblob            NOT NULL)";
             conn.prepareStatement(filtertype).execute();
-            conn.prepareStatement(ip).execute();
-            conn.prepareStatement(ip255).execute();
             String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
             int id = 1;
             for (String pattern : patternList) {
                 PreparedStatement filterType = conn.prepareStatement(typeSQL);
                 filterType.setInt(1, id);
-                filterType.setInt(2, 1000);
+                filterType.setInt(2, id * 1000);
                 filterType.setDouble(3, 0.01);
                 filterType.setString(4, pattern);
                 filterType.executeUpdate();
                 id++;
             }
-            writeFilter("pattern_test_ip", 1);
-            writeFilter("pattern_test_ip255", 2);
+        });
+    }
+
+    @BeforeEach
+    void createTargetTable() {
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
+            conn.prepareStatement("USE BLOOMDB").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS target").execute();
+            String targetTable = "CREATE TABLE `target`("
+                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
+                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
+                    + "    `filter`         longblob            NOT NULL)";
+            conn.prepareStatement(targetTable).execute();
         });
     }
 
@@ -128,82 +126,76 @@ public class PatternMatchTest {
     }
 
     @Test
-    public void testSingleMatch() {
+    public void testCreation() {
+        fillTargetTable();
         DSLContext ctx = DSL.using(conn);
-        String input = "192.168.1.1";
-        PatternMatch patternMatch = new PatternMatch(ctx, input);
-        List<Table<?>> result = patternMatch.toList();
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")));
     }
 
     @Test
-    public void testSearchTermTokenizedMatch() {
+    public void testInsert() {
+        fillTargetTable();
         DSLContext ctx = DSL.using(conn);
-        String input = "target_ip=192.168.1.1";
-        PatternMatch patternMatch = new PatternMatch(ctx, input);
-        List<Table<?>> result = patternMatch.toList();
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        DataAccessException exception = Assertions
+                .assertThrows(
+                        DataAccessException.class, () -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")).insert()
+                );
+        Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
     @Test
-    public void testMultipleMatch() {
+    public void testEquals() {
+        fillTargetTable();
         DSLContext ctx = DSL.using(conn);
-        String input = "255.255.255.255";
-        PatternMatch patternMatch = new PatternMatch(ctx, input);
-        List<Table<?>> result = patternMatch.toList();
-        List<Table<?>> result2 = patternMatch.toList();
-        List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(2, result2.size());
-        Assertions.assertTrue(tableNames.contains("pattern_test_ip"));
-        Assertions.assertTrue(tableNames.contains("pattern_test_ip255"));
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
+        Assertions.assertEquals(filter1, filter2);
+        Assertions.assertEquals(filter2, filter1);
     }
 
     @Test
-    public void testNoMatch() {
+    public void testNotEquals() {
+        fillTargetTable();
         DSLContext ctx = DSL.using(conn);
-        String input = "testinput";
-        PatternMatch patternMatch = new PatternMatch(ctx, input);
-        List<Table<?>> result = patternMatch.toList();
-        Assertions.assertTrue(result.isEmpty());
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
+        TableFilters filter2 = new TableFilters(ctx, table, 1L, new TokenizedValue("test"));
+        TableFilters filter3 = new TableFilters(ctx, table, 0L, new TokenizedValue("mest"));
+        Assertions.assertNotEquals(filter1, filter2);
+        Assertions.assertNotEquals(filter1, filter3);
+        Assertions.assertNotEquals(filter1, null);
     }
 
-    @Test
-    public void equalsTest() {
-        DSLContext ctx = DSL.using(conn);
-        String input = "testinput";
-        PatternMatch eq1 = new PatternMatch(ctx, input);
-        PatternMatch eq2 = new PatternMatch(ctx, input);
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
-    }
-
-    @Test
-    public void differentInputNotEqualsTest() {
-        DSLContext ctx = DSL.using(conn);
-        PatternMatch eq1 = new PatternMatch(ctx, "testinput");
-        PatternMatch eq2 = new PatternMatch(ctx, "anotherinput");
-        Assertions.assertNotEquals(eq1, eq2);
-        Assertions.assertNotEquals(eq2, eq1);
-    }
-
-    @Test
-    public void differentDSLContextNotEqualsTest() {
-        DSLContext ctx1 = DSL.using(conn);
-        DSLContext ctx2 = DSL.using(conn);
-        PatternMatch eq1 = new PatternMatch(ctx1, "testinput");
-        PatternMatch eq2 = new PatternMatch(ctx2, "testinput");
-        Assertions.assertNotEquals(eq1, eq2);
-        Assertions.assertNotEquals(eq2, eq1);
-    }
-
-    private void writeFilter(String tableName, int filterId) {
+    void fillTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
+            String sql = "INSERT INTO `target` (`partition_id`, `filter_type_id`, `filter`) "
                     + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             BloomFilter filter = BloomFilter.create(1000, 0.01);
@@ -213,7 +205,7 @@ public class PatternMatchTest {
                 filterBAOS.close();
             });
             stmt.setInt(1, 1);
-            stmt.setInt(2, filterId);
+            stmt.setInt(2, 1);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
         });

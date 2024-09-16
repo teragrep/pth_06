@@ -45,99 +45,88 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.BloomFilterTempTable;
-import com.teragrep.pth_06.planner.PatternMatch;
+import com.teragrep.pth_06.planner.*;
 import org.jooq.Condition;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public final class IndexStatementCondition implements QueryCondition {
+public final class IndexStatementCondition implements QueryCondition, BloomQueryCondition {
 
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
     private final String value;
     private final ConditionConfig config;
-    private final Tokenizer tokenizer;
     private final Condition condition;
-    private final long bloomTermId;
-    private final List<Table<?>> tableList;
+    private final Set<Table<?>> tableSet;
 
     public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config, new Tokenizer(0), DSL.noCondition(), 0L);
+        this(value, config, DSL.noCondition());
     }
 
-    public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer) {
-        this(value, config, tokenizer, DSL.noCondition(), 0L);
-    }
-
-    public IndexStatementCondition(String value, ConditionConfig config, Tokenizer tokenizer, long bloomTermId) {
-        this(value, config, tokenizer, DSL.noCondition(), bloomTermId);
-    }
-
-    public IndexStatementCondition(
-            String value,
-            ConditionConfig config,
-            Tokenizer tokenizer,
-            Condition condition,
-            long bloomTermId
-    ) {
+    public IndexStatementCondition(String value, ConditionConfig config, Condition condition) {
         this.value = value;
         this.config = config;
-        this.tokenizer = tokenizer;
         this.condition = condition;
-        this.bloomTermId = bloomTermId;
-        this.tableList = new ArrayList<>();
+        this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
+        if (!config.bloomEnabled()) {
+            LOGGER.debug("Indexstatement reached with bloom disabled");
+            return condition;
+        }
         Condition newCondition = condition;
         LOGGER.info("indexstatement reached with search term <{}>", value);
-        PatternMatch patternMatch = new PatternMatch(config.context(), value);
-        if (tableList.isEmpty()) {
-            tableList.addAll(patternMatch.toList());
+        final TokenizedValue tokenizedValue = new TokenizedValue(value);
+        if (tableSet.isEmpty()) {
+            PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), tokenizedValue);
+            tableSet.addAll(patternMatchTables.toList());
         }
-        if (!tableList.isEmpty()) {
+        if (!tableSet.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found pattern match on <{}> table(s)", tableList.size());
+                LOGGER.debug("Found pattern match on <{}> table(s)", tableSet.size());
             }
             Condition bloomCondition = DSL.noCondition();
             Condition noBloomCondition = DSL.noCondition();
 
-            for (Table<?> table : tableList) {
-                BloomFilterTempTable tempTable = new BloomFilterTempTable(
-                        config.context(),
-                        table,
-                        bloomTermId,
-                        patternMatch.tokenSet()
-                );
-                Condition tableCondition = tempTable.generateCondition();
-                bloomCondition = bloomCondition.or(tableCondition);
+            for (final Table<?> table : tableSet) {
+                final CategoryTable categoryTable =
+                        new Created(
+                                new FiltersInserted(
+                                        new CategoryTableImpl(config, table, tokenizedValue))
+                        );
+                final QueryCondition tableCondition = categoryTable.bloommatchCondition();
+                bloomCondition = bloomCondition.or(tableCondition.condition());
                 noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
             }
-            newCondition = bloomCondition.or(noBloomCondition);
+            if (config.withoutFilters()) {
+                newCondition = noBloomCondition;
+            } else {
+                newCondition = bloomCondition.or(noBloomCondition);
+            }
         }
         return newCondition;
     }
 
-    public List<Table<?>> matchList() {
-        if (tableList.isEmpty()) {
-            condition();
-        }
-        return tableList;
+    @Override
+    public boolean isBloomSearchCondition() {
+        return config.bloomEnabled() && !config.streamQuery();
     }
 
-    /**
-     * @param object object compared against
-     * @return true if object is same class and all object values are equal (tokenizer values are expected to point to
-     *         same reference)
-     */
+    @Override
+    public Set<Table<?>> patternMatchTables() {
+        if (tableSet.isEmpty()) {
+            condition();
+        }
+        return tableSet;
+    }
+
     @Override
     public boolean equals(final Object object) {
         if (this == object)
@@ -147,6 +136,6 @@ public final class IndexStatementCondition implements QueryCondition {
         if (object.getClass() != this.getClass())
             return false;
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.tokenizer == cast.tokenizer; // expects same reference
+        return this.value.equals(cast.value) && this.config.equals(cast.config);
     }
 }

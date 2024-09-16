@@ -43,78 +43,52 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.config;
+package com.teragrep.pth_06.planner.walker.conditions;
 
-import org.jooq.DSLContext;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 
-public final class ConditionConfig {
+import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
-    private final DSLContext ctx;
-    private final boolean streamQuery;
-    private final boolean bloomEnabled;
-    private final boolean withoutFilters;
+public final class CategoryTableCondition implements QueryCondition {
+
+    private final Table<?> comparedTo;
     private final long bloomTermId;
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this(ctx, streamQuery, false, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
-        this(ctx, streamQuery, bloomEnabled, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
-        this(ctx, streamQuery, bloomEnabled, withoutFilters, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, long bloomTermId) {
-        this(ctx, streamQuery, bloomEnabled, false, bloomTermId);
-    }
-
-    public ConditionConfig(
-            DSLContext ctx,
-            boolean streamQuery,
-            boolean bloomEnabled,
-            boolean withoutFilters,
-            long bloomTermId
-    ) {
-        this.ctx = ctx;
-        this.streamQuery = streamQuery;
-        this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
+    public CategoryTableCondition(Table<?> comparedTo, long bloomTermId) {
+        this.comparedTo = comparedTo;
         this.bloomTermId = bloomTermId;
     }
 
-    public DSLContext context() {
-        return ctx;
-    }
-
-    public boolean bloomEnabled() {
-        return bloomEnabled;
-    }
-
-    public boolean withoutFilters() {
-        return withoutFilters;
-    }
-
-    public long bloomTermId() {
-        return bloomTermId;
-    }
-
-    public boolean streamQuery() {
-        return streamQuery;
+    public Condition condition() {
+        final Table<Record> categoryTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + comparedTo.getName())));
+        final Field<ULong> termIdField = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
+        final Field<ULong> typeIdField = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
+        final Field<byte[]> filterField = DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class);
+        final SelectConditionStep<Record1<byte[]>> selectFilterStep = DSL
+                .select(filterField)
+                .from(categoryTable)
+                .where(termIdField.eq(ULong.valueOf(bloomTermId)))
+                .and(typeIdField.eq((Field<ULong>) comparedTo.field("filter_type_id")));
+        final Field<byte[]> filterColumn = selectFilterStep.asField();
+        final Condition filterFieldCondition = DSL
+                .function("bloommatch", Boolean.class, filterColumn, comparedTo.field("filter"))
+                .eq(true);
+        // null check allows SQL to optimize query
+        final Condition notNullCondition = comparedTo.field("filter").isNotNull();
+        return filterFieldCondition.and(notNullCondition);
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null)
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
+        final CategoryTableCondition cast = (CategoryTableCondition) object;
+        return this.bloomTermId == cast.bloomTermId && this.comparedTo.equals(cast.comparedTo);
     }
 }

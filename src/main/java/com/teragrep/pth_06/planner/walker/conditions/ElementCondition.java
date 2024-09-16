@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.blf_01.Tokenizer;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
 import org.jooq.Table;
@@ -55,29 +54,26 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Creates a query condition from provided dom element
  */
-public final class ElementCondition {
+public final class ElementCondition implements BloomQueryCondition {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElementCondition.class);
 
     private final ValidElement element;
     private final ConditionConfig config;
-    private final long bloomTermId;
     private final Set<Table<?>> tableSet;
 
     public ElementCondition(Element element, ConditionConfig config) {
-        this(new ValidElement(element), config, 0L);
+        this(new ValidElement(element), config);
     }
 
-    public ElementCondition(ValidElement element, ConditionConfig config, long bloomTermId) {
+    public ElementCondition(ValidElement element, ConditionConfig config) {
         this.element = element;
         this.config = config;
-        this.bloomTermId = bloomTermId;
         this.tableSet = new HashSet<>();
     }
 
@@ -112,17 +108,11 @@ public final class ElementCondition {
             }
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
-                IndexStatementCondition indexStatementCondition = new IndexStatementCondition(
-                        value,
-                        config,
-                        new Tokenizer(0),
-                        condition,
-                        bloomTermId
-                );
+                BloomQueryCondition indexStatementCondition = new IndexStatementCondition(value, config, condition);
                 condition = indexStatementCondition.condition();
-                List<Table<?>> newMatches = indexStatementCondition.matchList();
-                if (!newMatches.isEmpty()) {
-                    tableSet.addAll(newMatches);
+                Set<Table<?>> indexStatementMatches = indexStatementCondition.patternMatchTables();
+                if (!indexStatementMatches.isEmpty()) {
+                    tableSet.addAll(indexStatementMatches);
                 }
             }
         }

@@ -46,54 +46,15 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.jooq.Table;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
- */
-class LatestConditionTest {
+import java.util.Set;
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
-    }
+public interface BloomQueryCondition {
 
-    @Test
-    void conditionUpdatedTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("946720800").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
-    }
+    Condition condition();
 
-    @Test
-    void equalsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        eq1.condition();
-        LatestCondition eq2 = new LatestCondition("946720800");
-        LatestCondition eq3 = new LatestCondition("946720800");
-        eq3.condition();
-        LatestCondition eq4 = new LatestCondition("946720800");
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
-        Assertions.assertEquals(eq3, eq4);
-    }
+    boolean isBloomSearchCondition();
 
-    @Test
-    void notEqualsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        LatestCondition notEq = new LatestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
-    }
+    Set<Table<?>> patternMatchTables();
 }

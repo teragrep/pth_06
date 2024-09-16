@@ -43,16 +43,13 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.config.ConditionConfig;
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.exception.DataAccessException;
+import org.jooq.Named;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.tools.jdbc.MockConnection;
-import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
@@ -62,15 +59,10 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
- */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class IndexStatementConditionTest {
+public class PatternMatchTablesTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -81,11 +73,6 @@ public class IndexStatementConditionTest {
                             "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
                             "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
                     )
-    );
-    final ConditionConfig mockConfig = new ConditionConfig(
-            DSL.using(new MockConnection(ctx -> new MockResult[0])),
-            false,
-            true
     );
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
@@ -135,111 +122,81 @@ public class IndexStatementConditionTest {
     @AfterAll
     void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
+            conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
         });
     }
 
     @Test
-    void testConnectionException() {
-        DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        ConditionConfig noBloomConfig = new ConditionConfig(ctx, false);
-        BloomQueryCondition cond1 = new IndexStatementCondition("test", config, DSL.trueCondition());
-        BloomQueryCondition cond2 = new IndexStatementCondition("test", noBloomConfig, DSL.trueCondition());
-        Assertions.assertThrows(DataAccessException.class, cond1::condition);
-        Assertions.assertDoesNotThrow(cond2::condition);
-    }
-
-    @Test
-    void noMatchesTest() {
+    public void testSingleMatch() {
         DSLContext ctx = DSL.using(conn);
-        Condition e1 = DSL.falseCondition();
-        Condition e2 = DSL.trueCondition();
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        ConditionConfig withoutFiltersConfig = new ConditionConfig(ctx, false, true, true, 1L);
-        BloomQueryCondition cond1 = new IndexStatementCondition("test", config, e1);
-        BloomQueryCondition cond2 = new IndexStatementCondition("test", withoutFiltersConfig, e2);
-        Assertions.assertEquals(e1, cond1.condition());
-        Assertions.assertEquals(e2, cond2.condition());
-        Assertions.assertTrue(cond1.patternMatchTables().isEmpty());
-        Assertions.assertTrue(cond2.patternMatchTables().isEmpty());
+        String input = "192.168.1.1";
+        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
+        List<Table<?>> result = patternMatchTables.toList();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
 
     @Test
-    void oneMatchingTableTest() {
+    public void testSearchTermTokenizedMatch() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        BloomQueryCondition cond = new IndexStatementCondition("192.168.1.1", config);
-        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.patternMatchTables().size());
+        String input = "target_ip=192.168.1.1";
+        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
+        List<Table<?>> result = patternMatchTables.toList();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
 
     @Test
-    void testOneMatchWithoutFilters() {
+    public void testMultipleMatch() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true, true);
-        BloomQueryCondition cond = new IndexStatementCondition("192.168.1.1", config);
-        String e = "\"bloomdb\".\"pattern_test_ip\".\"filter\" is null";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.patternMatchTables().size());
+        String input = "255.255.255.255";
+        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
+        List<Table<?>> result = patternMatchTables.toList();
+        List<Table<?>> result2 = patternMatchTables.toList();
+        List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(2, result2.size());
+        Assertions.assertTrue(tableNames.contains("pattern_test_ip"));
+        Assertions.assertTrue(tableNames.contains("pattern_test_ip255"));
     }
 
     @Test
-    void testTwoMatchWithoutFilters() {
+    public void testNoMatch() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true, true);
-        BloomQueryCondition cond = new IndexStatementCondition("255.255.255.255", config);
-        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.patternMatchTables().size());
+        String input = "testinput";
+        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
+        List<Table<?>> result = patternMatchTables.toList();
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    void twoMatchingTableTest() {
+    public void equalsTest() {
         DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        BloomQueryCondition cond = new IndexStatementCondition("255.255.255.255", config);
-        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
-                + "    bloommatch(\n" + "      (\n" + "        select \"term_0_pattern_test_ip255\".\"filter\"\n"
-                + "        from \"term_0_pattern_test_ip255\"\n" + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
-                + "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  )\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.patternMatchTables().size());
-    }
-
-    @Test
-    void equalsTest() {
-        BloomQueryCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
-        BloomQueryCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
+        String input = "testinput";
+        PatternMatchTables eq1 = new PatternMatchTables(ctx, input);
+        PatternMatchTables eq2 = new PatternMatchTables(ctx, input);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq2, eq1);
     }
 
     @Test
-    void notEqualsTest() {
-        BloomQueryCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
-        BloomQueryCondition notEq = new IndexStatementCondition("1000", mockConfig);
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
+    public void differentInputNotEqualsTest() {
+        DSLContext ctx = DSL.using(conn);
+        PatternMatchTables eq1 = new PatternMatchTables(ctx, "testinput");
+        PatternMatchTables eq2 = new PatternMatchTables(ctx, "anotherinput");
+        Assertions.assertNotEquals(eq1, eq2);
+        Assertions.assertNotEquals(eq2, eq1);
+    }
+
+    @Test
+    public void differentDSLContextNotEqualsTest() {
+        DSLContext ctx1 = DSL.using(conn);
+        DSLContext ctx2 = DSL.using(conn);
+        PatternMatchTables eq1 = new PatternMatchTables(ctx1, "testinput");
+        PatternMatchTables eq2 = new PatternMatchTables(ctx2, "testinput");
+        Assertions.assertNotEquals(eq1, eq2);
+        Assertions.assertNotEquals(eq2, eq1);
     }
 
     private void writeFilter(String tableName, int filterId) {
@@ -259,7 +216,6 @@ public class IndexStatementConditionTest {
             stmt.setInt(2, filterId);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
-            stmt.close();
         });
     }
 }

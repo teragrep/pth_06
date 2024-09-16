@@ -45,12 +45,13 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.blf_01.Token;
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
@@ -60,15 +61,10 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * @see org.jooq.QueryPart
- */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BloomFilterTempTableTest {
+class TableFilterTypesFromMetadataResultTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -100,7 +96,7 @@ public class BloomFilterTempTableTest {
             for (String pattern : patternList) {
                 PreparedStatement filterType = conn.prepareStatement(typeSQL);
                 filterType.setInt(1, id);
-                filterType.setInt(2, 1000);
+                filterType.setInt(2, id * 1000);
                 filterType.setDouble(3, 0.01);
                 filterType.setString(4, pattern);
                 filterType.executeUpdate();
@@ -133,7 +129,7 @@ public class BloomFilterTempTableTest {
     }
 
     @Test
-    public void testEmptyParentTable() {
+    void testNoFilterTypes() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -141,16 +137,14 @@ public class BloomFilterTempTableTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-
-        Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
-        BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::generateCondition);
-        Assertions.assertEquals("Parent table was empty", ex.getMessage());
+        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, result::toResult);
+        Assertions.assertEquals("Origin table was empty", exception.getMessage());
     }
 
     @Test
-    public void testConditionGeneration() {
-        fillTargetTable();
+    void testOneFilterType() {
+        insertSizedFilterIntoTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -158,21 +152,17 @@ public class BloomFilterTempTableTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-
-        Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
-        BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 0L, tokenSet);
-        Condition condition = tempTable.generateCondition();
-        String e = "(\n" + "  bloommatch(\n" + "    (\n" + "      select \"term_0_target\".\"filter\"\n"
-                + "      from \"term_0_target\"\n" + "      where (\n" + "        term_id = 0\n"
-                + "        and type_id = \"bloomdb\".\"target\".\"filter_type_id\"\n" + "      )\n" + "    ),\n"
-                + "    \"bloomdb\".\"target\".\"filter\"\n" + "  ) = true\n"
-                + "  and \"bloomdb\".\"target\".\"filter\" is not null\n" + ")";
-        Assertions.assertEquals(e, condition.toString());
+        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        Result<Record> records = result.toResult();
+        Assertions.assertEquals(1, records.size());
+        Assertions.assertEquals(ULong.valueOf(1000), records.get(0).get(1));
+        Assertions.assertEquals(0.01, records.get(0).get(2));
     }
 
     @Test
-    public void testBloomTerm() {
-        fillTargetTable();
+    void testMultipleFilterTypes() {
+        insertSizedFilterIntoTargetTable(1);
+        insertSizedFilterIntoTargetTable(2);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -180,39 +170,17 @@ public class BloomFilterTempTableTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-
-        Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
-        BloomFilterTempTable tempTable = new BloomFilterTempTable(ctx, table, 1L, tokenSet);
-        Condition condition = tempTable.generateCondition();
-        Assertions.assertTrue(condition.toString().contains("term_1_"));
+        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        Result<Record> records = result.toResult();
+        Assertions.assertEquals(2, records.size());
+        Record first = records.get(0);
+        Record second = records.get(1);
+        Assertions.assertEquals(first.get(1), ULong.valueOf("1000"));
+        Assertions.assertEquals(second.get(1), ULong.valueOf("2000"));
     }
 
     @Test
     public void testEquality() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        Table<?> target1 = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        Table<?> target2 = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        Set<Token> tokenSet = new PatternMatch(ctx, "test").tokenSet();
-        BloomFilterTempTable table1 = new BloomFilterTempTable(ctx, target1, 1L, tokenSet);
-        BloomFilterTempTable table2 = new BloomFilterTempTable(ctx, target2, 1L, tokenSet);
-        Assertions.assertEquals(table1, table2);
-        Assertions.assertEquals(table2, table1);
-    }
-
-    @Test
-    public void testDifferentTokenSetNotEquals() {
-        fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -220,17 +188,14 @@ public class BloomFilterTempTableTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        Set<Token> set1 = new PatternMatch(ctx, "one").tokenSet();
-        Set<Token> set2 = new PatternMatch(ctx, "two").tokenSet();
-        BloomFilterTempTable table1 = new BloomFilterTempTable(ctx, table, 1L, set1);
-        BloomFilterTempTable table2 = new BloomFilterTempTable(ctx, table, 1L, set2);
-        Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
+        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        Assertions.assertEquals(result1, result2);
+        Assertions.assertEquals(result2, result1);
     }
 
     @Test
-    public void testDifferentBloomTermNotEquals() {
-        fillTargetTable();
+    public void testNotEquals() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -238,32 +203,16 @@ public class BloomFilterTempTableTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        Set<Token> set = new PatternMatch(ctx, "one").tokenSet();
-        BloomFilterTempTable table1 = new BloomFilterTempTable(ctx, table, 0L, set);
-        BloomFilterTempTable table2 = new BloomFilterTempTable(ctx, table, 1L, set);
-        Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
+        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 1L);
+        TableFilterTypesFromMetadata result3 = new TableFilterTypesFromMetadata(ctx, null, 0L);
+        Assertions.assertNotEquals(result1, result2);
+        Assertions.assertNotEquals(result2, result1);
+        Assertions.assertNotEquals(result1, result3);
+        Assertions.assertNotEquals(result1, null);
     }
 
-    @Test
-    public void testDifferentDSLContextNotEquals() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        DSLContext ctx2 = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        Set<Token> set = new PatternMatch(ctx, "one").tokenSet();
-        BloomFilterTempTable table1 = new BloomFilterTempTable(ctx, table, 0L, set);
-        BloomFilterTempTable table2 = new BloomFilterTempTable(ctx2, table, 0L, set);
-        Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
-    }
-
-    void fillTargetTable() {
+    void insertSizedFilterIntoTargetTable(int filterTypeId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -271,15 +220,17 @@ public class BloomFilterTempTableTest {
                     + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             BloomFilter filter = BloomFilter.create(1000, 0.01);
+
             final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
             Assertions.assertDoesNotThrow(() -> {
                 filter.writeTo(filterBAOS);
                 filterBAOS.close();
             });
-            stmt.setInt(1, 1);
-            stmt.setInt(2, 1);
+            stmt.setInt(1, filterTypeId);
+            stmt.setInt(2, filterTypeId);
             stmt.setBytes(3, filterBAOS.toByteArray());
-            stmt.executeUpdate();
+            int success = stmt.executeUpdate();
+            Assertions.assertEquals(1, success);
         });
     }
 }

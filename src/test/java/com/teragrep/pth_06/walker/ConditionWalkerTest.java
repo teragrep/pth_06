@@ -62,6 +62,7 @@ import java.util.List;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
+ * 
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -151,6 +152,16 @@ public class ConditionWalkerTest {
     }
 
     @Test
+    void bloomNoMatchStreamQueryWithoutFiltersTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
+        String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(0, walker.patternMatchTables().size());
+    }
+
+    @Test
     void singleTablePatternMatchStreamQueryTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
@@ -180,6 +191,19 @@ public class ConditionWalkerTest {
     }
 
     @Test
+    void singleTablePatternMatchWithoutFiltersTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
+                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(1, walker.patternMatchTables().size());
+        Assertions
+                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+    }
+
+    @Test
     void twoTablePatternMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND>";
@@ -197,6 +221,22 @@ public class ConditionWalkerTest {
                 + "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "    )\n" + "    or (\n"
                 + "      \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
                 + "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "    )\n" + "  )\n" + ")";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions
+                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+        Assertions
+                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+    }
+
+    @Test
+    void twoTablePatternMatchWithoutFiltersTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND>";
+        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
+                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(2, walker.patternMatchTables().size());
@@ -248,6 +288,22 @@ public class ConditionWalkerTest {
                 + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
                 + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
                 + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions
+                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+        Assertions
+                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+    }
+
+    @Test
+    void multipleSearchTermTwoAndOneMatchWithoutFiltersTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
+        String q = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n"
+                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(2, walker.patternMatchTables().size());

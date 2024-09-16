@@ -43,57 +43,46 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner;
 
-import org.jooq.Condition;
+import com.teragrep.blf_01.Token;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
- */
-class LatestConditionTest {
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TokenizedValueTest {
 
     @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    void testTokenization() {
+        TokenizedValue result = new TokenizedValue("test.nest");
+        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
+        Assertions.assertEquals("test.nest", result.value);
+        Assertions.assertTrue(tokens.contains("nest"));
+        Assertions.assertTrue(tokens.contains("test"));
+        Assertions.assertTrue(tokens.contains("."));
+        Assertions.assertTrue(tokens.contains("test.nest"));
     }
 
     @Test
-    void conditionUpdatedTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("946720800").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    void testEquality() {
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("test");
+        Assertions.assertEquals(value1, value2);
+        Assertions.assertEquals(value2, value1);
+        value1.tokens();
+        Assertions.assertEquals(value2, value1);
     }
 
     @Test
-    void equalsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        eq1.condition();
-        LatestCondition eq2 = new LatestCondition("946720800");
-        LatestCondition eq3 = new LatestCondition("946720800");
-        eq3.condition();
-        LatestCondition eq4 = new LatestCondition("946720800");
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
-        Assertions.assertEquals(eq3, eq4);
-    }
-
-    @Test
-    void notEqualsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        LatestCondition notEq = new LatestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
+    void testNotEquals() {
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("nest");
+        Assertions.assertNotEquals(value1, value2);
+        Assertions.assertNotEquals(value2, value1);
+        Assertions.assertNotEquals(value1, null);
     }
 }
