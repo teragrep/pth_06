@@ -123,10 +123,9 @@ public class InstantiationTest {
 
         //spark.sparkContext().setLogLevel("ERROR");
 
-        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords() - 10;
-        /* Remove the - modifier once the HDFS tasker is up and running.
-          If file 0.8 is stored to HDFS, 9 records out of 14 will be read from HDFS instead of Kafka.
-          If files 0.8 and 0.13 are stored to HDFS, all 14 records will be read from HDFS instead of Kafka.*/
+        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
+        /*If file 0.9 is stored to HDFS, 10 records out of 14 will be read from HDFS instead of Kafka.
+          If files 0.9 and 0.13 are stored to HDFS, all 14 records will be read from HDFS instead of Kafka.*/
     }
 
     @Test

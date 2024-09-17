@@ -135,12 +135,7 @@ public class HdfsDBClient {
             System.setProperty("HADOOP_USER_NAME", "hdfs");
             System.setProperty("hadoop.home.dir", "/");
             // filesystem for HDFS access is set here
-            try {
-                fs = FileSystem.get(URI.create(hdfsuri), conf);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            fs = FileSystem.get(URI.create(hdfsuri), conf);
 
         }
     }

@@ -45,5 +45,65 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
+import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.avro.SyslogRecord;
+import org.apache.avro.file.DataFileStream;
+import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
+import org.apache.spark.unsafe.types.UTF8String;
+
+import java.io.IOException;
+
 public class AvroReader {
+
+    private final FileSystem fs;
+    private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
+    private final UnsafeRowWriter rowWriter;
+    private FSDataInputStream inputStream;
+    private DataFileStream<SyslogRecord> reader;
+
+    // This class will allow reading the contents of the avro-files that are using SyslogRecord schema.
+    public AvroReader(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
+        this.fs = fs;
+        this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
+        this.rowWriter = new UnsafeRowWriter(11);
+    }
+
+    public void open() throws IOException {
+        Path hdfsreadpath = new Path(hdfsTopicPartitionOffsetMetadata.hdfsFilePath);
+        inputStream = fs.open(hdfsreadpath);
+        reader = new DataFileStream<>(inputStream, new SpecificDatumReader<>(SyslogRecord.class));
+    }
+
+    public boolean next() {
+        return reader.hasNext();
+    }
+
+    public InternalRow get() {
+
+        SyslogRecord next = reader.next();
+
+        rowWriter.reset();
+        rowWriter.zeroOutNullBytes();
+        rowWriter.write(0, next.getTimestamp());
+        rowWriter.write(1, UTF8String.fromString(next.getPayload().toString()));
+        rowWriter.write(2, UTF8String.fromString(next.getDirectory().toString()));
+        rowWriter.write(3, UTF8String.fromString(next.getStream().toString()));
+        rowWriter.write(4, UTF8String.fromString(next.getHost().toString()));
+        rowWriter.write(5, UTF8String.fromString(next.getInput().toString()));
+        rowWriter.write(6, UTF8String.fromString(next.getPartition().toString()));
+        rowWriter.write(7, UTF8String.fromString(String.valueOf(next.getOffset())));
+        rowWriter.write(8, UTF8String.fromString(next.getOrigin().toString()));
+
+        return rowWriter.getRow();
+    }
+
+    public void close() throws IOException {
+        reader.close();
+    }
+
 }

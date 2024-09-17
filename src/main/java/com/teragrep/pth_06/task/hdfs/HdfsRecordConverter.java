@@ -45,5 +45,59 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
+import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.spark.sql.catalyst.InternalRow;
+
+import java.io.IOException;
+
+// This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to the schema/format used by pth_06.
 public class HdfsRecordConverter {
+
+    private final FileSystem fs;
+    private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
+    private final boolean stub;
+    private final AvroReader avroReader;
+
+    // Stub object
+    public HdfsRecordConverter(FileSystem fs) {
+        this(fs, new HdfsTopicPartitionOffsetMetadata(new TopicPartition("", 0), 0, "", 0), true);
+    }
+
+    public HdfsRecordConverter(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
+        this(fs, hdfsTopicPartitionOffsetMetadata, false);
+    }
+
+    public HdfsRecordConverter(
+            FileSystem fs,
+            HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata,
+            Boolean stub
+    ) {
+        this.fs = fs;
+        this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
+        this.avroReader = new AvroReader(this.fs, this.hdfsTopicPartitionOffsetMetadata);
+        this.stub = stub;
+    }
+
+    public void open() throws IOException {
+        avroReader.open();
+    }
+
+    public void close() throws IOException {
+        avroReader.close();
+    }
+
+    public boolean next() {
+        return avroReader.next();
+    }
+
+    public InternalRow get() {
+        return avroReader.get();
+    }
+
+    public boolean isStub() {
+        return stub;
+    }
+
 }
