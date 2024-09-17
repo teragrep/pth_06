@@ -50,6 +50,8 @@ import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReader;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
 
+import java.io.IOException;
+
 /**
  * <h1>TeragrepPartitionReaderFactory</h1> Used to create appropriate PartitionReaders based on the type of the
  * InputPartition provided.
@@ -111,6 +113,30 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
                     kip.executorConfig,
                     kip.skipNonRFC5424Records
             );
+        }
+        else if (inputPartition instanceof HdfsMicroBatchInputPartition) {
+            HdfsMicroBatchInputPartition hip = (HdfsMicroBatchInputPartition) inputPartition;
+            try {
+                return new HdfsMicroBatchInputPartitionReader(
+                        hip.kerberosAuthentication,
+                        hip.hdfsUri,
+                        hip.hdfsPath,
+                        hip.kerberosRealm,
+                        hip.kerberosKdc,
+                        hip.kerberosAuthorization,
+                        hip.kerberosAutorenewal,
+                        hip.UseHdfsHostname,
+                        hip.kerberosPrincipalPattern,
+                        hip.hdfsTransferProtection,
+                        hip.hdfsCipherSuites,
+                        hip.kerberosKeytabUser,
+                        hip.kerberosKeytabPath,
+                        hip.taskObjectList
+                );
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // inputPartition is neither Archive nor Kafka type

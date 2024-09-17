@@ -54,6 +54,7 @@ import com.teragrep.pth_06.planner.offset.HdfsOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import com.teragrep.pth_06.scheduler.*;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
+import com.teragrep.pth_06.task.HdfsMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
 import org.apache.spark.sql.connector.read.InputPartition;
@@ -364,16 +365,12 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             if (!hdfsTaskList.isEmpty()) {
-                // BatchSliceType.HDFS contains the metadata for the HDFS files that contain the records that are being queried. Available topics in HDFS are already filtered based on the spark query conditions.
-                // The records that are inside the files are fetched and processed in the tasker. Tasker does rest of the filtering based on the given query conditions, for example the cutoff epoch handling between the records that are fetched from S3 and HDFS.
-                // The Spark planner/scheduler is only single-threaded while tasker is multithreaded. Planner is not suitable for fetching and processing all the records, it should be done in tasker which will handle the processing in multithreaded environment based on batch slices.
+                /* BatchSliceType.HDFS contains the metadata for the HDFS files that contain the records that are being queried. Available topics in HDFS are already filtered based on the spark query conditions.
+                 The records that are inside the files are fetched and processed in the tasker. Tasker does rest of the filtering based on the given query conditions, for example the cutoff epoch handling between the records that are fetched from S3 and HDFS.
+                 The Spark planner/scheduler is only single-threaded while tasker is multithreaded. Planner is not suitable for fetching and processing all the records, it should be done in tasker which will handle the processing in multithreaded environment based on batch slices.
+                 The slice creation has been changed to be incremental, which means that not all avro-files are fetched from hdfs at once. Instead, the files are distributed over several batches based on file size.*/
 
-                // Implement HdfsMicroBatchInputPartition usage here. If needed change the slice creation to be incremental like it is with archive, for that create HDFS variant of the incrementAndGetLatestOffset()-method from ArchiveQueryProcessor.
-                // At the moment it fetches all the metadata available at once and puts them into hdfsTaskList.
-                /*inputPartitions.add(new HdfsMicroBatchInputPartition(
-                        config.hdfsConfig,
-                        hdfsTaskList
-                ));*/
+                inputPartitions.add(new HdfsMicroBatchInputPartition(config.hdfsConfig, hdfsTaskList));
             }
 
             // kafka tasks
