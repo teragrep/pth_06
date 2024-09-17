@@ -269,6 +269,17 @@
       <version>2.1.0</version>
       <scope>compile</scope>
     </dependency>
+    <!-- avro -->
+    <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <version>1.1.10.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.11.3</version>
+    </dependency>
   </dependencies>
   <build>
     <directory>${project.basedir}/target</directory>
@@ -340,6 +351,9 @@
             <!-- readme -->
             <exclude>README.adoc</exclude>
             <exclude>README.md</exclude>
+            <!-- avro -->
+            <exclude>src/main/avro/KafkaRecord.avsc</exclude>
+            <exclude>src/main/java/com/teragrep/pth_06/avro/SyslogRecord.java</exclude>
           </excludes>
         </configuration>
         <executions>
@@ -348,6 +362,23 @@
               <goal>check</goal>
             </goals>
             <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.11.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+              <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -404,6 +435,7 @@
             </licenseHeader>
             <excludes>
               <exclude>src/main/java/com/teragrep/pth_06/jooq/generated/**/*.*</exclude>
+              <exclude>src/main/java/com/teragrep/pth_06/avro/SyslogRecord.java</exclude>
             </excludes>
           </java>
           <pom>
