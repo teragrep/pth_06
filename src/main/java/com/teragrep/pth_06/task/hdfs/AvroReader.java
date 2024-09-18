@@ -99,7 +99,7 @@ public class AvroReader {
         rowWriter.write(4, UTF8String.fromString(currentRecord.getHost().toString()));
         rowWriter.write(5, UTF8String.fromString(currentRecord.getInput().toString()));
         rowWriter.write(6, UTF8String.fromString(currentRecord.getPartition().toString()));
-        rowWriter.write(7, UTF8String.fromString(String.valueOf(currentRecord.getOffset())));
+        rowWriter.write(7, currentRecord.getOffset());
         rowWriter.write(8, UTF8String.fromString(currentRecord.getOrigin().toString()));
 
         return rowWriter.getRow();
