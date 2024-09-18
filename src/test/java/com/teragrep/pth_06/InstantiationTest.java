@@ -173,6 +173,7 @@ public class InstantiationTest {
                 .option("hdfs.krbKeytabUser", "test")
                 .option("hdfs.krbKeytabPath", "test")
                 .option("hdfs.useKerberosAutorenewal", "true")
+                .option("hdfs.includeRecordEpochAndAfter", 0L) // record timestamps are in 1650872090806000 granularity (epochMicros)
                 .load();
 
         Dataset<Row> df2 = df.agg(functions.count("*"));

@@ -72,7 +72,7 @@ public class HdfsDBClient {
 
     public HdfsDBClient(Config config, String topicsRegexString) throws IOException {
         this.topicsRegexString = topicsRegexString;
-        this.ignoreBeforeEpoch = config.hdfsConfig.cutoffOffset; // Defines the minimum time window / cutoff epoch for making sure that the files which metadata is fetched by the planner are not mistakenly deleted by cfe_39 pruning before tasker can process the records inside.
+        this.ignoreBeforeEpoch = config.hdfsConfig.includeFileEpochAndAfter; // Defines the minimum time window / cutoff epoch for making sure that the files which metadata is fetched by the planner are not mistakenly deleted by cfe_39 pruning before tasker can process the records inside.
         // Implement HDFS FileSystem access here
         if ("kerberos".equals(config.hdfsConfig.kerberosAuthentication)) {
             // Code for initializing the class with kerberos.

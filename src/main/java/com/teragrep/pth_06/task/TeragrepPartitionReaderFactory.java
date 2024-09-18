@@ -118,6 +118,7 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
             HdfsMicroBatchInputPartition hip = (HdfsMicroBatchInputPartition) inputPartition;
             try {
                 return new HdfsMicroBatchInputPartitionReader(
+                        hip.includeRecordEpochAndAfter,
                         hip.kerberosAuthentication,
                         hip.hdfsUri,
                         hip.hdfsPath,

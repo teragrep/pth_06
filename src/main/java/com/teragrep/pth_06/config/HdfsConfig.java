@@ -51,7 +51,8 @@ import java.util.Map;
 public final class HdfsConfig {
 
     // HDFS
-    public final long cutoffOffset; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
+    public final long includeFileEpochAndAfter; // Represents the cutoff epoch in milliseconds which dictates which files should not be fetched from HDFS based on their timestamps.
+    public final long includeRecordEpochAndAfter; // Represents the cutoff epoch in microseconds which dictates which record should not be fetched from HDFS based on the record timestamp.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
     public final String hdfsUri; // Represents the address of the HDFS server.
     public final String UseHdfsHostname;
@@ -72,14 +73,21 @@ public final class HdfsConfig {
     public final boolean isStub;
 
     public HdfsConfig(Map<String, String> opts) {
-        cutoffOffset = Long
+        includeFileEpochAndAfter = Long
                 .parseLong(
                         opts
                                 .getOrDefault(
-                                        "hdfs.hdfsCutoffOffset",
+                                        "hdfs.includeFileEpochAndAfter",
                                         String.valueOf(Instant.now().toEpochMilli() - 72 * 3600000)
                                 )
                 ); // Default is -72h from now
+        includeRecordEpochAndAfter = Long
+                .parseLong(
+                        opts
+                                .getOrDefault(
+                                        "hdfs.includeRecordEpochAndAfter", String.valueOf(Long.MIN_VALUE / (1000 * 1000))
+                                )
+                );
         hdfsPath = getOrThrow(opts, "hdfs.hdfsPath");
         hdfsUri = getOrThrow(opts, "hdfs.hdfsUri");
         UseHdfsHostname = getOrThrow(opts, "hdfs.UseHostName");
@@ -99,7 +107,8 @@ public final class HdfsConfig {
     }
 
     public HdfsConfig() {
-        cutoffOffset = 0L;
+        includeFileEpochAndAfter = 0L;
+        includeRecordEpochAndAfter = 0L;
         hdfsPath = "";
         hdfsUri = "";
         UseHdfsHostname = "";

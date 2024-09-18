@@ -63,9 +63,11 @@ public class HdfsMicroBatchInputPartitionReader implements PartitionReader<Inter
 
     private final LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList;
     private final FileSystem fs;
+    private final long cutoffEpoch;
     private HdfsRecordConverter hdfsRecordConverter;
 
     public HdfsMicroBatchInputPartitionReader(
+            long cutoffEpoch,
             String kerberosAuthentication,
             String hdfsUri,
             String hdfsPath,
@@ -81,6 +83,7 @@ public class HdfsMicroBatchInputPartitionReader implements PartitionReader<Inter
             String kerberosKeytabPath,
             LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList
     ) throws IOException {
+        this.cutoffEpoch = cutoffEpoch;
         this.taskObjectList = taskObjectList;
 
         // FIXME: Implement FileSystem initialization code somewhere else than the constructor.
@@ -170,7 +173,13 @@ public class HdfsMicroBatchInputPartitionReader implements PartitionReader<Inter
                     hdfsRecordConverter.open();
                 }
             }
-
+            else {
+                // time based inclusion, skip record and continue loop if the record is older than cutoffEpoch.
+                long rfc5424time = hdfsRecordConverter.get().getLong(0); // timestamp as epochMicros
+                if (rfc5424time < cutoffEpoch) {
+                    rv = false;
+                }
+            }
         }
         return rv;
     }
