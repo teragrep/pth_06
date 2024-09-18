@@ -50,11 +50,11 @@ import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 /**
  * Decorator that inserts category tables filter types into database
  */
-public final class FiltersInserted implements CategoryTable {
+public final class WithFilterTypes implements CategoryTable {
 
     private final CategoryTable origin;
 
-    public FiltersInserted(final CategoryTable origin) {
+    public WithFilterTypes(final CategoryTable origin) {
         this.origin = origin;
     }
 

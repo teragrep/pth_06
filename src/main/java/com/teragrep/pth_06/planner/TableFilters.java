@@ -87,12 +87,12 @@ public final class TableFilters {
     }
 
     /**
-     * Extracts filter information from record, creates a bloom filter and returns the filter byte array
+     * Extracts filter type from record, creates a bloom filter and returns the filters byte array
      * 
      * @param record record with filter info
      * @return byte[] of the created filter
      */
-    private byte[] filterBAOSFromRecord(Record record) {
+    private byte[] filterBytesFromRecord(final Record record) {
         final ULong expected = record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class));
         final Double fpp = record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class));
         final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
@@ -118,7 +118,7 @@ public final class TableFilters {
         final Field<?>[] valueFields = {
                 DSL.val(bloomTermId, ULong.class),
                 DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
-                DSL.val(filterBAOSFromRecord(record), byte[].class)
+                DSL.val(filterBytesFromRecord(record), byte[].class)
         };
         ctx.insertInto(namedTable).columns(insertFields).values(valueFields).execute();
     }

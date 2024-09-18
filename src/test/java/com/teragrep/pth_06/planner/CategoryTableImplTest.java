@@ -158,7 +158,7 @@ public class CategoryTableImplTest {
                 .get(0);
 
         TokenizedValue val = new TokenizedValue("test");
-        CategoryTable tempTable = new Created(new FiltersInserted(new CategoryTableImpl(ctx, table, 0L, val)));
+        CategoryTable tempTable = new Created(new WithFilterTypes(new CategoryTableImpl(ctx, table, 0L, val)));
         RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::bloommatchCondition);
         Assertions.assertEquals("Origin table was empty", ex.getMessage());
     }

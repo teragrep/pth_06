@@ -103,7 +103,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     /**
-     * Set of all the tables that pattern matched with tokenized search terms the walkers has visited
+     * Set of all the tables that pattern matched with tokenized value search elements the walkers has traversed
      *
      * @return Set of Tables that had a pattern match
      */
@@ -166,7 +166,9 @@ public final class ConditionWalker extends XmlWalker<Condition> {
                 new ConditionConfig(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId)
         );
         if (bloomQueryCondition.isBloomSearchCondition()) {
-            patternMatchTables().addAll(bloomQueryCondition.patternMatchTables());
+            final Set<Table<?>> elementPatternMatchTables = bloomQueryCondition.patternMatchTables();
+            // add tables condition found to walker pattern match tables
+            patternMatchTables().addAll(elementPatternMatchTables);
             bloomTermId++;
         }
         return bloomQueryCondition.condition();

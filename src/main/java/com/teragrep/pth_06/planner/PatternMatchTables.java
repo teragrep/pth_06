@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.planner.walker.conditions.PatternMatchCondition;
+import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Table;
@@ -65,7 +66,7 @@ public final class PatternMatchTables {
     private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatchTables.class);
 
     private final DSLContext ctx;
-    private final PatternMatchCondition patternMatchCondition;
+    private final QueryCondition patternMatchCondition;
 
     public PatternMatchTables(DSLContext ctx, String pattern) {
         this(ctx, new PatternMatchCondition(new TokenizedValue(pattern)));
@@ -81,8 +82,7 @@ public final class PatternMatchTables {
     }
 
     /**
-     * Finds all non-empty Tables from bloomdb that are not filtertype and that match regex condition from token set
-     * Note: Table records are not fetched fully
+     * List of tables from bloomdb that match patternMatchCondition Note: Table records are not fetched fully
      *
      * @return List of tables that matched condition and were not empty
      */
