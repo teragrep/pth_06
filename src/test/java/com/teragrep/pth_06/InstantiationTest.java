@@ -110,7 +110,7 @@ public class InstantiationTest {
         mockS3.start();
 
         // Start mock hdfs here in a similar way that the mockS3 is implemented.
-        hdfsUri = mockHDFS.startMiniCluster();
+        hdfsUri = mockHDFS.startMiniCluster(false);
 
         spark = SparkSession
                 .builder()
@@ -299,6 +299,7 @@ public class InstantiationTest {
     @AfterAll
     public void decommissionEnv() throws Exception {
         mockS3.stop();
+        mockHDFS.teardownMiniCluster();
     }
 
     private long preloadS3Data() throws IOException {

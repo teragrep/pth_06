@@ -78,7 +78,7 @@ public final class MockHDFS {
     }
 
     // Start minicluster and initialize config. Returns the hdfsUri of the minicluster.
-    public String startMiniCluster() throws IOException, InterruptedException {
+    public String startMiniCluster(boolean insertAll) throws IOException, InterruptedException {
 
         // Create a HDFS miniCluster
         baseDir = Files.createTempDirectory("test_hdfs").toFile().getAbsoluteFile();
@@ -90,7 +90,7 @@ public final class MockHDFS {
         // System.out.println("hdfsURI: " + hdfsURI);
         DistributedFileSystem fileSystem = hdfsCluster.getFileSystem();
 
-        insertMockFiles();
+        insertMockFiles(insertAll);
 
         return hdfsURI;
     }
@@ -101,7 +101,7 @@ public final class MockHDFS {
         FileUtil.fullyDelete(baseDir);
     }
 
-    public static void insertMockFiles() throws IOException {
+    public static void insertMockFiles(boolean insertAll) throws IOException {
         String path = hdfsPath + "testConsumerTopic"; // "hdfs:///opt/teragrep/cfe_39/srv/testConsumerTopic"
         // ====== Init HDFS File System Object
         Configuration conf = new Configuration();
@@ -147,8 +147,13 @@ public final class MockHDFS {
             /* This condition can be used for managing the test offsets between HDFS and Kafka. If 0.13 file is included in the HDFS, then Kafka won't have any new records available for reading.
               If 0.13 is excluded, then records from 0 to 8 will be read from HDFS and records from 9 to 13 will be read from Kafka.
               Implement a method to decide if all the files should be added to HDFS or not*/
-            if (!avroFile.getName().equals("0.13")) {
+            if (insertAll) {
                 fs.copyFromLocalFile(readPath, hdfswritepath);
+            }
+            else {
+                if (!avroFile.getName().equals("0.13")) {
+                    fs.copyFromLocalFile(readPath, hdfswritepath);
+                }
             }
             LOGGER.debug("End Write file into hdfs");
             LOGGER.debug("\nFile committed to HDFS, file writepath should be: {}\n", hdfswritepath.toString());
