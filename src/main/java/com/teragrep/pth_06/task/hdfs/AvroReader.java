@@ -65,6 +65,7 @@ public class AvroReader {
     private final UnsafeRowWriter rowWriter;
     private FSDataInputStream inputStream;
     private DataFileStream<SyslogRecord> reader;
+    private SyslogRecord currentRecord;
 
     // This class will allow reading the contents of the avro-files that are using SyslogRecord schema.
     public AvroReader(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
@@ -80,24 +81,26 @@ public class AvroReader {
     }
 
     public boolean next() {
-        return reader.hasNext();
+        boolean hasNext = reader.hasNext();
+        if (hasNext) {
+            currentRecord = reader.next();
+        }
+        return hasNext;
     }
 
     public InternalRow get() {
 
-        SyslogRecord next = reader.next();
-
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
-        rowWriter.write(0, next.getTimestamp());
-        rowWriter.write(1, UTF8String.fromString(next.getPayload().toString()));
-        rowWriter.write(2, UTF8String.fromString(next.getDirectory().toString()));
-        rowWriter.write(3, UTF8String.fromString(next.getStream().toString()));
-        rowWriter.write(4, UTF8String.fromString(next.getHost().toString()));
-        rowWriter.write(5, UTF8String.fromString(next.getInput().toString()));
-        rowWriter.write(6, UTF8String.fromString(next.getPartition().toString()));
-        rowWriter.write(7, UTF8String.fromString(String.valueOf(next.getOffset())));
-        rowWriter.write(8, UTF8String.fromString(next.getOrigin().toString()));
+        rowWriter.write(0, currentRecord.getTimestamp());
+        rowWriter.write(1, UTF8String.fromString(currentRecord.getPayload().toString()));
+        rowWriter.write(2, UTF8String.fromString(currentRecord.getDirectory().toString()));
+        rowWriter.write(3, UTF8String.fromString(currentRecord.getStream().toString()));
+        rowWriter.write(4, UTF8String.fromString(currentRecord.getHost().toString()));
+        rowWriter.write(5, UTF8String.fromString(currentRecord.getInput().toString()));
+        rowWriter.write(6, UTF8String.fromString(currentRecord.getPartition().toString()));
+        rowWriter.write(7, UTF8String.fromString(String.valueOf(currentRecord.getOffset())));
+        rowWriter.write(8, UTF8String.fromString(currentRecord.getOrigin().toString()));
 
         return rowWriter.getRow();
     }

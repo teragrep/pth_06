@@ -59,7 +59,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
 
     public final LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList;
 
-    public final long cutoffOffset; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
+    public final long includeRecordEpochAndAfter; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
     public final String hdfsUri; // Represents the address of the HDFS server.
     public final String UseHdfsHostname;
@@ -83,7 +83,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
         kerberosAutorenewal = hdfsConfig.kerberosAutorenewal;
         hdfsUri = hdfsConfig.hdfsUri;
         hdfsPath = hdfsConfig.hdfsPath;
-        cutoffOffset = hdfsConfig.cutoffOffset;
+        includeRecordEpochAndAfter = hdfsConfig.includeRecordEpochAndAfter;
         UseHdfsHostname = hdfsConfig.UseHdfsHostname;
         hdfsTransferProtection = hdfsConfig.hdfsTransferProtection;
         hdfsCipherSuites = hdfsConfig.hdfsCipherSuites;
