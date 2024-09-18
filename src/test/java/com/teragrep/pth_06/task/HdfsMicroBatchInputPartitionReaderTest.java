@@ -109,10 +109,11 @@ public class HdfsMicroBatchInputPartitionReaderTest {
             long rowNum = 0L;
             while (hdfsMicroBatchInputPartitionReader.next()) {
                 InternalRow internalRow = hdfsMicroBatchInputPartitionReader.get();
-                Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 0 to 9.
+                Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 0 to 13.
                 rowNum++;
             }
             Assertions.assertEquals(14, rowNum); // Asserts that expected number of records were consumed from the files.
+            hdfsMicroBatchInputPartitionReader.close();
 
         });
 
