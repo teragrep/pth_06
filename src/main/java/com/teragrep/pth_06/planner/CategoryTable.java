@@ -51,7 +51,7 @@ public interface CategoryTable {
 
     void create();
 
-    void insertFilterTypes();
+    void insertFilters();
 
     QueryCondition bloommatchCondition();
 }

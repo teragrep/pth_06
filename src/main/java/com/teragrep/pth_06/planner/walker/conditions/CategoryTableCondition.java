@@ -52,8 +52,7 @@ import org.jooq.types.ULong;
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
- * Row condition that compares the compareTo tables bloom filter bytes against
- * category table
+ * Row condition that compares the compareTo tables bloom filter bytes against category table
  */
 public final class CategoryTableCondition implements QueryCondition {
 

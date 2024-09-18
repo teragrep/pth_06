@@ -64,8 +64,8 @@ public final class Created implements CategoryTable {
     }
 
     @Override
-    public void insertFilterTypes() {
-        origin.insertFilterTypes();
+    public void insertFilters() {
+        origin.insertFilters();
     }
 
     @Override

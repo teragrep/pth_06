@@ -123,7 +123,7 @@ public final class TableFilters {
         ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
     }
 
-    public void insertIntoCategoryTable() {
+    public void insertFiltersIntoCategoryTable() {
         recordsInMetadata.toResult().forEach(this::insertFilterRecordToCategoryTable);
     }
 

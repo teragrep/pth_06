@@ -64,13 +64,13 @@ public final class WithFilterTypes implements CategoryTable {
     }
 
     @Override
-    public void insertFilterTypes() {
-        origin.insertFilterTypes();
+    public void insertFilters() {
+        origin.insertFilters();
     }
 
     @Override
     public QueryCondition bloommatchCondition() {
-        insertFilterTypes();
+        insertFilters();
         return origin.bloommatchCondition();
     }
 }
