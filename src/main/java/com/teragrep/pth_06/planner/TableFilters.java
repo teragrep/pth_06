@@ -58,7 +58,7 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
- * Filter types of a table that can be inserted
+ * Filter types of a table that can be inserted into the tables category table
  */
 public final class TableFilters {
 
@@ -108,23 +108,23 @@ public final class TableFilters {
         return filterBAOS.toByteArray();
     }
 
-    private void insertFilterType(Record record) {
-        final Table<Record> namedTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + this.table.getName())));
+    private void insertFilterRecordToCategoryTable(final Record record) {
+        final Table<Record> categoryTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + this.table.getName())));
         final Field<?>[] insertFields = {
                 DSL.field("term_id", BIGINTUNSIGNED.nullable(false)),
                 DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
-                DSL.field(DSL.name(namedTable.getName(), "filter"), byte[].class)
+                DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class)
         };
         final Field<?>[] valueFields = {
                 DSL.val(bloomTermId, ULong.class),
                 DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
                 DSL.val(filterBytesFromRecord(record), byte[].class)
         };
-        ctx.insertInto(namedTable).columns(insertFields).values(valueFields).execute();
+        ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
     }
 
-    public void insert() {
-        recordsInMetadata.toResult().forEach(this::insertFilterType);
+    public void insertIntoCategoryTable() {
+        recordsInMetadata.toResult().forEach(this::insertFilterRecordToCategoryTable);
     }
 
     /**

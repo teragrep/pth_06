@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
- * Class to create a temp table that can create a bloommatch row condition to compare this filter bytes against origin
+ * Class to create a temp table of current search term and origin filter size
  * filter types.
  * <p>
  * Origin schema:
@@ -146,9 +146,14 @@ public final class CategoryTableImpl implements CategoryTable {
     }
 
     public void insertFilterTypes() {
-        tableFilters.insert();
+        tableFilters.insertIntoCategoryTable();
     }
 
+    /**
+     * Row condition that selects the same sized filter arrays from this category table and the
+     * origin table.
+     * @return condition
+     */
     public QueryCondition bloommatchCondition() {
         return tableCondition;
     }

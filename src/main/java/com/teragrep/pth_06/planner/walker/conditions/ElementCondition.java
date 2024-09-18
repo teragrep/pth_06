@@ -65,7 +65,6 @@ public final class ElementCondition implements BloomQueryCondition {
 
     private final ValidElement element;
     private final ConditionConfig config;
-    private final Set<Table<?>> tableSet;
 
     public ElementCondition(Element element, ConditionConfig config) {
         this(new ValidElement(element), config);
@@ -74,7 +73,6 @@ public final class ElementCondition implements BloomQueryCondition {
     public ElementCondition(ValidElement element, ConditionConfig config) {
         this.element = element;
         this.config = config;
-        this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
@@ -110,10 +108,6 @@ public final class ElementCondition implements BloomQueryCondition {
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
                 BloomQueryCondition indexStatementCondition = new IndexStatementCondition(value, config, condition);
                 condition = indexStatementCondition.condition();
-                Set<Table<?>> indexStatementMatches = indexStatementCondition.patternMatchTables();
-                if (!indexStatementMatches.isEmpty()) {
-                    tableSet.addAll(indexStatementMatches);
-                }
             }
         }
         // bloom search can return condition unmodified
@@ -132,10 +126,8 @@ public final class ElementCondition implements BloomQueryCondition {
     }
 
     public Set<Table<?>> patternMatchTables() {
-        if (tableSet.isEmpty()) {
-            condition();
-        }
-        return tableSet;
+        final String value = element.value();
+        return new IndexStatementCondition(value, config).patternMatchTables();
     }
 
     @Override

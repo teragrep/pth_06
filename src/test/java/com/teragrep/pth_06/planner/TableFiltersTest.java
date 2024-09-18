@@ -139,7 +139,7 @@ class TableFiltersTest {
     }
 
     @Test
-    public void testInsert() {
+    public void testInsertIntoCategoryTable() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -150,7 +150,7 @@ class TableFiltersTest {
                 .get(0);
         DataAccessException exception = Assertions
                 .assertThrows(
-                        DataAccessException.class, () -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")).insert()
+                        DataAccessException.class, () -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")).insertIntoCategoryTable()
                 );
         Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }

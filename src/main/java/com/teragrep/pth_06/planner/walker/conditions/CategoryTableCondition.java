@@ -51,6 +51,10 @@ import org.jooq.types.ULong;
 
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
+/**
+ * Row condition that compares the compareTo tables bloom filter bytes against
+ * category table
+ */
 public final class CategoryTableCondition implements QueryCondition {
 
     private final Table<?> comparedTo;
@@ -66,14 +70,15 @@ public final class CategoryTableCondition implements QueryCondition {
         final Field<ULong> termIdField = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
         final Field<ULong> typeIdField = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
         final Field<byte[]> filterField = DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class);
+        // select filter with correct bloom term id and filter type id from category table
         final SelectConditionStep<Record1<byte[]>> selectFilterStep = DSL
                 .select(filterField)
                 .from(categoryTable)
                 .where(termIdField.eq(ULong.valueOf(bloomTermId)))
                 .and(typeIdField.eq((Field<ULong>) comparedTo.field("filter_type_id")));
-        final Field<byte[]> filterColumn = selectFilterStep.asField();
+        // compares category table filter byte[] against bloom filter byte[]
         final Condition filterFieldCondition = DSL
-                .function("bloommatch", Boolean.class, filterColumn, comparedTo.field("filter"))
+                .function("bloommatch", Boolean.class, selectFilterStep.asField(), comparedTo.field("filter"))
                 .eq(true);
         // null check allows SQL to optimize query
         final Condition notNullCondition = comparedTo.field("filter").isNotNull();
