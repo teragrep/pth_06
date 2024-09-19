@@ -46,19 +46,23 @@
 package com.teragrep.pth_06.task.hdfs;
 
 import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.avro.SyslogRecord;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
+import org.apache.spark.unsafe.types.UTF8String;
 
 import java.io.IOException;
 
-// This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to the schema/format used by pth_06.
-public class HdfsRecordConverter {
+// This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to InternalRow used by pth_06.
+public final class HdfsRecordConverter {
 
     private final FileSystem fs;
     private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
     private final boolean stub;
     private final AvroReader avroReader;
+    private final UnsafeRowWriter rowWriter;
 
     // Stub object
     public HdfsRecordConverter(FileSystem fs) {
@@ -78,6 +82,7 @@ public class HdfsRecordConverter {
         this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
         this.avroReader = new AvroReader(this.fs, this.hdfsTopicPartitionOffsetMetadata);
         this.stub = stub;
+        this.rowWriter = new UnsafeRowWriter(11);
     }
 
     public void open() throws IOException {
@@ -93,7 +98,19 @@ public class HdfsRecordConverter {
     }
 
     public InternalRow get() {
-        return avroReader.get();
+        SyslogRecord currentRecord = avroReader.get();
+        rowWriter.reset();
+        rowWriter.zeroOutNullBytes();
+        rowWriter.write(0, currentRecord.getTimestamp());
+        rowWriter.write(1, UTF8String.fromString(currentRecord.getPayload().toString()));
+        rowWriter.write(2, UTF8String.fromString(currentRecord.getDirectory().toString()));
+        rowWriter.write(3, UTF8String.fromString(currentRecord.getStream().toString()));
+        rowWriter.write(4, UTF8String.fromString(currentRecord.getHost().toString()));
+        rowWriter.write(5, UTF8String.fromString(currentRecord.getInput().toString()));
+        rowWriter.write(6, UTF8String.fromString(currentRecord.getPartition().toString()));
+        rowWriter.write(7, currentRecord.getOffset());
+        rowWriter.write(8, UTF8String.fromString(currentRecord.getOrigin().toString()));
+        return rowWriter.getRow();
     }
 
     public boolean isStub() {
