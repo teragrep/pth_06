@@ -58,8 +58,6 @@ import java.io.IOException;
 // This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to InternalRow used by pth_06.
 public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
 
-    private final FileSystem fs;
-    private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
     private final boolean stub;
     private final AvroReader avroReader;
     private final UnsafeRowWriter rowWriter;
@@ -78,9 +76,7 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
             HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata,
             Boolean stub
     ) {
-        this.fs = fs;
-        this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
-        this.avroReader = new AvroReader(this.fs, this.hdfsTopicPartitionOffsetMetadata);
+        this.avroReader = new AvroReader(fs, hdfsTopicPartitionOffsetMetadata);
         this.stub = stub;
         this.rowWriter = new UnsafeRowWriter(11);
     }

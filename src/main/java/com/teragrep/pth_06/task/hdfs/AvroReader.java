@@ -55,15 +55,14 @@ import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 
+// This class will allow reading the contents of the avro-files that are using SyslogRecord schema from hdfs.
 public final class AvroReader {
 
     private final FileSystem fs;
     private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
-    private FSDataInputStream inputStream;
     private DataFileStream<SyslogRecord> reader;
     private SyslogRecord currentRecord;
 
-    // This class will allow reading the contents of the avro-files that are using SyslogRecord schema.
     public AvroReader(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
         this.fs = fs;
         this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
@@ -71,7 +70,7 @@ public final class AvroReader {
 
     public void open() throws IOException {
         Path hdfsreadpath = new Path(hdfsTopicPartitionOffsetMetadata.hdfsFilePath);
-        inputStream = fs.open(hdfsreadpath);
+        FSDataInputStream inputStream = fs.open(hdfsreadpath);
         reader = new DataFileStream<>(inputStream, new SpecificDatumReader<>(SyslogRecord.class));
     }
 
