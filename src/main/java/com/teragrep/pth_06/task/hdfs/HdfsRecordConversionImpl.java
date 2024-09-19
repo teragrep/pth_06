@@ -56,7 +56,7 @@ import org.apache.spark.unsafe.types.UTF8String;
 import java.io.IOException;
 
 // This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to InternalRow used by pth_06.
-public final class HdfsRecordConverter {
+public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
 
     private final FileSystem fs;
     private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
@@ -65,15 +65,15 @@ public final class HdfsRecordConverter {
     private final UnsafeRowWriter rowWriter;
 
     // Stub object
-    public HdfsRecordConverter(FileSystem fs) {
+    public HdfsRecordConversionImpl(FileSystem fs) {
         this(fs, new HdfsTopicPartitionOffsetMetadata(new TopicPartition("", 0), 0, "", 0), true);
     }
 
-    public HdfsRecordConverter(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
+    public HdfsRecordConversionImpl(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
         this(fs, hdfsTopicPartitionOffsetMetadata, false);
     }
 
-    public HdfsRecordConverter(
+    public HdfsRecordConversionImpl(
             FileSystem fs,
             HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata,
             Boolean stub
@@ -85,18 +85,22 @@ public final class HdfsRecordConverter {
         this.rowWriter = new UnsafeRowWriter(11);
     }
 
+    @Override
     public void open() throws IOException {
         avroReader.open();
     }
 
+    @Override
     public void close() throws IOException {
         avroReader.close();
     }
 
+    @Override
     public boolean next() {
         return avroReader.next();
     }
 
+    @Override
     public InternalRow get() {
         SyslogRecord currentRecord = avroReader.get();
         rowWriter.reset();
@@ -113,6 +117,7 @@ public final class HdfsRecordConverter {
         return rowWriter.getRow();
     }
 
+    @Override
     public boolean isStub() {
         return stub;
     }
