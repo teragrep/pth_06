@@ -67,7 +67,6 @@ public class HdfsMicroBatchInputPartitionReaderTest {
 
     @BeforeEach
     public void setUp() throws IOException, InterruptedException {
-        // Start mock hdfs here in a similar way that the mockS3 is implemented.
         hdfsUri = mockHDFS.startMiniCluster(true);
     }
 
@@ -77,11 +76,11 @@ public class HdfsMicroBatchInputPartitionReaderTest {
     }
 
     @Test
-    public void testHdfsConsumer() {
+    public void testHdfsConsumer2Files() {
         assertDoesNotThrow(() -> {
             // create task object list
             LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
-            // Add objects to the taskObjectList according to what files are stored in minicluster during setup.
+            // Add taskObjects to the taskObjectList according to what files are stored in minicluster during setup.
             taskObjectList
                     .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
             taskObjectList
@@ -112,9 +111,88 @@ public class HdfsMicroBatchInputPartitionReaderTest {
                 Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 0 to 13.
                 rowNum++;
             }
-            Assertions.assertEquals(14, rowNum); // Asserts that expected number of records were consumed from the files.
             hdfsMicroBatchInputPartitionReader.close();
+            Assertions.assertEquals(14, rowNum); // Asserts that expected number of records were consumed from the files.
+        });
 
+    }
+
+    @Test
+    public void testHdfsConsumer1File() {
+        assertDoesNotThrow(() -> {
+            // create task object list
+            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            // Add only the taskObject related to testConsumerTopic/0.9 file to the taskObjectList.
+            taskObjectList
+                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
+
+            HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
+                    0L,
+                    "",
+                    hdfsUri,
+                    hdfsPath,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    taskObjectList
+            );
+
+            // read through the files in HDFS
+            long rowNum = 0L;
+            while (hdfsMicroBatchInputPartitionReader.next()) {
+                InternalRow internalRow = hdfsMicroBatchInputPartitionReader.get();
+                Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 0 to 9.
+                rowNum++;
+            }
+            hdfsMicroBatchInputPartitionReader.close();
+            Assertions.assertEquals(10, rowNum); // Asserts that expected number of records were consumed from the file.
+        });
+
+    }
+
+    @Test
+    public void testHdfsConsumer1FileAlt() {
+        assertDoesNotThrow(() -> {
+            // create task object list
+            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            // Add only the taskObject related to testConsumerTopic/0.13 file to the taskObjectList.
+            taskObjectList
+                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
+
+            HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
+                    0L,
+                    "",
+                    hdfsUri,
+                    hdfsPath,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    taskObjectList
+            );
+
+            // read through the files in HDFS
+            long rowNum = 10L;
+            while (hdfsMicroBatchInputPartitionReader.next()) {
+                InternalRow internalRow = hdfsMicroBatchInputPartitionReader.get();
+                Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 10 to 13.
+                rowNum++;
+            }
+            hdfsMicroBatchInputPartitionReader.close();
+            Assertions.assertEquals(14, rowNum);
         });
 
     }
