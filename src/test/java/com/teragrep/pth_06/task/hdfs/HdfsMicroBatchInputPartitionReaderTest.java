@@ -43,10 +43,11 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.task;
+package com.teragrep.pth_06.task.hdfs;
 
 import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
 import com.teragrep.pth_06.planner.MockHDFS;
+import com.teragrep.pth_06.task.HdfsMicroBatchInputPartitionReader;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.junit.jupiter.api.AfterEach;

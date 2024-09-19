@@ -52,17 +52,13 @@ import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.spark.sql.catalyst.InternalRow;
-import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
-import org.apache.spark.unsafe.types.UTF8String;
 
 import java.io.IOException;
 
-public class AvroReader {
+public final class AvroReader {
 
     private final FileSystem fs;
     private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
-    private final UnsafeRowWriter rowWriter;
     private FSDataInputStream inputStream;
     private DataFileStream<SyslogRecord> reader;
     private SyslogRecord currentRecord;
@@ -71,7 +67,6 @@ public class AvroReader {
     public AvroReader(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
         this.fs = fs;
         this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
-        this.rowWriter = new UnsafeRowWriter(11);
     }
 
     public void open() throws IOException {
@@ -88,21 +83,8 @@ public class AvroReader {
         return hasNext;
     }
 
-    public InternalRow get() {
-
-        rowWriter.reset();
-        rowWriter.zeroOutNullBytes();
-        rowWriter.write(0, currentRecord.getTimestamp());
-        rowWriter.write(1, UTF8String.fromString(currentRecord.getPayload().toString()));
-        rowWriter.write(2, UTF8String.fromString(currentRecord.getDirectory().toString()));
-        rowWriter.write(3, UTF8String.fromString(currentRecord.getStream().toString()));
-        rowWriter.write(4, UTF8String.fromString(currentRecord.getHost().toString()));
-        rowWriter.write(5, UTF8String.fromString(currentRecord.getInput().toString()));
-        rowWriter.write(6, UTF8String.fromString(currentRecord.getPartition().toString()));
-        rowWriter.write(7, currentRecord.getOffset());
-        rowWriter.write(8, UTF8String.fromString(currentRecord.getOrigin().toString()));
-
-        return rowWriter.getRow();
+    public SyslogRecord get() {
+        return currentRecord;
     }
 
     public void close() throws IOException {
