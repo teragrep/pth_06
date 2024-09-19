@@ -45,15 +45,10 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.kafka.common.TopicPartition;
-import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,130 +155,4 @@ public final class MockHDFS {
         }
         fs.close();
     }
-
-    public void simpleTest() {
-        try {
-            hdfsReadTest();
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void hdfsReadTest() throws IOException {
-        Map<TopicPartition, Long> hdfsStartOffsets = new HashMap<>();
-        // Check that the files were properly written to HDFS with a read test.
-        String path = "hdfs:///opt/teragrep/cfe_39/srv/"; // This path parameter should only lead to the directory that holds the directories representing different Kafka topics.
-        // ====== Init HDFS File System Object
-        Configuration conf = new Configuration();
-        // Set FileSystem URI
-        conf.set("fs.defaultFS", hdfsURI);
-        // Because of Maven
-        conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
-        conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
-        // Set HADOOP user
-        System.setProperty("HADOOP_USER_NAME", "hdfs");
-        System.setProperty("hadoop.home.dir", "/");
-        //Get the filesystem - HDFS
-        FileSystem fs = FileSystem.get(URI.create(hdfsURI), conf);
-
-        //==== Create directory if not exists
-        Path workingDir = fs.getWorkingDirectory();
-        Path newDirectoryPath = new Path(path);
-        if (!fs.exists(newDirectoryPath)) {
-            // Create new Directory
-            fs.mkdirs(newDirectoryPath);
-            LOGGER.info("Path {} created.", path);
-        }
-        FileStatus[] directoryStatuses = fs.listStatus(newDirectoryPath, pathFilter);
-        if (directoryStatuses.length > 0) {
-            for (FileStatus r : directoryStatuses) {
-                LOGGER.info("The path to the directory is: {}", r.getPath());
-                LOGGER.info("The directory name is: {}", r.getPath().getName());
-                FileStatus[] fileStatuses = fs.listStatus(r.getPath());
-                for (FileStatus r2 : fileStatuses) {
-                    String topic = r2.getPath().getParent().getName();
-                    String[] split = r2.getPath().getName().split("\\."); // The file name can be split to partition parameter and offset parameter. First value is partition and second is offset.
-                    String partition = split[0];
-                    String offset = split[1];
-                    LOGGER.info("File belongs to topic: {}", topic);
-                    LOGGER.info("File belongs to partition: {}", partition);
-                    LOGGER.info("File has an offset of: {}", offset);
-                    if (!hdfsStartOffsets.containsKey(new TopicPartition(topic, Integer.parseInt(partition)))) {
-                        hdfsStartOffsets
-                                .put(new TopicPartition(topic, Integer.parseInt(partition)), Long.parseLong(offset));
-                    }
-                    else {
-                        if (
-                            hdfsStartOffsets.get(new TopicPartition(topic, Integer.parseInt(partition))) < Long
-                                    .parseLong(offset)
-                        ) {
-                            hdfsStartOffsets
-                                    .replace(new TopicPartition(topic, Integer.parseInt(partition)), Long.parseLong(offset));
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            LOGGER.info("No matching directories found");
-        }
-        LOGGER.info("hdfsStartOffsets.toString(): ");
-        LOGGER.info(hdfsStartOffsets.toString());
-
-        LinkedList<String> rv = new LinkedList<>();
-        JsonArray ja = new JsonArray();
-        // Serializing the hdfsStartOffsets to a JsonArray ja.
-        for (Map.Entry<TopicPartition, Long> entry : hdfsStartOffsets.entrySet()) {
-            String topic = entry.getKey().topic();
-            String partition = String.valueOf(entry.getKey().partition());
-            String offset = String.valueOf(entry.getValue());
-            rv
-                    .add(
-                            String
-                                    .format(
-                                            "{\"topic\":\"%s\", \"partition\":\"%s\", \"offset\":\"%s\"}", topic,
-                                            partition, offset
-                                    )
-                    );
-            JsonObject jo = new JsonObject(); // TODO: Use this instead of string
-            jo.addProperty("topic", topic);
-            jo.addProperty("partition", partition);
-            jo.addProperty("offset", offset);
-            ja.add(jo);
-        }
-        // LOGGER.info(rv.toString());
-        LOGGER.info("ja.toString(): ");
-        LOGGER.info(ja.toString());
-
-        // Deserialize ja back to Map<TopicPartition, Long>
-        Map<TopicPartition, Long> offsetMap = new HashMap<>();
-        for (JsonElement pa : ja) {
-            JsonObject offsetObject = pa.getAsJsonObject();
-            TopicPartition topicPartition = new TopicPartition(
-                    offsetObject.get("topic").getAsString(),
-                    offsetObject.get("partition").getAsInt()
-            );
-            Long offset = offsetObject.get("offset").getAsLong();
-            offsetMap.put(topicPartition, offset);
-        }
-
-        LOGGER.info("offsetMap.toString(): ");
-        LOGGER.info(offsetMap.toString());
-        // Assert that hdfsStartOffsets and offsetMap are identical after the json serialization and deserialization cycle of hdfsStartOffsets.
-        Assertions.assertEquals(hdfsStartOffsets, offsetMap);
-
-        // ja.toString() now outputs:
-        // [{"topic":"testConsumerTopic","partition":"7","offset":"13"},{"topic":"testConsumerTopic","partition":"8","offset":"13"},{"topic":"testConsumerTopic","partition":"5","offset":"13"},{"topic":"testConsumerTopic","partition":"6","offset":"13"},{"topic":"testConsumerTopic","partition":"3","offset":"13"},{"topic":"testConsumerTopic","partition":"4","offset":"13"},{"topic":"testConsumerTopic","partition":"1","offset":"13"},{"topic":"testConsumerTopic","partition":"2","offset":"13"},{"topic":"testConsumerTopic","partition":"0","offset":"13"},{"topic":"testConsumerTopic","partition":"9","offset":"13"}]
-        fs.close();
-    }
-
-    private static final PathFilter pathFilter = new PathFilter() {
-
-        @Override
-        public boolean accept(Path path) {
-            return path.getName().matches("^testConsumer.*$"); // Catches the directory names.
-        }
-    };
-
 }
