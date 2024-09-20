@@ -63,7 +63,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class AvroReaderTest {
+public class AvroReadImplTest {
 
     private final String hdfsPath = "hdfs:///opt/teragrep/cfe_39/srv/";
     private String hdfsUri; // Can only be defined after starting the mock hdfs.
@@ -104,15 +104,15 @@ public class AvroReaderTest {
                     hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9",
                     0
             );
-            AvroReader avroReader1 = new AvroReader(fs, testConsumerTopic09);
-            avroReader1.open();
+            AvroReadImpl avroReadImpl1 = new AvroReadImpl(fs, testConsumerTopic09);
+            avroReadImpl1.open();
             long rowNum = 0L;
-            while (avroReader1.next()) {
-                SyslogRecord syslogRecord = avroReader1.get();
+            while (avroReadImpl1.next()) {
+                SyslogRecord syslogRecord = avroReadImpl1.get();
                 Assertions.assertEquals(rowNum, syslogRecord.getOffset()); // Checks offsets of the consumed records which should range from 0 to 9.
                 rowNum++;
             }
-            avroReader1.close();
+            avroReadImpl1.close();
             Assertions.assertEquals(10, rowNum); // Asserts that expected number of records were consumed from the files.
 
             HdfsTopicPartitionOffsetMetadata testConsumerTopic013 = new HdfsTopicPartitionOffsetMetadata(
@@ -121,14 +121,14 @@ public class AvroReaderTest {
                     hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13",
                     0
             );
-            AvroReader avroReader2 = new AvroReader(fs, testConsumerTopic013);
-            avroReader2.open();
-            while (avroReader2.next()) {
-                SyslogRecord syslogRecord = avroReader2.get();
+            AvroReadImpl avroReadImpl2 = new AvroReadImpl(fs, testConsumerTopic013);
+            avroReadImpl2.open();
+            while (avroReadImpl2.next()) {
+                SyslogRecord syslogRecord = avroReadImpl2.get();
                 Assertions.assertEquals(rowNum, syslogRecord.getOffset()); // Checks offsets of the consumed records which should range from 10 to 13.
                 rowNum++;
             }
-            avroReader2.close();
+            avroReadImpl2.close();
             Assertions.assertEquals(14, rowNum); // Asserts that expected number of records were consumed from the files.
         });
     }
