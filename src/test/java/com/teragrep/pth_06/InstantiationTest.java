@@ -109,7 +109,7 @@ public class InstantiationTest {
 
         mockS3.start();
 
-        // Start mock hdfs here in a similar way that the mockS3 is implemented.
+        // Start mock hdfs with 10 out of 14 records from kafka inserted inside.
         hdfsUri = mockHDFS.startMiniCluster(false);
 
         spark = SparkSession
@@ -124,8 +124,7 @@ public class InstantiationTest {
         //spark.sparkContext().setLogLevel("ERROR");
 
         expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
-        /*If file 0.9 is stored to HDFS, 10 records out of 14 will be read from HDFS instead of Kafka.
-          If files 0.9 and 0.13 are stored to HDFS, all 14 records will be read from HDFS instead of Kafka.*/
+        /*File 0.9 is stored to HDFS, 10 records out of 14 will be read from HDFS instead of Kafka.*/
     }
 
     @Test
