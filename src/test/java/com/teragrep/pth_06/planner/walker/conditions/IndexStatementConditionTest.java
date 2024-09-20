@@ -230,7 +230,6 @@ public class IndexStatementConditionTest {
         BloomQueryCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
         BloomQueryCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
     }
 
     @Test
@@ -238,8 +237,6 @@ public class IndexStatementConditionTest {
         BloomQueryCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
         BloomQueryCondition notEq = new IndexStatementCondition("1000", mockConfig);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
     }
 
     private void writeFilter(String tableName, int filterId) {

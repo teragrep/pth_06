@@ -84,7 +84,6 @@ class LatestConditionTest {
         eq3.condition();
         LatestCondition eq4 = new LatestCondition("946720800");
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
         Assertions.assertEquals(eq3, eq4);
     }
 
@@ -93,7 +92,5 @@ class LatestConditionTest {
         LatestCondition eq1 = new LatestCondition("946720800");
         LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
     }
 }

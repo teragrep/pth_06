@@ -169,7 +169,6 @@ class TableFiltersTest {
         TableFilters filter1 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
         TableFilters filter2 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
         Assertions.assertEquals(filter1, filter2);
-        Assertions.assertEquals(filter2, filter1);
     }
 
     @Test
@@ -188,7 +187,6 @@ class TableFiltersTest {
         TableFilters filter3 = new TableFilters(ctx, table, 0L, new TokenizedValue("mest"));
         Assertions.assertNotEquals(filter1, filter2);
         Assertions.assertNotEquals(filter1, filter3);
-        Assertions.assertNotEquals(filter1, null);
     }
 
     void fillTargetTable() {

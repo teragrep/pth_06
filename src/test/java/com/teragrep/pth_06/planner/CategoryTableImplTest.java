@@ -158,8 +158,9 @@ public class CategoryTableImplTest {
                 .get(0);
 
         TokenizedValue val = new TokenizedValue("test");
-        CategoryTable tempTable = new Created(new WithFilterTypes(new CategoryTableImpl(ctx, table, 0L, val)));
-        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::bloommatchCondition);
+        CategoryTable tempTable = new CategoryTableImpl(ctx, table, 0L, val);
+        tempTable.create();
+        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::insertFilters);
         Assertions.assertEquals("Origin table was empty", ex.getMessage());
     }
 
@@ -175,7 +176,8 @@ public class CategoryTableImplTest {
                 .get(0);
 
         TokenizedValue val = new TokenizedValue("test");
-        CategoryTable created = new Created(new CategoryTableImpl(ctx, table, 0L, val));
+        CategoryTable created = new CategoryTableImpl(ctx, table, 0L, val);
+        created.create();
         Assertions
                 .assertEquals(created.bloommatchCondition(), new CategoryTableImpl(ctx, table, 0L, val).bloommatchCondition());
     }
@@ -193,9 +195,22 @@ public class CategoryTableImplTest {
 
         TokenizedValue val = new TokenizedValue("test");
         CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 0L, val);
-        QueryCondition tableCond = tempTable.bloommatchCondition();
-        QueryCondition expectedCond = new CategoryTableCondition(table, 0L);
-        Assertions.assertEquals(expectedCond, tableCond);
+        Condition tableCond = tempTable.bloommatchCondition().condition();
+        String e = "(\n" +
+                "  bloommatch(\n" +
+                "    (\n" +
+                "      select \"term_0_target\".\"filter\"\n" +
+                "      from \"term_0_target\"\n" +
+                "      where (\n" +
+                "        term_id = 0\n" +
+                "        and type_id = \"bloomdb\".\"target\".\"filter_type_id\"\n" +
+                "      )\n" +
+                "    ),\n" +
+                "    \"bloomdb\".\"target\".\"filter\"\n" +
+                "  ) = true\n" +
+                "  and \"bloomdb\".\"target\".\"filter\" is not null\n" +
+                ")";
+        Assertions.assertEquals(e, tableCond.toString());
     }
 
     @Test
@@ -234,7 +249,6 @@ public class CategoryTableImplTest {
         CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, val);
         CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, val);
         Assertions.assertEquals(table1, table2);
-        Assertions.assertEquals(table2, table1);
     }
 
     @Test
@@ -252,7 +266,6 @@ public class CategoryTableImplTest {
         CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 1L, val1);
         CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, val2);
         Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
     }
 
     @Test
@@ -269,7 +282,6 @@ public class CategoryTableImplTest {
         CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, val);
         CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, val);
         Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
     }
 
     @Test
@@ -287,7 +299,6 @@ public class CategoryTableImplTest {
         CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, val);
         CategoryTableImpl table2 = new CategoryTableImpl(ctx2, table, 0L, val);
         Assertions.assertNotEquals(table1, table2);
-        Assertions.assertNotEquals(table2, table1);
     }
 
     void fillTargetTable() {

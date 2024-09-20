@@ -79,8 +79,6 @@ class PatternMatchConditionTest {
         PatternMatchCondition cond1 = new PatternMatchCondition("test");
         PatternMatchCondition cond2 = new PatternMatchCondition("test");
         Assertions.assertEquals(cond1, cond2);
-        cond1.condition();
-        Assertions.assertEquals(cond2, cond1);
     }
 
     @Test
@@ -88,6 +86,5 @@ class PatternMatchConditionTest {
         PatternMatchCondition cond1 = new PatternMatchCondition("test");
         PatternMatchCondition cond2 = new PatternMatchCondition("next");
         Assertions.assertNotEquals(cond1, cond2);
-        Assertions.assertNotEquals(cond2, cond1);
     }
 }

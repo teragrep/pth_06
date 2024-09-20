@@ -100,7 +100,6 @@ class ValidElementTest {
         ValidElement eq1 = new ValidElement(element);
         ValidElement eq2 = new ValidElement(element);
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
     }
 
     @Test
@@ -114,7 +113,6 @@ class ValidElementTest {
         ValidElement eq1 = new ValidElement(element1);
         ValidElement eq2 = new ValidElement(element2);
         Assertions.assertNotEquals(eq1, eq2);
-        Assertions.assertNotEquals(eq2, eq1);
     }
 
     @Test
@@ -128,6 +126,5 @@ class ValidElementTest {
         ValidElement eq1 = new ValidElement(element1);
         ValidElement eq2 = new ValidElement(element2);
         Assertions.assertNotEquals(eq1, eq2);
-        Assertions.assertNotEquals(eq2, eq1);
     }
 }

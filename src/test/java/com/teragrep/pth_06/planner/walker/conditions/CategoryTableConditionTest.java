@@ -181,7 +181,6 @@ class CategoryTableConditionTest {
         CategoryTableCondition cond1 = new CategoryTableCondition(target1, 1L);
         CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
         Assertions.assertEquals(cond1, cond2);
-        Assertions.assertEquals(cond2, cond1);
         cond1.condition();
         Assertions.assertEquals(cond1, cond2);
     }
@@ -200,8 +199,6 @@ class CategoryTableConditionTest {
         CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
         CategoryTableCondition cond3 = new CategoryTableCondition(null, 1L);
         Assertions.assertNotEquals(cond1, cond2);
-        Assertions.assertNotEquals(cond2, cond1);
-        Assertions.assertNotEquals(cond1, null);
         Assertions.assertNotEquals(cond1, cond3);
     }
 

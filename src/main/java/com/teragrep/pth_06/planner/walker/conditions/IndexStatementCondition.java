@@ -97,9 +97,9 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
             for (final Table<?> table : tableSet) {
                 // create category temp table for this pattern match table
-                final CategoryTable categoryTable = new Created(
-                        new WithFilterTypes(new CategoryTableImpl(config, table, tokenizedValue))
-                );
+                final CategoryTable categoryTable = new CategoryTableImpl(config, table, tokenizedValue);
+                categoryTable.create();
+                categoryTable.insertFilters();
                 final QueryCondition tableCondition = categoryTable.bloommatchCondition();
                 bloomCondition = bloomCondition.or(tableCondition.condition());
                 noBloomCondition = noBloomCondition.and(table.field("filter").isNull());

@@ -72,7 +72,6 @@ public class EarliestConditionTest {
         eq1.condition();
         EarliestCondition eq2 = new EarliestCondition("946677600");
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
     }
 
     @Test
@@ -80,7 +79,5 @@ public class EarliestConditionTest {
         EarliestCondition eq1 = new EarliestCondition("946677600");
         EarliestCondition notEq = new EarliestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
     }
 }

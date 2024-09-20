@@ -49,6 +49,8 @@ import com.teragrep.blf_01.Token;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,6 +67,7 @@ class TokenizedValueTest {
         Assertions.assertTrue(tokens.contains("test"));
         Assertions.assertTrue(tokens.contains("."));
         Assertions.assertTrue(tokens.contains("test.nest"));
+        Assertions.assertEquals(4, tokens.size());
     }
 
     @Test

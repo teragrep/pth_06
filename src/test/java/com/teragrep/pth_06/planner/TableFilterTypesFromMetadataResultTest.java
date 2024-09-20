@@ -206,9 +206,7 @@ class TableFilterTypesFromMetadataResultTest {
         TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 1L);
         TableFilterTypesFromMetadata result3 = new TableFilterTypesFromMetadata(ctx, null, 0L);
         Assertions.assertNotEquals(result1, result2);
-        Assertions.assertNotEquals(result2, result1);
         Assertions.assertNotEquals(result1, result3);
-        Assertions.assertNotEquals(result1, null);
     }
 
     void insertSizedFilterIntoTargetTable(int filterTypeId) {

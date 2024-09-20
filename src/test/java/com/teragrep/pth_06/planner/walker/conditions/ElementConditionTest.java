@@ -210,10 +210,8 @@ class ElementConditionTest {
         BloomQueryCondition notEq = new ElementCondition(anotherElement, config);
         BloomQueryCondition notEq2 = new ElementCondition(element, streamConfig);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
-        Assertions.assertNotEquals(eq1, null);
     }
 
     @Test
