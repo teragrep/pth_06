@@ -55,11 +55,11 @@ import org.apache.spark.unsafe.types.UTF8String;
 
 import java.io.IOException;
 
-// This class will read the records from avro-files fetched from HDFS with the help of AvroReader and convert them to InternalRow used by pth_06.
+// This class will read the records from avro-files fetched from HDFS with the help of AvroReadImpl and convert them to InternalRow used by pth_06.
 public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
 
     private final boolean stub;
-    private final AvroReader avroReader;
+    private final AvroReadImpl avroReadImpl;
     private final UnsafeRowWriter rowWriter;
 
     // Stub object
@@ -76,29 +76,29 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
             HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata,
             Boolean stub
     ) {
-        this.avroReader = new AvroReader(fs, hdfsTopicPartitionOffsetMetadata);
+        this.avroReadImpl = new AvroReadImpl(fs, hdfsTopicPartitionOffsetMetadata);
         this.stub = stub;
         this.rowWriter = new UnsafeRowWriter(11);
     }
 
     @Override
     public void open() throws IOException {
-        avroReader.open();
+        avroReadImpl.open();
     }
 
     @Override
     public void close() throws IOException {
-        avroReader.close();
+        avroReadImpl.close();
     }
 
     @Override
     public boolean next() {
-        return avroReader.next();
+        return avroReadImpl.next();
     }
 
     @Override
     public InternalRow get() {
-        SyslogRecord currentRecord = avroReader.get();
+        SyslogRecord currentRecord = avroReadImpl.get();
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
         rowWriter.write(0, currentRecord.getTimestamp());
