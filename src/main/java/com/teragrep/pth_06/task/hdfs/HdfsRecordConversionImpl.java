@@ -52,11 +52,15 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 import org.apache.spark.unsafe.types.UTF8String;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 // This class will read the records from avro-files fetched from HDFS with the help of AvroReadImpl and convert them to InternalRow used by pth_06.
 public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
+
+    final Logger LOGGER = LoggerFactory.getLogger(HdfsRecordConversionImpl.class);
 
     private final boolean stub;
     private final AvroReadImpl avroReadImpl;

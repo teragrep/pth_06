@@ -52,11 +52,15 @@ import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 // This class will allow reading the contents of the avro-files that are using SyslogRecord schema from hdfs.
 public final class AvroReadImpl implements AvroRead {
+
+    final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
     private final FileSystem fs;
     private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
@@ -71,6 +75,13 @@ public final class AvroReadImpl implements AvroRead {
     @Override
     public void open() throws IOException {
         Path hdfsreadpath = new Path(hdfsTopicPartitionOffsetMetadata.hdfsFilePath);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER
+                    .debug(
+                            "Attempting to open file <{}> belonging to topic <{}>", hdfsreadpath.getName(),
+                            hdfsTopicPartitionOffsetMetadata.topicPartition.topic()
+                    );
+        }
         FSDataInputStream inputStream = fs.open(hdfsreadpath);
         reader = new DataFileStream<>(inputStream, new SpecificDatumReader<>(SyslogRecord.class));
     }
