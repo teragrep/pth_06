@@ -51,11 +51,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 
 public final class FileSystemFactoryImpl implements FileSystemFactory {
+
+    final Logger LOGGER = LoggerFactory.getLogger(FileSystemFactoryImpl.class);
 
     private final String kerberosAuthentication;
     private final String hdfsUri;
@@ -120,6 +124,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
         FileSystem fs;
         if ("kerberos".equals(kerberosAuthentication)) {
             // Code for initializing the FileSystem with kerberos.
+            LOGGER.debug("Kerberos authentication is enabled, using secure authentication for FileSystem.");
 
             // set kerberos host and realm
             System.setProperty("java.security.krb5.realm", kerberosRealm);
@@ -146,6 +151,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
             conf.set("dfs.encrypt.data.transfer.cipher.suites", hdfsCipherSuites);
 
             if (initializeUGI) {
+                LOGGER.debug("Initializing UserGroupInformation for Kerberos");
                 UserGroupInformation.setConfiguration(conf);
                 UserGroupInformation.loginUserFromKeytab(kerberosKeytabUser, kerberosKeytabPath);
             }
@@ -155,6 +161,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
         }
         else {
             // Code for initializing the FileSystem without kerberos.
+            LOGGER.warn("Kerberos authentication is not enabled, using insecure authentication for FileSystem.");
 
             // ====== Init HDFS File System Object
             Configuration conf = new Configuration();

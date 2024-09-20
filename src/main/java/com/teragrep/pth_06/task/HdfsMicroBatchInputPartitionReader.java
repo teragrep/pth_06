@@ -51,11 +51,15 @@ import com.teragrep.pth_06.task.hdfs.HdfsRecordConversionImpl;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.connector.read.PartitionReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.LinkedList;
 
-public class HdfsMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
+public final class HdfsMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
+
+    final Logger LOGGER = LoggerFactory.getLogger(HdfsMicroBatchInputPartitionReader.class);
 
     private final LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList;
     private final FileSystem fs;
@@ -134,16 +138,22 @@ public class HdfsMicroBatchInputPartitionReader implements PartitionReader<Inter
                 }
             }
         }
+        LOGGER.debug("next rv: <{}>", rv);
         return rv;
     }
 
     @Override
     public InternalRow get() {
-        return hdfsRecordConversionImpl.get();
+        InternalRow rv = hdfsRecordConversionImpl.get();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("get(): <{}>", rv.getLong(7));
+        }
+        return rv;
     }
 
     @Override
     public void close() throws IOException {
+        LOGGER.debug("HdfsMicroBatchInputPartitionReader.close");
         if (!hdfsRecordConversionImpl.isStub()) {
             hdfsRecordConversionImpl.close();
         }
