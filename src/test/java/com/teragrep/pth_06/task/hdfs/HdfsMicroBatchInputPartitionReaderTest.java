@@ -198,4 +198,45 @@ public class HdfsMicroBatchInputPartitionReaderTest {
 
     }
 
+    @Test
+    public void testCutoffEpoch() {
+        assertDoesNotThrow(() -> {
+            // create task object list
+            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            // Add taskObjects to the taskObjectList according to what files are stored in minicluster during setup.
+            taskObjectList
+                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
+            taskObjectList
+                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
+
+            HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
+                    1650872090804001L, // Offset 0 has timestamp of 1650872090804000L
+                    "",
+                    hdfsUri,
+                    hdfsPath,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    taskObjectList
+            );
+
+            // read through the files in HDFS
+            long rowNum = 1L; // Offset 0 has timestamp of 1650872090804000L, which means it is filtered out by the time based inclusion.
+            while (hdfsMicroBatchInputPartitionReader.next()) {
+                InternalRow internalRow = hdfsMicroBatchInputPartitionReader.get();
+                Assertions.assertEquals(rowNum, internalRow.getLong(7)); // Checks offsets of the consumed records which should range from 1 to 13.
+                rowNum++;
+            }
+            hdfsMicroBatchInputPartitionReader.close();
+            Assertions.assertEquals(14, rowNum);
+        });
+    }
+
 }
