@@ -45,8 +45,6 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.conditions.CategoryTableCondition;
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -196,20 +194,11 @@ public class CategoryTableImplTest {
         TokenizedValue val = new TokenizedValue("test");
         CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 0L, val);
         Condition tableCond = tempTable.bloommatchCondition().condition();
-        String e = "(\n" +
-                "  bloommatch(\n" +
-                "    (\n" +
-                "      select \"term_0_target\".\"filter\"\n" +
-                "      from \"term_0_target\"\n" +
-                "      where (\n" +
-                "        term_id = 0\n" +
-                "        and type_id = \"bloomdb\".\"target\".\"filter_type_id\"\n" +
-                "      )\n" +
-                "    ),\n" +
-                "    \"bloomdb\".\"target\".\"filter\"\n" +
-                "  ) = true\n" +
-                "  and \"bloomdb\".\"target\".\"filter\" is not null\n" +
-                ")";
+        String e = "(\n" + "  bloommatch(\n" + "    (\n" + "      select \"term_0_target\".\"filter\"\n"
+                + "      from \"term_0_target\"\n" + "      where (\n" + "        term_id = 0\n"
+                + "        and type_id = \"bloomdb\".\"target\".\"filter_type_id\"\n" + "      )\n" + "    ),\n"
+                + "    \"bloomdb\".\"target\".\"filter\"\n" + "  ) = true\n"
+                + "  and \"bloomdb\".\"target\".\"filter\" is not null\n" + ")";
         Assertions.assertEquals(e, tableCond.toString());
     }
 
