@@ -58,7 +58,7 @@ import java.util.Set;
 /**
  * Creates a query condition from provided dom element
  */
-public final class ElementCondition implements BloomQueryCondition {
+public final class ElementCondition implements QueryCondition, BloomQueryCondition {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElementCondition.class);
 
@@ -105,8 +105,8 @@ public final class ElementCondition implements BloomQueryCondition {
             }
             // value search
             if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
-                BloomQueryCondition indexStatementCondition = new IndexStatementCondition(value, config, condition);
-                condition = indexStatementCondition.condition();
+                QueryCondition indexStatement = new IndexStatementCondition(value, config, condition);
+                condition = indexStatement.condition();
             }
         }
         // bloom search can return condition unmodified

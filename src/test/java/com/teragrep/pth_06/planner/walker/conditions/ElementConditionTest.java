@@ -94,8 +94,8 @@ class ElementConditionTest {
     void testProvidedElementMissingValue() {
         Element element = document.createElement("test");
         element.setAttribute("operation", "EQUALS");
-        BloomQueryCondition elementCondition = new ElementCondition(element, config);
-        BloomQueryCondition streamElementCondition = new ElementCondition(element, streamConfig);
+        ElementCondition elementCondition = new ElementCondition(element, config);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
     }
@@ -104,8 +104,8 @@ class ElementConditionTest {
     void testProvidedElementMissingOperation() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
-        BloomQueryCondition elementCondition = new ElementCondition(element, config);
-        BloomQueryCondition streamElementCondition = new ElementCondition(element, streamConfig);
+        ElementCondition elementCondition = new ElementCondition(element, config);
+        ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
     }
@@ -118,14 +118,14 @@ class ElementConditionTest {
         Element element2 = document.createElement("index");
         element2.setAttribute("value", "searchTerm");
         element2.setAttribute("operation", "EQUALS");
-        BloomQueryCondition condition = new ElementCondition(element, config);
+        ElementCondition condition = new ElementCondition(element, config);
         Assertions.assertTrue(condition.isBloomSearchCondition());
         element.setAttribute("operation", "NOT_EQUALS");
-        BloomQueryCondition condition2 = new ElementCondition(element, config);
+        ElementCondition condition2 = new ElementCondition(element, config);
         Assertions.assertFalse(condition2.isBloomSearchCondition());
-        BloomQueryCondition condition3 = new ElementCondition(element, streamConfig);
+        ElementCondition condition3 = new ElementCondition(element, streamConfig);
         Assertions.assertFalse(condition3.isBloomSearchCondition());
-        BloomQueryCondition condition4 = new ElementCondition(element2, streamConfig);
+        ElementCondition condition4 = new ElementCondition(element2, streamConfig);
         Assertions.assertFalse(condition4.isBloomSearchCondition());
     }
 
@@ -134,7 +134,7 @@ class ElementConditionTest {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "searchTerm");
         element.setAttribute("operation", "EQUALS");
-        BloomQueryCondition condition = new ElementCondition(element, config);
+        ElementCondition condition = new ElementCondition(element, config);
         Assertions.assertTrue(condition.isBloomSearchCondition());
         Assertions.assertThrows(DataAccessException.class, condition::condition);
     }
@@ -192,9 +192,9 @@ class ElementConditionTest {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
-        BloomQueryCondition eq1 = new ElementCondition(element, config);
+        ElementCondition eq1 = new ElementCondition(element, config);
         eq1.condition();
-        BloomQueryCondition eq2 = new ElementCondition(element, config);
+        ElementCondition eq2 = new ElementCondition(element, config);
         Assertions.assertEquals(eq1, eq2);
     }
 
@@ -206,9 +206,9 @@ class ElementConditionTest {
         Element anotherElement = document.createElement("index");
         anotherElement.setAttribute("value", "f11");
         anotherElement.setAttribute("operation", "EQUALS");
-        BloomQueryCondition eq1 = new ElementCondition(element, config);
-        BloomQueryCondition notEq = new ElementCondition(anotherElement, config);
-        BloomQueryCondition notEq2 = new ElementCondition(element, streamConfig);
+        ElementCondition eq1 = new ElementCondition(element, config);
+        ElementCondition notEq = new ElementCondition(anotherElement, config);
+        ElementCondition notEq2 = new ElementCondition(element, streamConfig);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
@@ -223,8 +223,8 @@ class ElementConditionTest {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig cfg1 = new ConditionConfig(ctx, false);
         ConditionConfig cfg2 = new ConditionConfig(ctx, true);
-        BloomQueryCondition eq = new ElementCondition(element, cfg1);
-        BloomQueryCondition notEq = new ElementCondition(element, cfg2);
+        ElementCondition eq = new ElementCondition(element, cfg1);
+        ElementCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
     }
 
@@ -239,8 +239,8 @@ class ElementConditionTest {
         DSLContext ctx2 = DSL.using(conn2);
         ConditionConfig cfg1 = new ConditionConfig(ctx, false);
         ConditionConfig cfg2 = new ConditionConfig(ctx2, false);
-        BloomQueryCondition eq = new ElementCondition(element, cfg1);
-        BloomQueryCondition notEq = new ElementCondition(element, cfg2);
+        ElementCondition eq = new ElementCondition(element, cfg1);
+        ElementCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
     }
 }

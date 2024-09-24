@@ -83,31 +83,27 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         }
         Condition newCondition = condition;
         if (tableSet.isEmpty()) {
-            PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), value);
+            final PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), value);
             tableSet.addAll(patternMatchTables.toList());
         }
         if (!tableSet.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Found pattern match on <{}> table(s)", tableSet.size());
             }
-            Condition bloomCondition = DSL.noCondition();
-            Condition noBloomCondition = DSL.noCondition();
+            Condition combinedTableCondition = DSL.noCondition();
+            Condition combinedNullFilterCondition = DSL.noCondition();
 
             for (final Table<?> table : tableSet) {
-                // create category temp table for this pattern match table
-                final CategoryTable categoryTable = new CategoryTableImpl(config, table, value);
-                categoryTable.create();
-                categoryTable.insertFilters();
+                final CategoryTable categoryTable = new CreatedCategoryTable(
+                        new SearchTermFiltersInserted(new CategoryTableImpl(config, table, value))
+                );
+                final Condition nullFilterCondition = table.field("filter").isNull();
                 final QueryCondition tableCondition = categoryTable.bloommatchCondition();
-                bloomCondition = bloomCondition.or(tableCondition.condition());
-                noBloomCondition = noBloomCondition.and(table.field("filter").isNull());
+                combinedTableCondition = combinedTableCondition.or(tableCondition.condition());
+                combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
             }
-            if (config.withoutFilters()) {
-                newCondition = noBloomCondition;
-            }
-            else {
-                newCondition = bloomCondition.or(noBloomCondition);
-            }
+            newCondition = config.withoutFilters() ? combinedNullFilterCondition : combinedTableCondition
+                    .or(combinedNullFilterCondition);
         }
         return newCondition;
     }

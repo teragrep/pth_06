@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.walker.conditions.BloomQueryCondition;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
 import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
@@ -161,16 +160,16 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(final Element current) {
-        final BloomQueryCondition bloomQueryCondition = new ElementCondition(
+        final ElementCondition elementCondition = new ElementCondition(
                 new ValidElement(current),
                 new ConditionConfig(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId)
         );
-        if (bloomQueryCondition.isBloomSearchCondition()) {
-            final Set<Table<?>> elementPatternMatchTables = bloomQueryCondition.patternMatchTables();
+        if (elementCondition.isBloomSearchCondition()) {
+            final Set<Table<?>> elementPatternMatchTables = elementCondition.patternMatchTables();
             // add tables condition found to walker pattern match tables
             patternMatchTables().addAll(elementPatternMatchTables);
             bloomTermId++;
         }
-        return bloomQueryCondition.condition();
+        return elementCondition.condition();
     }
 }
