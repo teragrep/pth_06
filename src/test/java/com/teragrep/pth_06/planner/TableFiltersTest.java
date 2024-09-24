@@ -135,7 +135,7 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")));
+        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, "test"));
     }
 
     @Test
@@ -149,9 +149,7 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
         DataAccessException exception = Assertions
-                .assertThrows(
-                        DataAccessException.class, () -> new TableFilters(ctx, table, 0L, new TokenizedValue("test")).insertFiltersIntoCategoryTable()
-                );
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "test").insertFiltersIntoCategoryTable());
         Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
@@ -166,8 +164,8 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
 
-        TableFilters filter1 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
-        TableFilters filter2 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
         Assertions.assertEquals(filter1, filter2);
     }
 
@@ -182,9 +180,9 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
 
-        TableFilters filter1 = new TableFilters(ctx, table, 0L, new TokenizedValue("test"));
-        TableFilters filter2 = new TableFilters(ctx, table, 1L, new TokenizedValue("test"));
-        TableFilters filter3 = new TableFilters(ctx, table, 0L, new TokenizedValue("mest"));
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 1L, "test");
+        TableFilters filter3 = new TableFilters(ctx, table, 0L, "mest");
         Assertions.assertNotEquals(filter1, filter2);
         Assertions.assertNotEquals(filter1, filter3);
     }

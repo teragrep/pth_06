@@ -141,8 +141,7 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        TokenizedValue val = new TokenizedValue("test");
-        Assertions.assertDoesNotThrow(new CategoryTableImpl(ctx, table, 0L, val)::bloommatchCondition);
+        Assertions.assertDoesNotThrow(new CategoryTableImpl(ctx, table, 0L, "test")::bloommatchCondition);
     }
 
     @Test
@@ -155,8 +154,7 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        TokenizedValue val = new TokenizedValue("test");
-        CategoryTable tempTable = new CategoryTableImpl(ctx, table, 0L, val);
+        CategoryTable tempTable = new CategoryTableImpl(ctx, table, 0L, "test");
         tempTable.create();
         RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::insertFilters);
         Assertions.assertEquals("Origin table was empty", ex.getMessage());
@@ -173,11 +171,10 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        TokenizedValue val = new TokenizedValue("test");
-        CategoryTable created = new CategoryTableImpl(ctx, table, 0L, val);
+        CategoryTable created = new CategoryTableImpl(ctx, table, 0L, "test");
         created.create();
         Assertions
-                .assertEquals(created.bloommatchCondition(), new CategoryTableImpl(ctx, table, 0L, val).bloommatchCondition());
+                .assertEquals(created.bloommatchCondition(), new CategoryTableImpl(ctx, table, 0L, "test").bloommatchCondition());
     }
 
     @Test
@@ -192,7 +189,7 @@ public class CategoryTableImplTest {
                 .get(0);
 
         TokenizedValue val = new TokenizedValue("test");
-        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 0L, val);
+        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 0L, "test");
         Condition tableCond = tempTable.bloommatchCondition().condition();
         String e = "(\n" + "  bloommatch(\n" + "    (\n" + "      select \"term_0_target\".\"filter\"\n"
                 + "      from \"term_0_target\"\n" + "      where (\n" + "        term_id = 0\n"
@@ -213,7 +210,7 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
         TokenizedValue val = new TokenizedValue("test");
-        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 1L, val);
+        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 1L, "test");
         Condition condition = tempTable.bloommatchCondition().condition();
         Assertions.assertTrue(condition.toString().contains("term_1_"));
     }
@@ -235,8 +232,8 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
         TokenizedValue val = new TokenizedValue("one");
-        CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, val);
-        CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, val);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, "one");
         Assertions.assertEquals(table1, table2);
     }
 
@@ -250,10 +247,8 @@ public class CategoryTableImplTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TokenizedValue val1 = new TokenizedValue("one");
-        TokenizedValue val2 = new TokenizedValue("two");
-        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 1L, val1);
-        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, val2);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, "two");
         Assertions.assertNotEquals(table1, table2);
     }
 
@@ -267,9 +262,8 @@ public class CategoryTableImplTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TokenizedValue val = new TokenizedValue("one");
-        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, val);
-        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, val);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, "one");
         Assertions.assertNotEquals(table1, table2);
     }
 
@@ -285,8 +279,8 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
         TokenizedValue val = new TokenizedValue("one");
-        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, val);
-        CategoryTableImpl table2 = new CategoryTableImpl(ctx2, table, 0L, val);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx2, table, 0L, "one");
         Assertions.assertNotEquals(table1, table2);
     }
 

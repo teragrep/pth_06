@@ -91,23 +91,23 @@ public final class CategoryTableImpl implements CategoryTable {
     private final CategoryTableCondition tableCondition;
     private final TableFilters tableFilters;
 
-    public CategoryTableImpl(ConditionConfig config, Table<?> originTable, TokenizedValue tokenizedValue) {
+    public CategoryTableImpl(ConditionConfig config, Table<?> originTable, String value) {
         this(
                 config.context(),
                 originTable,
                 config.bloomTermId(),
                 new CategoryTableCondition(originTable, config.bloomTermId()),
-                new TableFilters(config.context(), originTable, config.bloomTermId(), tokenizedValue)
+                new TableFilters(config.context(), originTable, config.bloomTermId(), value)
         );
     }
 
-    public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, TokenizedValue tokenizedValue) {
+    public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, String value) {
         this(
                 ctx,
                 originTable,
                 bloomTermId,
                 new CategoryTableCondition(originTable, bloomTermId),
-                new TableFilters(ctx, originTable, bloomTermId, tokenizedValue)
+                new TableFilters(ctx, originTable, bloomTermId, value)
         );
     }
 

@@ -65,24 +65,24 @@ public final class TableFilters {
     private final DSLContext ctx;
     private final Table<?> table;
     private final long bloomTermId;
-    private final TokenizedValue tokenizedValue;
+    private final String value;
     private final TableRecords recordsInMetadata;
 
-    public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, TokenizedValue tokenizedValue) {
-        this(ctx, table, bloomTermId, tokenizedValue, new TableFilterTypesFromMetadata(ctx, table, bloomTermId));
+    public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, String value) {
+        this(ctx, table, bloomTermId, value, new TableFilterTypesFromMetadata(ctx, table, bloomTermId));
     }
 
     public TableFilters(
             DSLContext ctx,
             Table<?> table,
             long bloomTermId,
-            TokenizedValue tokenizedValue,
+            String value,
             TableFilterTypesFromMetadata recordsInMetadata
     ) {
         this.ctx = ctx;
         this.table = table;
         this.bloomTermId = bloomTermId;
-        this.tokenizedValue = tokenizedValue;
+        this.value = value;
         this.recordsInMetadata = recordsInMetadata;
     }
 
@@ -96,7 +96,7 @@ public final class TableFilters {
         final ULong expected = record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class));
         final Double fpp = record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class));
         final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
-        tokenizedValue.tokens().forEach(token -> filter.put(token.toString()));
+        filter.put(value);
         final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         try {
             filter.writeTo(filterBAOS);
@@ -142,7 +142,7 @@ public final class TableFilters {
         if (object.getClass() != this.getClass())
             return false;
         final TableFilters cast = (TableFilters) object;
-        return this.ctx == cast.ctx && this.tokenizedValue.equals(cast.tokenizedValue) && this.table.equals(cast.table)
+        return this.ctx == cast.ctx && this.value.equals(cast.value) && this.table.equals(cast.table)
                 && this.bloomTermId == cast.bloomTermId;
     }
 }

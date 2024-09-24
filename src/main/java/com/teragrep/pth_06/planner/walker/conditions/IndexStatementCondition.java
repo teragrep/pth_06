@@ -82,10 +82,8 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return condition;
         }
         Condition newCondition = condition;
-        LOGGER.info("indexstatement reached with search term <{}>", value);
-        final TokenizedValue tokenizedValue = new TokenizedValue(value);
         if (tableSet.isEmpty()) {
-            PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), tokenizedValue);
+            PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), value);
             tableSet.addAll(patternMatchTables.toList());
         }
         if (!tableSet.isEmpty()) {
@@ -97,7 +95,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
             for (final Table<?> table : tableSet) {
                 // create category temp table for this pattern match table
-                final CategoryTable categoryTable = new CategoryTableImpl(config, table, tokenizedValue);
+                final CategoryTable categoryTable = new CategoryTableImpl(config, table, value);
                 categoryTable.create();
                 categoryTable.insertFilters();
                 final QueryCondition tableCondition = categoryTable.bloommatchCondition();

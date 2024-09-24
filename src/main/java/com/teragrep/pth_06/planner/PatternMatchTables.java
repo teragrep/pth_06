@@ -69,11 +69,7 @@ public final class PatternMatchTables {
     private final QueryCondition patternMatchCondition;
 
     public PatternMatchTables(DSLContext ctx, String pattern) {
-        this(ctx, new PatternMatchCondition(new TokenizedValue(pattern)));
-    }
-
-    public PatternMatchTables(DSLContext ctx, TokenizedValue tokenizedValue) {
-        this(ctx, new PatternMatchCondition(tokenizedValue));
+        this(ctx, new PatternMatchCondition(pattern));
     }
 
     public PatternMatchTables(DSLContext ctx, PatternMatchCondition patternMatchCondition) {

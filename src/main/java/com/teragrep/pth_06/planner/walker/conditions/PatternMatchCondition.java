@@ -45,12 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.blf_01.Token;
-import com.teragrep.pth_06.planner.TokenizedValue;
 import org.jooq.*;
 import org.jooq.impl.DSL;
-
-import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
@@ -61,30 +57,15 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
  */
 public final class PatternMatchCondition implements QueryCondition {
 
-    private final TokenizedValue tokenizedValue;
+    private final String value;
 
     public PatternMatchCondition(String value) {
-        this(new TokenizedValue(value));
+        this.value = value;
     }
 
-    public PatternMatchCondition(TokenizedValue tokenizedValue) {
-        this.tokenizedValue = tokenizedValue;
-    }
-
-    /**
-     * tokens = ['one, 'two'] -> ('one' regex like BLOOMDB.FILTERTYPE.PATTERN).or('two' regex like
-     * BLOOMDB.FILTERTYPE.PATTERN)
-     * 
-     * @return combined condition regex matching any of the tokens against filtertype.pattern
-     */
     public Condition condition() {
-        final Set<Token> tokenSet = tokenizedValue.tokens();
-        Condition patternCondition = DSL.noCondition();
-        for (Token token : tokenSet) {
-            Field<String> tokenStringField = DSL.val(token.toString());
-            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
-        }
-        return patternCondition;
+        final Field<String> valueField = DSL.val(value);
+        return valueField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN);
     }
 
     @Override
@@ -96,6 +77,6 @@ public final class PatternMatchCondition implements QueryCondition {
         if (object.getClass() != this.getClass())
             return false;
         final PatternMatchCondition cast = (PatternMatchCondition) object;
-        return this.tokenizedValue.equals(cast.tokenizedValue);
+        return this.value.equals(cast.value);
     }
 }
