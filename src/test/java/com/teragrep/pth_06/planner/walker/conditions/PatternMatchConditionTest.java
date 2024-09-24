@@ -67,7 +67,9 @@ class PatternMatchConditionTest {
     @Test
     void testMultipleTokens() {
         Condition condition = new PatternMatchCondition("test.nest").condition();
-        String e = "(\n" + "  ('test.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+        String e = "(\n" + "  ('test.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('test.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
                 + "  or ('nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
                 + "  or ('.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
                 + "  or ('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n" + ")";

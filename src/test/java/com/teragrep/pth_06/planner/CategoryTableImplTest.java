@@ -52,10 +52,12 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -169,7 +171,7 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "test");
+        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "192.168.1.1");
         Assertions.assertDoesNotThrow(categoryTable::create);
     }
 
@@ -184,9 +186,19 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "192.168.1.1");
+        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "ip=192.168.1.1");
         Assertions.assertDoesNotThrow(categoryTable::create);
         Assertions.assertDoesNotThrow(categoryTable::insertFilters);
+        BloomFilter filter = Assertions.assertDoesNotThrow(() -> {
+            ResultSet rs = conn.prepareStatement("SELECT * FROM term_0_target").executeQuery();
+            rs.absolute(1);
+            byte[] bytes = rs.getBytes(4);
+            return BloomFilter.readFrom(new ByteArrayInputStream(bytes));
+        });
+        // check that category table filter only has pattern matching tokens
+        Assertions.assertTrue(filter.mightContain("192.168.1.1"));
+        Assertions.assertFalse(filter.mightContain("ip=192.168.1.1"));
+        Assertions.assertFalse(filter.mightContain("168.1.1"));
     }
 
     @Test

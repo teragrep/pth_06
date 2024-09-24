@@ -63,7 +63,7 @@ public final class TokenizedValue {
 
     public Set<Token> tokens() {
         return new HashSet<>(
-                new Tokenizer(0).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
+                new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
         );
     }
 

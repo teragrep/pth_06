@@ -102,8 +102,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
                 combinedTableCondition = combinedTableCondition.or(tableCondition.condition());
                 combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
             }
-            newCondition = config.withoutFilters() ? combinedNullFilterCondition : combinedTableCondition
-                    .or(combinedNullFilterCondition);
+            if (config.withoutFilters()) {
+                newCondition = combinedNullFilterCondition;
+            }
+            else {
+                newCondition = combinedTableCondition.or(combinedNullFilterCondition);
+            }
         }
         return newCondition;
     }

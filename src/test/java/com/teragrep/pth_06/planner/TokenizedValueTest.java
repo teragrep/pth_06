@@ -63,7 +63,9 @@ class TokenizedValueTest {
         Assertions.assertTrue(tokens.contains("test"));
         Assertions.assertTrue(tokens.contains("."));
         Assertions.assertTrue(tokens.contains("test.nest"));
-        Assertions.assertEquals(4, tokens.size());
+        Assertions.assertTrue(tokens.contains(".nest"));
+        Assertions.assertTrue(tokens.contains("test."));
+        Assertions.assertEquals(6, tokens.size());
     }
 
     @Test
