@@ -75,13 +75,11 @@ public class IndexStatementConditionTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final List<String> patternList = new ArrayList<>(
-            Arrays
-                    .asList(
-                            "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
-                            "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
-                    )
-    );
+    // matches IPv4
+    final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    // matches IPv4 starting with 255.
+    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
     final ConditionConfig mockConfig = new ConditionConfig(
             DSL.using(new MockConnection(ctx -> new MockResult[0])),
             false,

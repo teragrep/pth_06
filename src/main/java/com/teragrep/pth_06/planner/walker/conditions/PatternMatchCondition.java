@@ -45,6 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.blf_01.Token;
+import com.teragrep.pth_06.planner.TokenizedValue;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -57,15 +59,23 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
  */
 public final class PatternMatchCondition implements QueryCondition {
 
-    private final String value;
+    private final TokenizedValue value;
 
-    public PatternMatchCondition(String value) {
+    public PatternMatchCondition(String input) {
+        this(new TokenizedValue(input));
+    }
+
+    public PatternMatchCondition(TokenizedValue value) {
         this.value = value;
     }
 
     public Condition condition() {
-        final Field<String> valueField = DSL.val(value);
-        return valueField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN);
+        Condition patternCondition = DSL.noCondition();
+        for (Token token : value.tokens()) {
+            Field<String> tokenStringField = DSL.val(token.toString());
+            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
+        }
+        return patternCondition;
     }
 
     @Override

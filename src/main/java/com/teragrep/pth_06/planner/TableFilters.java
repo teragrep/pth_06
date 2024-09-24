@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.blf_01.Token;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -53,6 +54,7 @@ import org.jooq.types.ULong;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.regex.Pattern;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
@@ -65,18 +67,24 @@ public final class TableFilters {
     private final DSLContext ctx;
     private final Table<?> table;
     private final long bloomTermId;
-    private final String value;
+    private final TokenizedValue value;
     private final TableRecords recordsInMetadata;
 
-    public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, String value) {
-        this(ctx, table, bloomTermId, value, new TableFilterTypesFromMetadata(ctx, table, bloomTermId));
+    public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, String input) {
+        this(
+                ctx,
+                table,
+                bloomTermId,
+                new TokenizedValue(input),
+                new TableFilterTypesFromMetadata(ctx, table, bloomTermId)
+        );
     }
 
     public TableFilters(
             DSLContext ctx,
             Table<?> table,
             long bloomTermId,
-            String value,
+            TokenizedValue value,
             TableFilterTypesFromMetadata recordsInMetadata
     ) {
         this.ctx = ctx;
@@ -95,8 +103,20 @@ public final class TableFilters {
     private byte[] filterBytesFromRecord(final Record record) {
         final ULong expected = record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class));
         final Double fpp = record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class));
+        final String pattern = record.getValue(BLOOMDB.FILTERTYPE.PATTERN, String.class);
         final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
-        filter.put(value);
+        final Pattern compiled = Pattern.compile(pattern);
+        boolean isEmpty = true;
+        for (final Token token : value.tokens()) {
+            final String tokenString = token.toString();
+            if (compiled.matcher(tokenString).matches()) {
+                isEmpty = false;
+                filter.put(tokenString);
+            }
+        }
+        if (isEmpty) {
+            throw new IllegalStateException("Trying to insert empty filter");
+        }
         final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         try {
             filter.writeTo(filterBAOS);

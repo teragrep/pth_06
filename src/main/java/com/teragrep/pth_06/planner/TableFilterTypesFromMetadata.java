@@ -79,7 +79,8 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
         final SelectField<?>[] resultFields = {
                 BLOOMDB.FILTERTYPE.ID,
                 joined.field("expectedElements").as(expectedField),
-                joined.field("targetFpp").as(fppField)
+                joined.field("targetFpp").as(fppField),
+                joined.field("pattern")
         };
         // Fetch filtertype values from metadata
         final Result<Record> records = ctx

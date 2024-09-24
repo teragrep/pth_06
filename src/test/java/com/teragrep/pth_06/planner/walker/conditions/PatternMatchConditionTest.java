@@ -47,7 +47,6 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -66,7 +65,6 @@ class PatternMatchConditionTest {
     }
 
     @Test
-    @Disabled("Search term tokenization is not enabled in this version")
     void testMultipleTokens() {
         Condition condition = new PatternMatchCondition("test.nest").condition();
         String e = "(\n" + "  ('test.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"

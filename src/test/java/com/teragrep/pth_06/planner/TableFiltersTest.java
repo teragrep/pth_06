@@ -66,13 +66,11 @@ class TableFiltersTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final List<String> patternList = new ArrayList<>(
-            Arrays
-                    .asList(
-                            "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
-                            "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
-                    )
-    );
+    // matches IPv4
+    final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    // matches IPv4 starting with 255.
+    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -149,8 +147,23 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
         DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "test").insertFiltersIntoCategoryTable());
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").insertFiltersIntoCategoryTable());
         Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
+    }
+
+    @Test
+    public void testInsertFiltersWithoutPatternMatch() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").insertFiltersIntoCategoryTable());
+        Assertions.assertTrue(exception.getMessage().contains("Trying to insert empty filter"));
     }
 
     @Test
