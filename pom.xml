@@ -239,6 +239,7 @@
             </goals>
             <configuration>
               <source>8</source>
+              <failOnError>false</failOnError>
             </configuration>
           </execution>
         </executions>
