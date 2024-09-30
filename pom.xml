@@ -239,6 +239,7 @@
             </goals>
             <configuration>
               <source>8</source>
+              <additionalOptions>-Xdoclint:none</additionalOptions>
             </configuration>
           </execution>
         </executions>
