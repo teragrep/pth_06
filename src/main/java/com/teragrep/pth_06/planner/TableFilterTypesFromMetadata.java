@@ -43,78 +43,66 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.config;
+package com.teragrep.pth_06.planner;
 
-import org.jooq.DSLContext;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 
-public final class ConditionConfig {
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+
+/**
+ * Filter types of a table from metadata
+ */
+public final class TableFilterTypesFromMetadata implements TableRecords {
 
     private final DSLContext ctx;
-    private final boolean streamQuery;
-    private final boolean bloomEnabled;
-    private final boolean withoutFilters;
+    private final Table<?> table;
     private final long bloomTermId;
 
-    public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this(ctx, streamQuery, false, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
-        this(ctx, streamQuery, bloomEnabled, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
-        this(ctx, streamQuery, bloomEnabled, withoutFilters, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, long bloomTermId) {
-        this(ctx, streamQuery, bloomEnabled, false, bloomTermId);
-    }
-
-    public ConditionConfig(
-            DSLContext ctx,
-            boolean streamQuery,
-            boolean bloomEnabled,
-            boolean withoutFilters,
-            long bloomTermId
-    ) {
+    public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, long bloomTermId) {
         this.ctx = ctx;
-        this.streamQuery = streamQuery;
-        this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
+        this.table = table;
         this.bloomTermId = bloomTermId;
     }
 
-    public DSLContext context() {
-        return ctx;
-    }
-
-    public boolean bloomEnabled() {
-        return bloomEnabled;
-    }
-
-    public boolean withoutFilters() {
-        return withoutFilters;
-    }
-
-    public long bloomTermId() {
-        return bloomTermId;
-    }
-
-    public boolean streamQuery() {
-        return streamQuery;
+    public Result<Record> toResult() {
+        if (table == null) {
+            throw new IllegalStateException("Origin table was null");
+        }
+        final Table<?> joined = table
+                .join(BLOOMDB.FILTERTYPE)
+                .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) table.field("filter_type_id")));
+        final Table<Record> namedTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName())));
+        final Field<ULong> expectedField = DSL.field(DSL.name(namedTable.getName(), "expectedElements"), ULong.class);
+        final Field<Double> fppField = DSL.field(DSL.name(namedTable.getName(), "targetFpp"), Double.class);
+        final SelectField<?>[] resultFields = {
+                BLOOMDB.FILTERTYPE.ID,
+                joined.field("expectedElements").as(expectedField),
+                joined.field("targetFpp").as(fppField),
+                joined.field("pattern")
+        };
+        // Fetch filtertype values from metadata
+        final Result<Record> records = ctx
+                .select(resultFields)
+                .from(joined)
+                .groupBy(joined.field("filter_type_id"))
+                .fetch();
+        if (records.isEmpty()) {
+            throw new RuntimeException("Origin table was empty");
+        }
+        return records;
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null)
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
+        final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
+        return this.bloomTermId == cast.bloomTermId && this.table.equals(cast.table) && this.ctx == cast.ctx;
     }
 }

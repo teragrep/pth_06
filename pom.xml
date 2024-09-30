@@ -198,6 +198,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.2.224</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <version>2.1.0</version>
@@ -304,7 +310,7 @@
               </jdbc>
               <generator>
                 <database>
-                  <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile|bloomdb.filter_expected_100000_fpp_001|bloomdb.filter_expected_1000000_fpp_003|bloomdb.filter_expected_2500000_fpp_005</includes>
+                  <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile|bloomdb.filtertype</includes>
                 </database>
                 <target>
                   <packageName>com.teragrep.pth_06.jooq.generated</packageName>

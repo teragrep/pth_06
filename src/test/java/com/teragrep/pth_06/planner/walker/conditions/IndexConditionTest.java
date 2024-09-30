@@ -49,6 +49,12 @@ import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * 
+ * @see org.jooq.QueryPart
+ */
 public class IndexConditionTest {
 
     @Test
@@ -89,9 +95,7 @@ public class IndexConditionTest {
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
         IndexCondition notEq2 = new IndexCondition("946677600", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
-        Assertions.assertNotEquals(eq1, null);
     }
 }

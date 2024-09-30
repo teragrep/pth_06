@@ -49,9 +49,7 @@
 package com.teragrep.pth_06.jooq.generated.bloomdb;
 
 
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_1000000Fpp_003;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_100000Fpp_001;
-import com.teragrep.pth_06.jooq.generated.bloomdb.tables.FilterExpected_2500000Fpp_005;
+import com.teragrep.pth_06.jooq.generated.bloomdb.tables.Filtertype;
 
 import javax.annotation.Generated;
 
@@ -70,17 +68,7 @@ import javax.annotation.Generated;
 public class Tables {
 
     /**
-     * The table <code>bloomdb.filter_expected_1000000_fpp_003</code>.
+     * The table <code>bloomdb.filtertype</code>.
      */
-    public static final FilterExpected_1000000Fpp_003 FILTER_EXPECTED_1000000_FPP_003 = FilterExpected_1000000Fpp_003.FILTER_EXPECTED_1000000_FPP_003;
-
-    /**
-     * The table <code>bloomdb.filter_expected_100000_fpp_001</code>.
-     */
-    public static final FilterExpected_100000Fpp_001 FILTER_EXPECTED_100000_FPP_001 = FilterExpected_100000Fpp_001.FILTER_EXPECTED_100000_FPP_001;
-
-    /**
-     * The table <code>bloomdb.filter_expected_2500000_fpp_005</code>.
-     */
-    public static final FilterExpected_2500000Fpp_005 FILTER_EXPECTED_2500000_FPP_005 = FilterExpected_2500000Fpp_005.FILTER_EXPECTED_2500000_FPP_005;
+    public static final Filtertype FILTERTYPE = Filtertype.FILTERTYPE;
 }

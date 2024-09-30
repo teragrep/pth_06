@@ -45,39 +45,59 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.w3c.dom.Element;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
- */
-public class EarliestConditionTest {
+public final class ValidElement {
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    private final Element element;
+
+    private void validate() {
+        if (element.getTagName() == null) {
+            throw new IllegalStateException("Tag name for Element was null");
+        }
+        if (!element.hasAttribute("operation")) {
+            throw new IllegalStateException(
+                    "Could not find specified or default value for 'operation' attribute from Element"
+            );
+        }
+        if (!element.hasAttribute("value")) {
+            throw new IllegalStateException(
+                    "Could not find specified or default value for 'value' attribute from Element"
+            );
+        }
     }
 
-    @Test
-    void equalsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        eq1.condition();
-        EarliestCondition eq2 = new EarliestCondition("946677600");
-        Assertions.assertEquals(eq1, eq2);
+    public ValidElement(Element element) {
+        this.element = element;
     }
 
-    @Test
-    void notEqualsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        EarliestCondition notEq = new EarliestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
+    public String tag() {
+        validate();
+        return element.getTagName();
+    }
+
+    public String value() {
+        validate();
+        return element.getAttribute("value");
+    }
+
+    public String operation() {
+        validate();
+        return element.getAttribute("operation");
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
+        final ValidElement cast = (ValidElement) object;
+        boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
+        boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));
+        boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
+        return equalName && equalOperation && equalValue;
     }
 }

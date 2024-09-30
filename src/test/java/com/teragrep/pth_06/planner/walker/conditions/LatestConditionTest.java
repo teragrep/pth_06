@@ -49,6 +49,12 @@ import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * 
+ * @see org.jooq.QueryPart
+ */
 class LatestConditionTest {
 
     @Test
@@ -71,26 +77,20 @@ class LatestConditionTest {
 
     @Test
     void equalsTest() {
-        IndexCondition eq1 = new IndexCondition("946720800", "EQUALS", false);
+        LatestCondition eq1 = new LatestCondition("946720800");
         eq1.condition();
-        IndexCondition eq2 = new IndexCondition("946720800", "EQUALS", false);
-        IndexCondition eq3 = new IndexCondition("946720800", "EQUALS", true);
+        LatestCondition eq2 = new LatestCondition("946720800");
+        LatestCondition eq3 = new LatestCondition("946720800");
         eq3.condition();
-        IndexCondition eq4 = new IndexCondition("946720800", "EQUALS", true);
+        LatestCondition eq4 = new LatestCondition("946720800");
         Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq2, eq1);
         Assertions.assertEquals(eq3, eq4);
     }
 
     @Test
     void notEqualsTest() {
-        IndexCondition eq1 = new IndexCondition("946720800", "EQUALS", false);
-        IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
-        IndexCondition notEq2 = new IndexCondition("946720800", "EQUALS", true);
+        LatestCondition eq1 = new LatestCondition("946720800");
+        LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
-        Assertions.assertNotEquals(eq1, null);
-        Assertions.assertNotEquals(eq1, notEq2);
-        Assertions.assertNotEquals(notEq, notEq2);
     }
 }

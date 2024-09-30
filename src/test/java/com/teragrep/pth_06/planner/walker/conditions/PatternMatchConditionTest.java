@@ -52,50 +52,41 @@ import org.junit.jupiter.api.Test;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
- * 
+ *
  * @see org.jooq.QueryPart
  */
-class SourceTypeConditionTest {
+class PatternMatchConditionTest {
 
     @Test
-    void conditionTest() {
-        String e = "\"getArchivedObjects_filter_table\".\"stream\" like 'f17'";
-        String eStream = "\"streamdb\".\"stream\".\"stream\" like 'f17'";
-        Condition elementCondition = new SourceTypeCondition("f17", "EQUALS", false).condition();
-        Condition streamElementCondition = new SourceTypeCondition("f17", "EQUALS", true).condition();
-        Assertions.assertEquals(e, elementCondition.toString());
-        Assertions.assertEquals(eStream, streamElementCondition.toString());
+    void testSingleToken() {
+        Condition condition = new PatternMatchCondition("test").condition();
+        String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
+        Assertions.assertEquals(e, condition.toString());
     }
 
     @Test
-    void negationTest() {
-        String e = "not (\"getArchivedObjects_filter_table\".\"stream\" like 'f17')";
-        String eStream = "not (\"streamdb\".\"stream\".\"stream\" like 'f17')";
-        Condition elementCondition = new SourceTypeCondition("f17", "NOT_EQUALS", false).condition();
-        Condition streamElementCondition = new SourceTypeCondition("f17", "NOT_EQUALS", true).condition();
-        Assertions.assertEquals(e, elementCondition.toString());
-        Assertions.assertEquals(eStream, streamElementCondition.toString());
+    void testMultipleTokens() {
+        Condition condition = new PatternMatchCondition("test.nest").condition();
+        String e = "(\n" + "  ('test.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('test.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
+                + "  or ('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n" + ")";
+        Assertions.assertEquals(e, condition.toString());
     }
 
     @Test
-    void equalsTest() {
-        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
-        eq1.condition();
-        SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
-        SourceTypeCondition eq3 = new SourceTypeCondition("946677600", "EQUALS", true);
-        eq3.condition();
-        SourceTypeCondition eq4 = new SourceTypeCondition("946677600", "EQUALS", true);
-        Assertions.assertEquals(eq1, eq2);
-        Assertions.assertEquals(eq3, eq4);
+    void testEquality() {
+        PatternMatchCondition cond1 = new PatternMatchCondition("test");
+        PatternMatchCondition cond2 = new PatternMatchCondition("test");
+        Assertions.assertEquals(cond1, cond2);
     }
 
     @Test
-    void notEqualsTest() {
-        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
-        SourceTypeCondition notEq = new SourceTypeCondition("1000", "EQUALS", false);
-        SourceTypeCondition notEq2 = new SourceTypeCondition("1000", "EQUALS", true);
-        Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(eq1, notEq2);
-        Assertions.assertNotEquals(notEq, notEq2);
+    void testNotEquals() {
+        PatternMatchCondition cond1 = new PatternMatchCondition("test");
+        PatternMatchCondition cond2 = new PatternMatchCondition("next");
+        Assertions.assertNotEquals(cond1, cond2);
     }
 }

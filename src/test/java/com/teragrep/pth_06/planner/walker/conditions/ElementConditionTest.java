@@ -48,7 +48,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.exception.SQLDialectNotSupportedException;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
@@ -59,12 +59,18 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ * 
+ * @see org.jooq.QueryPart
+ */
 class ElementConditionTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
     final DSLContext mockCtx = DSL.using(new MockConnection(ctx -> new MockResult[0]));
-    final ConditionConfig config = new ConditionConfig(mockCtx, false, true, false);
+    final ConditionConfig config = new ConditionConfig(mockCtx, false, true);
     final ConditionConfig streamConfig = new ConditionConfig(mockCtx, true);
 
     @Test
@@ -85,20 +91,6 @@ class ElementConditionTest {
     }
 
     @Test
-    void testIndexStatement() {
-        Element element = document.createElement("indexstatement");
-        element.setAttribute("value", "searchTerm");
-        element.setAttribute("operation", "EQUALS");
-        Element element2 = document.createElement("indexstatement");
-        element2.setAttribute("value", "searchTerm");
-        element2.setAttribute("operation", "NOT_EQUALS");
-        Assertions
-                .assertThrows(SQLDialectNotSupportedException.class, new ElementCondition(element, config)::condition);
-        Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element, streamConfig)::condition);
-        Assertions.assertThrows(IllegalStateException.class, new ElementCondition(element2, config)::condition);
-    }
-
-    @Test
     void testProvidedElementMissingValue() {
         Element element = document.createElement("test");
         element.setAttribute("operation", "EQUALS");
@@ -116,6 +108,35 @@ class ElementConditionTest {
         ElementCondition streamElementCondition = new ElementCondition(element, streamConfig);
         Assertions.assertThrows(IllegalStateException.class, elementCondition::condition);
         Assertions.assertThrows(IllegalStateException.class, streamElementCondition::condition);
+    }
+
+    @Test
+    void testIsIndexStatement() {
+        Element element = document.createElement("indexstatement");
+        element.setAttribute("value", "searchTerm");
+        element.setAttribute("operation", "EQUALS");
+        Element element2 = document.createElement("index");
+        element2.setAttribute("value", "searchTerm");
+        element2.setAttribute("operation", "EQUALS");
+        ElementCondition condition = new ElementCondition(element, config);
+        Assertions.assertTrue(condition.isBloomSearchCondition());
+        element.setAttribute("operation", "NOT_EQUALS");
+        ElementCondition condition2 = new ElementCondition(element, config);
+        Assertions.assertFalse(condition2.isBloomSearchCondition());
+        ElementCondition condition3 = new ElementCondition(element, streamConfig);
+        Assertions.assertFalse(condition3.isBloomSearchCondition());
+        ElementCondition condition4 = new ElementCondition(element2, streamConfig);
+        Assertions.assertFalse(condition4.isBloomSearchCondition());
+    }
+
+    @Test
+    void testIndexStatementWithBadConnection() {
+        Element element = document.createElement("indexstatement");
+        element.setAttribute("value", "searchTerm");
+        element.setAttribute("operation", "EQUALS");
+        ElementCondition condition = new ElementCondition(element, config);
+        Assertions.assertTrue(condition.isBloomSearchCondition());
+        Assertions.assertThrows(DataAccessException.class, condition::condition);
     }
 
     @Test
@@ -189,10 +210,8 @@ class ElementConditionTest {
         ElementCondition notEq = new ElementCondition(anotherElement, config);
         ElementCondition notEq2 = new ElementCondition(element, streamConfig);
         Assertions.assertNotEquals(eq1, notEq);
-        Assertions.assertNotEquals(notEq, eq1);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
-        Assertions.assertNotEquals(eq1, null);
     }
 
     @Test

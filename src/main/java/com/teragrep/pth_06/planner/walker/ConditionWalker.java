@@ -47,46 +47,67 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
+import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * <h1>Condition Walker</h1> Walker for conditions.
  *
- * @since 23/09/2021
  * @author Kimmo Leppinen
  * @author Mikko Kortelainen
  * @author Ville Manninen
+ * @since 23/09/2021
  */
-public class ConditionWalker extends XmlWalker<Condition> {
+public final class ConditionWalker extends XmlWalker<Condition> {
 
     private final boolean bloomEnabled;
+    private final boolean withoutFilters;
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
+    private final Set<Table<?>> combinedMatchSet;
+    private long bloomTermId = 0;
 
     /**
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        super();
-        this.ctx = null;
-        this.bloomEnabled = false;
+        this(null, false, false);
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
+        this(ctx, bloomEnabled, false);
+    }
+
+    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters) {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
+        this.withoutFilters = withoutFilters;
+        this.combinedMatchSet = new HashSet<>();
     }
 
     public Condition fromString(String inXml, boolean streamQuery) throws Exception {
         this.streamQuery = streamQuery;
         return fromString(inXml);
+    }
+
+    /**
+     * Set of all the tables that pattern matched with tokenized value search elements the walkers has traversed
+     *
+     * @return Set of Tables that had a pattern match
+     */
+    public Set<Table<?>> patternMatchTables() {
+        return combinedMatchSet;
     }
 
     @Override
@@ -138,11 +159,17 @@ public class ConditionWalker extends XmlWalker<Condition> {
         return rv;
     }
 
-    Condition emitElem(Element current) {
-        ElementCondition elementCondition = new ElementCondition(
-                current,
-                new ConditionConfig(ctx, streamQuery, bloomEnabled, false)
+    Condition emitElem(final Element current) {
+        final ElementCondition elementCondition = new ElementCondition(
+                new ValidElement(current),
+                new ConditionConfig(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId)
         );
+        if (elementCondition.isBloomSearchCondition()) {
+            final Set<Table<?>> elementPatternMatchTables = elementCondition.patternMatchTables();
+            // add tables condition found to walker pattern match tables
+            patternMatchTables().addAll(elementPatternMatchTables);
+            bloomTermId++;
+        }
         return elementCondition.condition();
     }
 }

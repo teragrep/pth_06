@@ -45,39 +45,48 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Token;
+import com.teragrep.pth_06.planner.TokenizedValue;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- * 
- * @see org.jooq.QueryPart
+ * Combined regex match condition
+ * <p>
+ * true if any of the tokens regex match against bloomdb.filtertype.pattern
  */
-public class EarliestConditionTest {
+public final class PatternMatchCondition implements QueryCondition {
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    private final TokenizedValue value;
+
+    public PatternMatchCondition(String input) {
+        this(new TokenizedValue(input));
     }
 
-    @Test
-    void equalsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        eq1.condition();
-        EarliestCondition eq2 = new EarliestCondition("946677600");
-        Assertions.assertEquals(eq1, eq2);
+    public PatternMatchCondition(TokenizedValue value) {
+        this.value = value;
     }
 
-    @Test
-    void notEqualsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        EarliestCondition notEq = new EarliestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
+    public Condition condition() {
+        Condition patternCondition = DSL.noCondition();
+        for (Token token : value.tokens()) {
+            Field<String> tokenStringField = DSL.val(token.toString());
+            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
+        }
+        return patternCondition;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null)
+            return false;
+        if (object.getClass() != this.getClass())
+            return false;
+        final PatternMatchCondition cast = (PatternMatchCondition) object;
+        return this.value.equals(cast.value);
     }
 }
