@@ -51,7 +51,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-class ArchiveConfigTest {
+public class ArchiveConfigTest {
 
     @Test
     public void testBloomEnabledDefaultOff() {
