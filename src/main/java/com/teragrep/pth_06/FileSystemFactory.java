@@ -43,31 +43,14 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06;
 
-import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import org.apache.hadoop.fs.FileSystem;
 
-import java.util.Map;
+import java.io.IOException;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public interface FileSystemFactory {
 
-    Map<TopicPartition, Long> getInitialEndOffsets();
+    FileSystem create(boolean initializeUGI) throws IOException;
 
-    Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
-
-    Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
-
-    void commit(KafkaOffset offset);
-
-    void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
-
-    Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
 }

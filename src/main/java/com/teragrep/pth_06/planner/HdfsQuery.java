@@ -46,28 +46,25 @@
 package com.teragrep.pth_06.planner;
 
 import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
 
-import java.util.Map;
+import java.util.LinkedList;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public interface HdfsQuery {
 
-    Map<TopicPartition, Long> getInitialEndOffsets();
+    LinkedList<HdfsTopicPartitionOffsetMetadata> processBetweenHdfsFileMetadata(
+            HdfsOffset startOffset,
+            HdfsOffset endOffset
+    );
 
-    Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
+    void commit(HdfsOffset offset);
 
-    Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
+    JsonArray hdfsOffsetMapToJSON();
 
-    void commit(KafkaOffset offset);
+    HdfsOffset getBeginningOffsets();
 
-    void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
+    HdfsOffset getInitialEndOffsets(); // Delete after testing incrementAndGetLatestOffset() functionality thoroughly.
 
-    Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
+    HdfsOffset incrementAndGetLatestOffset(); // replaces getInitialEndOffsets()
 }

@@ -46,12 +46,15 @@
 package com.teragrep.pth_06;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonArray;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.*;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import com.teragrep.pth_06.scheduler.*;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
+import com.teragrep.pth_06.task.HdfsMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
 import org.apache.spark.sql.connector.read.InputPartition;
@@ -87,6 +90,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     private final Config config;
     private final ArchiveQuery aq;
     private final KafkaQuery kq;
+    private final HdfsQuery hq;
+    private final JsonArray hdfsOffsets;
 
     /**
      * Constructor for ArchiveMicroStreamReader
@@ -98,6 +103,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
         this.config = config;
 
+        if (config.isHdfsEnabled) {
+            this.hq = new HdfsQueryProcessor(config);
+            hdfsOffsets = hq.hdfsOffsetMapToJSON();
+        }
+        else {
+            this.hq = null;
+            hdfsOffsets = null;
+        }
+
         if (config.isArchiveEnabled) {
             this.aq = new ArchiveQueryProcessor(config);
         }
@@ -106,7 +120,13 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
 
         if (config.isKafkaEnabled) {
-            this.kq = new KafkaQueryProcessor(config);
+            if (config.isHdfsEnabled) {
+                this.kq = new KafkaQueryProcessor(config);
+                this.kq.seekToHdfsOffsets(hdfsOffsets);
+            }
+            else {
+                this.kq = new KafkaQueryProcessor(config);
+            }
         }
         else {
             this.kq = null;
@@ -119,10 +139,18 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * Used for testing.
      */
     @VisibleForTesting
-    ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
+    ArchiveMicroStreamReader(HdfsQuery hq, ArchiveQuery aq, KafkaQuery kq, Config config) {
         this.config = config;
-        this.aq = aq;
-        this.kq = kq;
+        this.aq = aq; // Uses its own hardcoded query string defined in MockTeragrepDatasource.
+        this.kq = kq; // Skips using query string (and thus topic filtering) altogether.
+        this.hq = hq; // Uses the query string from config for topic filtering.
+        if (this.hq != null && this.kq != null) {
+            hdfsOffsets = this.hq.hdfsOffsetMapToJSON();
+            this.kq.seekToHdfsOffsets(hdfsOffsets);
+        }
+        else {
+            hdfsOffsets = null;
+        }
 
         LOGGER.debug("@VisibleForTesting MicroBatchReader> initialized");
     }
@@ -135,25 +163,70 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset initialOffset() {
+        // After rebase is complete: Refactor the DatasourceOffset and SerializedDatasourceOffset if the 8x else-if statements are too much.
+
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
+        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
             // only archive
             rv = new DatasourceOffset(new LongOffset(this.aq.getInitialOffset() - 3600L));
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
+        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
             // only kafka
             rv = new DatasourceOffset(new KafkaOffset(this.kq.getBeginningOffsets(null)));
         }
-        else if (this.config.isArchiveEnabled) {
-            // both
+        else if (!this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // only HDFS
+            rv = new DatasourceOffset(new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()));
+        }
+        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
+            // kafka and archive
             rv = new DatasourceOffset(
                     new LongOffset(this.aq.getInitialOffset() - 3600L),
                     new KafkaOffset(this.kq.getBeginningOffsets(null))
             );
         }
+        else if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // archive and HDFS
+            rv = new DatasourceOffset(
+                    new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
+                    new LongOffset(this.aq.getInitialOffset() - 3600L)
+            );
+        }
+        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // Kafka and HDFS, check if any files are available from HDFS.
+            if (hdfsOffsets.size() > 0) {
+                rv = new DatasourceOffset(
+                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
+                        new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets))
+                );
+            }
+            else {
+                rv = new DatasourceOffset(
+                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
+                        new KafkaOffset(this.kq.getBeginningOffsets(null))
+                );
+            }
+        }
+        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // all three, check if any files are available from HDFS.
+            if (hdfsOffsets.size() > 0) {
+                rv = new DatasourceOffset(
+                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
+                        new LongOffset(this.aq.getInitialOffset() - 3600L),
+                        new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets))
+                );
+            }
+            else {
+                rv = new DatasourceOffset(
+                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
+                        new LongOffset(this.aq.getInitialOffset() - 3600L),
+                        new KafkaOffset(this.kq.getBeginningOffsets(null))
+                );
+            }
+        }
         else {
-            // neither
+            // none
             throw new IllegalStateException("no datasources enabled, can't get initial offset");
         }
         LOGGER.debug("offset[initial]= {}", rv);
@@ -172,6 +245,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (this.config.isArchiveEnabled) {
             this.aq.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
         }
+        if (this.config.isHdfsEnabled) {
+            this.hq.commit(((DatasourceOffset) offset).getHdfsOffset());
+        }
     }
 
     /** {@inheritDoc} */
@@ -187,24 +263,52 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset latestOffset() {
+        // After rebase is complete: Refactor the DatasourceOffset and SerializedDatasourceOffset if the 8x else-if statements are too much.
+
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
+        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
             // only archive
             rv = new DatasourceOffset(new LongOffset(this.aq.incrementAndGetLatestOffset()));
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
+        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
             // only kafka
             rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
         }
-        else if (this.config.isArchiveEnabled) {
-            // both
+        else if (!this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // only hdfs
+            rv = new DatasourceOffset(new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()));
+        }
+        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
+            // kafka and archive
             rv = new DatasourceOffset(
                     new LongOffset(this.aq.incrementAndGetLatestOffset()),
                     new KafkaOffset(this.kq.getInitialEndOffsets())
             );
         }
+        else if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // archive and hdfs
+            rv = new DatasourceOffset(
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
+                    new LongOffset(this.aq.incrementAndGetLatestOffset())
+            );
+        }
+        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // Kafka and HDFS
+            rv = new DatasourceOffset(
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
+                    new KafkaOffset(this.kq.getInitialEndOffsets())
+            );
+        }
+        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
+            // all three
+            rv = new DatasourceOffset(
+                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
+                    new LongOffset(this.aq.incrementAndGetLatestOffset()),
+                    new KafkaOffset(this.kq.getInitialEndOffsets())
+            );
+        }
         else {
-            // neither
+            // none
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
 
@@ -223,7 +327,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public InputPartition[] planInputPartitions(Offset start, Offset end) {
         List<InputPartition> inputPartitions = new LinkedList<>();
 
-        Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        Batch currentBatch = new Batch(config, hq, aq, kq).processRange(start, end);
 
         for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
 
@@ -250,6 +354,23 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
                                         config.archiveConfig.skipNonRFC5424Files
                                 )
                         );
+            }
+
+            // HDFS tasks
+            LinkedList<HdfsTopicPartitionOffsetMetadata> hdfsTaskList = new LinkedList<>();
+            for (BatchSlice batchSlice : taskObjectList) {
+                if (batchSlice.type.equals(BatchSlice.Type.HDFS)) {
+                    hdfsTaskList.add(batchSlice.hdfsTopicPartitionOffsetMetadata);
+                }
+            }
+
+            if (!hdfsTaskList.isEmpty()) {
+                /* BatchSliceType.HDFS contains the metadata for the HDFS files that contain the records that are being queried. Available topics in HDFS are already filtered based on the spark query conditions.
+                 The records that are inside the files are fetched and processed in the tasker. Tasker does rest of the filtering based on the given query conditions, for example the cutoff epoch handling between the records that are fetched from S3 and HDFS.
+                 The Spark planner/scheduler is only single-threaded while tasker is multithreaded. Planner is not suitable for fetching and processing all the records, it should be done in tasker which will handle the processing in multithreaded environment based on batch slices.
+                 The slice creation has been changed to be incremental, which means that not all avro-files are fetched from hdfs at once. Instead, the files are distributed over several batches based on file size.*/
+
+                inputPartitions.add(new HdfsMicroBatchInputPartition(config.hdfsConfig, hdfsTaskList));
             }
 
             // kafka tasks
