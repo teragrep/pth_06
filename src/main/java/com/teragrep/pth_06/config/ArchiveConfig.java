@@ -80,7 +80,7 @@ public final class ArchiveConfig {
         dbPassword = getOrThrow(opts, "DBpassword");
         dbUrl = getOrThrow(opts, "DBurl");
         bloomEnabled = opts.getOrDefault("bloom.enabled", "false").equalsIgnoreCase("true");
-        withoutFilters = opts.getOrDefault("bloom.enabled", "false").equalsIgnoreCase("true");
+        withoutFilters = opts.getOrDefault("bloom.withoutFilters", "false").equalsIgnoreCase("true");
         bloomDbName = opts.getOrDefault("DBbloomdbname", "bloomdb");
 
         dbJournalDbName = opts.getOrDefault("DBjournaldbname", "journaldb");
