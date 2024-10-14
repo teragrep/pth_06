@@ -60,8 +60,6 @@ import java.util.Map;
 
 public class HdfsOffset extends Offset implements Serializable {
 
-    // TODO: Implement everything that is needed for tracking the offsets for HDFS datasource.
-
     private static final Type mapType = new TypeToken<Map<String, Long>>() {
     }.getType();
     private final Map<String, Long> serializedHdfsOffset;
@@ -74,7 +72,6 @@ public class HdfsOffset extends Offset implements Serializable {
         }
     }
 
-    // TODO: Check if these methods originating from KafkaOffset can be implemented as-is or not.
     public HdfsOffset(String s) {
         Gson gson = new Gson();
         serializedHdfsOffset = gson.fromJson(s, mapType);
