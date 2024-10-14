@@ -116,7 +116,8 @@ public final class ConditionConfig {
             return false;
         final ConditionConfig cast = (ConditionConfig) object;
         return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx && this.bloomTermId == cast.bloomTermId();
+                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx
+                && this.bloomTermId == cast.bloomTermId();
     }
 
     @Override
