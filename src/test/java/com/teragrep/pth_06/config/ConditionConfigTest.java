@@ -58,8 +58,8 @@ public class ConditionConfigTest {
 
     @Test
     void testEquality() {
-        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
-        ConditionConfig cond2 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false, 1L);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false, 1L);
         Assertions.assertEquals(cond1, cond2);
     }
 
@@ -68,8 +68,10 @@ public class ConditionConfigTest {
         ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
         ConditionConfig cond2 = new ConditionConfig(ctx, true, false);
         ConditionConfig cond3 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true , 1L);
         Assertions.assertNotEquals(cond1, cond2);
         Assertions.assertNotEquals(cond1, cond3);
+        Assertions.assertNotEquals(cond1, cond4);
     }
 
     @Test
@@ -78,8 +80,10 @@ public class ConditionConfigTest {
         ConditionConfig cond2 = new ConditionConfig(ctx, false, false);
         ConditionConfig cond3 = new ConditionConfig(ctx, true, false);
         ConditionConfig cond4 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond5 = new ConditionConfig(ctx, false, false, 1L);
         Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond4.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond5.hashCode());
     }
 }
