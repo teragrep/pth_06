@@ -89,4 +89,13 @@ class PatternMatchConditionTest {
         PatternMatchCondition cond2 = new PatternMatchCondition("next");
         Assertions.assertNotEquals(cond1, cond2);
     }
+
+    @Test
+    void testHashCode() {
+        PatternMatchCondition cond1 = new PatternMatchCondition("test");
+        PatternMatchCondition cond2 = new PatternMatchCondition("test");
+        PatternMatchCondition notEq = new PatternMatchCondition("next");
+        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), notEq.hashCode());
+    }
 }

@@ -102,4 +102,17 @@ public class HostConditionTest {
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
     }
+
+    @Test
+    void hashCodeTest() {
+        HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition eq2 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition eq3 = new HostCondition("946677600", "EQUALS", true);
+        HostCondition eq4 = new HostCondition("946677600", "EQUALS", true);
+        HostCondition eq5 = new HostCondition("12344", "EQUALS", false);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertEquals(eq3.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq5.hashCode());
+    }
 }

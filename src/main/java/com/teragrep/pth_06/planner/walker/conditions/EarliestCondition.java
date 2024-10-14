@@ -49,6 +49,7 @@ import org.jooq.Condition;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
@@ -95,5 +96,10 @@ public final class EarliestCondition implements QueryCondition {
             return false;
         final EarliestCondition cast = (EarliestCondition) object;
         return this.value.equals(cast.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
     }
 }

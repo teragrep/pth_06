@@ -237,6 +237,15 @@ public class IndexStatementConditionTest {
         Assertions.assertNotEquals(eq1, notEq);
     }
 
+    @Test
+    void hashCodeTest() {
+        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
+        IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
+        IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
     private void writeFilter(String tableName, int filterId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

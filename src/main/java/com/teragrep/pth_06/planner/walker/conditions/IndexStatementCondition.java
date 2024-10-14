@@ -54,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public final class IndexStatementCondition implements QueryCondition, BloomQueryCondition {
@@ -135,5 +136,10 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         final IndexStatementCondition cast = (IndexStatementCondition) object;
         return this.value.equals(cast.value) && this.config.equals(cast.config);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, config, condition, tableSet);
     }
 }

@@ -49,6 +49,8 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
+import java.util.Objects;
+
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
@@ -94,5 +96,10 @@ public final class CategoryTableCondition implements QueryCondition {
             return false;
         final CategoryTableCondition cast = (CategoryTableCondition) object;
         return this.bloomTermId == cast.bloomTermId && this.comparedTo.equals(cast.comparedTo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(comparedTo, bloomTermId);
     }
 }

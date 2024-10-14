@@ -93,4 +93,13 @@ class LatestConditionTest {
         LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
     }
+
+    @Test
+    void hashCodeTest() {
+        LatestCondition eq1 = new LatestCondition("946720800");
+        LatestCondition eq2 = new LatestCondition("946720800");
+        LatestCondition notEq = new LatestCondition("1000");
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
 }

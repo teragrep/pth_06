@@ -127,4 +127,19 @@ class ValidElementTest {
         ValidElement eq2 = new ValidElement(element2);
         Assertions.assertNotEquals(eq1, eq2);
     }
+
+    @Test
+    void hashCodeTest() {
+        Element element = document.createElement("test");
+        element.setAttribute("value", "value");
+        element.setAttribute("operation", "operation");
+        Element element2 = document.createElement("test");
+        element2.setAttribute("value", "value");
+        element2.setAttribute("operation", "notOperation");
+        ValidElement eq1 = new ValidElement(element);
+        ValidElement eq2 = new ValidElement(element);
+        ValidElement notEq = new ValidElement(element2);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
 }

@@ -98,4 +98,15 @@ public class IndexConditionTest {
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
     }
+
+    @Test
+    void hashCodeTest() {
+        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq3 = new IndexCondition("946677600", "EQUALS", true);
+        IndexCondition eq4 = new IndexCondition("946677600", "EQUALS", true);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertEquals(eq3.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq4.hashCode());
+    }
 }

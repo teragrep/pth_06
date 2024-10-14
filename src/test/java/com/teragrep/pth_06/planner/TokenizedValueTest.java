@@ -86,4 +86,13 @@ class TokenizedValueTest {
         Assertions.assertNotEquals(value2, value1);
         Assertions.assertNotEquals(value1, null);
     }
+
+    @Test
+    void testHashCode() {
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("test");
+        TokenizedValue notEq = new TokenizedValue("nest");
+        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
+        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
+    }
 }

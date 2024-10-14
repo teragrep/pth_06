@@ -207,6 +207,22 @@ class TableFilterTypesFromMetadataResultTest {
         Assertions.assertNotEquals(result1, result3);
     }
 
+    @Test
+    public void testHashCode() {
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata notEq = new TableFilterTypesFromMetadata(ctx, table, 1L);
+        Assertions.assertEquals(result1.hashCode(), result2.hashCode());
+        Assertions.assertNotEquals(result1.hashCode(), notEq.hashCode());
+    }
+
     void insertSizedFilterIntoTargetTable(int filterTypeId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

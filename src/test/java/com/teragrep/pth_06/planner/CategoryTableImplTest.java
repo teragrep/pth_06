@@ -304,6 +304,31 @@ public class CategoryTableImplTest {
         Assertions.assertNotEquals(table1, table2);
     }
 
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> target1 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Table<?> target2 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, "one");
+        CategoryTableImpl notEq1 = new CategoryTableImpl(ctx, target1, 2L, "one");
+        CategoryTableImpl notEq2 = new CategoryTableImpl(ctx, target1, 1L, "two");
+        Assertions.assertEquals(table1.hashCode(), table2.hashCode());
+        Assertions.assertNotEquals(table1.hashCode(), notEq1.hashCode());
+        Assertions.assertNotEquals(table1.hashCode(), notEq2.hashCode());
+    }
+
     void fillTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

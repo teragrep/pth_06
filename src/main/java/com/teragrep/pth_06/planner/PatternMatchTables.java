@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
@@ -117,5 +118,10 @@ public final class PatternMatchTables {
             return false;
         final PatternMatchTables cast = (PatternMatchTables) object;
         return this.patternMatchCondition.equals(cast.patternMatchCondition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, patternMatchCondition);
     }
 }

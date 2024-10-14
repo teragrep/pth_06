@@ -200,6 +200,25 @@ class CategoryTableConditionTest {
         Assertions.assertNotEquals(cond1, cond3);
     }
 
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> target1 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableCondition cond1 = new CategoryTableCondition(target1, 0L);
+        CategoryTableCondition condEq = new CategoryTableCondition(target1, 0L);
+        CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
+        CategoryTableCondition cond3 = new CategoryTableCondition(null, 1L);
+        Assertions.assertEquals(cond1.hashCode(), condEq.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+    }
+
     void fillTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

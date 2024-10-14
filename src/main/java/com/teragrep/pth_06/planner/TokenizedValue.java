@@ -51,6 +51,7 @@ import com.teragrep.blf_01.Tokenizer;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TokenizedValue {
@@ -77,5 +78,10 @@ public final class TokenizedValue {
             return false;
         final TokenizedValue cast = (TokenizedValue) object;
         return this.value.equals(cast.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
     }
 }

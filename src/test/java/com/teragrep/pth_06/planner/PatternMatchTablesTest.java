@@ -197,6 +197,16 @@ public class PatternMatchTablesTest {
         Assertions.assertNotEquals(eq2, eq1);
     }
 
+    @Test
+    public void hashCodeTest() {
+        DSLContext ctx = DSL.using(conn);
+        PatternMatchTables eq1 = new PatternMatchTables(ctx, "testinput");
+        PatternMatchTables eq2 = new PatternMatchTables(ctx, "testinput");
+        PatternMatchTables notEq = new PatternMatchTables(ctx, "somethingelse");
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
     private void writeFilter(String tableName, int filterId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

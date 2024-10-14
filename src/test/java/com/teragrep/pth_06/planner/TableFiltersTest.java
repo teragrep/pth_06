@@ -200,6 +200,25 @@ class TableFiltersTest {
         Assertions.assertNotEquals(filter1, filter3);
     }
 
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters notEq1 = new TableFilters(ctx, table, 0L, "notTest");
+        TableFilters notEq2 = new TableFilters(ctx, table, 1L, "test");
+        Assertions.assertEquals(filter1.hashCode(), filter2.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq1.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq2.hashCode());
+    }
+
     void fillTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

@@ -49,6 +49,7 @@ import org.jooq.Condition;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
@@ -92,5 +93,10 @@ public final class LatestCondition implements QueryCondition {
             return false;
         final LatestCondition cast = (LatestCondition) object;
         return this.value.equals(cast.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
     }
 }

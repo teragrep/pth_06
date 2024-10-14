@@ -48,6 +48,8 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.pth_06.planner.StreamDBClient;
 import org.jooq.Condition;
 
+import java.util.Objects;
+
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 
 public final class SourceTypeCondition implements QueryCondition {
@@ -87,5 +89,10 @@ public final class SourceTypeCondition implements QueryCondition {
         final SourceTypeCondition cast = (SourceTypeCondition) object;
         return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
                 && this.operation.equals(cast.operation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, operation, streamQuery);
     }
 }

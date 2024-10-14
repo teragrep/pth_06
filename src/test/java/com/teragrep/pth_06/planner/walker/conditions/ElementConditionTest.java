@@ -243,4 +243,19 @@ class ElementConditionTest {
         ElementCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
     }
+
+    @Test
+    void testHashCode() {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        Element element2 = document.createElement("source");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        ElementCondition eq1 = new ElementCondition(element, config);
+        ElementCondition eq2 = new ElementCondition(element, config);
+        ElementCondition notEq = new ElementCondition(element2, config);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
 }

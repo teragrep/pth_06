@@ -98,4 +98,17 @@ class SourceTypeConditionTest {
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
     }
+
+    @Test
+    void hashCodeTest() {
+        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition notEQ1 = new SourceTypeCondition("946677600", "EQUALS", true);
+        SourceTypeCondition notEQ2 = new SourceTypeCondition("1234", "EQUALS", false);
+        SourceTypeCondition notEQ3 = new SourceTypeCondition("946677600", "NOT_EQUALS", false);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ1.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ3.hashCode());
+    }
 }

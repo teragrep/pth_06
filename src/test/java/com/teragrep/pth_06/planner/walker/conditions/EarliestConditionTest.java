@@ -69,7 +69,6 @@ public class EarliestConditionTest {
     @Test
     void equalsTest() {
         EarliestCondition eq1 = new EarliestCondition("946677600");
-        eq1.condition();
         EarliestCondition eq2 = new EarliestCondition("946677600");
         Assertions.assertEquals(eq1, eq2);
     }
@@ -79,5 +78,14 @@ public class EarliestConditionTest {
         EarliestCondition eq1 = new EarliestCondition("946677600");
         EarliestCondition notEq = new EarliestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
+    }
+
+    @Test
+    void hashCodeTest() {
+        EarliestCondition eq1 = new EarliestCondition("946677600");
+        EarliestCondition eq2 = new EarliestCondition("946677600");
+        EarliestCondition notEq = new EarliestCondition("1000");
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
     }
 }

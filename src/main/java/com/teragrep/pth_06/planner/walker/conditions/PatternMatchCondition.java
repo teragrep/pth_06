@@ -50,6 +50,8 @@ import com.teragrep.pth_06.planner.TokenizedValue;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
+import java.util.Objects;
+
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
@@ -88,5 +90,10 @@ public final class PatternMatchCondition implements QueryCondition {
             return false;
         final PatternMatchCondition cast = (PatternMatchCondition) object;
         return this.value.equals(cast.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
     }
 }
