@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Named;
@@ -76,7 +77,7 @@ public class ConditionMatchBloomDBTablesTest {
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
-    void setup() {
+    public void setup() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -127,7 +128,7 @@ public class ConditionMatchBloomDBTablesTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -214,6 +215,25 @@ public class ConditionMatchBloomDBTablesTest {
         ConditionMatchBloomDBTables eq2 = new ConditionMatchBloomDBTables(ctx2, "testinput");
         Assertions.assertNotEquals(eq1, eq2);
         Assertions.assertNotEquals(eq2, eq1);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        DSLContext ctx = DSL.using(conn);
+        PatternMatchTables eq1 = new PatternMatchTables(ctx, "testinput");
+        PatternMatchTables eq2 = new PatternMatchTables(ctx, "testinput");
+        PatternMatchTables notEq = new PatternMatchTables(ctx, "somethingelse");
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(PatternMatchTables.class)
+                .withNonnullFields("ctx")
+                .withNonnullFields("patternMatchCondition")
+                .verify();
     }
 
     private void writeFilter(String tableName, int filterId) {

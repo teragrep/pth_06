@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -108,7 +109,7 @@ public class CategoryTableImplTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -123,7 +124,7 @@ public class CategoryTableImplTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -252,6 +253,43 @@ public class CategoryTableImplTest {
         CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, "one");
         CategoryTableImpl table2 = new CategoryTableImpl(ctx2, table, 0L, "one");
         Assertions.assertNotEquals(table1, table2);
+    }
+
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> target1 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Table<?> target2 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, "one");
+        CategoryTableImpl notEq1 = new CategoryTableImpl(ctx, target1, 2L, "one");
+        CategoryTableImpl notEq2 = new CategoryTableImpl(ctx, target1, 1L, "two");
+        Assertions.assertEquals(table1.hashCode(), table2.hashCode());
+        Assertions.assertNotEquals(table1.hashCode(), notEq1.hashCode());
+        Assertions.assertNotEquals(table1.hashCode(), notEq2.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(CategoryTableImpl.class)
+                .withNonnullFields("ctx")
+                .withNonnullFields("originTable")
+                .withNonnullFields("bloomTermId")
+                .withNonnullFields("tableCondition")
+                .withNonnullFields("tableFilters")
+                .verify();
     }
 
     void fillTargetTable() {

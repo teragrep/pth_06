@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
@@ -65,7 +66,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * 
  * @see org.jooq.QueryPart
  */
-class ElementConditionTest {
+public class ElementConditionTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
@@ -74,7 +75,7 @@ class ElementConditionTest {
     final ConditionConfig streamConfig = new ConditionConfig(mockCtx, true);
 
     @Test
-    void testStreamTags() {
+    public void testStreamTags() {
         String[] streamTags = {
                 "index", "host", "sourcetype"
         };
@@ -91,7 +92,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testProvidedElementMissingValue() {
+    public void testProvidedElementMissingValue() {
         Element element = document.createElement("test");
         element.setAttribute("operation", "EQUALS");
         ElementCondition elementCondition = new ElementCondition(element, config);
@@ -101,7 +102,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testProvidedElementMissingOperation() {
+    public void testProvidedElementMissingOperation() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
         ElementCondition elementCondition = new ElementCondition(element, config);
@@ -111,7 +112,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testIsIndexStatement() {
+    public void testIsIndexStatement() {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "searchTerm");
         element.setAttribute("operation", "EQUALS");
@@ -130,7 +131,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testIndexStatementWithBadConnection() {
+    public void testIndexStatementWithBadConnection() {
         Element element = document.createElement("indexstatement");
         element.setAttribute("value", "searchTerm");
         element.setAttribute("operation", "EQUALS");
@@ -140,7 +141,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testTimeQualifiers() {
+    public void testTimeQualifiers() {
         String[] tags = {
                 "earliest", "latest", "index_earliest", "index_latest"
         };
@@ -157,7 +158,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void testInvalidStreamTags() {
+    public void testInvalidStreamTags() {
         String[] tags = {
                 "earliest", "latest", "index_earliest", "index_latest", "indexstatement"
         };
@@ -174,7 +175,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void invalidElementNameTest() {
+    public void invalidElementNameTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "1000");
         element.setAttribute("operation", "EQUALS");
@@ -188,7 +189,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -199,7 +200,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -215,7 +216,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void notEqualsDifferentConfigTest() {
+    public void notEqualsDifferentConfigTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -229,7 +230,7 @@ class ElementConditionTest {
     }
 
     @Test
-    void notEqualsDifferentConnectionTest() {
+    public void notEqualsDifferentConnectionTest() {
         Element element = document.createElement("index");
         element.setAttribute("value", "f17");
         element.setAttribute("operation", "EQUALS");
@@ -242,5 +243,29 @@ class ElementConditionTest {
         ElementCondition eq = new ElementCondition(element, cfg1);
         ElementCondition notEq = new ElementCondition(element, cfg2);
         Assertions.assertNotEquals(eq, notEq);
+    }
+
+    @Test
+    public void testHashCode() {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        Element element2 = document.createElement("source");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        ElementCondition eq1 = new ElementCondition(element, config);
+        ElementCondition eq2 = new ElementCondition(element, config);
+        ElementCondition notEq = new ElementCondition(element2, config);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(ElementCondition.class)
+                .withNonnullFields("element")
+                .withNonnullFields("config")
+                .verify();
     }
 }

@@ -107,6 +107,7 @@ public final class ConditionConfig {
         return streamQuery;
     }
 
+    //* DSLContext must be same instance to be equal */
     @Override
     public boolean equals(Object object) {
         if (this == object) {

@@ -43,72 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.bloomfilter;
+package com.teragrep.pth_06.config;
 
-import com.teragrep.blf_01.Token;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+import org.jooq.tools.jdbc.MockConnection;
+import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+public class ConditionConfigTest {
 
-public class TokenizedValueTest {
+    DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
 
     @Test
-    public void testTokenization() {
-        TokenizedValue result = new TokenizedValue("test.nest");
-        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
-        Assertions.assertTrue(tokens.contains("nest"));
-        Assertions.assertTrue(tokens.contains("test"));
-        Assertions.assertTrue(tokens.contains("."));
-        Assertions.assertTrue(tokens.contains("test.nest"));
-        Assertions.assertTrue(tokens.contains(".nest"));
-        Assertions.assertTrue(tokens.contains("test."));
-        Assertions.assertEquals(6, tokens.size());
+    void testEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false, 1L);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1, cond2);
     }
 
     @Test
-    public void testEquality() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        Assertions.assertEquals(value1, value2);
-        value1.tokens();
-        Assertions.assertEquals(value2, value1);
-    }
-
-    @Test
-    public void testNotEquals() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("nest");
-        Assertions.assertNotEquals(value1, value2);
+    void testNonEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true, 1L);
+        Assertions.assertNotEquals(cond1, cond2);
+        Assertions.assertNotEquals(cond1, cond3);
+        Assertions.assertNotEquals(cond1, cond4);
     }
 
     @Test
     void testHashCode() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        TokenizedValue notEq = new TokenizedValue("nest");
-        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
-        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond5 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond4.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond5.hashCode());
     }
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
-    }
-
-    @Test
-    public void testHashCode() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        TokenizedValue notEq = new TokenizedValue("nest");
-        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
-        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
-    }
-
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
+        EqualsVerifier.forClass(ConditionConfig.class).verify();
     }
 }

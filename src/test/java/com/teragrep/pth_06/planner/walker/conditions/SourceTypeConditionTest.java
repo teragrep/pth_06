@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -55,10 +56,10 @@ import org.junit.jupiter.api.Test;
  * 
  * @see org.jooq.QueryPart
  */
-class SourceTypeConditionTest {
+public class SourceTypeConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         String e = "\"getArchivedObjects_filter_table\".\"stream\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"stream\" like 'f17'";
         Condition elementCondition = new SourceTypeCondition("f17", "EQUALS", false).condition();
@@ -68,7 +69,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void negationTest() {
+    public void negationTest() {
         String e = "not (\"getArchivedObjects_filter_table\".\"stream\" like 'f17')";
         String eStream = "not (\"streamdb\".\"stream\".\"stream\" like 'f17')";
         Condition elementCondition = new SourceTypeCondition("f17", "NOT_EQUALS", false).condition();
@@ -78,7 +79,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         eq1.condition();
         SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
@@ -90,12 +91,35 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         SourceTypeCondition notEq = new SourceTypeCondition("1000", "EQUALS", false);
         SourceTypeCondition notEq2 = new SourceTypeCondition("1000", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
+        SourceTypeCondition notEQ1 = new SourceTypeCondition("946677600", "EQUALS", true);
+        SourceTypeCondition notEQ2 = new SourceTypeCondition("1234", "EQUALS", false);
+        SourceTypeCondition notEQ3 = new SourceTypeCondition("946677600", "NOT_EQUALS", false);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ1.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEQ3.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(SourceTypeCondition.class)
+                .withNonnullFields("value")
+                .withNonnullFields("operation")
+                .withNonnullFields("streamQuery")
+                .verify();
     }
 }
