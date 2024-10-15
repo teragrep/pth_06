@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.scheduler;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.planner.HdfsQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import com.teragrep.pth_06.planner.offset.HdfsOffset;
@@ -104,9 +104,8 @@ public final class HdfsBatchSliceCollection extends BatchSliceCollection {
         LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
         HdfsOffset hdfsStartOffset = ((DatasourceOffset) start).getHdfsOffset();
         HdfsOffset hdfsEndOffset = ((DatasourceOffset) end).getHdfsOffset();
-        LinkedList<HdfsTopicPartitionOffsetMetadata> result = hq
-                .processBetweenHdfsFileMetadata(hdfsStartOffset, hdfsEndOffset);
-        for (HdfsTopicPartitionOffsetMetadata r : result) {
+        LinkedList<HdfsFileMetadata> result = hq.processBetweenHdfsFileMetadata(hdfsStartOffset, hdfsEndOffset);
+        for (HdfsFileMetadata r : result) {
             this.add(new BatchSlice(r));
         }
         return this;

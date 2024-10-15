@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.avro.SyslogRecord;
 import org.apache.avro.file.DataFileStream;
 import org.apache.avro.specific.SpecificDatumReader;
@@ -63,23 +63,23 @@ public final class AvroReadImpl implements AvroRead {
     final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
     private final FileSystem fs;
-    private final HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata;
+    private final HdfsFileMetadata hdfsFileMetadata;
     private DataFileStream<SyslogRecord> reader;
     private SyslogRecord currentRecord;
 
-    public AvroReadImpl(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
+    public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) {
         this.fs = fs;
-        this.hdfsTopicPartitionOffsetMetadata = hdfsTopicPartitionOffsetMetadata;
+        this.hdfsFileMetadata = hdfsFileMetadata;
     }
 
     @Override
     public void open() throws IOException {
-        Path hdfsreadpath = new Path(hdfsTopicPartitionOffsetMetadata.hdfsFilePath);
+        Path hdfsreadpath = new Path(hdfsFileMetadata.hdfsFilePath);
         if (LOGGER.isDebugEnabled()) {
             LOGGER
                     .debug(
                             "Attempting to open file <{}> belonging to topic <{}>", hdfsreadpath.getName(),
-                            hdfsTopicPartitionOffsetMetadata.topicPartition.topic()
+                            hdfsFileMetadata.topicPartition.topic()
                     );
         }
         FSDataInputStream inputStream = fs.open(hdfsreadpath);

@@ -357,10 +357,10 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             // HDFS tasks
-            LinkedList<HdfsTopicPartitionOffsetMetadata> hdfsTaskList = new LinkedList<>();
+            LinkedList<HdfsFileMetadata> hdfsTaskList = new LinkedList<>();
             for (BatchSlice batchSlice : taskObjectList) {
                 if (batchSlice.type.equals(BatchSlice.Type.HDFS)) {
-                    hdfsTaskList.add(batchSlice.hdfsTopicPartitionOffsetMetadata);
+                    hdfsTaskList.add(batchSlice.hdfsFileMetadata);
                 }
             }
 

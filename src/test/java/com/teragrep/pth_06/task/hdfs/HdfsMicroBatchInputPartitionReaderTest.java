@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.planner.MockHDFS;
 import com.teragrep.pth_06.task.HdfsMicroBatchInputPartitionReader;
 import org.apache.kafka.common.TopicPartition;
@@ -80,12 +80,12 @@ public class HdfsMicroBatchInputPartitionReaderTest {
     public void testHdfsConsumer2Files() {
         assertDoesNotThrow(() -> {
             // create task object list
-            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            LinkedList<HdfsFileMetadata> taskObjectList = new LinkedList<>();
             // Add taskObjects to the taskObjectList according to what files are stored in minicluster during setup.
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
 
             HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
                     0L,
@@ -122,10 +122,10 @@ public class HdfsMicroBatchInputPartitionReaderTest {
     public void testHdfsConsumer1File() {
         assertDoesNotThrow(() -> {
             // create task object list
-            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            LinkedList<HdfsFileMetadata> taskObjectList = new LinkedList<>();
             // Add only the taskObject related to testConsumerTopic/0.9 file to the taskObjectList.
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
 
             HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
                     0L,
@@ -162,10 +162,10 @@ public class HdfsMicroBatchInputPartitionReaderTest {
     public void testHdfsConsumer1FileAlt() {
         assertDoesNotThrow(() -> {
             // create task object list
-            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            LinkedList<HdfsFileMetadata> taskObjectList = new LinkedList<>();
             // Add only the taskObject related to testConsumerTopic/0.13 file to the taskObjectList.
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
 
             HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
                     0L,
@@ -202,12 +202,12 @@ public class HdfsMicroBatchInputPartitionReaderTest {
     public void testCutoffEpoch() {
         assertDoesNotThrow(() -> {
             // create task object list
-            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList = new LinkedList<>();
+            LinkedList<HdfsFileMetadata> taskObjectList = new LinkedList<>();
             // Add taskObjects to the taskObjectList according to what files are stored in minicluster during setup.
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 9, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9", 0));
             taskObjectList
-                    .add(new HdfsTopicPartitionOffsetMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
+                    .add(new HdfsFileMetadata(new TopicPartition("testConsumerTopic", 0), 13, hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13", 0));
 
             HdfsMicroBatchInputPartitionReader hdfsMicroBatchInputPartitionReader = new HdfsMicroBatchInputPartitionReader(
                     1650872090804001L, // Offset 0 has timestamp of 1650872090804000L

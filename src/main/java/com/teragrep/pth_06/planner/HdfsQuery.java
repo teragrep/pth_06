@@ -46,17 +46,14 @@
 package com.teragrep.pth_06.planner;
 
 import com.google.gson.JsonArray;
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.planner.offset.HdfsOffset;
 
 import java.util.LinkedList;
 
 public interface HdfsQuery {
 
-    LinkedList<HdfsTopicPartitionOffsetMetadata> processBetweenHdfsFileMetadata(
-            HdfsOffset startOffset,
-            HdfsOffset endOffset
-    );
+    LinkedList<HdfsFileMetadata> processBetweenHdfsFileMetadata(HdfsOffset startOffset, HdfsOffset endOffset);
 
     void commit(HdfsOffset offset);
 
