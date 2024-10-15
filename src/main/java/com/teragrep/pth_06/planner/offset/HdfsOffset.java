@@ -51,7 +51,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,8 +59,6 @@ import java.util.Map;
 
 public class HdfsOffset extends Offset implements Serializable {
 
-    private static final Type mapType = new TypeToken<Map<String, Long>>() {
-    }.getType();
     private final Map<String, Long> serializedHdfsOffset;
 
     public HdfsOffset(Map<TopicPartition, Long> offset) {
@@ -74,7 +71,8 @@ public class HdfsOffset extends Offset implements Serializable {
 
     public HdfsOffset(String s) {
         Gson gson = new Gson();
-        serializedHdfsOffset = gson.fromJson(s, mapType);
+        serializedHdfsOffset = gson.fromJson(s, new TypeToken<Map<String, Long>>() {
+        }.getType());
     }
 
     public Map<TopicPartition, Long> getOffsetMap() {
