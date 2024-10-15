@@ -46,8 +46,8 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.FileSystemFactoryImpl;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
 import org.apache.hadoop.fs.*;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
@@ -73,8 +73,8 @@ public class HdfsDBClient {
     }
 
     // this queries and pulls the distinct file metadata values to the partitionList according to the given query conditions (condition only applies to topic names in planner side).
-    public LinkedList<HdfsTopicPartitionOffsetMetadata> pullToPartitionList() throws IOException {
-        LinkedList<HdfsTopicPartitionOffsetMetadata> rv = new LinkedList<>();
+    public LinkedList<HdfsFileMetadata> pullToPartitionList() throws IOException {
+        LinkedList<HdfsFileMetadata> rv = new LinkedList<>();
         // path holds the fileSystem path to the directory that holds a collection of other directories, each different directory representing a different topic.
         FileStatus[] directoryStatuses = fs.listStatus(new Path(path), topicFilter);
         /*If the path only holds one directory, fileStatuses will only hold one FileStatus object which returns this value when fileStatus.getPath() is called:
@@ -91,13 +91,13 @@ public class HdfsDBClient {
                     String[] split = r2.getPath().getName().split("\\."); // The file name can be split to partition parameter and offset parameter. First value is partition and second is offset.
                     String partition = split[0];
                     String offset = split[1];
-                    HdfsTopicPartitionOffsetMetadata temp = new HdfsTopicPartitionOffsetMetadata(
+                    HdfsFileMetadata temp = new HdfsFileMetadata(
                             new TopicPartition(topic, Integer.parseInt(partition)),
                             Integer.parseInt(offset),
                             r2.getPath().toString(),
                             r2.getLen()
                     );
-                    // Add the HdfsTopicPartitionOffsetMetadata object to the rv only if the file's modification timestamp is above ignoreBeforeEpoch. Timestamps are in milliseconds.
+                    // Add the HdfsFileMetadata object to the rv only if the file's modification timestamp is above ignoreBeforeEpoch. Timestamps are in milliseconds.
                     if (r2.getModificationTime() >= ignoreBeforeEpoch) {
                         rv.add(temp);
                     }

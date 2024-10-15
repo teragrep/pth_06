@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.avro.SyslogRecord;
 import com.teragrep.pth_06.planner.MockHDFS;
 import org.apache.hadoop.conf.Configuration;
@@ -97,8 +97,8 @@ public class AvroReadImplTest {
             // filesystem for HDFS access is set here
             FileSystem fs = FileSystem.get(URI.create(hdfsUri), conf);
 
-            // build hdfsTopicPartitionOffsetMetadata object
-            HdfsTopicPartitionOffsetMetadata testConsumerTopic09 = new HdfsTopicPartitionOffsetMetadata(
+            // build hdfsFileMetadata object
+            HdfsFileMetadata testConsumerTopic09 = new HdfsFileMetadata(
                     new TopicPartition("testConsumerTopic", 0),
                     9,
                     hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.9",
@@ -115,7 +115,7 @@ public class AvroReadImplTest {
             avroReadImpl1.close();
             Assertions.assertEquals(10, rowNum); // Asserts that expected number of records were consumed from the files.
 
-            HdfsTopicPartitionOffsetMetadata testConsumerTopic013 = new HdfsTopicPartitionOffsetMetadata(
+            HdfsFileMetadata testConsumerTopic013 = new HdfsFileMetadata(
                     new TopicPartition("testConsumerTopic", 0),
                     13,
                     hdfsUri + "opt/teragrep/cfe_39/srv/testConsumerTopic/0.13",

@@ -47,8 +47,8 @@ package com.teragrep.pth_06.planner;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
 import com.teragrep.pth_06.planner.offset.HdfsOffset;
 import com.teragrep.pth_06.planner.walker.HdfsConditionWalker;
 import org.apache.kafka.common.TopicPartition;
@@ -65,7 +65,7 @@ import java.util.Map;
 public class HdfsQueryProcessor implements HdfsQuery {
 
     private final Logger LOGGER = LoggerFactory.getLogger(HdfsQueryProcessor.class);
-    private LinkedList<HdfsTopicPartitionOffsetMetadata> topicPartitionList;
+    private LinkedList<HdfsFileMetadata> topicPartitionList;
     private final HdfsDBClient hdfsDBClient;
     private String topicsRegexString;
     private final Map<TopicPartition, Long> hdfsOffsetMap;
@@ -112,7 +112,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
         hdfsOffsetMap = new HashMap<>(); // This parameter is used for generating the new start offsets for the KafkaOffsetPlanner. hdfsOffsetMapToJSON() is used to transfer the parameter using printer.
         seekToResults(); // This method loads all the available metadata to TopicPartitionList from HDFS.
         // Create a map that only contains the metadata with the highest offset for every topic partition.
-        for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
+        for (HdfsFileMetadata r : topicPartitionList) {
             long partitionStart = r.endOffset;
             if (!hdfsOffsetMap.containsKey(r.topicPartition)) {
                 hdfsOffsetMap.put(r.topicPartition, partitionStart + 1);
@@ -141,27 +141,16 @@ public class HdfsQueryProcessor implements HdfsQuery {
 
     // Returns all the available HDFS file metadata between the given topic partition offsets.
     @Override
-    public LinkedList<HdfsTopicPartitionOffsetMetadata> processBetweenHdfsFileMetadata(
-            HdfsOffset startOffset,
-            HdfsOffset endOffset
-    ) {
-        LinkedList<HdfsTopicPartitionOffsetMetadata> rv = new LinkedList<>();
+    public LinkedList<HdfsFileMetadata> processBetweenHdfsFileMetadata(HdfsOffset startOffset, HdfsOffset endOffset) {
+        LinkedList<HdfsFileMetadata> rv = new LinkedList<>();
         Map<TopicPartition, Long> endOffsetMap = endOffset.getOffsetMap();
         Map<TopicPartition, Long> startOffsetMap = startOffset.getOffsetMap();
-        for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
+        for (HdfsFileMetadata r : topicPartitionList) {
             if (
                 (endOffsetMap.get(r.topicPartition) >= r.endOffset)
                         & (startOffsetMap.get(r.topicPartition) <= r.endOffset)
             ) {
-                rv
-                        .add(
-                                new HdfsTopicPartitionOffsetMetadata(
-                                        r.topicPartition,
-                                        r.endOffset,
-                                        r.hdfsFilePath,
-                                        r.hdfsFileSize
-                                )
-                        );
+                rv.add(new HdfsFileMetadata(r.topicPartition, r.endOffset, r.hdfsFilePath, r.hdfsFileSize));
             }
         }
         return rv;
@@ -171,19 +160,12 @@ public class HdfsQueryProcessor implements HdfsQuery {
     @Override
     public void commit(HdfsOffset offset) {
         Map<TopicPartition, Long> offsetMap = offset.getOffsetMap();
-        LinkedList<HdfsTopicPartitionOffsetMetadata> newTopicPartitionList = new LinkedList<>();
+        LinkedList<HdfsFileMetadata> newTopicPartitionList = new LinkedList<>();
         // Generate new topicPartitionList where the metadata with offset values lower than the offset values given as input parameter are filtered out.
-        for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
+        for (HdfsFileMetadata r : topicPartitionList) {
             if (offsetMap.get(r.topicPartition) < r.endOffset) {
                 newTopicPartitionList
-                        .add(
-                                new HdfsTopicPartitionOffsetMetadata(
-                                        r.topicPartition,
-                                        r.endOffset,
-                                        r.hdfsFilePath,
-                                        r.hdfsFileSize
-                                )
-                        );
+                        .add(new HdfsFileMetadata(r.topicPartition, r.endOffset, r.hdfsFilePath, r.hdfsFileSize));
             }
         }
         topicPartitionList = newTopicPartitionList;
@@ -211,7 +193,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
     public HdfsOffset getBeginningOffsets() {
         Map<TopicPartition, Long> startOffset = new HashMap<>();
         // Go through the topicPartitionList to generate start offsets.
-        for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
+        for (HdfsFileMetadata r : topicPartitionList) {
             // Generate startOffset
             // When going through the result, store the topic partition with the lowest offset to the startOffset object.
             long partitionOffset = r.endOffset;
@@ -232,7 +214,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
     public HdfsOffset getInitialEndOffsets() {
         Map<TopicPartition, Long> endOffset = new HashMap<>();
         // Go through the topicPartitionList to generate end offsets.
-        for (HdfsTopicPartitionOffsetMetadata r : topicPartitionList) {
+        for (HdfsFileMetadata r : topicPartitionList) {
             long partitionOffset = r.endOffset;
             // Generate endOffset
             // When going through the result, store the topic partition with the highest offset to the endOffset object.
@@ -257,9 +239,9 @@ public class HdfsQueryProcessor implements HdfsQuery {
         // Initialize the batchSizeLimit object to split the data into appropriate sized batches
         BatchSizeLimit batchSizeLimit = new BatchSizeLimit(quantumLength * numPartitions, totalObjectCountLimit);
         // Keep loading more offsets from topicPartitionList until the limit is reached
-        Iterator<HdfsTopicPartitionOffsetMetadata> iterator = topicPartitionList.iterator();
+        Iterator<HdfsFileMetadata> iterator = topicPartitionList.iterator();
         while (!batchSizeLimit.isOverLimit() && iterator.hasNext()) {
-            HdfsTopicPartitionOffsetMetadata r = iterator.next();
+            HdfsFileMetadata r = iterator.next();
             // When going through the result, store the topic partition with the highest offset to the latestHdfsOffsetMap.
             if (latestHdfsOffsetMap.get(r.topicPartition) < r.endOffset) {
                 latestHdfsOffsetMap.replace(r.topicPartition, r.endOffset);

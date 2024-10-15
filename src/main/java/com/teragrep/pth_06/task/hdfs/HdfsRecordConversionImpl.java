@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.task.hdfs;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.avro.SyslogRecord;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.kafka.common.TopicPartition;
@@ -68,19 +68,15 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
 
     // Stub object
     public HdfsRecordConversionImpl(FileSystem fs) {
-        this(fs, new HdfsTopicPartitionOffsetMetadata(new TopicPartition("", 0), 0, "", 0), true);
+        this(fs, new HdfsFileMetadata(new TopicPartition("", 0), 0, "", 0), true);
     }
 
-    public HdfsRecordConversionImpl(FileSystem fs, HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata) {
-        this(fs, hdfsTopicPartitionOffsetMetadata, false);
+    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) {
+        this(fs, hdfsFileMetadata, false);
     }
 
-    public HdfsRecordConversionImpl(
-            FileSystem fs,
-            HdfsTopicPartitionOffsetMetadata hdfsTopicPartitionOffsetMetadata,
-            Boolean stub
-    ) {
-        this.avroReadImpl = new AvroReadImpl(fs, hdfsTopicPartitionOffsetMetadata);
+    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata, Boolean stub) {
+        this.avroReadImpl = new AvroReadImpl(fs, hdfsFileMetadata);
         this.stub = stub;
         this.rowWriter = new UnsafeRowWriter(11);
     }

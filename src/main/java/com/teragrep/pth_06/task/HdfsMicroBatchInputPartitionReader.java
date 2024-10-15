@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.task;
 
 import com.teragrep.pth_06.FileSystemFactoryImpl;
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.task.hdfs.HdfsRecordConversionImpl;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.sql.catalyst.InternalRow;
@@ -61,7 +61,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
 
     final Logger LOGGER = LoggerFactory.getLogger(HdfsMicroBatchInputPartitionReader.class);
 
-    private final LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList;
+    private final LinkedList<HdfsFileMetadata> taskObjectList;
     private final FileSystem fs;
     private final long cutoffEpoch;
     private HdfsRecordConversionImpl hdfsRecordConversionImpl;
@@ -81,7 +81,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
             String hdfsCipherSuites,
             String kerberosKeytabUser,
             String kerberosKeytabPath,
-            LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList
+            LinkedList<HdfsFileMetadata> taskObjectList
     ) throws IOException {
 
         this.cutoffEpoch = cutoffEpoch;

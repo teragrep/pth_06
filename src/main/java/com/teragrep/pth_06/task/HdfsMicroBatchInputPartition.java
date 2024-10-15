@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.task;
 
-import com.teragrep.pth_06.HdfsTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.config.HdfsConfig;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
 
     public final Logger LOGGER = LoggerFactory.getLogger(HdfsMicroBatchInputPartition.class);
 
-    public final LinkedList<HdfsTopicPartitionOffsetMetadata> taskObjectList;
+    public final LinkedList<HdfsFileMetadata> taskObjectList;
 
     public final long includeRecordEpochAndAfter; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
@@ -75,10 +75,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
     public final String kerberosKeytabPath;
     public final String kerberosAutorenewal;
 
-    public HdfsMicroBatchInputPartition(
-            HdfsConfig hdfsConfig,
-            LinkedList<HdfsTopicPartitionOffsetMetadata> hdfsTaskList
-    ) {
+    public HdfsMicroBatchInputPartition(HdfsConfig hdfsConfig, LinkedList<HdfsFileMetadata> hdfsTaskList) {
         this.taskObjectList = hdfsTaskList;
         kerberosAutorenewal = hdfsConfig.kerberosAutorenewal;
         hdfsUri = hdfsConfig.hdfsUri;
