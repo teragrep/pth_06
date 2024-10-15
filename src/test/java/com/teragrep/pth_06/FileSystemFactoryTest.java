@@ -89,7 +89,7 @@ public class FileSystemFactoryTest {
                     "",
                     ""
             );
-            FileSystem fs = fileSystemFactory.create(true);
+            FileSystem fs = fileSystemFactory.fileSystem(true);
             fs.close();
         });
     }
@@ -111,7 +111,7 @@ public class FileSystemFactoryTest {
                 ""
         );
         IllegalArgumentException e = Assertions
-                .assertThrows(IllegalArgumentException.class, () -> fileSystemFactory.create(true));
+                .assertThrows(IllegalArgumentException.class, () -> fileSystemFactory.fileSystem(true));
         Assertions.assertEquals("java.net.UnknownHostException: wrongUri", e.getMessage());
     }
 

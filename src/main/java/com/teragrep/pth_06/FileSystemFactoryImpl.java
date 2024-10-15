@@ -120,7 +120,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
     }
 
     @Override
-    public FileSystem create(boolean initializeUGI) throws IOException {
+    public FileSystem fileSystem(boolean initializeUGI) throws IOException {
         FileSystem fs;
         if ("kerberos".equals(kerberosAuthentication)) {
             // Code for initializing the FileSystem with kerberos.

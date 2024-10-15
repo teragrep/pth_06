@@ -100,7 +100,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
                 hdfsCipherSuites,
                 kerberosKeytabUser,
                 kerberosKeytabPath
-        ).create(false);
+        ).fileSystem(false);
 
         this.hdfsRecordConversionImpl = new HdfsRecordConversionImpl(fs); // stub
     }
