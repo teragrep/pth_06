@@ -67,7 +67,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
     private final String kerberosKdc;
     private final String kerberosAuthorization;
     private final String kerberosAutorenewal;
-    private final String UseHdfsHostname;
+    private final String useHdfsHostname;
     private final String kerberosPrincipalPattern;
     private final String hdfsTransferProtection;
     private final String hdfsCipherSuites;
@@ -82,7 +82,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
                 config.kerberosKdc,
                 config.kerberosAuthorization,
                 config.kerberosAutorenewal,
-                config.UseHdfsHostname,
+                config.useHdfsHostname,
                 config.kerberosPrincipalPattern,
                 config.hdfsTransferProtection,
                 config.hdfsCipherSuites,
@@ -111,7 +111,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
         this.kerberosKdc = kerberosKdc;
         this.kerberosAuthorization = kerberosAuthorization;
         this.kerberosAutorenewal = kerberosAutorenewal;
-        this.UseHdfsHostname = UseHdfsHostname;
+        this.useHdfsHostname = UseHdfsHostname;
         this.kerberosPrincipalPattern = kerberosPrincipalPattern;
         this.hdfsTransferProtection = hdfsTransferProtection;
         this.hdfsCipherSuites = hdfsCipherSuites;
@@ -142,7 +142,7 @@ public final class FileSystemFactoryImpl implements FileSystemFactory {
             conf.set("fs.file.impl", LocalFileSystem.class.getName()); // Maven stuff?
 
             // hack for running locally with fake DNS records, set this to true if overriding the host name in /etc/hosts
-            conf.set("dfs.client.use.datanode.hostname", UseHdfsHostname);
+            conf.set("dfs.client.use.datanode.hostname", useHdfsHostname);
 
             // server principal, the kerberos principle that the namenode is using
             conf.set("dfs.namenode.kerberos.principal.pattern", kerberosPrincipalPattern);

@@ -55,7 +55,7 @@ public final class HdfsConfig {
     public final long includeRecordEpochAndAfter; // Represents the cutoff epoch in microseconds which dictates which record should not be fetched from HDFS based on the record timestamp.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
     public final String hdfsUri; // Represents the address of the HDFS server.
-    public final String UseHdfsHostname;
+    public final String useHdfsHostname;
     public final String hdfsTransferProtection;
     public final String hdfsCipherSuites;
     public final boolean useMockHdfsDatabase; // Represents the configuration parameter if mock database should be used or not. Used only for testing.
@@ -90,7 +90,7 @@ public final class HdfsConfig {
                 );
         hdfsPath = getOrThrow(opts, "hdfs.hdfsPath");
         hdfsUri = getOrThrow(opts, "hdfs.hdfsUri");
-        UseHdfsHostname = getOrThrow(opts, "hdfs.UseHostName");
+        useHdfsHostname = getOrThrow(opts, "hdfs.UseHostName");
         hdfsTransferProtection = getOrThrow(opts, "hdfs.transferProtection");
         hdfsCipherSuites = getOrThrow(opts, "hdfs.cipherSuites");
         String useMockHdfsDatabaseString = opts.getOrDefault("hdfs.useMockHdfsDatabase", "false");
@@ -111,7 +111,7 @@ public final class HdfsConfig {
         includeRecordEpochAndAfter = 0L;
         hdfsPath = "";
         hdfsUri = "";
-        UseHdfsHostname = "";
+        useHdfsHostname = "";
         hdfsTransferProtection = "";
         hdfsCipherSuites = "";
         useMockHdfsDatabase = false;
