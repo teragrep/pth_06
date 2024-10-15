@@ -62,7 +62,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
     public final long includeRecordEpochAndAfter; // Represents the cutoff epoch which dictates which files should not be fetched from HDFS based on their timestamps.
     public final String hdfsPath; // Represents the working directory path in HDFS filesystem.
     public final String hdfsUri; // Represents the address of the HDFS server.
-    public final String UseHdfsHostname;
+    public final String useHdfsHostname;
     public final String hdfsTransferProtection;
     public final String hdfsCipherSuites;
     public final boolean useMockHdfsDatabase; // Represents the configuration parameter if mock database should be used or not. Used only for testing.
@@ -81,7 +81,7 @@ public class HdfsMicroBatchInputPartition implements InputPartition {
         hdfsUri = hdfsConfig.hdfsUri;
         hdfsPath = hdfsConfig.hdfsPath;
         includeRecordEpochAndAfter = hdfsConfig.includeRecordEpochAndAfter;
-        UseHdfsHostname = hdfsConfig.UseHdfsHostname;
+        useHdfsHostname = hdfsConfig.useHdfsHostname;
         hdfsTransferProtection = hdfsConfig.hdfsTransferProtection;
         hdfsCipherSuites = hdfsConfig.hdfsCipherSuites;
         useMockHdfsDatabase = hdfsConfig.useMockHdfsDatabase;

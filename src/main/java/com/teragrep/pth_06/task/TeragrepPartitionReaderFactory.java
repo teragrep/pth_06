@@ -126,7 +126,7 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
                         hip.kerberosKdc,
                         hip.kerberosAuthorization,
                         hip.kerberosAutorenewal,
-                        hip.UseHdfsHostname,
+                        hip.useHdfsHostname,
                         hip.kerberosPrincipalPattern,
                         hip.hdfsTransferProtection,
                         hip.hdfsCipherSuites,
