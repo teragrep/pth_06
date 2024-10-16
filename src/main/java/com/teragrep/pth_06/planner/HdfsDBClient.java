@@ -66,10 +66,14 @@ public class HdfsDBClient {
     private final long ignoreBeforeEpoch;
 
     public HdfsDBClient(Config config, String topicsRegexString) throws IOException {
+        this(config, topicsRegexString, new FileSystemFactoryImpl(config.hdfsConfig).fileSystem(true));
+    }
+
+    public HdfsDBClient(Config config, String topicsRegexString, FileSystem fs) {
         this.topicsRegexString = topicsRegexString;
         this.ignoreBeforeEpoch = config.hdfsConfig.includeFileEpochAndAfter; // Defines the minimum time window / cutoff epoch for making sure that the files which metadata is fetched by the planner are not mistakenly deleted by cfe_39 pruning before tasker can process the records inside.
         path = config.hdfsConfig.hdfsPath;
-        fs = new FileSystemFactoryImpl(config.hdfsConfig).fileSystem(true);
+        this.fs = fs;
     }
 
     // this queries and pulls the distinct file metadata values to the partitionList according to the given query conditions (condition only applies to topic names in planner side).
