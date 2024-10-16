@@ -115,9 +115,9 @@ public final class ConditionConfig {
         if (object == null || object.getClass() != this.getClass())
             return false;
         final ConditionConfig cast = (ConditionConfig) object;
-        return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx
-                && this.bloomTermId == cast.bloomTermId();
+        return bloomEnabled == cast.bloomEnabled && streamQuery == cast.streamQuery
+                && withoutFilters == cast.withoutFilters && ctx == cast.ctx
+                && bloomTermId == cast.bloomTermId();
     }
 
     @Override

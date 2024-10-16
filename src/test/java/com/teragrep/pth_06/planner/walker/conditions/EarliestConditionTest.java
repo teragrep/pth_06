@@ -45,6 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.planner.CategoryTableImpl;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -87,5 +89,12 @@ public class EarliestConditionTest {
         EarliestCondition notEq = new EarliestCondition("1000");
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(EarliestCondition.class)
+                .withNonnullFields("value")
+                .verify();
     }
 }

@@ -46,6 +46,8 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
+import com.teragrep.pth_06.planner.CategoryTableImpl;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
@@ -257,5 +259,13 @@ class ElementConditionTest {
         ElementCondition notEq = new ElementCondition(element2, config);
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(ElementCondition.class)
+                .withNonnullFields("element")
+                .withNonnullFields("config")
+                .verify();
     }
 }

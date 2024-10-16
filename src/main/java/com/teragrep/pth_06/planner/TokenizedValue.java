@@ -72,16 +72,14 @@ public final class TokenizedValue {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final TokenizedValue cast = (TokenizedValue) object;
-        return this.value.equals(cast.value);
+        return value.equals(cast.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(value);
+        return Objects.hash(value);
     }
 }

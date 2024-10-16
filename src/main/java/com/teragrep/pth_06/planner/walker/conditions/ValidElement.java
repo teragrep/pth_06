@@ -92,19 +92,14 @@ public final class ValidElement {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final ValidElement cast = (ValidElement) object;
-        boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
-        boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));
-        boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
-        return equalName && equalOperation && equalValue;
+        return Objects.equals(element, cast.element);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(element);
+        return Objects.hash(element);
     }
 }

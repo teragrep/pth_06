@@ -112,12 +112,10 @@ public final class PatternMatchTables {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final PatternMatchTables cast = (PatternMatchTables) object;
-        return this.patternMatchCondition.equals(cast.patternMatchCondition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+        return patternMatchCondition.equals(cast.patternMatchCondition) && ctx == cast.ctx; // only same instance of DSLContext is equal
     }
 
     @Override

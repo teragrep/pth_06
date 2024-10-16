@@ -45,6 +45,8 @@
  */
 package com.teragrep.pth_06.config;
 
+import com.teragrep.pth_06.planner.walker.conditions.SourceTypeCondition;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
@@ -85,5 +87,10 @@ public class ConditionConfigTest {
         Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond4.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond5.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(ConditionConfig.class).verify();
     }
 }

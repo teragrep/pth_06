@@ -158,13 +158,12 @@ public final class TableFilters {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final TableFilters cast = (TableFilters) object;
-        return this.ctx == cast.ctx && this.value.equals(cast.value) && this.table.equals(cast.table)
-                && this.bloomTermId == cast.bloomTermId;
+        return ctx == cast.ctx && value.equals(cast.value) && table.equals(cast.table)
+                && recordsInMetadata.equals(cast.recordsInMetadata)
+                && bloomTermId == cast.bloomTermId;
     }
 
     @Override

@@ -45,6 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.planner.CategoryTableImpl;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -141,5 +143,12 @@ class ValidElementTest {
         ValidElement notEq = new ValidElement(element2);
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(ValidElement.class)
+                .withNonnullFields("element")
+                .verify();
     }
 }

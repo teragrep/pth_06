@@ -134,12 +134,10 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final ElementCondition cast = (ElementCondition) object;
-        return this.element.equals(cast.element) && this.config.equals(cast.config);
+        return element.equals(cast.element) && config.equals(cast.config);
     }
 
     @Override

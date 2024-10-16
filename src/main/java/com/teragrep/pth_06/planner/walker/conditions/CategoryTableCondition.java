@@ -90,12 +90,10 @@ public final class CategoryTableCondition implements QueryCondition {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final CategoryTableCondition cast = (CategoryTableCondition) object;
-        return this.bloomTermId == cast.bloomTermId && this.comparedTo.equals(cast.comparedTo);
+        return bloomTermId == cast.bloomTermId && comparedTo.equals(cast.comparedTo);
     }
 
     @Override

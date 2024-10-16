@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -327,6 +328,17 @@ public class CategoryTableImplTest {
         Assertions.assertEquals(table1.hashCode(), table2.hashCode());
         Assertions.assertNotEquals(table1.hashCode(), notEq1.hashCode());
         Assertions.assertNotEquals(table1.hashCode(), notEq2.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(CategoryTableImpl.class)
+                .withNonnullFields("ctx")
+                .withNonnullFields("originTable")
+                .withNonnullFields("bloomTermId")
+                .withNonnullFields("tableCondition")
+                .withNonnullFields("tableFilters")
+                .verify();
     }
 
     void fillTargetTable() {

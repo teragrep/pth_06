@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -62,7 +63,7 @@ import java.util.List;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
- * 
+ *
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -217,6 +218,14 @@ class CategoryTableConditionTest {
         Assertions.assertEquals(cond1.hashCode(), condEq.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond2.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+    }
+
+    @Test
+    public void equalsverifier() {
+        EqualsVerifier.forClass(CategoryTableCondition.class)
+                .withNonnullFields("bloomTermId")
+                .withNonnullFields("comparedTo")
+                .verify();
     }
 
     void fillTargetTable() {

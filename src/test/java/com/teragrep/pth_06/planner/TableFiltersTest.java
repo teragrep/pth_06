@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -217,6 +218,17 @@ class TableFiltersTest {
         Assertions.assertEquals(filter1.hashCode(), filter2.hashCode());
         Assertions.assertNotEquals(filter1.hashCode(), notEq1.hashCode());
         Assertions.assertNotEquals(filter1.hashCode(), notEq2.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(TableFilters.class)
+                .withNonnullFields("ctx")
+                .withNonnullFields("table")
+                .withNonnullFields("bloomTermId")
+                .withNonnullFields("value")
+                .withNonnullFields("recordsInMetadata")
+                .verify();
     }
 
     void fillTargetTable() {

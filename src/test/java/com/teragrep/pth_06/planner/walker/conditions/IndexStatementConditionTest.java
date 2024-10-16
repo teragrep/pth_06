@@ -46,6 +46,8 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
+import com.teragrep.pth_06.planner.CategoryTableImpl;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -244,6 +246,17 @@ public class IndexStatementConditionTest {
         IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(IndexStatementCondition.class)
+                .withNonnullFields("value")
+                .withNonnullFields("config")
+                .withNonnullFields("condition")
+                .withNonnullFields("tableSet")
+                .withIgnoredFields("LOGGER")
+                .verify();
     }
 
     private void writeFilter(String tableName, int filterId) {

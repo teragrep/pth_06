@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.blf_01.Token;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -94,5 +95,12 @@ class TokenizedValueTest {
         TokenizedValue notEq = new TokenizedValue("nest");
         Assertions.assertEquals(value1.hashCode(), value2.hashCode());
         Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(TokenizedValue.class)
+                .withNonnullFields("value")
+                .verify();
     }
 }
