@@ -162,8 +162,7 @@ public final class TableFilters {
             return false;
         final TableFilters cast = (TableFilters) object;
         return ctx == cast.ctx && value.equals(cast.value) && table.equals(cast.table)
-                && recordsInMetadata.equals(cast.recordsInMetadata)
-                && bloomTermId == cast.bloomTermId;
+                && recordsInMetadata.equals(cast.recordsInMetadata) && bloomTermId == cast.bloomTermId;
     }
 
     @Override

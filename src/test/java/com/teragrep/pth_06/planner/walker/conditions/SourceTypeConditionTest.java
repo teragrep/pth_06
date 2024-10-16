@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.CategoryTableImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
@@ -116,7 +115,8 @@ class SourceTypeConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(SourceTypeCondition.class)
+        EqualsVerifier
+                .forClass(SourceTypeCondition.class)
                 .withNonnullFields("value")
                 .withNonnullFields("operation")
                 .withNonnullFields("streamQuery")

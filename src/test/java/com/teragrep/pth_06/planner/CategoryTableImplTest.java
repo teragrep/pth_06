@@ -332,7 +332,8 @@ public class CategoryTableImplTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(CategoryTableImpl.class)
+        EqualsVerifier
+                .forClass(CategoryTableImpl.class)
                 .withNonnullFields("ctx")
                 .withNonnullFields("originTable")
                 .withNonnullFields("bloomTermId")

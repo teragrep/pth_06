@@ -86,8 +86,7 @@ public final class IndexCondition implements QueryCondition {
         if (object == null || object.getClass() != this.getClass())
             return false;
         final IndexCondition cast = (IndexCondition) object;
-        return streamQuery == cast.streamQuery && value.equals(cast.value)
-                && operation.equals(cast.operation);
+        return streamQuery == cast.streamQuery && value.equals(cast.value) && operation.equals(cast.operation);
     }
 
     @Override

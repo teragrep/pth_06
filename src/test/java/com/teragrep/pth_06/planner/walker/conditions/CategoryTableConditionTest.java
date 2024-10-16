@@ -222,7 +222,8 @@ class CategoryTableConditionTest {
 
     @Test
     public void equalsverifier() {
-        EqualsVerifier.forClass(CategoryTableCondition.class)
+        EqualsVerifier
+                .forClass(CategoryTableCondition.class)
                 .withNonnullFields("bloomTermId")
                 .withNonnullFields("comparedTo")
                 .verify();

@@ -173,7 +173,8 @@ public final class CategoryTableImpl implements CategoryTable {
             return false;
         final CategoryTableImpl cast = (CategoryTableImpl) object;
         return originTable.equals(cast.originTable) && ctx == cast.ctx && // equal only if same instance of DSLContext
-                bloomTermId == cast.bloomTermId && tableFilters.equals(cast.tableFilters) && tableCondition.equals(cast.tableCondition);
+                bloomTermId == cast.bloomTermId && tableFilters.equals(cast.tableFilters)
+                && tableCondition.equals(cast.tableCondition);
     }
 
     @Override

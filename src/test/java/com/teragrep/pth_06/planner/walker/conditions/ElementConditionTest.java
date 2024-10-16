@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.CategoryTableImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -263,7 +262,8 @@ class ElementConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(ElementCondition.class)
+        EqualsVerifier
+                .forClass(ElementCondition.class)
                 .withNonnullFields("element")
                 .withNonnullFields("config")
                 .verify();

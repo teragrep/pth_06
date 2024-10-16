@@ -85,8 +85,7 @@ public final class SourceTypeCondition implements QueryCondition {
         if (object == null || object.getClass() != this.getClass())
             return false;
         final SourceTypeCondition cast = (SourceTypeCondition) object;
-        return streamQuery == cast.streamQuery && value.equals(cast.value)
-                && operation.equals(cast.operation);
+        return streamQuery == cast.streamQuery && value.equals(cast.value) && operation.equals(cast.operation);
     }
 
     @Override

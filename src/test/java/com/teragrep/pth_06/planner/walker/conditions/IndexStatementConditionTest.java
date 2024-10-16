@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.CategoryTableImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
@@ -250,7 +249,8 @@ public class IndexStatementConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(IndexStatementCondition.class)
+        EqualsVerifier
+                .forClass(IndexStatementCondition.class)
                 .withNonnullFields("value")
                 .withNonnullFields("config")
                 .withNonnullFields("condition")

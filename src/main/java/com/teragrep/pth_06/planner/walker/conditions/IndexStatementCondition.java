@@ -133,8 +133,8 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         if (object == null || object.getClass() != this.getClass())
             return false;
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return value.equals(cast.value) && config.equals(cast.config)
-                && condition.equals(cast.condition) && tableSet.equals(cast.tableSet);
+        return value.equals(cast.value) && config.equals(cast.config) && condition.equals(cast.condition)
+                && tableSet.equals(cast.tableSet);
     }
 
     @Override

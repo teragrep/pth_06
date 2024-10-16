@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.CategoryTableImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
@@ -103,8 +102,6 @@ class PatternMatchConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(PatternMatchCondition.class)
-                .withNonnullFields("value")
-                .verify();
+        EqualsVerifier.forClass(PatternMatchCondition.class).withNonnullFields("value").verify();
     }
 }

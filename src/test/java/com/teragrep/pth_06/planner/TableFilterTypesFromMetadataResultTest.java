@@ -226,7 +226,8 @@ class TableFilterTypesFromMetadataResultTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TableFilterTypesFromMetadata.class)
+        EqualsVerifier
+                .forClass(TableFilterTypesFromMetadata.class)
                 .withNonnullFields("ctx")
                 .withNonnullFields("table")
                 .withNonnullFields("bloomTermId")

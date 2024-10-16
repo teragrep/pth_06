@@ -99,8 +99,6 @@ class TokenizedValueTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TokenizedValue.class)
-                .withNonnullFields("value")
-                .verify();
+        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
     }
 }

@@ -222,7 +222,8 @@ class TableFiltersTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TableFilters.class)
+        EqualsVerifier
+                .forClass(TableFilters.class)
                 .withNonnullFields("ctx")
                 .withNonnullFields("table")
                 .withNonnullFields("bloomTermId")

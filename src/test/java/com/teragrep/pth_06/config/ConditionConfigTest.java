@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.config;
 
-import com.teragrep.pth_06.planner.walker.conditions.SourceTypeCondition;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
@@ -70,7 +69,7 @@ public class ConditionConfigTest {
         ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
         ConditionConfig cond2 = new ConditionConfig(ctx, true, false);
         ConditionConfig cond3 = new ConditionConfig(ctx, false, true);
-        ConditionConfig cond4 = new ConditionConfig(ctx, false, true , 1L);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true, 1L);
         Assertions.assertNotEquals(cond1, cond2);
         Assertions.assertNotEquals(cond1, cond3);
         Assertions.assertNotEquals(cond1, cond4);

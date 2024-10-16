@@ -210,7 +210,8 @@ public class PatternMatchTablesTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(PatternMatchTables.class)
+        EqualsVerifier
+                .forClass(PatternMatchTables.class)
                 .withNonnullFields("ctx")
                 .withNonnullFields("patternMatchCondition")
                 .verify();
