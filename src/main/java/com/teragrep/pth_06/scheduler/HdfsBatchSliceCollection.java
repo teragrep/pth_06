@@ -66,41 +66,7 @@ public final class HdfsBatchSliceCollection extends BatchSliceCollection {
     }
 
     public HdfsBatchSliceCollection processRange(Offset start, Offset end) {
-        /*
-        KAFKA:
-        KafkaOffset kafkaStartOffset = ((DatasourceOffset)start).getKafkaOffset();
-        KafkaOffset kafkaEndOffset = ((DatasourceOffset)end).getKafkaOffset();
-        KafkaBatchSliceCollection rv = generate(kafkaStartOffset, kafkaEndOffset);
-        LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv );
-        return rv;
-        
-        ARCHIVE:
-        LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
-        this.clear(); // clear internal list
-        Result<Record10<ULong, String, String, String, String, Date, String, String, Long, ULong>>
-                result = aq.processBetweenUnixEpochHours(((DatasourceOffset)start).getArchiveOffset().offset(),
-                                                        ((DatasourceOffset)end).getArchiveOffset().offset());
-        for (Record r : result) {
-            this.add(
-                    new BatchSlice(
-                            new ArchiveS3ObjectMetadata(
-                                    r.get(0, String.class), // id
-                                    r.get(6, String.class), // bucket
-                                    r.get(7, String.class), // path
-                                    r.get(1, String.class), // directory
-                                    r.get(2, String.class), // stream
-                                    r.get(3, String.class), // host
-                                    r.get(8, Long.class), // logtime
-                                    r.get(9, Long.class) // compressedSize
-                            )
-                    )
-            );
-        }
-        return this;
-        * */
-
         // HDFS:
-        // If the slices are not distributed correctly, refactor the code to use the archive approach instead of kafka approach.
         LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
         HdfsOffset hdfsStartOffset = ((DatasourceOffset) start).getHdfsOffset();
         HdfsOffset hdfsEndOffset = ((DatasourceOffset) end).getHdfsOffset();
