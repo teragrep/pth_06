@@ -62,7 +62,7 @@ public class HdfsDBClient {
     private final Logger LOGGER = LoggerFactory.getLogger(HdfsDBClient.class);
     private final String path;
     private final FileSystem fs;
-    private final String topicsRegexString;
+    private final TopicFilter topicFilter;
     private final long ignoreBeforeEpoch;
 
     public HdfsDBClient(Config config, String topicsRegexString) throws IOException {
@@ -70,7 +70,7 @@ public class HdfsDBClient {
     }
 
     public HdfsDBClient(Config config, String topicsRegexString, FileSystem fs) {
-        this.topicsRegexString = topicsRegexString;
+        this.topicFilter = new TopicFilter(topicsRegexString);
         this.ignoreBeforeEpoch = config.hdfsConfig.includeFileEpochAndAfter; // Defines the minimum time window / cutoff epoch for making sure that the files which metadata is fetched by the planner are not mistakenly deleted by cfe_39 pruning before tasker can process the records inside.
         path = config.hdfsConfig.hdfsPath;
         this.fs = fs;
@@ -113,13 +113,5 @@ public class HdfsDBClient {
         }
         return rv;
     }
-
-    private final PathFilter topicFilter = new PathFilter() {
-
-        @Override
-        public boolean accept(Path path) {
-            return path.getName().matches(topicsRegexString); // Catches the directory names.
-        }
-    };
 
 }
