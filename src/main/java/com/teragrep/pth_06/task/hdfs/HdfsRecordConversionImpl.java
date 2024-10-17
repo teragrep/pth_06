@@ -75,10 +75,14 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
         this(fs, hdfsFileMetadata, false);
     }
 
-    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata, Boolean stub) {
-        this.avroReadImpl = new AvroReadImpl(fs, hdfsFileMetadata);
+    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata, boolean stub) {
+        this(new AvroReadImpl(fs, hdfsFileMetadata), new UnsafeRowWriter(11), stub);
+    }
+
+    public HdfsRecordConversionImpl(AvroReadImpl avroReadImpl, UnsafeRowWriter rowWriter, boolean stub) {
+        this.avroReadImpl = avroReadImpl;
+        this.rowWriter = rowWriter;
         this.stub = stub;
-        this.rowWriter = new UnsafeRowWriter(11);
     }
 
     @Override
