@@ -57,7 +57,7 @@ public interface HdfsRecordConversion {
 
     boolean next();
 
-    InternalRow get();
+    InternalRow row();
 
     boolean isStub();
 

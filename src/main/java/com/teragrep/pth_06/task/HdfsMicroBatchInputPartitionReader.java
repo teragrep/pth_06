@@ -132,7 +132,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
             }
             else {
                 // time based inclusion, skip record and continue loop if the record is older than cutoffEpoch.
-                long rfc5424time = hdfsRecordConversionImpl.get().getLong(0); // timestamp as epochMicros
+                long rfc5424time = hdfsRecordConversionImpl.row().getLong(0); // timestamp as epochMicros
                 if (rfc5424time < cutoffEpoch) {
                     rv = false;
                 }
@@ -144,7 +144,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
 
     @Override
     public InternalRow get() {
-        InternalRow rv = hdfsRecordConversionImpl.get();
+        InternalRow rv = hdfsRecordConversionImpl.row();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("get(): <{}>", rv.getLong(7));
         }

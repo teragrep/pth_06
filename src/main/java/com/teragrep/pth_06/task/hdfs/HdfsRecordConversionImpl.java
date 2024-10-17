@@ -97,7 +97,7 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
     }
 
     @Override
-    public InternalRow get() {
+    public InternalRow row() {
         SyslogRecord currentRecord = avroReadImpl.record();
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
