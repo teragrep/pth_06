@@ -108,7 +108,7 @@ public class AvroReadImplTest {
             avroReadImpl1.open();
             long rowNum = 0L;
             while (avroReadImpl1.next()) {
-                SyslogRecord syslogRecord = avroReadImpl1.get();
+                SyslogRecord syslogRecord = avroReadImpl1.record();
                 Assertions.assertEquals(rowNum, syslogRecord.getOffset()); // Checks offsets of the consumed records which should range from 0 to 9.
                 rowNum++;
             }
@@ -124,7 +124,7 @@ public class AvroReadImplTest {
             AvroReadImpl avroReadImpl2 = new AvroReadImpl(fs, testConsumerTopic013);
             avroReadImpl2.open();
             while (avroReadImpl2.next()) {
-                SyslogRecord syslogRecord = avroReadImpl2.get();
+                SyslogRecord syslogRecord = avroReadImpl2.record();
                 Assertions.assertEquals(rowNum, syslogRecord.getOffset()); // Checks offsets of the consumed records which should range from 10 to 13.
                 rowNum++;
             }

@@ -96,7 +96,7 @@ public final class AvroReadImpl implements AvroRead {
     }
 
     @Override
-    public SyslogRecord get() {
+    public SyslogRecord record() {
         return currentRecord;
     }
 
