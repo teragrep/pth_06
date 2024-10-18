@@ -59,13 +59,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * 
  * @see org.jooq.QueryPart
  */
-class ValidElementTest {
+public class ValidElementTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
 
     @Test
-    void validTest() {
+    public void validTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "value");
         element.setAttribute("operation", "operation");
@@ -78,7 +78,7 @@ class ValidElementTest {
     }
 
     @Test
-    void missingValueTest() {
+    public void missingValueTest() {
         Element noValue = document.createElement("test");
         noValue.setAttribute("operation", "operation");
         ValidElement invalid1 = new ValidElement(noValue);
@@ -86,7 +86,7 @@ class ValidElementTest {
     }
 
     @Test
-    void missingOperationTest() {
+    public void missingOperationTest() {
         Element noValue = document.createElement("test");
         noValue.setAttribute("value", "value");
         ValidElement invalid1 = new ValidElement(noValue);
@@ -94,7 +94,7 @@ class ValidElementTest {
     }
 
     @Test
-    void equalityTest() {
+    public void equalityTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "value");
         element.setAttribute("operation", "operation");
@@ -104,7 +104,7 @@ class ValidElementTest {
     }
 
     @Test
-    void notEqualValueTest() {
+    public void notEqualValueTest() {
         Element element1 = document.createElement("test");
         element1.setAttribute("value", "value");
         element1.setAttribute("operation", "operation");
@@ -117,7 +117,7 @@ class ValidElementTest {
     }
 
     @Test
-    void notEqualOperationTest() {
+    public void notEqualOperationTest() {
         Element element1 = document.createElement("test");
         element1.setAttribute("value", "value");
         element1.setAttribute("operation", "operation");
@@ -130,7 +130,7 @@ class ValidElementTest {
     }
 
     @Test
-    void hashCodeTest() {
+    public void hashCodeTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "value");
         element.setAttribute("operation", "operation");

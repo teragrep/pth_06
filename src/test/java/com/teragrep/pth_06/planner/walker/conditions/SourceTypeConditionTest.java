@@ -56,10 +56,10 @@ import org.junit.jupiter.api.Test;
  * 
  * @see org.jooq.QueryPart
  */
-class SourceTypeConditionTest {
+public class SourceTypeConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         String e = "\"getArchivedObjects_filter_table\".\"stream\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"stream\" like 'f17'";
         Condition elementCondition = new SourceTypeCondition("f17", "EQUALS", false).condition();
@@ -69,7 +69,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void negationTest() {
+    public void negationTest() {
         String e = "not (\"getArchivedObjects_filter_table\".\"stream\" like 'f17')";
         String eStream = "not (\"streamdb\".\"stream\".\"stream\" like 'f17')";
         Condition elementCondition = new SourceTypeCondition("f17", "NOT_EQUALS", false).condition();
@@ -79,7 +79,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         eq1.condition();
         SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
@@ -91,7 +91,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         SourceTypeCondition notEq = new SourceTypeCondition("1000", "EQUALS", false);
         SourceTypeCondition notEq2 = new SourceTypeCondition("1000", "EQUALS", true);
@@ -101,7 +101,7 @@ class SourceTypeConditionTest {
     }
 
     @Test
-    void hashCodeTest() {
+    public void hashCodeTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         SourceTypeCondition eq2 = new SourceTypeCondition("946677600", "EQUALS", false);
         SourceTypeCondition notEQ1 = new SourceTypeCondition("946677600", "EQUALS", true);

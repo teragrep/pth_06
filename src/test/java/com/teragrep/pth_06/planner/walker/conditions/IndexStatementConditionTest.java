@@ -89,7 +89,7 @@ public class IndexStatementConditionTest {
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
-    void setup() {
+    public void setup() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -132,7 +132,7 @@ public class IndexStatementConditionTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
             conn.close();
@@ -140,7 +140,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void testConnectionException() {
+    public void testConnectionException() {
         DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
         ConditionConfig config = new ConditionConfig(ctx, false, true);
         ConditionConfig noBloomConfig = new ConditionConfig(ctx, false);
@@ -151,7 +151,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void noMatchesTest() {
+    public void noMatchesTest() {
         DSLContext ctx = DSL.using(conn);
         Condition e1 = DSL.falseCondition();
         Condition e2 = DSL.trueCondition();
@@ -166,7 +166,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void oneMatchingTableTest() {
+    public void oneMatchingTableTest() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
         IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config);
@@ -182,7 +182,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void testOneMatchWithoutFilters() {
+    public void testOneMatchWithoutFilters() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true, true);
         IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config);
@@ -192,7 +192,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void testTwoMatchWithoutFilters() {
+    public void testTwoMatchWithoutFilters() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true, true);
         IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config);
@@ -203,7 +203,7 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void twoMatchingTableTest() {
+    public void twoMatchingTableTest() {
         DSLContext ctx = DSL.using(conn);
         ConditionConfig config = new ConditionConfig(ctx, false, true);
         IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config);
@@ -225,21 +225,21 @@ public class IndexStatementConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
         IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
         Assertions.assertEquals(eq1, eq2);
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
         IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);
         Assertions.assertNotEquals(eq1, notEq);
     }
 
     @Test
-    void hashCodeTest() {
+    public void hashCodeTest() {
         IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
         IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
         IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);

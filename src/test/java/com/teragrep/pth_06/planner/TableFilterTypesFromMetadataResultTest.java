@@ -64,7 +64,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFilterTypesFromMetadataResultTest {
+public class TableFilterTypesFromMetadataResultTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -104,7 +104,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -119,7 +119,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -127,7 +127,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testNoFilterTypes() {
+    public void testNoFilterTypes() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -141,7 +141,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testOneFilterType() {
+    public void testOneFilterType() {
         insertSizedFilterIntoTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -158,7 +158,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testMultipleFilterTypes() {
+    public void testMultipleFilterTypes() {
         insertSizedFilterIntoTargetTable(1);
         insertSizedFilterIntoTargetTable(2);
         DSLContext ctx = DSL.using(conn);
@@ -234,7 +234,7 @@ class TableFilterTypesFromMetadataResultTest {
                 .verify();
     }
 
-    void insertSizedFilterIntoTargetTable(int filterTypeId) {
+    private void insertSizedFilterIntoTargetTable(int filterTypeId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();

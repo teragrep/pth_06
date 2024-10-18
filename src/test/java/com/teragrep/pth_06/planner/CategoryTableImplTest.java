@@ -110,7 +110,7 @@ public class CategoryTableImplTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -125,7 +125,7 @@ public class CategoryTableImplTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();

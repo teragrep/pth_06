@@ -56,17 +56,17 @@ import org.junit.jupiter.api.Test;
  *
  * @see org.jooq.QueryPart
  */
-class PatternMatchConditionTest {
+public class PatternMatchConditionTest {
 
     @Test
-    void testSingleToken() {
+    public void testSingleToken() {
         Condition condition = new PatternMatchCondition("test").condition();
         String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
         Assertions.assertEquals(e, condition.toString());
     }
 
     @Test
-    void testMultipleTokens() {
+    public void testMultipleTokens() {
         Condition condition = new PatternMatchCondition("test.nest").condition();
         String e = "(\n" + "  ('test.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
                 + "  or ('.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
@@ -78,21 +78,21 @@ class PatternMatchConditionTest {
     }
 
     @Test
-    void testEquality() {
+    public void testEquality() {
         PatternMatchCondition cond1 = new PatternMatchCondition("test");
         PatternMatchCondition cond2 = new PatternMatchCondition("test");
         Assertions.assertEquals(cond1, cond2);
     }
 
     @Test
-    void testNotEquals() {
+    public void testNotEquals() {
         PatternMatchCondition cond1 = new PatternMatchCondition("test");
         PatternMatchCondition cond2 = new PatternMatchCondition("next");
         Assertions.assertNotEquals(cond1, cond2);
     }
 
     @Test
-    void testHashCode() {
+    public void testHashCode() {
         PatternMatchCondition cond1 = new PatternMatchCondition("test");
         PatternMatchCondition cond2 = new PatternMatchCondition("test");
         PatternMatchCondition notEq = new PatternMatchCondition("next");

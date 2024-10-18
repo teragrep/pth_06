@@ -62,7 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFiltersTest {
+public class TableFiltersTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -102,7 +102,7 @@ class TableFiltersTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -117,7 +117,7 @@ class TableFiltersTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();

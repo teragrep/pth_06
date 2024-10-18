@@ -59,7 +59,7 @@ import org.junit.jupiter.api.Test;
 public class IndexConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         String e = "\"getArchivedObjects_filter_table\".\"directory\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"directory\" like 'f17'";
         Condition elementCondition = new IndexCondition("f17", "EQUALS", false).condition();
@@ -69,7 +69,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void negationTest() {
+    public void negationTest() {
         String e = "not (\"getArchivedObjects_filter_table\".\"directory\" like 'f17')";
         String eStream = "not (\"streamdb\".\"stream\".\"directory\" like 'f17')";
         Condition elementCondition = new IndexCondition("f17", "NOT_EQUALS", false).condition();
@@ -79,7 +79,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         eq1.condition();
         IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
@@ -91,7 +91,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
         IndexCondition notEq2 = new IndexCondition("946677600", "EQUALS", true);
@@ -101,7 +101,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void hashCodeTest() {
+    public void hashCodeTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
         IndexCondition eq3 = new IndexCondition("946677600", "EQUALS", true);

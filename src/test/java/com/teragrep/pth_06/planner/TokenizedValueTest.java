@@ -53,10 +53,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class TokenizedValueTest {
+public class TokenizedValueTest {
 
     @Test
-    void testTokenization() {
+    public void testTokenization() {
         TokenizedValue result = new TokenizedValue("test.nest");
         Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
         Assertions.assertEquals("test.nest", result.value);
@@ -70,7 +70,7 @@ class TokenizedValueTest {
     }
 
     @Test
-    void testEquality() {
+    public void testEquality() {
         TokenizedValue value1 = new TokenizedValue("test");
         TokenizedValue value2 = new TokenizedValue("test");
         Assertions.assertEquals(value1, value2);
@@ -80,7 +80,7 @@ class TokenizedValueTest {
     }
 
     @Test
-    void testNotEquals() {
+    public void testNotEquals() {
         TokenizedValue value1 = new TokenizedValue("test");
         TokenizedValue value2 = new TokenizedValue("nest");
         Assertions.assertNotEquals(value1, value2);
@@ -89,7 +89,7 @@ class TokenizedValueTest {
     }
 
     @Test
-    void testHashCode() {
+    public void testHashCode() {
         TokenizedValue value1 = new TokenizedValue("test");
         TokenizedValue value2 = new TokenizedValue("test");
         TokenizedValue notEq = new TokenizedValue("nest");
