@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -61,7 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFiltersTest {
+public class TableFiltersTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -101,7 +102,7 @@ class TableFiltersTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -116,7 +117,7 @@ class TableFiltersTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -198,6 +199,37 @@ class TableFiltersTest {
         TableFilters filter3 = new TableFilters(ctx, table, 0L, "mest");
         Assertions.assertNotEquals(filter1, filter2);
         Assertions.assertNotEquals(filter1, filter3);
+    }
+
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters notEq1 = new TableFilters(ctx, table, 0L, "notTest");
+        TableFilters notEq2 = new TableFilters(ctx, table, 1L, "test");
+        Assertions.assertEquals(filter1.hashCode(), filter2.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq1.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq2.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(TableFilters.class)
+                .withNonnullFields("ctx")
+                .withNonnullFields("table")
+                .withNonnullFields("bloomTermId")
+                .withNonnullFields("value")
+                .withNonnullFields("recordsInMetadata")
+                .verify();
     }
 
     void fillTargetTable() {

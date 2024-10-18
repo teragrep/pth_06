@@ -46,16 +46,17 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.blf_01.Token;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class TokenizedValueTest {
+public class TokenizedValueTest {
 
     @Test
-    void testTokenization() {
+    public void testTokenization() {
         TokenizedValue result = new TokenizedValue("test.nest");
         Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
         Assertions.assertEquals("test.nest", result.value);
@@ -69,7 +70,7 @@ class TokenizedValueTest {
     }
 
     @Test
-    void testEquality() {
+    public void testEquality() {
         TokenizedValue value1 = new TokenizedValue("test");
         TokenizedValue value2 = new TokenizedValue("test");
         Assertions.assertEquals(value1, value2);
@@ -79,11 +80,25 @@ class TokenizedValueTest {
     }
 
     @Test
-    void testNotEquals() {
+    public void testNotEquals() {
         TokenizedValue value1 = new TokenizedValue("test");
         TokenizedValue value2 = new TokenizedValue("nest");
         Assertions.assertNotEquals(value1, value2);
         Assertions.assertNotEquals(value2, value1);
         Assertions.assertNotEquals(value1, null);
+    }
+
+    @Test
+    public void testHashCode() {
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("test");
+        TokenizedValue notEq = new TokenizedValue("nest");
+        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
+        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
     }
 }

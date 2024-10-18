@@ -54,6 +54,7 @@ import org.jooq.types.ULong;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
@@ -157,12 +158,15 @@ public final class TableFilters {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final TableFilters cast = (TableFilters) object;
-        return this.ctx == cast.ctx && this.value.equals(cast.value) && this.table.equals(cast.table)
-                && this.bloomTermId == cast.bloomTermId;
+        return ctx == cast.ctx && value.equals(cast.value) && table.equals(cast.table)
+                && recordsInMetadata.equals(cast.recordsInMetadata) && bloomTermId == cast.bloomTermId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, table, bloomTermId, value, recordsInMetadata);
     }
 }

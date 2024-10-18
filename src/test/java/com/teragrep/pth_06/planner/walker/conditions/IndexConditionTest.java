@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ import org.junit.jupiter.api.Test;
 public class IndexConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         String e = "\"getArchivedObjects_filter_table\".\"directory\" like 'f17'";
         String eStream = "\"streamdb\".\"stream\".\"directory\" like 'f17'";
         Condition elementCondition = new IndexCondition("f17", "EQUALS", false).condition();
@@ -68,7 +69,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void negationTest() {
+    public void negationTest() {
         String e = "not (\"getArchivedObjects_filter_table\".\"directory\" like 'f17')";
         String eStream = "not (\"streamdb\".\"stream\".\"directory\" like 'f17')";
         Condition elementCondition = new IndexCondition("f17", "NOT_EQUALS", false).condition();
@@ -78,7 +79,7 @@ public class IndexConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         eq1.condition();
         IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
@@ -90,12 +91,33 @@ public class IndexConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
         IndexCondition notEq2 = new IndexCondition("946677600", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq2 = new IndexCondition("946677600", "EQUALS", false);
+        IndexCondition eq3 = new IndexCondition("946677600", "EQUALS", true);
+        IndexCondition eq4 = new IndexCondition("946677600", "EQUALS", true);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertEquals(eq3.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq4.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(IndexCondition.class)
+                .withNonnullFields("value")
+                .withNonnullFields("operation")
+                .withNonnullFields("streamQuery")
+                .verify();
     }
 }
