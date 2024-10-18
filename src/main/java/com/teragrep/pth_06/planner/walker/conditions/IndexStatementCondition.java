@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.*;
+import com.teragrep.pth_06.planner.bloomfilter.*;
 import org.jooq.Condition;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -78,7 +78,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     public Condition condition() {
         if (!config.bloomEnabled()) {
-            LOGGER.debug("Indexstatement reached with bloom disabled");
+            LOGGER.warn("Indexstatement reached with bloom disabled");
             return condition;
         }
         Condition newCondition = condition;

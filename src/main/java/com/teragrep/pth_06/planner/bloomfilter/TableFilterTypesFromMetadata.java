@@ -43,44 +43,73 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import org.jooq.*;
 import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 
 import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-/** true if BLOOMDB.FILTERTYPE.PATTERN regex like with input value */
-public final class PatternMatchCondition implements QueryCondition {
+/**
+ * Filter types of a table from metadata
+ */
+public final class TableFilterTypesFromMetadata implements TableRecords {
 
-    private final Field<String> valueField;
+    private final DSLContext ctx;
+    private final Table<?> table;
+    private final long bloomTermId;
 
-    public PatternMatchCondition(String input) {
-        this(DSL.val(input));
+    public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, long bloomTermId) {
+        this.ctx = ctx;
+        this.table = table;
+        this.bloomTermId = bloomTermId;
     }
 
-    public PatternMatchCondition(Field<String> valueField) {
-        this.valueField = valueField;
-    }
-
-    public Condition condition() {
-        return valueField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN);
+    public Result<Record> toResult() {
+        if (table == null) {
+            throw new IllegalStateException("Origin table was null");
+        }
+        final Table<?> joined = table
+                .join(BLOOMDB.FILTERTYPE)
+                .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) table.field("filter_type_id")));
+        final Table<Record> namedTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName())));
+        final Field<ULong> expectedField = DSL.field(DSL.name(namedTable.getName(), "expectedElements"), ULong.class);
+        final Field<Double> fppField = DSL.field(DSL.name(namedTable.getName(), "targetFpp"), Double.class);
+        final SelectField<?>[] resultFields = {
+                BLOOMDB.FILTERTYPE.ID,
+                joined.field("expectedElements").as(expectedField),
+                joined.field("targetFpp").as(fppField),
+                joined.field("pattern")
+        };
+        // Fetch filtertype values from metadata
+        final Result<Record> records = ctx
+                .select(resultFields)
+                .from(joined)
+                .groupBy(joined.field("filter_type_id"))
+                .fetch();
+        if (records.isEmpty()) {
+            throw new RuntimeException("Origin table was empty");
+        }
+        return records;
     }
 
     @Override
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        if (object == null)
             return false;
-        final PatternMatchCondition cast = (PatternMatchCondition) object;
-        return valueField.equals(cast.valueField);
+        if (object.getClass() != this.getClass())
+            return false;
+        final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
+        return this.bloomTermId == cast.bloomTermId && this.table.equals(cast.table) && this.ctx == cast.ctx;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueField);
+        return Objects.hash(ctx, table, bloomTermId);
     }
 }

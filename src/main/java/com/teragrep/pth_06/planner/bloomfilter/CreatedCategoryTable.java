@@ -43,47 +43,34 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.blf_01.Token;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+/**
+ * Decorator that inserts category tables filter types into database
+ */
+public final class CreatedCategoryTable implements CategoryTable {
 
-class TokenizedValueTest {
+    private final CategoryTable origin;
 
-    @Test
-    void testTokenization() {
-        TokenizedValue result = new TokenizedValue("test.nest");
-        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
-        Assertions.assertEquals("test.nest", result.value);
-        Assertions.assertTrue(tokens.contains("nest"));
-        Assertions.assertTrue(tokens.contains("test"));
-        Assertions.assertTrue(tokens.contains("."));
-        Assertions.assertTrue(tokens.contains("test.nest"));
-        Assertions.assertTrue(tokens.contains(".nest"));
-        Assertions.assertTrue(tokens.contains("test."));
-        Assertions.assertEquals(6, tokens.size());
+    public CreatedCategoryTable(final CategoryTable origin) {
+        this.origin = origin;
     }
 
-    @Test
-    void testEquality() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        Assertions.assertEquals(value1, value2);
-        Assertions.assertEquals(value2, value1);
-        value1.tokens();
-        Assertions.assertEquals(value2, value1);
+    @Override
+    public void create() {
+        origin.create();
     }
 
-    @Test
-    void testNotEquals() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("nest");
-        Assertions.assertNotEquals(value1, value2);
-        Assertions.assertNotEquals(value2, value1);
-        Assertions.assertNotEquals(value1, null);
+    @Override
+    public void insertFilters() {
+        origin.insertFilters();
+    }
+
+    @Override
+    public QueryCondition bloommatchCondition() {
+        create();
+        return origin.bloommatchCondition();
     }
 }

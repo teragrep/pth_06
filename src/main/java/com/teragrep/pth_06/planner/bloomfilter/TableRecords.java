@@ -43,34 +43,12 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import org.jooq.Record;
+import org.jooq.Result;
 
-/**
- * Decorator that inserts category tables filter types into database
- */
-public final class SearchTermFiltersInserted implements CategoryTable {
+public interface TableRecords {
 
-    private final CategoryTable origin;
-
-    public SearchTermFiltersInserted(final CategoryTable origin) {
-        this.origin = origin;
-    }
-
-    @Override
-    public void create() {
-        origin.create();
-    }
-
-    @Override
-    public void insertFilters() {
-        origin.insertFilters();
-    }
-
-    @Override
-    public QueryCondition bloommatchCondition() {
-        insertFilters();
-        return origin.bloommatchCondition();
-    }
+    Result<Record> toResult();
 }

@@ -43,66 +43,70 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
-import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+import java.util.Objects;
+import java.util.function.Consumer;
 
-/**
- * Filter types of a table from metadata
- */
-public final class TableFilterTypesFromMetadata implements TableRecords {
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
+
+public final class FilterFromRecordToCategoryTableConsumer implements Consumer<Record> {
 
     private final DSLContext ctx;
     private final Table<?> table;
     private final long bloomTermId;
+    private final String searchTerm;
 
-    public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, long bloomTermId) {
+    public FilterFromRecordToCategoryTableConsumer(
+            DSLContext ctx,
+            Table<?> table,
+            long bloomTermId,
+            String searchTerm
+    ) {
         this.ctx = ctx;
         this.table = table;
         this.bloomTermId = bloomTermId;
+        this.searchTerm = searchTerm;
     }
 
-    public Result<Record> toResult() {
-        if (table == null) {
-            throw new IllegalStateException("Origin table was null");
-        }
-        final Table<?> joined = table
-                .join(BLOOMDB.FILTERTYPE)
-                .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) table.field("filter_type_id")));
-        final Table<Record> namedTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName())));
-        final Field<ULong> expectedField = DSL.field(DSL.name(namedTable.getName(), "expectedElements"), ULong.class);
-        final Field<Double> fppField = DSL.field(DSL.name(namedTable.getName(), "targetFpp"), Double.class);
-        final SelectField<?>[] resultFields = {
-                BLOOMDB.FILTERTYPE.ID,
-                joined.field("expectedElements").as(expectedField),
-                joined.field("targetFpp").as(fppField),
-                joined.field("pattern")
+    @Override
+    public void accept(final Record record) {
+        final Table<Record> categoryTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + this.table.getName())));
+        final Field<?>[] insertFields = {
+                DSL.field("term_id", BIGINTUNSIGNED.nullable(false)),
+                DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
+                DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class)
         };
-        // Fetch filtertype values from metadata
-        final Result<Record> records = ctx
-                .select(resultFields)
-                .from(joined)
-                .groupBy(joined.field("filter_type_id"))
-                .fetch();
-        if (records.isEmpty()) {
-            throw new RuntimeException("Origin table was empty");
-        }
-        return records;
+        final BloomFilterFromRecord filterFromRecord = new BloomFilterFromRecord(record, table, searchTerm);
+        final Field<?>[] valueFields = {
+                DSL.val(bloomTermId, ULong.class),
+                DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
+                DSL.val(filterFromRecord.bytes(), byte[].class)
+        };
+        ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
     }
 
     @Override
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
+        if (object == null || this.getClass() != object.getClass())
             return false;
-        if (object.getClass() != this.getClass())
-            return false;
-        final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
-        return this.bloomTermId == cast.bloomTermId && this.table.equals(cast.table) && this.ctx == cast.ctx;
+        final FilterFromRecordToCategoryTableConsumer cast = (FilterFromRecordToCategoryTableConsumer) object;
+        return bloomTermId == cast.bloomTermId && ctx == cast.ctx && table.equals(cast.table)
+                && searchTerm.equals(cast.searchTerm);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, table, bloomTermId, searchTerm);
     }
 }

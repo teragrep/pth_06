@@ -45,10 +45,49 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.jooq.Record;
-import org.jooq.Result;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public interface TableRecords {
+public final class RegexExtractedValue {
 
-    Result<Record> toResult();
+    private final Matcher matcher;
+
+    public RegexExtractedValue(String value, String regex) {
+        this(value, Pattern.compile(regex));
+    }
+
+    public RegexExtractedValue(String value, Pattern pattern) {
+        this(pattern.matcher(value));
+    }
+
+    public RegexExtractedValue(Matcher matcher) {
+        this.matcher = matcher;
+    }
+
+    public Set<String> tokens() {
+        final Set<String> tokens = new HashSet<>();
+        while (matcher.find()) {
+            final String token = matcher.group();
+            tokens.add(token);
+        }
+        return tokens;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final RegexExtractedValue cast = (RegexExtractedValue) object;
+        return matcher.equals(cast.matcher);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(matcher);
+    }
 }

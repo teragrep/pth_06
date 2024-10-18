@@ -43,34 +43,15 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 
-/**
- * Decorator that inserts category tables filter types into database
- */
-public final class CreatedCategoryTable implements CategoryTable {
+public interface CategoryTable {
 
-    private final CategoryTable origin;
+    void create();
 
-    public CreatedCategoryTable(final CategoryTable origin) {
-        this.origin = origin;
-    }
+    void insertFilters();
 
-    @Override
-    public void create() {
-        origin.create();
-    }
-
-    @Override
-    public void insertFilters() {
-        origin.insertFilters();
-    }
-
-    @Override
-    public QueryCondition bloommatchCondition() {
-        create();
-        return origin.bloommatchCondition();
-    }
+    QueryCondition bloommatchCondition();
 }

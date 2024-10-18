@@ -43,53 +43,62 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
+import com.teragrep.blf_01.Token;
+import com.teragrep.pth_06.planner.TokenizedValue;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- *
- * @see org.jooq.QueryPart
- */
-class PatternMatchConditionTest {
+import java.util.Set;
+import java.util.stream.Collectors;
+
+class TokenizedValueTest {
 
     @Test
-    void testSingleToken() {
-        Condition condition = new PatternMatchCondition("test").condition();
-        String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
-        Assertions.assertEquals(e, condition.toString());
+    void testTokenization() {
+        TokenizedValue result = new TokenizedValue("test.nest");
+        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
+        Assertions.assertTrue(tokens.contains("nest"));
+        Assertions.assertTrue(tokens.contains("test"));
+        Assertions.assertTrue(tokens.contains("."));
+        Assertions.assertTrue(tokens.contains("test.nest"));
+        Assertions.assertTrue(tokens.contains(".nest"));
+        Assertions.assertTrue(tokens.contains("test."));
+        Assertions.assertEquals(6, tokens.size());
     }
 
     @Test
     void testEquality() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("test");
-        Assertions.assertEquals(cond1, cond2);
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("test");
+        Assertions.assertEquals(value1, value2);
+        Assertions.assertEquals(value2, value1);
+        value1.tokens();
+        Assertions.assertEquals(value2, value1);
     }
 
     @Test
     void testNotEquals() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("next");
-        Assertions.assertNotEquals(cond1, cond2);
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("nest");
+        Assertions.assertNotEquals(value1, value2);
+        Assertions.assertNotEquals(value2, value1);
+        Assertions.assertNotEquals(value1, null);
     }
 
     @Test
     void testHashCode() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("test");
-        PatternMatchCondition notEq = new PatternMatchCondition("next");
-        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
-        Assertions.assertNotEquals(cond1.hashCode(), notEq.hashCode());
+        TokenizedValue value1 = new TokenizedValue("test");
+        TokenizedValue value2 = new TokenizedValue("test");
+        TokenizedValue notEq = new TokenizedValue("nest");
+        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
+        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
     }
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(PatternMatchCondition.class).withNonnullFields("valueField").verify();
+        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").withNonnullFields("tokenSet").verify();
     }
 }

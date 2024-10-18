@@ -43,53 +43,58 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.jooq.DSLContext;
+import org.jooq.Table;
+
+import java.util.Objects;
 
 /**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- *
- * @see org.jooq.QueryPart
+ * Filter types of a table that can be inserted into the tables category table
  */
-class PatternMatchConditionTest {
+public final class TableFilters {
 
-    @Test
-    void testSingleToken() {
-        Condition condition = new PatternMatchCondition("test").condition();
-        String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
-        Assertions.assertEquals(e, condition.toString());
+    private final TableRecords recordsInMetadata;
+    private final FilterFromRecordToCategoryTableConsumer recordConsumer;
+
+    public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, String searchTerm) {
+        this(
+                new TableFilterTypesFromMetadata(ctx, table, bloomTermId),
+                new FilterFromRecordToCategoryTableConsumer(ctx, table, bloomTermId, searchTerm)
+        );
     }
 
-    @Test
-    void testEquality() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("test");
-        Assertions.assertEquals(cond1, cond2);
+    public TableFilters(
+            TableFilterTypesFromMetadata recordsInMetadata,
+            FilterFromRecordToCategoryTableConsumer recordConsumer
+    ) {
+        this.recordsInMetadata = recordsInMetadata;
+        this.recordConsumer = recordConsumer;
     }
 
-    @Test
-    void testNotEquals() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("next");
-        Assertions.assertNotEquals(cond1, cond2);
+    public void insertFiltersIntoCategoryTable() {
+        recordsInMetadata.toResult().forEach(recordConsumer);
     }
 
-    @Test
-    void testHashCode() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("test");
-        PatternMatchCondition notEq = new PatternMatchCondition("next");
-        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
-        Assertions.assertNotEquals(cond1.hashCode(), notEq.hashCode());
+    /**
+     * Expects DSLContext values to be the same instance
+     *
+     * @param object object compared
+     * @returs true if object is equal
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final TableFilters cast = (TableFilters) object;
+        return recordsInMetadata.equals(cast.recordsInMetadata) && recordConsumer.equals(cast.recordConsumer);
     }
 
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(PatternMatchCondition.class).withNonnullFields("valueField").verify();
+    @Override
+    public int hashCode() {
+        return Objects.hash(recordsInMetadata, recordConsumer);
     }
 }

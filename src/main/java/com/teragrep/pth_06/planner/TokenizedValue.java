@@ -51,31 +51,47 @@ import com.teragrep.blf_01.Tokenizer;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class TokenizedValue {
 
-    public final String value;
+    private final String value;
+    private final Set<Token> tokenSet;
 
     public TokenizedValue(String value) {
+        this(
+                value,
+                new HashSet<>(new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8))))
+        );
+    }
+
+    public TokenizedValue(String value, Set<Token> tokenSet) {
         this.value = value;
+        this.tokenSet = tokenSet;
     }
 
     public Set<Token> tokens() {
-        return new HashSet<>(
-                new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
-        );
+        return tokenSet;
+    }
+
+    public Set<String> stringTokens() {
+        return tokenSet.stream().map(Token::toString).collect(Collectors.toSet());
     }
 
     @Override
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final TokenizedValue cast = (TokenizedValue) object;
-        return this.value.equals(cast.value);
+        return value.equals(cast.value) && tokenSet.equals(cast.tokenSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, tokenSet);
     }
 }

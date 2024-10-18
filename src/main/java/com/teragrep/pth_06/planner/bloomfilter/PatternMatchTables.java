@@ -43,7 +43,7 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.pth_06.planner.walker.conditions.PatternMatchCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;

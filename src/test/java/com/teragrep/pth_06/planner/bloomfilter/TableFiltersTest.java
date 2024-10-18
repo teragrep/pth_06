@@ -43,15 +43,14 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
-import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
@@ -63,7 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFilterTypesFromMetadataResultTest {
+class TableFiltersTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -71,8 +70,8 @@ class TableFilterTypesFromMetadataResultTest {
     // matches IPv4
     final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     // matches IPv4 starting with 255.
-    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
+    final String parenthesesPattern = "\\((.*?)\\)";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, parenthesesPattern));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -126,7 +125,8 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testNoFilterTypes() {
+    public void testCreation() {
+        fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -134,14 +134,12 @@ class TableFilterTypesFromMetadataResultTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, result::toResult);
-        Assertions.assertEquals("Origin table was empty", exception.getMessage());
+        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, "test"));
     }
 
     @Test
-    void testOneFilterType() {
-        insertSizedFilterIntoTargetTable(1);
+    public void testInsertFiltersIntoCategoryTable() {
+        fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -149,17 +147,14 @@ class TableFilterTypesFromMetadataResultTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        Result<Record> records = result.toResult();
-        Assertions.assertEquals(1, records.size());
-        Assertions.assertEquals(ULong.valueOf(1000), records.get(0).get(1));
-        Assertions.assertEquals(0.01, records.get(0).get(2));
+        DataAccessException exception = Assertions
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").insertFiltersIntoCategoryTable());
+        Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
     @Test
-    void testMultipleFilterTypes() {
-        insertSizedFilterIntoTargetTable(1);
-        insertSizedFilterIntoTargetTable(2);
+    public void testInsertFiltersIntoCategoryTableRegexExtract() {
+        fillTargetTable(2);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -167,17 +162,15 @@ class TableFilterTypesFromMetadataResultTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TableFilterTypesFromMetadata result = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        Result<Record> records = result.toResult();
-        Assertions.assertEquals(2, records.size());
-        Record first = records.get(0);
-        Record second = records.get(1);
-        Assertions.assertEquals(first.get(1), ULong.valueOf("1000"));
-        Assertions.assertEquals(second.get(1), ULong.valueOf("2000"));
+        String query = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
+        DataAccessException exception = Assertions
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, query).insertFiltersIntoCategoryTable());
+        Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
     @Test
-    public void testEquality() {
+    public void testInsertFiltersWithoutPatternMatch() {
+        fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -185,14 +178,30 @@ class TableFilterTypesFromMetadataResultTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        Assertions.assertEquals(result1, result2);
-        Assertions.assertEquals(result2, result1);
+        IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").insertFiltersIntoCategoryTable());
+        Assertions.assertTrue(exception.getMessage().contains("Trying to insert empty filter"));
+    }
+
+    @Test
+    public void testEquals() {
+        fillTargetTable(1);
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
+        Assertions.assertEquals(filter1, filter2);
     }
 
     @Test
     public void testNotEquals() {
+        fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -200,14 +209,43 @@ class TableFilterTypesFromMetadataResultTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
-        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 1L);
-        TableFilterTypesFromMetadata result3 = new TableFilterTypesFromMetadata(ctx, null, 0L);
-        Assertions.assertNotEquals(result1, result2);
-        Assertions.assertNotEquals(result1, result3);
+
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 1L, "test");
+        TableFilters filter3 = new TableFilters(ctx, table, 0L, "mest");
+        Assertions.assertNotEquals(filter1, filter2);
+        Assertions.assertNotEquals(filter1, filter3);
     }
 
-    void insertSizedFilterIntoTargetTable(int filterTypeId) {
+    @Test
+    public void testHashCode() {
+        fillTargetTable(1);
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
+        TableFilters notEq1 = new TableFilters(ctx, table, 0L, "notTest");
+        TableFilters notEq2 = new TableFilters(ctx, table, 1L, "test");
+        Assertions.assertEquals(filter1.hashCode(), filter2.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq1.hashCode());
+        Assertions.assertNotEquals(filter1.hashCode(), notEq2.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(TableFilters.class)
+                .withNonnullFields("recordsInMetadata")
+                .withNonnullFields("recordConsumer")
+                .verify();
+    }
+
+    void fillTargetTable(int id) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -215,17 +253,15 @@ class TableFilterTypesFromMetadataResultTest {
                     + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             BloomFilter filter = BloomFilter.create(1000, 0.01);
-
             final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
             Assertions.assertDoesNotThrow(() -> {
                 filter.writeTo(filterBAOS);
                 filterBAOS.close();
             });
-            stmt.setInt(1, filterTypeId);
-            stmt.setInt(2, filterTypeId);
+            stmt.setInt(1, 1);
+            stmt.setInt(2, id); // filter type id
             stmt.setBytes(3, filterBAOS.toByteArray());
-            int success = stmt.executeUpdate();
-            Assertions.assertEquals(1, success);
+            stmt.executeUpdate();
         });
     }
 }

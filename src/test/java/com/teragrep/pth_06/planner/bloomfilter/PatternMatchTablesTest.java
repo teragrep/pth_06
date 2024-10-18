@@ -43,7 +43,7 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
@@ -71,7 +71,8 @@ public class PatternMatchTablesTest {
     final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     // matches IPv4 starting with 255.
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
+    final String parenthesesPattern = "\\((.*?)\\)";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, parenthesesPattern));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -82,6 +83,7 @@ public class PatternMatchTablesTest {
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS parentheses_test").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -98,9 +100,15 @@ public class PatternMatchTablesTest {
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
                     + "    `filter`         longblob            NOT NULL)";
+            String parentheses = "CREATE TABLE `parentheses_test`("
+                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
+                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
+                    + "    `filter`         longblob            NOT NULL)";
             conn.prepareStatement(filtertype).execute();
             conn.prepareStatement(ip).execute();
             conn.prepareStatement(ip255).execute();
+            conn.prepareStatement(parentheses).execute();
             String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
             int id = 1;
             for (String pattern : patternList) {
@@ -114,6 +122,7 @@ public class PatternMatchTablesTest {
             }
             writeFilter("pattern_test_ip", 1);
             writeFilter("pattern_test_ip255", 2);
+            writeFilter("parentheses_test", 3);
         });
     }
 
@@ -143,6 +152,16 @@ public class PatternMatchTablesTest {
         List<Table<?>> result = patternMatchTables.toList();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
+    }
+
+    @Test
+    public void testRegexMatch() {
+        DSLContext ctx = DSL.using(conn);
+        String input = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
+        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
+        List<Table<?>> result = patternMatchTables.toList();
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("parentheses_test", result.get(0).getName());
     }
 
     @Test
