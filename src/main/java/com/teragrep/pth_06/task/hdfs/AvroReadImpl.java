@@ -49,7 +49,6 @@ import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.avro.SyslogRecord;
 import org.apache.avro.file.DataFileStream;
 import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
@@ -62,42 +61,23 @@ public final class AvroReadImpl implements AvroRead {
 
     final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
-    private final FileSystem fs;
-    private final HdfsFileMetadata hdfsFileMetadata;
-    private DataFileStream<SyslogRecord> reader;
-    private SyslogRecord currentRecord;
+    private final DataFileStream<SyslogRecord> reader;
 
-    public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) {
-        this.fs = fs;
-        this.hdfsFileMetadata = hdfsFileMetadata;
-    }
-
-    @Override
-    public void open() throws IOException {
-        Path hdfsreadpath = new Path(hdfsFileMetadata.hdfsFilePath);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER
-                    .debug(
-                            "Attempting to open file <{}> belonging to topic <{}>", hdfsreadpath.getName(),
-                            hdfsFileMetadata.topicPartition.topic()
-                    );
-        }
-        FSDataInputStream inputStream = fs.open(hdfsreadpath);
-        reader = new DataFileStream<>(inputStream, new SpecificDatumReader<>(SyslogRecord.class));
+    public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) throws IOException {
+        this.reader = new DataFileStream<>(
+                fs.open(new Path(hdfsFileMetadata.hdfsFilePath)),
+                new SpecificDatumReader<>(SyslogRecord.class)
+        );
     }
 
     @Override
     public boolean next() {
-        boolean hasNext = reader.hasNext();
-        if (hasNext) {
-            currentRecord = reader.next();
-        }
-        return hasNext;
+        return reader.hasNext();
     }
 
     @Override
     public SyslogRecord record() {
-        return currentRecord;
+        return reader.next();
     }
 
     @Override

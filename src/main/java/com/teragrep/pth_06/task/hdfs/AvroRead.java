@@ -51,8 +51,6 @@ import java.io.IOException;
 
 public interface AvroRead {
 
-    void open() throws IOException;
-
     boolean next();
 
     SyslogRecord record();
