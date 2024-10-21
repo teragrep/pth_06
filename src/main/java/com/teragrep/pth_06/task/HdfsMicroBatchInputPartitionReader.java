@@ -60,11 +60,7 @@ import java.util.LinkedList;
 public final class HdfsMicroBatchInputPartitionReader implements PartitionReader<InternalRow> {
 
     final Logger LOGGER = LoggerFactory.getLogger(HdfsMicroBatchInputPartitionReader.class);
-
-    private final LinkedList<HdfsFileMetadata> taskObjectList;
-    private final FileSystem fs;
-    private final long cutoffEpoch;
-    private HdfsRecordConversionImpl hdfsRecordConversionImpl;
+    private final HdfsRecordConversionImpl hdfsRecordConversionImpl;
 
     public HdfsMicroBatchInputPartitionReader(
             long cutoffEpoch,
@@ -84,10 +80,7 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
             LinkedList<HdfsFileMetadata> taskObjectList
     ) throws IOException {
 
-        this.cutoffEpoch = cutoffEpoch;
-        this.taskObjectList = taskObjectList;
-
-        fs = new FileSystemFactoryImpl(
+        FileSystem fs = new FileSystemFactoryImpl(
                 kerberosAuthentication,
                 hdfsUri,
                 kerberosRealm,
@@ -102,48 +95,18 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
                 kerberosKeytabPath
         ).fileSystem(false);
 
-        this.hdfsRecordConversionImpl = new HdfsRecordConversionImpl(fs); // stub
+        this.hdfsRecordConversionImpl = new HdfsRecordConversionImpl(fs, taskObjectList, cutoffEpoch);
     }
 
-    // Read avro-file until it ends
     @Override
     public boolean next() throws IOException {
-        // true if data is available, false if not
-        boolean rv = false;
-
-        while (!taskObjectList.isEmpty() && !rv) {
-            if (hdfsRecordConversionImpl.isStub()) {
-                hdfsRecordConversionImpl = new HdfsRecordConversionImpl(fs, taskObjectList.getFirst());
-                hdfsRecordConversionImpl.open();
-            }
-
-            rv = hdfsRecordConversionImpl.next();
-
-            if (!rv) {
-                // object was consumed
-                hdfsRecordConversionImpl.close();
-
-                // remove consumed object
-                taskObjectList.removeFirst();
-                if (!taskObjectList.isEmpty()) {
-                    hdfsRecordConversionImpl = new HdfsRecordConversionImpl(fs, taskObjectList.getFirst());
-                    hdfsRecordConversionImpl.open();
-                }
-            }
-            else {
-                // time based inclusion, skip record and continue loop if the record is older than cutoffEpoch.
-                long rfc5424time = hdfsRecordConversionImpl.row().getLong(0); // timestamp as epochMicros
-                if (rfc5424time < cutoffEpoch) {
-                    rv = false;
-                }
-            }
-        }
-        LOGGER.debug("next rv: <{}>", rv);
-        return rv;
+        // True if data is available, false if not.
+        return hdfsRecordConversionImpl.next();
     }
 
     @Override
     public InternalRow get() {
+        // Fetches the available data.
         InternalRow rv = hdfsRecordConversionImpl.row();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("get(): <{}>", rv.getLong(7));
@@ -154,8 +117,5 @@ public final class HdfsMicroBatchInputPartitionReader implements PartitionReader
     @Override
     public void close() throws IOException {
         LOGGER.debug("HdfsMicroBatchInputPartitionReader.close");
-        if (!hdfsRecordConversionImpl.isStub()) {
-            hdfsRecordConversionImpl.close();
-        }
     }
 }

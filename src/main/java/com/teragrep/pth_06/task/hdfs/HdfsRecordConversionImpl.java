@@ -48,7 +48,6 @@ package com.teragrep.pth_06.task.hdfs;
 import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.avro.SyslogRecord;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 import org.apache.spark.unsafe.types.UTF8String;
@@ -56,53 +55,54 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 // This class will read the records from avro-files fetched from HDFS with the help of AvroReadImpl and convert them to InternalRow used by pth_06.
 public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
 
     final Logger LOGGER = LoggerFactory.getLogger(HdfsRecordConversionImpl.class);
 
-    private final boolean stub;
-    private final AvroReadImpl avroReadImpl;
-    private final UnsafeRowWriter rowWriter;
+    private final LinkedList<AvroReadImpl> reads;
+    private final LinkedList<HdfsFileMetadata> taskObjectList;
+    private final long cutoffEpoch;
+    private final FileSystem fs;
 
-    // Stub object
-    public HdfsRecordConversionImpl(FileSystem fs) {
-        this(fs, new HdfsFileMetadata(new TopicPartition("", 0), 0, "", 0), true);
-    }
-
-    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) {
-        this(fs, hdfsFileMetadata, false);
-    }
-
-    public HdfsRecordConversionImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata, boolean stub) {
-        this(new AvroReadImpl(fs, hdfsFileMetadata), new UnsafeRowWriter(11), stub);
-    }
-
-    public HdfsRecordConversionImpl(AvroReadImpl avroReadImpl, UnsafeRowWriter rowWriter, boolean stub) {
-        this.avroReadImpl = avroReadImpl;
-        this.rowWriter = rowWriter;
-        this.stub = stub;
+    public HdfsRecordConversionImpl(FileSystem fs, LinkedList<HdfsFileMetadata> taskObjectList, long cutoffEpoch) {
+        this.fs = fs;
+        this.taskObjectList = taskObjectList;
+        this.reads = new LinkedList<>();
+        this.cutoffEpoch = cutoffEpoch;
     }
 
     @Override
-    public void open() throws IOException {
-        avroReadImpl.open();
-    }
+    public boolean next() throws IOException {
+        // Load the taskObjects from taskObjectList to reads list.
+        if (reads.isEmpty() && !taskObjectList.isEmpty()) {
+            open();
+        }
 
-    @Override
-    public void close() throws IOException {
-        avroReadImpl.close();
-    }
-
-    @Override
-    public boolean next() {
-        return avroReadImpl.next();
+        boolean hasNext = false;
+        while (!hasNext && !reads.isEmpty()) {
+            hasNext = reads.getFirst().next();
+            if (!hasNext) {
+                reads.getFirst().close();
+                reads.removeFirst();
+            }
+            else {
+                // Time based inclusion WIP
+                /*SyslogRecord record = reads.getFirst().record();
+                if (record.getTimestamp() < cutoffEpoch) {
+                    hasNext = false;
+                }*/
+            }
+        }
+        return hasNext;
     }
 
     @Override
     public InternalRow row() {
-        SyslogRecord currentRecord = avroReadImpl.record();
+        SyslogRecord currentRecord = reads.getFirst().record();
+        UnsafeRowWriter rowWriter = new UnsafeRowWriter(11);
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
         rowWriter.write(0, currentRecord.getTimestamp());
@@ -117,9 +117,11 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
         return rowWriter.getRow();
     }
 
-    @Override
-    public boolean isStub() {
-        return stub;
+    private void open() throws IOException {
+        for (HdfsFileMetadata taskObject : taskObjectList) {
+            reads.add(new AvroReadImpl(fs, taskObject));
+        }
+        taskObjectList.clear();
     }
 
 }

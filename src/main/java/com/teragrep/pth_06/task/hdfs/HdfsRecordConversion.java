@@ -51,14 +51,8 @@ import java.io.IOException;
 
 public interface HdfsRecordConversion {
 
-    void open() throws IOException;
-
-    void close() throws IOException;
-
-    boolean next();
+    boolean next() throws IOException;
 
     InternalRow row();
-
-    boolean isStub();
 
 }
