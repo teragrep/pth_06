@@ -82,7 +82,7 @@ public final class BloomFilterFromRecord {
             throw new RuntimeException("Object field was null");
         }
         final BloomFilter filter = BloomFilter.create(expected, fpp);
-        // if no pattern use to tokenized value (currently BLOOMDB.FILTERTYPE.PATTERN is NOT NULL)
+        // if no pattern use tokenized value (currently BLOOMDB.FILTERTYPE.PATTERN is NOT NULL)
         if (pattern == null) {
             LOGGER.info("Table pattern was null using tokenizer to generate tokens");
             new TokenizedValue(searchTerm).stringTokens().forEach(filter::put);

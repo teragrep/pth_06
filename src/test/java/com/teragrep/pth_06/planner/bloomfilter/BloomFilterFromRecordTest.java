@@ -70,15 +70,6 @@ public class BloomFilterFromRecordTest {
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @Test
-    public void testInstantation() {
-        Record dynamicRecord = generateRecord(true);
-        Table<?> target = DSL.table(DSL.name("target"));
-        String searchTerm = "Pattern";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
-        Assertions.assertDoesNotThrow(filter::bytes);
-    }
-
-    @Test
     public void testCorrectFilterSize() {
         Record dynamicRecord = generateRecord(true);
         Table<?> target = DSL.table(DSL.name("target"));

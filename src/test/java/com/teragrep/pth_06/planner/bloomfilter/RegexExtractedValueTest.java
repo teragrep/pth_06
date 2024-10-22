@@ -60,7 +60,8 @@ public class RegexExtractedValueTest {
         RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
         Set<String> tokens = regexValue.tokens();
         Assertions.assertEquals(2, tokens.size());
-        Assertions.assertTrue(tokens.contains("(important)") && tokens.contains("(very important)"));
+        Assertions.assertTrue(tokens.contains("(important)"));
+        Assertions.assertTrue(tokens.contains("(very important)"));
     }
 
     @Test
