@@ -165,9 +165,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public Offset initialOffset() {
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
         DatasourceOffset rv;
-        HdfsOffset hdfsOffset = null;
-        LongOffset longOffset = null;
-        KafkaOffset kafkaOffset = null;
+        HdfsOffset hdfsOffset = new HdfsOffset(); // stub
+        LongOffset longOffset = null; // Refactor null usage
+        KafkaOffset kafkaOffset = new KafkaOffset(); // stub
 
         if (this.config.isHdfsEnabled) {
             hdfsOffset = new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap());
@@ -176,14 +176,19 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             longOffset = new LongOffset(this.aq.getInitialOffset() - 3600L);
         }
         if (this.config.isKafkaEnabled) {
-            if (hdfsOffsets.size() > 0 && this.config.isHdfsEnabled) {
-                kafkaOffset = new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets));
+            if (this.config.isHdfsEnabled) {
+                if (hdfsOffsets.size() > 0) {
+                    kafkaOffset = new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets));
+                }
+                else {
+                    kafkaOffset = new KafkaOffset(this.kq.getBeginningOffsets(null));
+                }
             }
             else {
                 kafkaOffset = new KafkaOffset(this.kq.getBeginningOffsets(null));
             }
         }
-        if (hdfsOffset == null && longOffset == null && kafkaOffset == null) {
+        if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
         rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);
@@ -222,9 +227,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public Offset latestOffset() {
         DatasourceOffset rv;
-        HdfsOffset hdfsOffset = null;
+        HdfsOffset hdfsOffset = new HdfsOffset();
         LongOffset longOffset = null;
-        KafkaOffset kafkaOffset = null;
+        KafkaOffset kafkaOffset = new KafkaOffset();
 
         if (this.config.isHdfsEnabled) {
             hdfsOffset = new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap());
@@ -235,7 +240,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (this.config.isKafkaEnabled) {
             kafkaOffset = new KafkaOffset(this.kq.getInitialEndOffsets());
         }
-        if (hdfsOffset == null && longOffset == null && kafkaOffset == null) {
+        if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
         rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);

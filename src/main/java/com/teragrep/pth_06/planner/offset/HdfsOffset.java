@@ -60,19 +60,29 @@ import java.util.Map;
 public class HdfsOffset extends Offset implements Serializable {
 
     private final Map<String, Long> serializedHdfsOffset;
+    private final boolean stub;
+
+    public HdfsOffset() {
+        this(new HashMap<>(), true);
+    }
 
     public HdfsOffset(Map<TopicPartition, Long> offset) {
+        this(offset, false);
+    }
+
+    public HdfsOffset(Map<TopicPartition, Long> offset, boolean stub) {
         serializedHdfsOffset = new HashMap<>(offset.size());
         for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
-
             serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
         }
+        this.stub = stub;
     }
 
     public HdfsOffset(String s) {
         Gson gson = new Gson();
         serializedHdfsOffset = gson.fromJson(s, new TypeToken<Map<String, Long>>() {
         }.getType());
+        stub = false;
     }
 
     public Map<TopicPartition, Long> getOffsetMap() {
@@ -89,6 +99,10 @@ public class HdfsOffset extends Offset implements Serializable {
         }
 
         return rv;
+    }
+
+    public boolean isStub() {
+        return stub;
     }
 
     @Override
