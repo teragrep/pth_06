@@ -63,32 +63,32 @@ public class DatasourceOffset extends Offset implements Serializable {
 
     private final SerializedDatasourceOffset serializedDatasourceOffset;
 
-    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset, kafkaOffset);
-    }
-
     public DatasourceOffset(HdfsOffset hdfsOffset, KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, kafkaOffset);
+        this(hdfsOffset, null, kafkaOffset);
     }
 
     public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset);
+        this(hdfsOffset, archiveOffset, null);
     }
 
     public DatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(archiveOffset, kafkaOffset);
+        this(null, archiveOffset, kafkaOffset);
     }
 
     public DatasourceOffset(HdfsOffset hdfsOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset);
+        this(hdfsOffset, null, null);
     }
 
     public DatasourceOffset(LongOffset archiveOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(archiveOffset);
+        this(null, archiveOffset, null);
     }
 
     public DatasourceOffset(KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(kafkaOffset);
+        this(null, null, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset, kafkaOffset);
     }
 
     public DatasourceOffset(String s) {
