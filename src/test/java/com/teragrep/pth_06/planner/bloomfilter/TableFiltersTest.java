@@ -241,7 +241,10 @@ class TableFiltersTest {
         EqualsVerifier
                 .forClass(TableFilters.class)
                 .withNonnullFields("recordsInMetadata")
-                .withNonnullFields("recordConsumer")
+                .withNonnullFields("ctx")
+                .withNonnullFields("table")
+                .withNonnullFields("searchTerm")
+                .withNonnullFields("bloomTermId")
                 .verify();
     }
 

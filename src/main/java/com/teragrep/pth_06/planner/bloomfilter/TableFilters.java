@@ -45,10 +45,14 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.DSLContext;
-import org.jooq.Table;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 
 import java.util.Objects;
+
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
  * Filter types of a table that can be inserted into the tables category table
@@ -56,45 +60,62 @@ import java.util.Objects;
 public final class TableFilters {
 
     private final TableRecords recordsInMetadata;
-    private final FilterFromRecordToCategoryTableConsumer recordConsumer;
+    private final DSLContext ctx;
+    private final Table<?> table;
+    private final String searchTerm;
+    private final long bloomTermId;
 
     public TableFilters(DSLContext ctx, Table<?> table, long bloomTermId, String searchTerm) {
-        this(
-                new TableFilterTypesFromMetadata(ctx, table, bloomTermId),
-                new FilterFromRecordToCategoryTableConsumer(ctx, table, bloomTermId, searchTerm)
-        );
+        this(new TableFilterTypesFromMetadata(ctx, table, bloomTermId), ctx, table, bloomTermId, searchTerm);
     }
 
     public TableFilters(
             TableFilterTypesFromMetadata recordsInMetadata,
-            FilterFromRecordToCategoryTableConsumer recordConsumer
+            DSLContext ctx,
+            Table<?> table,
+            long bloomTermId,
+            String searchTerm
     ) {
         this.recordsInMetadata = recordsInMetadata;
-        this.recordConsumer = recordConsumer;
+        this.ctx = ctx;
+        this.table = table;
+        this.bloomTermId = bloomTermId;
+        this.searchTerm = searchTerm;
     }
 
     public void insertFiltersIntoCategoryTable() {
-        recordsInMetadata.toResult().forEach(recordConsumer);
+        final Result<Record> result = recordsInMetadata.toResult();
+        for (final Record record : result) {
+            final Table<Record> categoryTable = DSL
+                    .table(DSL.name(("term_" + bloomTermId + "_" + this.table.getName())));
+            final Field<?>[] insertFields = {
+                    DSL.field("term_id", BIGINTUNSIGNED.nullable(false)),
+                    DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
+                    DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class)
+            };
+            final BloomFilterFromRecord filterFromRecord = new BloomFilterFromRecord(record, table, searchTerm);
+            final Field<?>[] valueFields = {
+                    DSL.val(bloomTermId, ULong.class),
+                    DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
+                    DSL.val(filterFromRecord.bytes(), byte[].class)
+            };
+            ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
+        }
     }
 
-    /**
-     * Expects DSLContext values to be the same instance
-     *
-     * @param object object compared
-     * @returs true if object is equal
-     */
     @Override
-    public boolean equals(final Object object) {
+    public boolean equals(Object object) {
         if (this == object)
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
-        final TableFilters cast = (TableFilters) object;
-        return recordsInMetadata.equals(cast.recordsInMetadata) && recordConsumer.equals(cast.recordConsumer);
+        TableFilters cast = (TableFilters) object;
+        return bloomTermId == cast.bloomTermId && recordsInMetadata.equals(cast.recordsInMetadata) && ctx == cast.ctx
+                && table.equals(cast.table) && searchTerm.equals(cast.searchTerm);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(recordsInMetadata, recordConsumer);
+        return Objects.hash(recordsInMetadata, ctx, table, searchTerm, bloomTermId);
     }
 }
