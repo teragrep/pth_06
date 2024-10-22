@@ -67,20 +67,24 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 public final class BloomFilterFromRecord {
 
     private final Logger LOGGER = LoggerFactory.getLogger(BloomFilterFromRecord.class);
-    private final Long expected;
+    private final ULong expected;
     private final Double fpp;
     private final String pattern;
     private final String searchTerm;
 
     private BloomFilter create() {
-        LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>, pattern: <{}>", expected, fpp, pattern);
+        LOGGER
+                .debug(
+                        "Create filter from Record with values: expected <{}>, fpp <{}>, pattern: <{}>", expected, fpp,
+                        pattern
+                );
         if (expected == null) {
-            throw new RuntimeException("Record did not contain table field value <expectedElements>");
+            throw new IllegalArgumentException("Record did not contain table field value <expectedElements>");
         }
-        if(fpp == null) {
-            throw new RuntimeException("Record did not contain table field value <targetFpp>");
+        if (fpp == null) {
+            throw new IllegalArgumentException("Record did not contain table field value <targetFpp>");
         }
-        final BloomFilter filter = BloomFilter.create(expected, fpp);
+        final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
         // if no pattern use tokenized value (currently BLOOMDB.FILTERTYPE.PATTERN is NOT NULL)
         if (pattern == null) {
             LOGGER.info("Table pattern was null using tokenizer to generate tokens");
@@ -101,14 +105,14 @@ public final class BloomFilterFromRecord {
 
     public BloomFilterFromRecord(Record record, Table<?> table, String searchTerm) {
         this(
-                record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class)).longValue(),
+                record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class)),
                 record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class)),
                 record.getValue(BLOOMDB.FILTERTYPE.PATTERN, String.class),
                 searchTerm
         );
     }
 
-    public BloomFilterFromRecord(Long expected, Double fpp, String pattern, String searchTerm) {
+    public BloomFilterFromRecord(ULong expected, Double fpp, String pattern, String searchTerm) {
         this.expected = expected;
         this.fpp = fpp;
         this.pattern = pattern;

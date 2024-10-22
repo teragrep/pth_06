@@ -120,6 +120,32 @@ public class BloomFilterFromRecordTest {
     }
 
     @Test
+    public void testNullExpectedField() {
+        Record dynamicRecord = generateRecord(false);
+        Field<ULong> expectedField = DSL.field(DSL.name("expectedElements"), ULong.class);
+        dynamicRecord.set(expectedField, null);
+        Table<?> target = DSL.table(DSL.name("target"));
+        String searchTerm = "SearchValuePatternInThisString.Without.Delimiter";
+        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, filter::bytes);
+        String expectedMessage = "Record did not contain table field value <expectedElements>";
+        Assertions.assertEquals(expectedMessage, e.getMessage());
+    }
+
+    @Test
+    public void testNullFppField() {
+        Record dynamicRecord = generateRecord(false);
+        Field<Double> fppField = DSL.field(DSL.name("targetFpp"), Double.class);
+        dynamicRecord.set(fppField, null);
+        Table<?> target = DSL.table(DSL.name("target"));
+        String searchTerm = "SearchValuePatternInThisString.Without.Delimiter";
+        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, filter::bytes);
+        String expectedMessage = "Record did not contain table field value <targetFpp>";
+        Assertions.assertEquals(expectedMessage, e.getMessage());
+    }
+
+    @Test
     public void equalsHashCodeContractTest() {
         EqualsVerifier
                 .forClass(BloomFilterFromRecord.class)
