@@ -103,6 +103,12 @@ public final class TableFilters {
         }
     }
 
+    /**
+     * Equal only if all object parameters are same value and the instances of DSLContext are same
+     *
+     * @param object object compared against
+     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     */
     @Override
     public boolean equals(Object object) {
         if (this == object)

@@ -121,15 +121,13 @@ public final class BloomFilterFromRecord {
 
     public byte[] bytes() {
         final BloomFilter filter = create();
-        final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
-        try {
+        try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);
-            filterBAOS.close();
+            return filterBAOS.toByteArray();
         }
         catch (IOException e) {
             throw new UncheckedIOException(new IOException("Error writing filter bytes: " + e.getMessage()));
         }
-        return filterBAOS.toByteArray();
     }
 
     @Override
