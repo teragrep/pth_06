@@ -78,7 +78,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     public Condition condition() {
         if (!config.bloomEnabled()) {
-            LOGGER.warn("Indexstatement reached with bloom disabled");
+            LOGGER.debug("Indexstatement reached with bloom disabled");
             return condition;
         }
         Condition newCondition = condition;
