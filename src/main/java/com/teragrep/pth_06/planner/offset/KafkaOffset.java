@@ -67,18 +67,29 @@ public class KafkaOffset extends Offset implements Serializable {
     }.getType();
 
     private final Map<String, Long> serializedKafkaOffset;
+    private final boolean stub;
+
+    public KafkaOffset() {
+        this(new HashMap<>(), true);
+    }
 
     public KafkaOffset(Map<TopicPartition, Long> offset) {
+        this(offset, false);
+    }
+
+    public KafkaOffset(Map<TopicPartition, Long> offset, boolean stub) {
         serializedKafkaOffset = new HashMap<>(offset.size());
         for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
 
             serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
         }
+        this.stub = stub;
     }
 
     public KafkaOffset(String s) {
         Gson gson = new Gson();
         serializedKafkaOffset = gson.fromJson(s, mapType);
+        stub = false;
     }
 
     public Map<TopicPartition, Long> getOffsetMap() {
@@ -95,6 +106,10 @@ public class KafkaOffset extends Offset implements Serializable {
         }
 
         return rv;
+    }
+
+    public boolean isStub() {
+        return stub;
     }
 
     @Override
