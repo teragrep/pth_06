@@ -43,41 +43,37 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.blf_01.Token;
-import com.teragrep.blf_01.Tokenizer;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public final class TokenizedValue {
+public final class RegexExtractedValue {
 
-    private final String value;
-    private final Set<Token> tokenSet;
+    private final Matcher matcher;
 
-    public TokenizedValue(String value) {
-        this(
-                value,
-                new HashSet<>(new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8))))
-        );
+    public RegexExtractedValue(String value, String regex) {
+        this(value, Pattern.compile(regex));
     }
 
-    public TokenizedValue(String value, Set<Token> tokenSet) {
-        this.value = value;
-        this.tokenSet = tokenSet;
+    public RegexExtractedValue(String value, Pattern pattern) {
+        this(pattern.matcher(value));
     }
 
-    public Set<Token> tokens() {
-        return tokenSet;
+    public RegexExtractedValue(Matcher matcher) {
+        this.matcher = matcher;
     }
 
-    public Set<String> stringTokens() {
-        return tokenSet.stream().map(Token::toString).collect(Collectors.toSet());
+    public Set<String> tokens() {
+        final Set<String> tokens = new HashSet<>();
+        while (matcher.find()) {
+            final String token = matcher.group();
+            tokens.add(token);
+        }
+        return tokens;
     }
 
     @Override
@@ -86,12 +82,12 @@ public final class TokenizedValue {
             return true;
         if (object == null || object.getClass() != this.getClass())
             return false;
-        final TokenizedValue cast = (TokenizedValue) object;
-        return value.equals(cast.value) && tokenSet.equals(cast.tokenSet);
+        final RegexExtractedValue cast = (RegexExtractedValue) object;
+        return matcher.equals(cast.matcher);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, tokenSet);
+        return Objects.hash(matcher);
     }
 }

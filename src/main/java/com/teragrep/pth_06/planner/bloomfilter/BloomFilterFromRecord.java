@@ -45,8 +45,6 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.RegexExtractedValue;
-import com.teragrep.pth_06.planner.TokenizedValue;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Record;
 import org.jooq.Table;

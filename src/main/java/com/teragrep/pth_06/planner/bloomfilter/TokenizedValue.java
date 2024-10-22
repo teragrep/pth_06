@@ -46,58 +46,52 @@
 package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.blf_01.Token;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Tokenizer;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class TokenizedValueTest {
+public final class TokenizedValue {
 
-    @Test
-    void testTokenization() {
-        TokenizedValue result = new TokenizedValue("test.nest");
-        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
-        Assertions.assertTrue(tokens.contains("nest"));
-        Assertions.assertTrue(tokens.contains("test"));
-        Assertions.assertTrue(tokens.contains("."));
-        Assertions.assertTrue(tokens.contains("test.nest"));
-        Assertions.assertTrue(tokens.contains(".nest"));
-        Assertions.assertTrue(tokens.contains("test."));
-        Assertions.assertEquals(6, tokens.size());
+    private final String value;
+    private final Set<Token> tokenSet;
+
+    public TokenizedValue(String value) {
+        this(
+                value,
+                new HashSet<>(new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8))))
+        );
     }
 
-    @Test
-    void testEquality() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        Assertions.assertEquals(value1, value2);
-        Assertions.assertEquals(value2, value1);
-        value1.tokens();
-        Assertions.assertEquals(value2, value1);
+    public TokenizedValue(String value, Set<Token> tokenSet) {
+        this.value = value;
+        this.tokenSet = tokenSet;
     }
 
-    @Test
-    void testNotEquals() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("nest");
-        Assertions.assertNotEquals(value1, value2);
-        Assertions.assertNotEquals(value2, value1);
-        Assertions.assertNotEquals(value1, null);
+    public Set<Token> tokens() {
+        return tokenSet;
     }
 
-    @Test
-    void testHashCode() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        TokenizedValue notEq = new TokenizedValue("nest");
-        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
-        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
+    public Set<String> stringTokens() {
+        return tokenSet.stream().map(Token::toString).collect(Collectors.toSet());
     }
 
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").withNonnullFields("tokenSet").verify();
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final TokenizedValue cast = (TokenizedValue) object;
+        return value.equals(cast.value) && tokenSet.equals(cast.tokenSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, tokenSet);
     }
 }

@@ -43,51 +43,37 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import java.util.HashSet;
-import java.util.Objects;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public final class RegexExtractedValue {
+public class RegexExtractedValueTest {
 
-    private final Matcher matcher;
-
-    public RegexExtractedValue(String value, String regex) {
-        this(value, Pattern.compile(regex));
+    @Test
+    public void testRegexExtraction() {
+        String regex = "\\((.*?)\\)";
+        String value = "find all (important) values inside (very important) parentheses.";
+        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
+        Set<String> tokens = regexValue.tokens();
+        Assertions.assertEquals(2, tokens.size());
+        Assertions.assertTrue(tokens.contains("(important)") && tokens.contains("(very important)"));
     }
 
-    public RegexExtractedValue(String value, Pattern pattern) {
-        this(pattern.matcher(value));
+    @Test
+    public void testPartialRegexMatch() {
+        String regex = "\\w{3}-\\w{3}-\\w{3}";
+        String value = "testValue=abc-abc";
+        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
+        Set<String> tokens = regexValue.tokens();
+        System.out.println(tokens);
     }
 
-    public RegexExtractedValue(Matcher matcher) {
-        this.matcher = matcher;
-    }
-
-    public Set<String> tokens() {
-        final Set<String> tokens = new HashSet<>();
-        while (matcher.find()) {
-            final String token = matcher.group();
-            tokens.add(token);
-        }
-        return tokens;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object)
-            return true;
-        if (object == null || object.getClass() != this.getClass())
-            return false;
-        final RegexExtractedValue cast = (RegexExtractedValue) object;
-        return matcher.equals(cast.matcher);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(matcher);
+    @Test
+    public void testEqualsHashCodeContract() {
+        EqualsVerifier.forClass(RegexExtractedValue.class).withNonnullFields("matcher").verify();
     }
 }
