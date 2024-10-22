@@ -73,13 +73,12 @@ public final class BloomFilterFromRecord {
     private final String searchTerm;
 
     private BloomFilter create() {
-        if (expected == null || fpp == null) {
-            LOGGER
-                    .error(
-                            "Null field while creating bloom filter expected <{}>, fpp <{}>, pattern <{}>, search term <{}>",
-                            expected, fpp, pattern, searchTerm
-                    );
-            throw new RuntimeException("Object field was null");
+        LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>, pattern: <{}>", expected, fpp, pattern);
+        if (expected == null) {
+            throw new RuntimeException("Record did not contain table field value <expectedElements>");
+        }
+        if(fpp == null) {
+            throw new RuntimeException("Record did not contain table field value <targetFpp>");
         }
         final BloomFilter filter = BloomFilter.create(expected, fpp);
         // if no pattern use tokenized value (currently BLOOMDB.FILTERTYPE.PATTERN is NOT NULL)
