@@ -64,15 +64,6 @@ public class RegexExtractedValueTest {
     }
 
     @Test
-    public void testPartialRegexMatch() {
-        String regex = "\\w{3}-\\w{3}-\\w{3}";
-        String value = "testValue=abc-abc";
-        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
-        Set<String> tokens = regexValue.tokens();
-        System.out.println(tokens);
-    }
-
-    @Test
     public void testEqualsHashCodeContract() {
         EqualsVerifier.forClass(RegexExtractedValue.class).withNonnullFields("matcher").verify();
     }
