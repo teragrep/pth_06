@@ -163,72 +163,30 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset initialOffset() {
-        // After rebase is complete: Refactor the DatasourceOffset and SerializedDatasourceOffset if the 8x else-if statements are too much.
-
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.getInitialOffset() - 3600L));
+        HdfsOffset hdfsOffset = null;
+        LongOffset longOffset = null;
+        KafkaOffset kafkaOffset = null;
+
+        if (this.config.isHdfsEnabled) {
+            hdfsOffset = new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap());
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getBeginningOffsets(null)));
+        if (this.config.isArchiveEnabled) {
+            longOffset = new LongOffset(this.aq.getInitialOffset() - 3600L);
         }
-        else if (!this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // only HDFS
-            rv = new DatasourceOffset(new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()));
-        }
-        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // kafka and archive
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.getInitialOffset() - 3600L),
-                    new KafkaOffset(this.kq.getBeginningOffsets(null))
-            );
-        }
-        else if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // archive and HDFS
-            rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
-                    new LongOffset(this.aq.getInitialOffset() - 3600L)
-            );
-        }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // Kafka and HDFS, check if any files are available from HDFS.
-            if (hdfsOffsets.size() > 0) {
-                rv = new DatasourceOffset(
-                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
-                        new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets))
-                );
+        if (this.config.isKafkaEnabled) {
+            if (hdfsOffsets.size() > 0 && this.config.isHdfsEnabled) {
+                kafkaOffset = new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets));
             }
             else {
-                rv = new DatasourceOffset(
-                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
-                        new KafkaOffset(this.kq.getBeginningOffsets(null))
-                );
+                kafkaOffset = new KafkaOffset(this.kq.getBeginningOffsets(null));
             }
         }
-        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // all three, check if any files are available from HDFS.
-            if (hdfsOffsets.size() > 0) {
-                rv = new DatasourceOffset(
-                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
-                        new LongOffset(this.aq.getInitialOffset() - 3600L),
-                        new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets))
-                );
-            }
-            else {
-                rv = new DatasourceOffset(
-                        new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap()),
-                        new LongOffset(this.aq.getInitialOffset() - 3600L),
-                        new KafkaOffset(this.kq.getBeginningOffsets(null))
-                );
-            }
+        if (hdfsOffset == null && longOffset == null && kafkaOffset == null) {
+            throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
-        else {
-            // none
-            throw new IllegalStateException("no datasources enabled, can't get initial offset");
-        }
+        rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);
         LOGGER.debug("offset[initial]= {}", rv);
         return rv;
     }
@@ -263,55 +221,24 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset latestOffset() {
-        // After rebase is complete: Refactor the DatasourceOffset and SerializedDatasourceOffset if the 8x else-if statements are too much.
-
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.incrementAndGetLatestOffset()));
+        HdfsOffset hdfsOffset = null;
+        LongOffset longOffset = null;
+        KafkaOffset kafkaOffset = null;
+
+        if (this.config.isHdfsEnabled) {
+            hdfsOffset = new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap());
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+        if (this.config.isArchiveEnabled) {
+            longOffset = new LongOffset(this.aq.incrementAndGetLatestOffset());
         }
-        else if (!this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // only hdfs
-            rv = new DatasourceOffset(new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()));
+        if (this.config.isKafkaEnabled) {
+            kafkaOffset = new KafkaOffset(this.kq.getInitialEndOffsets());
         }
-        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && !this.config.isHdfsEnabled) {
-            // kafka and archive
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.incrementAndGetLatestOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
-            );
-        }
-        else if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // archive and hdfs
-            rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
-                    new LongOffset(this.aq.incrementAndGetLatestOffset())
-            );
-        }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // Kafka and HDFS
-            rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
-            );
-        }
-        else if (this.config.isArchiveEnabled && this.config.isKafkaEnabled && this.config.isHdfsEnabled) {
-            // all three
-            rv = new DatasourceOffset(
-                    new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap()),
-                    new LongOffset(this.aq.incrementAndGetLatestOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
-            );
-        }
-        else {
-            // none
+        if (hdfsOffset == null && longOffset == null && kafkaOffset == null) {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
-
+        rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);
         LOGGER.debug("offset[latest]= {}", rv);
         return rv;
     }
