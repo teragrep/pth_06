@@ -67,12 +67,22 @@ public class HdfsQueryProcessor implements HdfsQuery {
     private final Logger LOGGER = LoggerFactory.getLogger(HdfsQueryProcessor.class);
     private LinkedList<HdfsFileMetadata> topicPartitionList;
     private final HdfsDBClient hdfsDBClient;
-    private String topicsRegexString;
     private final Map<TopicPartition, Long> hdfsOffsetMap;
     private final Map<TopicPartition, Long> latestHdfsOffsetMap;
     private final long quantumLength;
     private final long numPartitions;
     private final long totalObjectCountLimit;
+    private final boolean stub;
+
+    public HdfsQueryProcessor() {
+        totalObjectCountLimit = 0;
+        hdfsDBClient = null; // refactor null to stub
+        hdfsOffsetMap = new HashMap<>();
+        latestHdfsOffsetMap = new HashMap<>();
+        quantumLength = 0;
+        numPartitions = 0;
+        stub = true;
+    }
 
     public HdfsQueryProcessor(Config config) {
         // get configs from config object
@@ -80,7 +90,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
         this.numPartitions = config.batchConfig.numPartitions;
         this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
         // Filter only topics using regex pattern
-        topicsRegexString = null;
+        String topicsRegexString = "";
         if (config.query != null) {
             try {
                 HdfsConditionWalker parser = new HdfsConditionWalker();
@@ -93,7 +103,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 );
             }
         }
-        if (topicsRegexString == null) {
+        if (topicsRegexString.isEmpty()) {
             topicsRegexString = "^.*$"; // all topics if none given
         }
         // Implement hdfs db client that fetches the metadata for the files that are stored in hdfs based on topic name (aka. directory containing the files for a specific topic in HDFS).
@@ -124,6 +134,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
             }
         }
         latestHdfsOffsetMap = new HashMap<>();
+        stub = false;
         LOGGER.debug("HdfsQueryProcessor.HdfsQueryProcessor>");
     }
 
@@ -239,6 +250,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
     }
 
     // Increments the latest offset values and returns that incremented offsets. Works by pulling data from the topicPartitionList until weight limit is reached.
+    @Override
     public HdfsOffset incrementAndGetLatestOffset() {
         if (this.latestHdfsOffsetMap.isEmpty()) {
             HdfsOffset beginningOffsets = getBeginningOffsets();
@@ -263,4 +275,8 @@ public class HdfsQueryProcessor implements HdfsQuery {
         return new HdfsOffset(serializedHdfsOffset);
     }
 
+    @Override
+    public boolean isStub() {
+        return stub;
+    }
 }

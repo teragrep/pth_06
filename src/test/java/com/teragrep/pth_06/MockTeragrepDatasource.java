@@ -131,7 +131,7 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
                     hdfsQueryProcessor = new HdfsQueryProcessor(config);
                 }
                 else {
-                    hdfsQueryProcessor = null;
+                    hdfsQueryProcessor = new HdfsQueryProcessor();
                 }
 
                 ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(

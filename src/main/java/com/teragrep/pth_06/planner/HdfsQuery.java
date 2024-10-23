@@ -64,4 +64,6 @@ public interface HdfsQuery {
     HdfsOffset getInitialEndOffsets(); // Delete after testing incrementAndGetLatestOffset() functionality thoroughly.
 
     HdfsOffset incrementAndGetLatestOffset(); // replaces getInitialEndOffsets()
+
+    boolean isStub();
 }

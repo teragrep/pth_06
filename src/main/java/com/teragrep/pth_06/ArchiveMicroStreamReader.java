@@ -111,8 +111,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             hdfsOffsets = hq.hdfsOffsetMapToJSON();
         }
         else {
-            this.hq = null;
-            hdfsOffsets = null;
+            this.hq = new HdfsQueryProcessor();
+            hdfsOffsets = new JsonArray();
         }
 
         if (config.isArchiveEnabled) {
@@ -147,12 +147,12 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         this.aq = aq; // Uses its own hardcoded query string defined in MockTeragrepDatasource.
         this.kq = kq; // Skips using query string (and thus topic filtering) altogether.
         this.hq = hq; // Uses the query string from config for topic filtering.
-        if (this.hq != null && this.kq != null) {
+        if (!this.hq.isStub() && this.kq != null) {
             hdfsOffsets = this.hq.hdfsOffsetMapToJSON();
             this.kq.seekToHdfsOffsets(hdfsOffsets);
         }
         else {
-            hdfsOffsets = null;
+            hdfsOffsets = new JsonArray();
         }
 
         LOGGER.debug("@VisibleForTesting MicroBatchReader> initialized");
