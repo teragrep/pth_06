@@ -87,14 +87,14 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     public Batch processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
-        BatchSliceCollection slice = null;
+        BatchSliceCollection slice = new StubBatchSliceCollection();
 
         if (config.isHdfsEnabled) {
             slice = new HdfsBatchSliceCollection(this.hdfsQuery).processRange(start, end);
         }
 
         if (config.isArchiveEnabled) {
-            if (slice == null) {
+            if (slice.isEmpty()) {
                 slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
             }
             else {
@@ -103,14 +103,14 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         }
 
         if (config.isKafkaEnabled) {
-            if (slice == null) {
+            if (slice.isEmpty()) {
                 slice = new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end);
             }
             else {
                 slice.addAll(new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end));
             }
         }
-        if (slice != null && !slice.isEmpty()) {
+        if (!slice.isEmpty()) {
             this.addSlice(slice);
         }
 
