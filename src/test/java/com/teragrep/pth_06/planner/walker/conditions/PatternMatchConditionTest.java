@@ -59,7 +59,7 @@ import org.junit.jupiter.api.Test;
 class PatternMatchConditionTest {
 
     @Test
-    void testSingleToken() {
+    void testCondition() {
         Condition condition = new PatternMatchCondition("test").condition();
         String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
         Assertions.assertEquals(e, condition.toString());

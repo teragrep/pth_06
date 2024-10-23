@@ -52,10 +52,8 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-public final class TokenizedValue {
+public final class TokenizedValue implements Tokenizable<Token> {
 
     private final String value;
 
@@ -65,14 +63,6 @@ public final class TokenizedValue {
 
     public List<Token> tokens() {
         return new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    public Set<String> stringTokens() {
-        return new Tokenizer(32)
-                .tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
-                .stream()
-                .map(Token::toString)
-                .collect(Collectors.toSet());
     }
 
     @Override

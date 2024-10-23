@@ -70,8 +70,10 @@ class TableFiltersTest {
     // matches IPv4
     final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     // matches IPv4 starting with 255.
+    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    // matches with values surrounded by parentheses
     final String parenthesesPattern = "\\((.*?)\\)";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, parenthesesPattern));
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, parenthesesPattern));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -154,7 +156,7 @@ class TableFiltersTest {
 
     @Test
     public void testInsertFiltersIntoCategoryTableRegexExtract() {
-        fillTargetTable(2);
+        fillTargetTable(3);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()

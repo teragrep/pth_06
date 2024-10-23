@@ -93,11 +93,25 @@ public final class TableFilters {
                     DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
                     DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class)
             };
-            final BloomFilterFromRecord filterFromRecord = new BloomFilterFromRecord(record, table, searchTerm);
+            final ULong expectedField = record
+                    .getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class));
+            final Double fpp = record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class));
+            final String pattern = record.getValue(BLOOMDB.FILTERTYPE.PATTERN, String.class);
+            final SearchTermBloomFilter filter;
+            if (pattern == null) {
+                filter = new SearchTermBloomFilter(expectedField.longValue(), fpp, new TokenizedValue(searchTerm));
+            }
+            else {
+                filter = new SearchTermBloomFilter(
+                        expectedField.longValue(),
+                        fpp,
+                        new RegexExtractedValue(searchTerm, pattern)
+                );
+            }
             final Field<?>[] valueFields = {
                     DSL.val(bloomTermId, ULong.class),
                     DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
-                    DSL.val(filterFromRecord.bytes(), byte[].class)
+                    DSL.val(filter.bytes(), byte[].class)
             };
             ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
         }

@@ -45,31 +45,19 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+import com.teragrep.blf_01.Token;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-public class RegexExtractedValueTest {
+public class TokensAsStringsTest {
 
     @Test
-    public void testRegexExtraction() {
-        String regex = "\\((.*?)\\)";
-        String value = "find all (important) values inside (very important) parentheses.";
-        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
-        List<String> tokens = regexValue.tokens();
-        Assertions.assertEquals(2, tokens.size());
-        Assertions.assertTrue(tokens.contains("(important)"));
-        Assertions.assertTrue(tokens.contains("(very important)"));
-    }
-
-    @Test
-    public void testEqualsHashCodeContract() {
-        EqualsVerifier
-                .forClass(RegexExtractedValue.class)
-                .withNonnullFields("value")
-                .withNonnullFields("pattern")
-                .verify();
+    public void testTokensToStrings() {
+        String value = "one.two.three";
+        Tokenizable<Token> tokenizedValue = new TokenizedValue(value);
+        boolean allTokenClass = tokenizedValue.tokens().stream().allMatch(t -> t.getClass().equals(Token.class));
+        Assertions.assertTrue(allTokenClass);
+        Tokenizable<String> toStrings = new TokensAsStrings(tokenizedValue);
+        Assertions.assertTrue(toStrings.tokens().contains("one"));
     }
 }

@@ -45,30 +45,27 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class RegexExtractedValue {
+public final class RegexExtractedValue implements Tokenizable<String> {
 
-    private final Matcher matcher;
+    private final String value;
+    private final Pattern pattern;
 
-    public RegexExtractedValue(String value, String regex) {
-        this(value, Pattern.compile(regex));
+    public RegexExtractedValue(String value, String pattern) {
+        this(value, Pattern.compile(pattern));
     }
 
     public RegexExtractedValue(String value, Pattern pattern) {
-        this(pattern.matcher(value));
+        this.value = value;
+        this.pattern = pattern;
     }
 
-    public RegexExtractedValue(Matcher matcher) {
-        this.matcher = matcher;
-    }
-
-    public Set<String> tokens() {
-        final Set<String> tokens = new HashSet<>();
+    public List<String> tokens() {
+        final Matcher matcher = pattern.matcher(value);
+        final List<String> tokens = new ArrayList<>();
         while (matcher.find()) {
             final String token = matcher.group();
             tokens.add(token);
@@ -77,17 +74,17 @@ public final class RegexExtractedValue {
     }
 
     @Override
-    public boolean equals(final Object object) {
+    public boolean equals(Object object) {
         if (this == object)
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
-        final RegexExtractedValue cast = (RegexExtractedValue) object;
-        return matcher.equals(cast.matcher);
+        RegexExtractedValue cast = (RegexExtractedValue) object;
+        return value.equals(cast.value) && pattern.equals(cast.pattern);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(matcher);
+        return Objects.hash(value, pattern);
     }
 }

@@ -47,58 +47,47 @@ package com.teragrep.pth_06.planner.bloomfilter;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
-import org.jooq.impl.DSL;
-import org.jooq.types.ULong;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BloomFilterFromRecordTest {
-
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
-    final String userName = "sa";
-    final String password = "";
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+public class SearchTermBloomFilterTest {
 
     @Test
     public void testCorrectFilterSize() {
-        Record dynamicRecord = generateRecord(true);
-        Table<?> target = DSL.table(DSL.name("target"));
         String searchTerm = "SearchValuePatternInThisString";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
+        SearchTermBloomFilter filter = new SearchTermBloomFilter(1000L, 0.01, new TokenizedValue(searchTerm));
         byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
         BloomFilter resultFilter = Assertions
                 .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
-        BloomFilter expectedSize = BloomFilter.create(100, 0.01);
+        BloomFilter expectedSize = BloomFilter.create(1000L, 0.01);
         Assertions.assertEquals(expectedSize.bitSize(), resultFilter.bitSize());
     }
 
     @Test
     public void testNoRegexExtractedTokensException() {
-        Record dynamicRecord = generateRecord(true);
-        Table<?> target = DSL.table(DSL.name("target"));
         String searchTerm = "NoMatch";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
-        RuntimeException e = Assertions.assertThrows(RuntimeException.class, filter::bytes);
+        SearchTermBloomFilter filter = new SearchTermBloomFilter(
+                1000L,
+                0.01,
+                new RegexExtractedValue(searchTerm, "Pattern")
+        );
+        IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, filter::bytes);
         String expectedMessage = "Trying to insert empty filter, pattern match joined table should always have tokens";
         Assertions.assertEquals(expectedMessage, e.getMessage());
     }
 
     @Test
     public void testRegexExtractedTokens() {
-        Record dynamicRecord = generateRecord(true);
-        Table<?> target = DSL.table(DSL.name("target"));
         String searchTerm = "SearchValuePatternInThisString";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
+        SearchTermBloomFilter filter = new SearchTermBloomFilter(
+                1000L,
+                0.01,
+                new RegexExtractedValue(searchTerm, "Pattern")
+        );
         byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
         BloomFilter resultFilter = Assertions
                 .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
@@ -107,10 +96,8 @@ public class BloomFilterFromRecordTest {
 
     @Test
     public void testTokenizerTokens() {
-        Record dynamicRecord = generateRecord(false);
-        Table<?> target = DSL.table(DSL.name("target"));
         String searchTerm = "SearchValuePatternInThisString.Without.Delimiter";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
+        SearchTermBloomFilter filter = new SearchTermBloomFilter(1000L, 0.01, new TokenizedValue(searchTerm));
         byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
         BloomFilter resultFilter = Assertions
                 .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
@@ -120,60 +107,13 @@ public class BloomFilterFromRecordTest {
     }
 
     @Test
-    public void testNullExpectedField() {
-        Record dynamicRecord = generateRecord(false);
-        Field<ULong> expectedField = DSL.field(DSL.name("expectedElements"), ULong.class);
-        dynamicRecord.set(expectedField, null);
-        Table<?> target = DSL.table(DSL.name("target"));
-        String searchTerm = "SearchValuePatternInThisString.Without.Delimiter";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, filter::bytes);
-        String expectedMessage = "Record did not contain table field value <expectedElements>";
-        Assertions.assertEquals(expectedMessage, e.getMessage());
-    }
-
-    @Test
-    public void testNullFppField() {
-        Record dynamicRecord = generateRecord(false);
-        Field<Double> fppField = DSL.field(DSL.name("targetFpp"), Double.class);
-        dynamicRecord.set(fppField, null);
-        Table<?> target = DSL.table(DSL.name("target"));
-        String searchTerm = "SearchValuePatternInThisString.Without.Delimiter";
-        BloomFilterFromRecord filter = new BloomFilterFromRecord(dynamicRecord, target, searchTerm);
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, filter::bytes);
-        String expectedMessage = "Record did not contain table field value <targetFpp>";
-        Assertions.assertEquals(expectedMessage, e.getMessage());
-    }
-
-    @Test
     public void equalsHashCodeContractTest() {
         EqualsVerifier
-                .forClass(BloomFilterFromRecord.class)
+                .forClass(SearchTermBloomFilter.class)
                 .withNonnullFields("expected")
                 .withNonnullFields("fpp")
-                .withNonnullFields("searchTerm")
+                .withNonnullFields("stringTokens")
                 .withIgnoredFields("LOGGER")
                 .verify();
-    }
-
-    private Record generateRecord(final boolean withPattern) {
-        DSLContext ctx = DSL.using(conn);
-        Field<ULong> idField = DSL.field(DSL.name("id"), ULong.class);
-        Field<ULong> expectedField = DSL.field(DSL.name("expectedElements"), ULong.class);
-        Field<Double> fppField = DSL.field(DSL.name("targetFpp"), Double.class);
-        Field<String> patternField = DSL.field(DSL.name("pattern"), String.class);
-
-        Record dynamicRecord = ctx.newRecord(idField, expectedField, fppField, patternField);
-        if (withPattern) {
-            dynamicRecord.set(patternField, "Pattern");
-        }
-        else {
-            // case is joined filtertype table has no pattern
-            dynamicRecord.set(patternField, null);
-        }
-        dynamicRecord.set(idField, ULong.valueOf(1));
-        dynamicRecord.set(expectedField, ULong.valueOf(100));
-        dynamicRecord.set(fppField, 0.01);
-        return dynamicRecord;
     }
 }

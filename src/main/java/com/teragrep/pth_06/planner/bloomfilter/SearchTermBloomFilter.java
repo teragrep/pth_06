@@ -46,77 +46,52 @@
 package com.teragrep.pth_06.planner.bloomfilter;
 
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jooq.Record;
-import org.jooq.Table;
-import org.jooq.impl.DSL;
-import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-
-import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
- * Extracts filter type from record, creates a bloom filter and returns the filters byte array
+ * Inserts given tokens into configurable filter
  */
-public final class BloomFilterFromRecord {
+public final class SearchTermBloomFilter {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(BloomFilterFromRecord.class);
-    private final ULong expected;
+    private final Logger LOGGER = LoggerFactory.getLogger(SearchTermBloomFilter.class);
+    private final Long expected;
     private final Double fpp;
-    private final String pattern;
-    private final String searchTerm;
+    private final List<String> stringTokens;
 
     private BloomFilter create() {
-        LOGGER
-                .debug(
-                        "Create filter from Record with values: expected <{}>, fpp <{}>, pattern: <{}>", expected, fpp,
-                        pattern
-                );
-        if (expected == null) {
-            throw new IllegalArgumentException("Record did not contain table field value <expectedElements>");
+        LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>", expected, fpp);
+
+        if (stringTokens.isEmpty()) {
+            throw new IllegalStateException(
+                    "Trying to insert empty filter, pattern match joined table should always have tokens"
+            );
         }
-        if (fpp == null) {
-            throw new IllegalArgumentException("Record did not contain table field value <targetFpp>");
-        }
-        final BloomFilter filter = BloomFilter.create(expected.longValue(), fpp);
-        // if no pattern use tokenized value (currently BLOOMDB.FILTERTYPE.PATTERN is NOT NULL)
-        if (pattern == null) {
-            LOGGER.info("Table pattern was null using tokenizer to generate tokens");
-            new TokenizedValue(searchTerm).stringTokens().forEach(filter::put);
-        }
-        else { // get tokens using regex
-            final Set<String> tokens = new RegexExtractedValue(searchTerm, pattern).tokens();
-            LOGGER.info("Insert pattern <{}> tokens to temp table filter <{}>", pattern, tokens);
-            if (tokens.isEmpty()) {
-                throw new IllegalStateException(
-                        "Trying to insert empty filter, pattern match joined table should always have tokens"
-                );
-            }
-            tokens.forEach(filter::put);
+        final BloomFilter filter = BloomFilter.create(1000, 0.01);
+        for (String token : stringTokens) {
+            filter.put(token);
         }
         return filter;
     }
 
-    public BloomFilterFromRecord(Record record, Table<?> table, String searchTerm) {
-        this(
-                record.getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class)),
-                record.getValue(DSL.field(DSL.name(table.getName(), "targetFpp"), Double.class)),
-                record.getValue(BLOOMDB.FILTERTYPE.PATTERN, String.class),
-                searchTerm
-        );
+    public SearchTermBloomFilter(Long expected, Double fpp, RegexExtractedValue tokenizable) {
+        this(expected, fpp, tokenizable.tokens());
     }
 
-    public BloomFilterFromRecord(ULong expected, Double fpp, String pattern, String searchTerm) {
+    public SearchTermBloomFilter(Long expected, Double fpp, TokenizedValue tokenizable) {
+        this(expected, fpp, new TokensAsStrings(tokenizable).tokens());
+    }
+
+    public SearchTermBloomFilter(Long expected, Double fpp, List<String> stringTokens) {
         this.expected = expected;
         this.fpp = fpp;
-        this.pattern = pattern;
-        this.searchTerm = searchTerm;
+        this.stringTokens = stringTokens;
     }
 
     public byte[] bytes() {
@@ -131,18 +106,17 @@ public final class BloomFilterFromRecord {
     }
 
     @Override
-    public boolean equals(final Object object) {
+    public boolean equals(Object object) {
         if (this == object)
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        final BloomFilterFromRecord cast = (BloomFilterFromRecord) object;
-        return expected.equals(cast.expected) && fpp.equals(cast.fpp) && Objects.equals(pattern, cast.pattern)
-                && searchTerm.equals(cast.searchTerm);
+        SearchTermBloomFilter cast = (SearchTermBloomFilter) object;
+        return expected.equals(cast.expected) && fpp.equals(cast.fpp) && stringTokens.equals(cast.stringTokens);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(expected, fpp, pattern, searchTerm);
+        return Objects.hash(expected, fpp, stringTokens);
     }
 }

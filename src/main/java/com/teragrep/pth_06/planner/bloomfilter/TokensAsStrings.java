@@ -45,31 +45,21 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Token;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class RegexExtractedValueTest {
+public final class TokensAsStrings implements Tokenizable<String> {
 
-    @Test
-    public void testRegexExtraction() {
-        String regex = "\\((.*?)\\)";
-        String value = "find all (important) values inside (very important) parentheses.";
-        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
-        List<String> tokens = regexValue.tokens();
-        Assertions.assertEquals(2, tokens.size());
-        Assertions.assertTrue(tokens.contains("(important)"));
-        Assertions.assertTrue(tokens.contains("(very important)"));
+    private final Tokenizable<Token> origin;
+
+    public TokensAsStrings(Tokenizable<Token> origin) {
+        this.origin = origin;
     }
 
-    @Test
-    public void testEqualsHashCodeContract() {
-        EqualsVerifier
-                .forClass(RegexExtractedValue.class)
-                .withNonnullFields("value")
-                .withNonnullFields("pattern")
-                .verify();
+    @Override
+    public List<String> tokens() {
+        return origin.tokens().stream().map(Token::toString).collect(Collectors.toList());
     }
 }
