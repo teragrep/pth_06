@@ -68,23 +68,23 @@ public class DatasourceOffset extends Offset implements Serializable {
     }
 
     public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset) {
-        this(hdfsOffset, archiveOffset, null);
+        this(hdfsOffset, archiveOffset, new KafkaOffset());
     }
 
     public DatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this(null, archiveOffset, kafkaOffset);
+        this(new HdfsOffset(), archiveOffset, kafkaOffset);
     }
 
     public DatasourceOffset(HdfsOffset hdfsOffset) {
-        this(hdfsOffset, null, null);
+        this(hdfsOffset, null, new KafkaOffset());
     }
 
     public DatasourceOffset(LongOffset archiveOffset) {
-        this(null, archiveOffset, null);
+        this(new HdfsOffset(), archiveOffset, new KafkaOffset());
     }
 
     public DatasourceOffset(KafkaOffset kafkaOffset) {
-        this(null, null, kafkaOffset);
+        this(new HdfsOffset(), null, kafkaOffset);
     }
 
     public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
@@ -107,8 +107,8 @@ public class DatasourceOffset extends Offset implements Serializable {
     public KafkaOffset getKafkaOffset() {
         KafkaOffset kafkaOffset = serializedDatasourceOffset.kafkaOffset;
 
-        if (kafkaOffset == null || kafkaOffset.getOffsetMap() == null) {
-            return null;
+        if (kafkaOffset.isStub() || kafkaOffset.getOffsetMap().isEmpty()) {
+            return kafkaOffset;
         }
 
         for (Map.Entry<TopicPartition, Long> entry : kafkaOffset.getOffsetMap().entrySet()) {
