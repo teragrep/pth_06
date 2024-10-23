@@ -65,6 +65,20 @@ public final class SearchTermBloomFilter {
     private final Double fpp;
     private final List<String> stringTokens;
 
+    public SearchTermBloomFilter(Long expected, Double fpp, RegexExtractedValue tokenizable) {
+        this(expected, fpp, tokenizable.tokens());
+    }
+
+    public SearchTermBloomFilter(Long expected, Double fpp, TokenizedValue tokenizable) {
+        this(expected, fpp, new TokensAsStrings(tokenizable).tokens());
+    }
+
+    public SearchTermBloomFilter(Long expected, Double fpp, List<String> stringTokens) {
+        this.expected = expected;
+        this.fpp = fpp;
+        this.stringTokens = stringTokens;
+    }
+
     private BloomFilter create() {
         LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>", expected, fpp);
 
@@ -78,20 +92,6 @@ public final class SearchTermBloomFilter {
             filter.put(token);
         }
         return filter;
-    }
-
-    public SearchTermBloomFilter(Long expected, Double fpp, RegexExtractedValue tokenizable) {
-        this(expected, fpp, tokenizable.tokens());
-    }
-
-    public SearchTermBloomFilter(Long expected, Double fpp, TokenizedValue tokenizable) {
-        this(expected, fpp, new TokensAsStrings(tokenizable).tokens());
-    }
-
-    public SearchTermBloomFilter(Long expected, Double fpp, List<String> stringTokens) {
-        this.expected = expected;
-        this.fpp = fpp;
-        this.stringTokens = stringTokens;
     }
 
     public byte[] bytes() {
