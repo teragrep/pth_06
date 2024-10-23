@@ -66,15 +66,12 @@ public class HdfsOffset extends Offset implements Serializable {
         this(new HashMap<>(), true);
     }
 
-    public HdfsOffset(Map<TopicPartition, Long> offset) {
-        this(offset, false);
+    public HdfsOffset(Map<String, Long> serializedHdfsOffset) {
+        this(serializedHdfsOffset, false);
     }
 
-    public HdfsOffset(Map<TopicPartition, Long> offset, boolean stub) {
-        serializedHdfsOffset = new HashMap<>(offset.size());
-        for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
-            serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
+    public HdfsOffset(Map<String, Long> serializedHdfsOffset, boolean stub) {
+        this.serializedHdfsOffset = serializedHdfsOffset;
         this.stub = stub;
     }
 

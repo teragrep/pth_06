@@ -57,14 +57,17 @@ import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
 import com.teragrep.pth_06.task.HdfsMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 // logger
 
@@ -170,7 +173,12 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         KafkaOffset kafkaOffset = new KafkaOffset(); // stub
 
         if (this.config.isHdfsEnabled) {
-            hdfsOffset = new HdfsOffset(this.hq.getBeginningOffsets().getOffsetMap());
+            Map<TopicPartition, Long> offset = this.hq.getBeginningOffsets().getOffsetMap();
+            Map<String, Long> serializedHdfsOffset = new HashMap<>(offset.size());
+            for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            hdfsOffset = new HdfsOffset(serializedHdfsOffset);
         }
         if (this.config.isArchiveEnabled) {
             longOffset = new LongOffset(this.aq.getInitialOffset() - 3600L);
@@ -232,7 +240,12 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         KafkaOffset kafkaOffset = new KafkaOffset();
 
         if (this.config.isHdfsEnabled) {
-            hdfsOffset = new HdfsOffset(this.hq.incrementAndGetLatestOffset().getOffsetMap());
+            Map<TopicPartition, Long> offset = this.hq.incrementAndGetLatestOffset().getOffsetMap();
+            Map<String, Long> serializedHdfsOffset = new HashMap<>(offset.size());
+            for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            hdfsOffset = new HdfsOffset(serializedHdfsOffset);
         }
         if (this.config.isArchiveEnabled) {
             longOffset = new LongOffset(this.aq.incrementAndGetLatestOffset());
