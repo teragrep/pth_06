@@ -195,7 +195,6 @@ public class HdfsMicroBatchInputPartitionReaderTest {
 
     }
 
-    @Disabled(value = "This code is WIP after refactoring")
     @Test
     public void testCutoffEpoch() {
         assertDoesNotThrow(() -> {

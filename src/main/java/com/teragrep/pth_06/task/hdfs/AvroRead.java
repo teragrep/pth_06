@@ -55,6 +55,8 @@ public interface AvroRead {
 
     SyslogRecord record();
 
+    void clear();
+
     void close() throws IOException;
 
 }

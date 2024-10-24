@@ -90,10 +90,11 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
             }
             else {
                 // Time based inclusion WIP
-                /*SyslogRecord record = reads.getFirst().record();
+                SyslogRecord record = reads.getFirst().record();
                 if (record.getTimestamp() < cutoffEpoch) {
+                    reads.getFirst().clear();
                     hasNext = false;
-                }*/
+                }
             }
         }
         return hasNext;
@@ -102,6 +103,7 @@ public final class HdfsRecordConversionImpl implements HdfsRecordConversion {
     @Override
     public InternalRow row() {
         SyslogRecord currentRecord = reads.getFirst().record();
+        reads.getFirst().clear();
         UnsafeRowWriter rowWriter = new UnsafeRowWriter(11);
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
