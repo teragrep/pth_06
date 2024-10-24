@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 // This class will allow reading the contents of the avro-files that are using SyslogRecord schema from hdfs.
 public final class AvroReadImpl implements AvroRead {
@@ -62,22 +63,43 @@ public final class AvroReadImpl implements AvroRead {
     final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
     private final DataFileStream<SyslogRecord> reader;
+    private final LinkedList<SyslogRecord> syslogRecordBuffer;
 
     public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) throws IOException {
         this.reader = new DataFileStream<>(
                 fs.open(new Path(hdfsFileMetadata.hdfsFilePath)),
                 new SpecificDatumReader<>(SyslogRecord.class)
         );
+        syslogRecordBuffer = new LinkedList<>();
     }
 
     @Override
     public boolean next() {
-        return reader.hasNext();
+        boolean hasnext = reader.hasNext();
+        if (hasnext) {
+            syslogRecordBuffer.add(reader.next());
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     @Override
     public SyslogRecord record() {
-        return reader.next();
+        if (syslogRecordBuffer.size() == 1) {
+            return syslogRecordBuffer.getFirst();
+        }
+        else {
+            throw new IllegalStateException(
+                    "Invalid amount of records in the buffer, expected 1 got " + syslogRecordBuffer.size()
+            );
+        }
+    }
+
+    @Override
+    public void clear() {
+        syslogRecordBuffer.clear();
     }
 
     @Override
