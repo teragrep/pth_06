@@ -90,7 +90,7 @@ public final class HdfsConfig {
                 );
         hdfsPath = getOrThrow(opts, "hdfs.hdfsPath");
         hdfsUri = getOrThrow(opts, "hdfs.hdfsUri");
-        useHdfsHostname = getOrThrow(opts, "hdfs.UseHostName");
+        useHdfsHostname = getOrThrow(opts, "hdfs.useHostName");
         hdfsTransferProtection = getOrThrow(opts, "hdfs.transferProtection");
         hdfsCipherSuites = getOrThrow(opts, "hdfs.cipherSuites");
         String useMockHdfsDatabaseString = opts.getOrDefault("hdfs.useMockHdfsDatabase", "false");
