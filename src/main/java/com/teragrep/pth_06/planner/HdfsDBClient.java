@@ -66,11 +66,11 @@ public class HdfsDBClient {
     private final long ignoreBeforeEpoch;
 
     public HdfsDBClient(Config config, String topicsRegexString) throws IOException {
-        this(config, topicsRegexString, new FileSystemFactoryImpl(config.hdfsConfig).fileSystem(true));
+        this(config, new TopicFilter(topicsRegexString), new FileSystemFactoryImpl(config.hdfsConfig).fileSystem(true));
     }
 
-    public HdfsDBClient(Config config, String topicsRegexString, FileSystem fs) {
-        this.topicFilter = new TopicFilter(topicsRegexString);
+    public HdfsDBClient(Config config, TopicFilter topicFilter, FileSystem fs) {
+        this.topicFilter = topicFilter;
         this.ignoreBeforeEpoch = config.hdfsConfig.includeFileEpochAndAfter; // Defines the minimum time window / cutoff epoch for making sure that the files which metadata is fetched by the planner are not mistakenly deleted by cfe_39 pruning before tasker can process the records inside.
         path = config.hdfsConfig.hdfsPath;
         this.fs = fs;
