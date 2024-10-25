@@ -77,6 +77,7 @@ public final class AvroReadImpl implements AvroRead {
     public boolean next() {
         boolean hasnext = reader.hasNext();
         if (hasnext) {
+            syslogRecordBuffer.clear();
             syslogRecordBuffer.add(reader.next());
             return true;
         }
@@ -95,11 +96,6 @@ public final class AvroReadImpl implements AvroRead {
                     "Invalid amount of records in the buffer, expected 1 got " + syslogRecordBuffer.size()
             );
         }
-    }
-
-    @Override
-    public void clear() {
-        syslogRecordBuffer.clear();
     }
 
     @Override
