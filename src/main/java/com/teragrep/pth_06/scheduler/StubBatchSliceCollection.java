@@ -55,6 +55,6 @@ public final class StubBatchSliceCollection extends BatchSliceCollection {
 
     @Override
     public BatchSliceCollection processRange(Offset start, Offset end) {
-        return this;
+        throw new UnsupportedOperationException("StubBatchSliceCollection should not be processed.");
     }
 }
