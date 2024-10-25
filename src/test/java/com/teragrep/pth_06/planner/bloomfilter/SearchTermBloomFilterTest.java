@@ -58,13 +58,22 @@ public class SearchTermBloomFilterTest {
 
     @Test
     public void testCorrectFilterSize() {
-        String searchTerm = "SearchValuePatternInThisString";
-        SearchTermBloomFilter filter = new SearchTermBloomFilter(1000L, 0.01, new TokenizedValue(searchTerm));
-        byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
-        BloomFilter resultFilter = Assertions
-                .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
-        BloomFilter expectedSize = BloomFilter.create(1000L, 0.01);
-        Assertions.assertEquals(expectedSize.bitSize(), resultFilter.bitSize());
+        String searchTerm = "test";
+        SearchTermBloomFilter filter1 = new SearchTermBloomFilter(1000L, 0.01, new TokenizedValue(searchTerm));
+        SearchTermBloomFilter filter2 = new SearchTermBloomFilter(1000L, 0.02, new TokenizedValue(searchTerm));
+        SearchTermBloomFilter filter3 = new SearchTermBloomFilter(100L, 0.01, new TokenizedValue(searchTerm));
+        byte[] bytes1 = Assertions.assertDoesNotThrow(filter1::bytes);
+        byte[] bytes2 = Assertions.assertDoesNotThrow(filter2::bytes);
+        byte[] bytes3 = Assertions.assertDoesNotThrow(filter3::bytes);
+        BloomFilter resultFilter1 = Assertions
+                .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes1)));
+        BloomFilter resultFilter2 = Assertions
+                .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes2)));
+        BloomFilter resultFilter3 = Assertions
+                .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes3)));
+        Assertions.assertEquals(BloomFilter.create(1000L, 0.01).bitSize(), resultFilter1.bitSize());
+        Assertions.assertEquals(BloomFilter.create(1000L, 0.02).bitSize(), resultFilter2.bitSize());
+        Assertions.assertEquals(BloomFilter.create(100L, 0.01).bitSize(), resultFilter3.bitSize());
     }
 
     @Test

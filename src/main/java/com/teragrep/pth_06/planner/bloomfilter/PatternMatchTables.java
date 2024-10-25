@@ -61,7 +61,7 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 /**
  * Class to get a collection of Tables that match the given PatternMatchCondition
  */
-public final class PatternMatchTables {
+public final class PatternMatchTables implements DatabaseTables {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatchTables.class);
 
@@ -82,7 +82,7 @@ public final class PatternMatchTables {
      *
      * @return List of tables that matched condition and were not empty
      */
-    public List<Table<?>> toList() {
+    public List<Table<?>> tables() {
         final List<Table<?>> tables = ctx
                 .meta()
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb

@@ -139,7 +139,7 @@ public class PatternMatchTablesTest {
         DSLContext ctx = DSL.using(conn);
         String input = "192.168.1.1";
         PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.toList();
+        List<Table<?>> result = patternMatchTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
@@ -149,7 +149,7 @@ public class PatternMatchTablesTest {
         DSLContext ctx = DSL.using(conn);
         String input = "target_ip=192.168.1.1";
         PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.toList();
+        List<Table<?>> result = patternMatchTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
@@ -159,7 +159,7 @@ public class PatternMatchTablesTest {
         DSLContext ctx = DSL.using(conn);
         String input = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
         PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.toList();
+        List<Table<?>> result = patternMatchTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("parentheses_test", result.get(0).getName());
     }
@@ -169,8 +169,8 @@ public class PatternMatchTablesTest {
         DSLContext ctx = DSL.using(conn);
         String input = "255.255.255.255";
         PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.toList();
-        List<Table<?>> result2 = patternMatchTables.toList();
+        List<Table<?>> result = patternMatchTables.tables();
+        List<Table<?>> result2 = patternMatchTables.tables();
         List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals(2, result2.size());
@@ -183,7 +183,7 @@ public class PatternMatchTablesTest {
         DSLContext ctx = DSL.using(conn);
         String input = "testinput";
         PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.toList();
+        List<Table<?>> result = patternMatchTables.tables();
         Assertions.assertTrue(result.isEmpty());
     }
 

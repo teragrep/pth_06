@@ -79,7 +79,7 @@ public final class SearchTermBloomFilter {
         this.stringTokens = stringTokens;
     }
 
-    private BloomFilter create() {
+    public byte[] bytes() {
         LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>", expected, fpp);
 
         if (stringTokens.isEmpty()) {
@@ -87,15 +87,10 @@ public final class SearchTermBloomFilter {
                     "Trying to insert empty filter, pattern match joined table should always have tokens"
             );
         }
-        final BloomFilter filter = BloomFilter.create(1000, 0.01);
-        for (String token : stringTokens) {
+        final BloomFilter filter = BloomFilter.create(expected, fpp);
+        for (final String token : stringTokens) {
             filter.put(token);
         }
-        return filter;
-    }
-
-    public byte[] bytes() {
-        final BloomFilter filter = create();
         try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);
             return filterBAOS.toByteArray();

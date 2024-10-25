@@ -83,8 +83,8 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         }
         Condition newCondition = condition;
         if (tableSet.isEmpty()) {
-            final PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), value);
-            tableSet.addAll(patternMatchTables.toList());
+            final DatabaseTables patternMatchTables = new PatternMatchTables(config.context(), value);
+            tableSet.addAll(patternMatchTables.tables());
         }
         if (!tableSet.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {

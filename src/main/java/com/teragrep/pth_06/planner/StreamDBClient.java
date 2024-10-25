@@ -344,9 +344,9 @@ public class StreamDBClient {
                     .on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id).and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag)));
 
             if (bloomEnabled) {
-                Set<Table<?>> tables = walker.patternMatchTables();
+                final Set<Table<?>> tables = walker.patternMatchTables();
                 if (!tables.isEmpty()) {
-                    for (Table<?> table : tables) {
+                    for (final Table<?> table : tables) {
                         if (LOGGER.isInfoEnabled()) {
                             LOGGER.info("Left join pattern match table: <{}>", table.getName());
                         }

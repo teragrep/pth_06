@@ -74,7 +74,7 @@ public final class RegexExtractedValue implements Tokenizable<String> {
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null || getClass() != object.getClass())
