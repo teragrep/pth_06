@@ -90,7 +90,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
         this.numPartitions = config.batchConfig.numPartitions;
         this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
         // Filter only topics using regex pattern
-        String topicsRegexString = "";
+        String topicsRegexString = "^.*$"; // all topics if none given
         if (config.query != null) {
             try {
                 HdfsConditionWalker parser = new HdfsConditionWalker();
@@ -102,9 +102,6 @@ public class HdfsQueryProcessor implements HdfsQuery {
                                 + " exception:" + e
                 );
             }
-        }
-        if (topicsRegexString.isEmpty()) {
-            topicsRegexString = "^.*$"; // all topics if none given
         }
         // Implement hdfs db client that fetches the metadata for the files that are stored in hdfs based on topic name (aka. directory containing the files for a specific topic in HDFS).
         // Remember to implement Kerberized HDFS access for prod. Tests are done using normal access on mini cluster.
