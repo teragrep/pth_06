@@ -160,7 +160,7 @@ public class InstantiationTest {
                 .option("hdfs.enabled", "true")
                 .option("hdfs.hdfsPath", hdfsPath)
                 .option("hdfs.hdfsUri", hdfsUri)
-                .option("hdfs.UseHostName", "false")
+                .option("hdfs.useHostName", "false")
                 .option("hdfs.transferProtection", "test")
                 .option("hdfs.cipherSuites", "test")
                 .option("hdfs.useMockHdfsDatabase", "true")
