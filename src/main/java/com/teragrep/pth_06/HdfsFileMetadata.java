@@ -43,37 +43,30 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import org.apache.kafka.common.TopicPartition;
 
 import java.io.Serializable;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+// Class for holding serializable metadata of HDFS files containing kafka records.
+public class HdfsFileMetadata implements Serializable {
 
-    private final Long version = 1L;
+    public final TopicPartition topicPartition; // Represents the Kafka topic partition which records the file contains.
+    public final long endOffset; // Represents the offset of the record that was last added to the file.
+    public final String hdfsFilePath; // Represents the file path where the file resides in HDFS.
+    public final long hdfsFileSize; // Represents the size of the file in HDFS. Used for scheduling the batch slice.
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
-
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public HdfsFileMetadata(TopicPartition topicPartition, long offset, String filePath, long fileSize) {
+        this.topicPartition = topicPartition;
+        this.endOffset = offset;
+        this.hdfsFilePath = filePath;
+        this.hdfsFileSize = fileSize;
     }
 
     @Override
     public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+        return "HdfsFileMetadata{" + "topicPartition=" + topicPartition + ", endOffset=" + endOffset + ", hdfsFilePath="
+                + hdfsFilePath + ", hdfsFileSize=" + hdfsFileSize + '}';
     }
 }

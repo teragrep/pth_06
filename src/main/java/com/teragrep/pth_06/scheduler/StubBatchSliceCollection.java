@@ -43,37 +43,18 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06.scheduler;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import org.apache.spark.sql.connector.read.streaming.Offset;
 
-import java.io.Serializable;
+public final class StubBatchSliceCollection extends BatchSliceCollection {
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
-
-    private final Long version = 1L;
-
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
-
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public StubBatchSliceCollection() {
+        super();
     }
 
     @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+    public BatchSliceCollection processRange(Offset start, Offset end) {
+        throw new UnsupportedOperationException("StubBatchSliceCollection should not be processed.");
     }
 }

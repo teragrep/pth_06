@@ -43,37 +43,14 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import org.apache.hadoop.fs.FileSystem;
 
-import java.io.Serializable;
+import java.io.IOException;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+public interface FileSystemFactory {
 
-    private final Long version = 1L;
+    FileSystem fileSystem(boolean initializeUGI) throws IOException;
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
-
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
-    }
-
-    @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
-    }
 }

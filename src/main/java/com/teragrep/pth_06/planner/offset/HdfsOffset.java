@@ -45,35 +45,69 @@
  */
 package com.teragrep.pth_06.planner.offset;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+// Class for representing a serializable offset of HDFS data source.
+// S3 has epoch hours as offsets, kafka has native TopicPartition offsets and HDFS should have file-metadata (use same format as in Kafka, topicpartition + record offset, which can be extracted from the metadata).
 
-    private final Long version = 1L;
+public class HdfsOffset extends Offset implements Serializable {
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
+    private final Map<String, Long> serializedHdfsOffset;
+    private final boolean stub;
 
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public HdfsOffset() {
+        this(new HashMap<>(), true);
+    }
+
+    public HdfsOffset(String s) {
+        this(new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
+        }.getType()), false);
+    }
+
+    public HdfsOffset(Map<String, Long> serializedHdfsOffset) {
+        this(serializedHdfsOffset, false);
+    }
+
+    public HdfsOffset(Map<String, Long> serializedHdfsOffset, boolean stub) {
+        this.serializedHdfsOffset = serializedHdfsOffset;
+        this.stub = stub;
+    }
+
+    public Map<TopicPartition, Long> getOffsetMap() {
+        Map<TopicPartition, Long> rv = new HashMap<>(serializedHdfsOffset.size());
+
+        for (Map.Entry<String, Long> entry : serializedHdfsOffset.entrySet()) {
+            String topicAndPartition = entry.getKey();
+            long offset = entry.getValue();
+
+            int splitterLocation = topicAndPartition.lastIndexOf('-');
+            int partition = Integer.parseInt(topicAndPartition.substring(splitterLocation + 1));
+            String topic = topicAndPartition.substring(0, splitterLocation);
+            rv.put(new TopicPartition(topic, partition), offset);
+        }
+
+        return rv;
+    }
+
+    public boolean isStub() {
+        return stub;
+    }
+
+    @Override
+    public String json() {
+        Gson gson = new Gson();
+        return gson.toJson(serializedHdfsOffset);
     }
 
     @Override
     public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+        return "HdfsOffset{" + "serializedHdfsOffset=" + serializedHdfsOffset + '}';
     }
 }

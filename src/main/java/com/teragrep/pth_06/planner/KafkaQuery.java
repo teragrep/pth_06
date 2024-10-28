@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.google.gson.JsonArray;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import org.apache.kafka.common.TopicPartition;
 
@@ -65,4 +66,8 @@ public interface KafkaQuery {
     Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
 
     void commit(KafkaOffset offset);
+
+    void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
+
+    Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
 }

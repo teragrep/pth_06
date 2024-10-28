@@ -43,37 +43,38 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06.scheduler;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import com.teragrep.pth_06.HdfsFileMetadata;
+import com.teragrep.pth_06.planner.HdfsQuery;
+import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.spark.sql.connector.read.streaming.Offset;
 
-import java.io.Serializable;
+import java.util.LinkedList;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+public final class HdfsBatchSliceCollection extends BatchSliceCollection {
 
-    private final Long version = 1L;
+    private final Logger LOGGER = LoggerFactory.getLogger(HdfsBatchSliceCollection.class);
+    private final HdfsQuery hq;
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
-
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public HdfsBatchSliceCollection(HdfsQuery hq) {
+        super();
+        this.hq = hq;
     }
 
-    @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+    public HdfsBatchSliceCollection processRange(Offset start, Offset end) {
+        // HDFS:
+        LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
+        HdfsOffset hdfsStartOffset = ((DatasourceOffset) start).getHdfsOffset();
+        HdfsOffset hdfsEndOffset = ((DatasourceOffset) end).getHdfsOffset();
+        LinkedList<HdfsFileMetadata> result = hq.processBetweenHdfsFileMetadata(hdfsStartOffset, hdfsEndOffset);
+        for (HdfsFileMetadata r : result) {
+            this.add(new BatchSlice(r));
+        }
+        return this;
     }
+
 }

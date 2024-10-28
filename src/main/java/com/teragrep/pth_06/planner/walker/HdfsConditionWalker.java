@@ -43,37 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06.planner.walker;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import com.teragrep.jue_01.GlobToRegEx;
+import org.w3c.dom.Element;
 
-import java.io.Serializable;
+// HDFS planner walker, only aims to filter out the topics as the planner only outputs the metadata for AVRO-files containing the records. The rest of the condition handling is done in the separate tasker walker.
+public class HdfsConditionWalker extends XmlWalker<String> {
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+    @Override
+    String emitElem(Element current) {
+        String tag = current.getTagName();
+        String value = current.getAttribute("value");
+        String operation = current.getAttribute("operation");
 
-    private final Long version = 1L;
+        String queryCondition = null;
+        // only index equals supported
+        if (tag.equalsIgnoreCase("index")) {
+            if (operation.equalsIgnoreCase("EQUALS")) {
+                queryCondition = GlobToRegEx.regexify(value);
+            }
+        }
+        return queryCondition;
+    }
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
-
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public String fromString(String inXml) throws Exception {
+        return super.fromString(inXml);
     }
 
     @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+    String emitLogicalOperation(String op, Object l, Object r) throws Exception {
+        String left = (String) l;
+        String right = (String) r;
+
+        String rv = null;
+        /*
+        index can not have two values at the same go therefore "AND".equals(op)
+        is not implemented
+         */
+        if ("OR".equals(op)) {
+            rv = "(" + left + "|" + right + ")";
+        }
+        return rv;
+    }
+
+    @Override
+    String emitUnaryOperation(String op, Element current) throws Exception {
+        // NOT is a filter, not a topic matcher
+        return null;
     }
 }

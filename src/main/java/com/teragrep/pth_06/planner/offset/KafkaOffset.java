@@ -51,7 +51,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,22 +62,25 @@ import java.util.Map;
  */
 public class KafkaOffset extends Offset implements Serializable {
 
-    private static final Type mapType = new TypeToken<Map<String, Long>>() {
-    }.getType();
-
     private final Map<String, Long> serializedKafkaOffset;
+    private final boolean stub;
 
-    public KafkaOffset(Map<TopicPartition, Long> offset) {
-        serializedKafkaOffset = new HashMap<>(offset.size());
-        for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
-
-            serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
+    public KafkaOffset() {
+        this(new HashMap<>(), true);
     }
 
     public KafkaOffset(String s) {
-        Gson gson = new Gson();
-        serializedKafkaOffset = gson.fromJson(s, mapType);
+        this(new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
+        }.getType()), false);
+    }
+
+    public KafkaOffset(Map<String, Long> serializedKafkaOffset) {
+        this(serializedKafkaOffset, false);
+    }
+
+    public KafkaOffset(Map<String, Long> serializedKafkaOffset, boolean stub) {
+        this.serializedKafkaOffset = serializedKafkaOffset;
+        this.stub = stub;
     }
 
     public Map<TopicPartition, Long> getOffsetMap() {
@@ -95,6 +97,10 @@ public class KafkaOffset extends Offset implements Serializable {
         }
 
         return rv;
+    }
+
+    public boolean isStub() {
+        return stub;
     }
 
     @Override

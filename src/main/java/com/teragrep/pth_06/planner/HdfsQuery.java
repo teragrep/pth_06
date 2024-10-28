@@ -43,37 +43,27 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import com.google.gson.JsonArray;
+import com.teragrep.pth_06.HdfsFileMetadata;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
 
-import java.io.Serializable;
+import java.util.LinkedList;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+public interface HdfsQuery {
 
-    private final Long version = 1L;
+    LinkedList<HdfsFileMetadata> processBetweenHdfsFileMetadata(HdfsOffset startOffset, HdfsOffset endOffset);
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
+    void commit(HdfsOffset offset);
 
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
-    }
+    JsonArray hdfsOffsetMapToJSON();
 
-    @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
-    }
+    HdfsOffset getBeginningOffsets();
+
+    HdfsOffset getInitialEndOffsets(); // Delete after testing incrementAndGetLatestOffset() functionality thoroughly.
+
+    HdfsOffset incrementAndGetLatestOffset(); // replaces getInitialEndOffsets()
+
+    boolean isStub();
 }

@@ -46,22 +46,28 @@
 package com.teragrep.pth_06;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonArray;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.*;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import com.teragrep.pth_06.scheduler.*;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
+import com.teragrep.pth_06.task.HdfsMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 // logger
 
@@ -87,6 +93,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     private final Config config;
     private final ArchiveQuery aq;
     private final KafkaQuery kq;
+    private final HdfsQuery hq;
+    private final JsonArray hdfsOffsets;
 
     /**
      * Constructor for ArchiveMicroStreamReader
@@ -98,6 +106,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
         this.config = config;
 
+        if (config.isHdfsEnabled) {
+            this.hq = new HdfsQueryProcessor(config);
+            hdfsOffsets = hq.hdfsOffsetMapToJSON();
+        }
+        else {
+            this.hq = new HdfsQueryProcessor();
+            hdfsOffsets = new JsonArray();
+        }
+
         if (config.isArchiveEnabled) {
             this.aq = new ArchiveQueryProcessor(config);
         }
@@ -106,7 +123,13 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
 
         if (config.isKafkaEnabled) {
-            this.kq = new KafkaQueryProcessor(config);
+            if (config.isHdfsEnabled) {
+                this.kq = new KafkaQueryProcessor(config);
+                this.kq.seekToHdfsOffsets(hdfsOffsets);
+            }
+            else {
+                this.kq = new KafkaQueryProcessor(config);
+            }
         }
         else {
             this.kq = null;
@@ -119,10 +142,18 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * Used for testing.
      */
     @VisibleForTesting
-    ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
+    ArchiveMicroStreamReader(HdfsQuery hq, ArchiveQuery aq, KafkaQuery kq, Config config) {
         this.config = config;
-        this.aq = aq;
-        this.kq = kq;
+        this.aq = aq; // Uses its own hardcoded query string defined in MockTeragrepDatasource.
+        this.kq = kq; // Skips using query string (and thus topic filtering) altogether.
+        this.hq = hq; // Uses the query string from config for topic filtering.
+        if (!this.hq.isStub() && this.kq != null) {
+            hdfsOffsets = this.hq.hdfsOffsetMapToJSON();
+            this.kq.seekToHdfsOffsets(hdfsOffsets);
+        }
+        else {
+            hdfsOffsets = new JsonArray();
+        }
 
         LOGGER.debug("@VisibleForTesting MicroBatchReader> initialized");
     }
@@ -137,25 +168,52 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public Offset initialOffset() {
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.getInitialOffset() - 3600L));
+        HdfsOffset hdfsOffset = new HdfsOffset(); // stub
+        LongOffset longOffset = null; // Refactor null usage
+        KafkaOffset kafkaOffset = new KafkaOffset(); // stub
+
+        if (this.config.isHdfsEnabled) {
+            Map<TopicPartition, Long> offset = this.hq.getBeginningOffsets().getOffsetMap();
+            Map<String, Long> serializedHdfsOffset = new HashMap<>(offset.size());
+            for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            hdfsOffset = new HdfsOffset(serializedHdfsOffset);
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getBeginningOffsets(null)));
+        if (this.config.isArchiveEnabled) {
+            longOffset = new LongOffset(this.aq.getInitialOffset() - 3600L);
         }
-        else if (this.config.isArchiveEnabled) {
-            // both
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.getInitialOffset() - 3600L),
-                    new KafkaOffset(this.kq.getBeginningOffsets(null))
-            );
+        if (this.config.isKafkaEnabled) {
+            if (this.config.isHdfsEnabled) {
+                if (hdfsOffsets.size() > 0) {
+                    Map<String, Long> serializedKafkaOffset = new HashMap<>(
+                            this.kq.getConsumerPositions(hdfsOffsets).size()
+                    );
+                    for (Map.Entry<TopicPartition, Long> entry : this.kq.getConsumerPositions(hdfsOffsets).entrySet()) {
+                        serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                    }
+                    kafkaOffset = new KafkaOffset(serializedKafkaOffset);
+                }
+                else {
+                    Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getBeginningOffsets(null).size());
+                    for (Map.Entry<TopicPartition, Long> entry : this.kq.getBeginningOffsets(null).entrySet()) {
+                        serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                    }
+                    kafkaOffset = new KafkaOffset(serializedKafkaOffset);
+                }
+            }
+            else {
+                Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getBeginningOffsets(null).size());
+                for (Map.Entry<TopicPartition, Long> entry : this.kq.getBeginningOffsets(null).entrySet()) {
+                    serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                }
+                kafkaOffset = new KafkaOffset(serializedKafkaOffset);
+            }
         }
-        else {
-            // neither
-            throw new IllegalStateException("no datasources enabled, can't get initial offset");
+        if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
+            throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
+        rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);
         LOGGER.debug("offset[initial]= {}", rv);
         return rv;
     }
@@ -171,6 +229,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public void commit(Offset offset) {
         if (this.config.isArchiveEnabled) {
             this.aq.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
+        }
+        if (this.config.isHdfsEnabled) {
+            this.hq.commit(((DatasourceOffset) offset).getHdfsOffset());
         }
     }
 
@@ -188,26 +249,32 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public Offset latestOffset() {
         DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.incrementAndGetLatestOffset()));
+        HdfsOffset hdfsOffset = new HdfsOffset();
+        LongOffset longOffset = null;
+        KafkaOffset kafkaOffset = new KafkaOffset();
+
+        if (this.config.isHdfsEnabled) {
+            Map<TopicPartition, Long> offset = this.hq.incrementAndGetLatestOffset().getOffsetMap();
+            Map<String, Long> serializedHdfsOffset = new HashMap<>(offset.size());
+            for (Map.Entry<TopicPartition, Long> entry : offset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            hdfsOffset = new HdfsOffset(serializedHdfsOffset);
         }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+        if (this.config.isArchiveEnabled) {
+            longOffset = new LongOffset(this.aq.incrementAndGetLatestOffset());
         }
-        else if (this.config.isArchiveEnabled) {
-            // both
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.incrementAndGetLatestOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
-            );
+        if (this.config.isKafkaEnabled) {
+            Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getInitialEndOffsets().size());
+            for (Map.Entry<TopicPartition, Long> entry : this.kq.getInitialEndOffsets().entrySet()) {
+                serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            kafkaOffset = new KafkaOffset(serializedKafkaOffset);
         }
-        else {
-            // neither
+        if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
-
+        rv = new DatasourceOffset(hdfsOffset, longOffset, kafkaOffset);
         LOGGER.debug("offset[latest]= {}", rv);
         return rv;
     }
@@ -223,18 +290,34 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public InputPartition[] planInputPartitions(Offset start, Offset end) {
         List<InputPartition> inputPartitions = new LinkedList<>();
 
-        Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        Batch currentBatch = new Batch(config, hq, aq, kq).processRange(start, end);
 
         for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
-
             // archive tasks
             LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();
+            // HDFS tasks
+            LinkedList<HdfsFileMetadata> hdfsTaskList = new LinkedList<>();
             for (BatchSlice batchSlice : taskObjectList) {
                 if (batchSlice.type.equals(BatchSlice.Type.ARCHIVE)) {
                     archiveTaskList.add(batchSlice.archiveS3ObjectMetadata);
                 }
+                if (batchSlice.type.equals(BatchSlice.Type.HDFS)) {
+                    hdfsTaskList.add(batchSlice.hdfsFileMetadata);
+                }
+                if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
+                    inputPartitions
+                            .add(
+                                    new KafkaMicroBatchInputPartition(
+                                            config.kafkaConfig.executorOpts,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
+                                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
+                                            config.kafkaConfig.executorConfig,
+                                            config.kafkaConfig.skipNonRFC5424Records
+                                    )
+                            );
+                }
             }
-
             if (!archiveTaskList.isEmpty()) {
                 inputPartitions
                         .add(
@@ -251,22 +334,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
                                 )
                         );
             }
-
-            // kafka tasks
-            for (BatchSlice batchSlice : taskObjectList) {
-                if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
-                    inputPartitions
-                            .add(
-                                    new KafkaMicroBatchInputPartition(
-                                            config.kafkaConfig.executorOpts,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
-                                            config.kafkaConfig.executorConfig,
-                                            config.kafkaConfig.skipNonRFC5424Records
-                                    )
-                            );
-                }
+            if (!hdfsTaskList.isEmpty()) {
+                inputPartitions.add(new HdfsMicroBatchInputPartition(config.hdfsConfig, hdfsTaskList));
             }
         }
 

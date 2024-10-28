@@ -43,37 +43,64 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.offset;
+package com.teragrep.pth_06.task.hdfs;
 
-import org.apache.spark.sql.execution.streaming.LongOffset;
+import com.teragrep.pth_06.HdfsFileMetadata;
+import com.teragrep.pth_06.avro.SyslogRecord;
+import org.apache.avro.file.DataFileStream;
+import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.util.LinkedList;
 
-/**
- * <h1>Serialized Datasource Offset</h1> Class for representing a serialized offset of data source.
- *
- * @see LongOffset
- * @see KafkaOffset
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class SerializedDatasourceOffset implements Serializable {
+// This class will allow reading the contents of the avro-files that are using SyslogRecord schema from hdfs.
+public final class AvroReadImpl implements AvroRead {
 
-    private final Long version = 1L;
+    final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
-    public final HdfsOffset hdfsOffset;
-    public final LongOffset archiveOffset;
-    public final KafkaOffset kafkaOffset;
+    private final DataFileStream<SyslogRecord> reader;
+    private final LinkedList<SyslogRecord> syslogRecordBuffer;
 
-    public SerializedDatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.hdfsOffset = hdfsOffset;
-        this.archiveOffset = archiveOffset;
-        this.kafkaOffset = kafkaOffset;
+    public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) throws IOException {
+        this.reader = new DataFileStream<>(
+                fs.open(new Path(hdfsFileMetadata.hdfsFilePath)),
+                new SpecificDatumReader<>(SyslogRecord.class)
+        );
+        syslogRecordBuffer = new LinkedList<>();
     }
 
     @Override
-    public String toString() {
-        return "SerializedDatasourceOffset{" + "version=" + version + ", hdfsOffset" + hdfsOffset + ", archiveOffset="
-                + archiveOffset + ", kafkaOffset=" + kafkaOffset + '}';
+    public boolean next() {
+        boolean hasnext = reader.hasNext();
+        if (hasnext) {
+            syslogRecordBuffer.clear();
+            syslogRecordBuffer.add(reader.next());
+            return true;
+        }
+        else {
+            return false;
+        }
     }
+
+    @Override
+    public SyslogRecord record() {
+        if (syslogRecordBuffer.size() == 1) {
+            return syslogRecordBuffer.getFirst();
+        }
+        else {
+            throw new IllegalStateException(
+                    "Invalid amount of records in the buffer, expected 1 got " + syslogRecordBuffer.size()
+            );
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        reader.close();
+    }
+
 }
