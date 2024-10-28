@@ -134,7 +134,7 @@ public class Pth06S3Client {
         clientConfiguration.setSocketTimeout(60 * 1000);
 
         clientConfiguration.setUseTcpKeepAlive(true);
-        clientConfiguration.setSocketBufferSizeHints(1024, 2*1024*1024);
+        clientConfiguration.setSocketBufferSizeHints(1024, 2 * 1024 * 1024);
 
         clientConfiguration.setRequestTimeout(0);
         clientConfiguration.setClientExecutionTimeout(0);
@@ -146,7 +146,6 @@ public class Pth06S3Client {
         clientConfiguration.setUseGzip(false);
 
         clientConfiguration.setCacheResponseMetadata(false);
-
 
         final AWSCredentials credentials = new BasicAWSCredentials(S3identity, S3credential);
 
