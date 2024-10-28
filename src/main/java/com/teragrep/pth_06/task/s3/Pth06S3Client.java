@@ -130,7 +130,7 @@ public class Pth06S3Client {
         clientConfiguration.setUseThrottleRetries(true);
         clientConfiguration.setMaxConsecutiveRetriesBeforeThrottling(5);
 
-        clientConfiguration.setConnectionTimeout(30000);
+        clientConfiguration.setConnectionTimeout(30_000);
         clientConfiguration.setSocketTimeout(60 * 1000);
 
         clientConfiguration.setUseTcpKeepAlive(true);
