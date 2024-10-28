@@ -124,10 +124,29 @@ public class Pth06S3Client {
         //clientConfiguration.setSignerOverride(signerKind.getSignerTypeName());
         clientConfiguration.setSignerOverride("S3SignerType");
         // HCP / TOS supports at most 200 open connections so limit max connections.
-        clientConfiguration.setMaxConnections(25);
-        clientConfiguration.setMaxErrorRetry(1);
-        clientConfiguration.setConnectionTimeout(300 * 1000);
+        clientConfiguration.setMaxConnections(1);
+
+        clientConfiguration.setMaxErrorRetry(50);
+        clientConfiguration.setUseThrottleRetries(true);
+        clientConfiguration.setMaxConsecutiveRetriesBeforeThrottling(5);
+
+        clientConfiguration.setConnectionTimeout(30000);
         clientConfiguration.setSocketTimeout(60 * 1000);
+
+        clientConfiguration.setUseTcpKeepAlive(true);
+        clientConfiguration.setSocketBufferSizeHints(1024, 2*1024*1024);
+
+        clientConfiguration.setRequestTimeout(0);
+        clientConfiguration.setClientExecutionTimeout(0);
+
+        clientConfiguration.setUseReaper(true);
+        clientConfiguration.setConnectionTTL(500);
+        clientConfiguration.setConnectionMaxIdleMillis(10000);
+
+        clientConfiguration.setUseGzip(false);
+
+        clientConfiguration.setCacheResponseMetadata(false);
+
 
         final AWSCredentials credentials = new BasicAWSCredentials(S3identity, S3credential);
 
