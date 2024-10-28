@@ -124,10 +124,28 @@ public class Pth06S3Client {
         //clientConfiguration.setSignerOverride(signerKind.getSignerTypeName());
         clientConfiguration.setSignerOverride("S3SignerType");
         // HCP / TOS supports at most 200 open connections so limit max connections.
-        clientConfiguration.setMaxConnections(25);
-        clientConfiguration.setMaxErrorRetry(1);
-        clientConfiguration.setConnectionTimeout(300 * 1000);
+        clientConfiguration.setMaxConnections(1);
+
+        clientConfiguration.setMaxErrorRetry(50);
+        clientConfiguration.setUseThrottleRetries(true);
+        clientConfiguration.setMaxConsecutiveRetriesBeforeThrottling(5);
+
+        clientConfiguration.setConnectionTimeout(30_000);
         clientConfiguration.setSocketTimeout(60 * 1000);
+
+        clientConfiguration.setUseTcpKeepAlive(true);
+        clientConfiguration.setSocketBufferSizeHints(1024, 2 * 1024 * 1024);
+
+        clientConfiguration.setRequestTimeout(60_000); // timeout if backend is unable to produce a single response
+        clientConfiguration.setClientExecutionTimeout(0); // do not enforce total response timeout
+
+        clientConfiguration.setUseReaper(true); // tear down idle connections from the pool
+        clientConfiguration.setConnectionTTL(500); // tear down after 500ms from opening so that connections are rarely re-used
+        clientConfiguration.setConnectionMaxIdleMillis(10_000); // tear down after 10000ms idle, however ttl of 500ms should apply earlier
+
+        clientConfiguration.setUseGzip(false); // archive objects are already compressed, double compression adds just overhead
+
+        clientConfiguration.setCacheResponseMetadata(false); // debugging headers should not be cached
 
         final AWSCredentials credentials = new BasicAWSCredentials(S3identity, S3credential);
 
