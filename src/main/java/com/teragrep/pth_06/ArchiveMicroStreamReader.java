@@ -186,14 +186,28 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (this.config.isKafkaEnabled) {
             if (this.config.isHdfsEnabled) {
                 if (hdfsOffsets.size() > 0) {
-                    kafkaOffset = new KafkaOffset(this.kq.getConsumerPositions(hdfsOffsets));
+                    Map<String, Long> serializedKafkaOffset = new HashMap<>(
+                            this.kq.getConsumerPositions(hdfsOffsets).size()
+                    );
+                    for (Map.Entry<TopicPartition, Long> entry : this.kq.getConsumerPositions(hdfsOffsets).entrySet()) {
+                        serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                    }
+                    kafkaOffset = new KafkaOffset(serializedKafkaOffset);
                 }
                 else {
-                    kafkaOffset = new KafkaOffset(this.kq.getBeginningOffsets(null));
+                    Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getBeginningOffsets(null).size());
+                    for (Map.Entry<TopicPartition, Long> entry : this.kq.getBeginningOffsets(null).entrySet()) {
+                        serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                    }
+                    kafkaOffset = new KafkaOffset(serializedKafkaOffset);
                 }
             }
             else {
-                kafkaOffset = new KafkaOffset(this.kq.getBeginningOffsets(null));
+                Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getBeginningOffsets(null).size());
+                for (Map.Entry<TopicPartition, Long> entry : this.kq.getBeginningOffsets(null).entrySet()) {
+                    serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+                }
+                kafkaOffset = new KafkaOffset(serializedKafkaOffset);
             }
         }
         if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
@@ -251,7 +265,11 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             longOffset = new LongOffset(this.aq.incrementAndGetLatestOffset());
         }
         if (this.config.isKafkaEnabled) {
-            kafkaOffset = new KafkaOffset(this.kq.getInitialEndOffsets());
+            Map<String, Long> serializedKafkaOffset = new HashMap<>(this.kq.getInitialEndOffsets().size());
+            for (Map.Entry<TopicPartition, Long> entry : this.kq.getInitialEndOffsets().entrySet()) {
+                serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+            }
+            kafkaOffset = new KafkaOffset(serializedKafkaOffset);
         }
         if (hdfsOffset.isStub() && longOffset == null && kafkaOffset.isStub()) {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");

@@ -63,7 +63,11 @@ public class DatasourceOffsetTest {
         LongOffset longOffset = new LongOffset(0L);
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 0), 0L);
-        KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        Map<String, Long> serializedKafkaOffset = new HashMap<>(topicPartitionLongMap.size());
+        for (Map.Entry<TopicPartition, Long> entry : topicPartitionLongMap.entrySet()) {
+            serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+        }
+        KafkaOffset kafkaOffset = new KafkaOffset(serializedKafkaOffset);
         DatasourceOffset datasourceOffset = new DatasourceOffset(longOffset, kafkaOffset);
 
         String ser = datasourceOffset.json();
@@ -77,7 +81,11 @@ public class DatasourceOffsetTest {
     public void kafkaOffsetSerdeTest() {
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 777), 9999L);
-        KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        Map<String, Long> serializedKafkaOffset = new HashMap<>(topicPartitionLongMap.size());
+        for (Map.Entry<TopicPartition, Long> entry : topicPartitionLongMap.entrySet()) {
+            serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
+        }
+        KafkaOffset kafkaOffset = new KafkaOffset(serializedKafkaOffset);
 
         String ser = kafkaOffset.json();
         KafkaOffset deser = new KafkaOffset(ser);
