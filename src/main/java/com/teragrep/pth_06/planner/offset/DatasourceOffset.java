@@ -108,7 +108,7 @@ public class DatasourceOffset extends Offset implements Serializable {
         KafkaOffset kafkaOffset = serializedDatasourceOffset.kafkaOffset;
 
         if (kafkaOffset.isStub() || kafkaOffset.getOffsetMap().isEmpty()) {
-            return kafkaOffset;
+            throw new RuntimeException("kafkaOffset must not be empty");
         }
 
         for (Map.Entry<TopicPartition, Long> entry : kafkaOffset.getOffsetMap().entrySet()) {
