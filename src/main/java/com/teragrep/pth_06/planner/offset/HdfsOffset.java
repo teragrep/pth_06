@@ -66,6 +66,11 @@ public class HdfsOffset extends Offset implements Serializable {
         this(new HashMap<>(), true);
     }
 
+    public HdfsOffset(String s) {
+        this(new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
+        }.getType()), false);
+    }
+
     public HdfsOffset(Map<String, Long> serializedHdfsOffset) {
         this(serializedHdfsOffset, false);
     }
@@ -73,13 +78,6 @@ public class HdfsOffset extends Offset implements Serializable {
     public HdfsOffset(Map<String, Long> serializedHdfsOffset, boolean stub) {
         this.serializedHdfsOffset = serializedHdfsOffset;
         this.stub = stub;
-    }
-
-    public HdfsOffset(String s) {
-        Gson gson = new Gson();
-        serializedHdfsOffset = gson.fromJson(s, new TypeToken<Map<String, Long>>() {
-        }.getType());
-        stub = false;
     }
 
     public Map<TopicPartition, Long> getOffsetMap() {
