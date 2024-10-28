@@ -136,16 +136,16 @@ public class Pth06S3Client {
         clientConfiguration.setUseTcpKeepAlive(true);
         clientConfiguration.setSocketBufferSizeHints(1024, 2 * 1024 * 1024);
 
-        clientConfiguration.setRequestTimeout(0);
-        clientConfiguration.setClientExecutionTimeout(0);
+        clientConfiguration.setRequestTimeout(60_000); // timeout if backend is unable to produce a single response
+        clientConfiguration.setClientExecutionTimeout(0); // do not enforce total response timeout
 
-        clientConfiguration.setUseReaper(true);
-        clientConfiguration.setConnectionTTL(500);
-        clientConfiguration.setConnectionMaxIdleMillis(10_000);
+        clientConfiguration.setUseReaper(true); // tear down idle connections from the pool
+        clientConfiguration.setConnectionTTL(500); // tear down after 500ms from opening so that connections are rarely re-used
+        clientConfiguration.setConnectionMaxIdleMillis(10_000); // tear down after 10000ms idle, however ttl of 500ms should apply earlier
 
-        clientConfiguration.setUseGzip(false);
+        clientConfiguration.setUseGzip(false); // archive objects are already compressed, double compression adds just overhead
 
-        clientConfiguration.setCacheResponseMetadata(false);
+        clientConfiguration.setCacheResponseMetadata(false); // debugging headers should not be cached
 
         final AWSCredentials credentials = new BasicAWSCredentials(S3identity, S3credential);
 
