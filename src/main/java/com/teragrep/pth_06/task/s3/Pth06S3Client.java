@@ -141,7 +141,7 @@ public class Pth06S3Client {
 
         clientConfiguration.setUseReaper(true);
         clientConfiguration.setConnectionTTL(500);
-        clientConfiguration.setConnectionMaxIdleMillis(10000);
+        clientConfiguration.setConnectionMaxIdleMillis(10_000);
 
         clientConfiguration.setUseGzip(false);
 
