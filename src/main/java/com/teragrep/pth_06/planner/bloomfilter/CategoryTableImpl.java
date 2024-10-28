@@ -46,8 +46,6 @@
 package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.walker.conditions.CategoryTableCondition;
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -88,7 +86,6 @@ public final class CategoryTableImpl implements CategoryTable {
     private final DSLContext ctx;
     private final Table<?> originTable;
     private final long bloomTermId;
-    private final CategoryTableCondition tableCondition;
     private final TableFilters tableFilters;
 
     public CategoryTableImpl(ConditionConfig config, Table<?> originTable, String value) {
@@ -96,32 +93,18 @@ public final class CategoryTableImpl implements CategoryTable {
                 config.context(),
                 originTable,
                 config.bloomTermId(),
-                new CategoryTableCondition(originTable, config.bloomTermId()),
                 new TableFilters(config.context(), originTable, config.bloomTermId(), value)
         );
     }
 
     public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, String value) {
-        this(
-                ctx,
-                originTable,
-                bloomTermId,
-                new CategoryTableCondition(originTable, bloomTermId),
-                new TableFilters(ctx, originTable, bloomTermId, value)
-        );
+        this(ctx, originTable, bloomTermId, new TableFilters(ctx, originTable, bloomTermId, value));
     }
 
-    public CategoryTableImpl(
-            DSLContext ctx,
-            Table<?> originTable,
-            long bloomTermId,
-            CategoryTableCondition tableCondition,
-            TableFilters tableFilters
-    ) {
+    public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, TableFilters tableFilters) {
         this.ctx = ctx;
         this.originTable = originTable;
         this.bloomTermId = bloomTermId;
-        this.tableCondition = tableCondition;
         this.tableFilters = tableFilters;
     }
 
@@ -142,19 +125,6 @@ public final class CategoryTableImpl implements CategoryTable {
                 .on(namedTable, DSL.field("type_id", BIGINTUNSIGNED.nullable(false)));
         LOGGER.trace("BloomFilterTempTable create index <{}>", indexStep);
         indexStep.execute();
-    }
-
-    public void insertFilters() {
-        tableFilters.insertFiltersIntoCategoryTable();
-    }
-
-    /**
-     * Row condition that selects the same sized filter arrays from this category table and the origin table.
-     * 
-     * @return condition
-     */
-    public QueryCondition bloommatchCondition() {
-        return tableCondition;
     }
 
     /**

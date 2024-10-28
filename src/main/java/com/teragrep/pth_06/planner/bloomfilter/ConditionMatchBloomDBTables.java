@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.PatternMatchCondition;
+import com.teragrep.pth_06.planner.walker.conditions.RegexLikeFiltertypePatternCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -61,20 +61,20 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 /**
  * Class to get a collection of Tables that match the given PatternMatchCondition
  */
-public final class PatternMatchTables implements DatabaseTables {
+public final class ConditionMatchBloomDBTables implements DatabaseTables {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatchTables.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConditionMatchBloomDBTables.class);
 
     private final DSLContext ctx;
-    private final QueryCondition patternMatchCondition;
+    private final QueryCondition condition;
 
-    public PatternMatchTables(DSLContext ctx, String pattern) {
-        this(ctx, new PatternMatchCondition(pattern));
+    public ConditionMatchBloomDBTables(DSLContext ctx, String pattern) {
+        this(ctx, new RegexLikeFiltertypePatternCondition(pattern));
     }
 
-    public PatternMatchTables(DSLContext ctx, PatternMatchCondition patternMatchCondition) {
+    public ConditionMatchBloomDBTables(DSLContext ctx, QueryCondition condition) {
         this.ctx = ctx;
-        this.patternMatchCondition = patternMatchCondition;
+        this.condition = condition;
     }
 
     /**
@@ -91,7 +91,7 @@ public final class PatternMatchTables implements DatabaseTables {
                         .from(t)
                         .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(patternMatchCondition.condition())// select tables that match pattern condition
+                        .where(condition.condition())// select tables that match pattern condition
                         .limit(1)// limit 1 since we are checking only if table is not empty
                         .fetch()
                         .isNotEmpty() // select table if not empty
@@ -115,7 +115,7 @@ public final class PatternMatchTables implements DatabaseTables {
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final PatternMatchTables cast = (PatternMatchTables) object;
-        return this.patternMatchCondition.equals(cast.patternMatchCondition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+        final ConditionMatchBloomDBTables cast = (ConditionMatchBloomDBTables) object;
+        return this.condition.equals(cast.condition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
     }
 }

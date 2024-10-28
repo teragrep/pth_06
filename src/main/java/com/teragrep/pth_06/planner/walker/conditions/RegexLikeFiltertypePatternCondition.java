@@ -43,34 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.bloomfilter;
+package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import org.jooq.*;
+import org.jooq.impl.DSL;
 
-/**
- * Decorator that inserts category tables filter types into database
- */
-public final class SearchTermFiltersInserted implements CategoryTable {
+import java.util.Objects;
 
-    private final CategoryTable origin;
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-    public SearchTermFiltersInserted(final CategoryTable origin) {
-        this.origin = origin;
+/** true if BLOOMDB.FILTERTYPE.PATTERN regex like with input value */
+public final class RegexLikeFiltertypePatternCondition implements QueryCondition {
+
+    private final Field<String> valueField;
+
+    public RegexLikeFiltertypePatternCondition(String input) {
+        this(DSL.val(input));
+    }
+
+    public RegexLikeFiltertypePatternCondition(Field<String> valueField) {
+        this.valueField = valueField;
+    }
+
+    public Condition condition() {
+        return valueField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN);
     }
 
     @Override
-    public void create() {
-        origin.create();
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final RegexLikeFiltertypePatternCondition cast = (RegexLikeFiltertypePatternCondition) object;
+        return valueField.equals(cast.valueField);
     }
 
     @Override
-    public void insertFilters() {
-        origin.insertFilters();
-    }
-
-    @Override
-    public QueryCondition bloommatchCondition() {
-        insertFilters();
-        return origin.bloommatchCondition();
+    public int hashCode() {
+        return Objects.hash(valueField);
     }
 }

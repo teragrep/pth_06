@@ -167,6 +167,11 @@ class CategoryTableConditionTest {
     }
 
     @Test
+    public void testNullTableException() {
+        Assertions.assertThrows(NullPointerException.class, () -> new CategoryTableCondition(null, 0L));
+    }
+
+    @Test
     public void testEquality() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
@@ -195,9 +200,7 @@ class CategoryTableConditionTest {
                 .get(0);
         CategoryTableCondition cond1 = new CategoryTableCondition(target1, 0L);
         CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
-        CategoryTableCondition cond3 = new CategoryTableCondition(null, 1L);
         Assertions.assertNotEquals(cond1, cond2);
-        Assertions.assertNotEquals(cond1, cond3);
     }
 
     void fillTargetTable() {

@@ -45,13 +45,8 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
-
 public interface CategoryTable {
 
     void create();
 
-    void insertFilters();
-
-    QueryCondition bloommatchCondition();
 }

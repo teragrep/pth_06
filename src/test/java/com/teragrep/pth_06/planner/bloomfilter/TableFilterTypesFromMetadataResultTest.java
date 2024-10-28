@@ -177,6 +177,12 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
+    public void testNullTableException() {
+        DSLContext ctx = DSL.using(conn);
+        Assertions.assertThrows(NullPointerException.class, () -> new TableFilterTypesFromMetadata(ctx, null, 0L));
+    }
+
+    @Test
     public void testEquality() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -188,7 +194,6 @@ class TableFilterTypesFromMetadataResultTest {
         TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
         TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 0L);
         Assertions.assertEquals(result1, result2);
-        Assertions.assertEquals(result2, result1);
     }
 
     @Test
@@ -202,9 +207,9 @@ class TableFilterTypesFromMetadataResultTest {
                 .get(0);
         TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
         TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 1L);
-        TableFilterTypesFromMetadata result3 = new TableFilterTypesFromMetadata(ctx, null, 0L);
+        System.out.println(result1);
+        System.out.println(result2);
         Assertions.assertNotEquals(result1, result2);
-        Assertions.assertNotEquals(result1, result3);
     }
 
     void insertSizedFilterIntoTargetTable(int filterTypeId) {

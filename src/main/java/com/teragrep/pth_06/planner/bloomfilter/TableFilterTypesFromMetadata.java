@@ -49,6 +49,8 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
@@ -60,62 +62,70 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
 
     private final DSLContext ctx;
     private final Table<?> table;
-    private final long bloomTermId;
+    private final Field<ULong> expectedField;
+    private final Field<Double> fppField;
+    private final Field<String> patternField;
+    private final Field<ULong> filterTypeIdField;
 
     public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, long bloomTermId) {
+        this(
+                ctx,
+                table.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filter_type_id").cast(ULong.class))), DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName()))).getName()
+        );
+    }
+
+    public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, String name) {
+        this(
+                ctx,
+                table,
+                DSL.field(DSL.name(name, "expectedElements"), ULong.class),
+                DSL.field(DSL.name(name, "targetFpp"), Double.class),
+                DSL.field(DSL.name(name, "pattern"), String.class)
+        );
+
+    }
+
+    public TableFilterTypesFromMetadata(
+            DSLContext ctx,
+            Table<?> table,
+            Field<ULong> expectedField,
+            Field<Double> fppField,
+            Field<String> patternField
+    ) {
         this.ctx = ctx;
         this.table = table;
-        this.bloomTermId = bloomTermId;
+        this.expectedField = expectedField;
+        this.fppField = fppField;
+        this.patternField = patternField;
+        this.filterTypeIdField = table.field("filter_type_id").cast(ULong.class);
     }
 
     public Result<Record> toResult() {
-        if (table == null) {
-            throw new IllegalStateException("Origin table was null");
-        }
-        final Table<?> joined = table
-                .join(BLOOMDB.FILTERTYPE)
-                .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) table.field("filter_type_id")));
-        final Table<Record> namedTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName())));
-        final Field<ULong> expectedField = DSL.field(DSL.name(namedTable.getName(), "expectedElements"), ULong.class);
-        final Field<Double> fppField = DSL.field(DSL.name(namedTable.getName(), "targetFpp"), Double.class);
-        final SelectField<?>[] resultFields = {
-                BLOOMDB.FILTERTYPE.ID,
-                joined.field("expectedElements").as(expectedField),
-                joined.field("targetFpp").as(fppField),
-                joined.field("pattern")
-        };
+        List<Field<?>> selectFieldsList = Arrays
+                .asList(BLOOMDB.FILTERTYPE.ID, table.field("expectedElements"), table.field("targetFpp"), table.field("pattern"));
         // Fetch filtertype values from metadata
-        final Result<Record> records = ctx
-                .select(resultFields)
-                .from(joined)
-                .groupBy(joined.field("filter_type_id"))
-                .fetch();
+        final Result<Record> records = ctx.select(selectFieldsList).from(table).groupBy(filterTypeIdField).fetch();
         if (records.isEmpty()) {
             throw new RuntimeException("Origin table was empty");
         }
         return records;
     }
 
-    /**
-     * Equal only if all object parameters are same value and the instances of DSLContext are same
-     *
-     * @param object object compared against
-     * @return true if all object is same class, object fields are equal and DSLContext is same instance
-     */
     @Override
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
         final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
-        return this.bloomTermId == cast.bloomTermId && this.table.equals(cast.table) && this.ctx == cast.ctx;
+        return ctx == cast.ctx && Objects.equals(table, cast.table) && Objects
+                .equals(expectedField, cast.expectedField) && Objects.equals(fppField, cast.fppField) && Objects
+                        .equals(patternField, cast.patternField)
+                && Objects.equals(filterTypeIdField, cast.filterTypeIdField);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ctx, table, bloomTermId);
+        return Objects.hash(ctx, table, expectedField, fppField, patternField, filterTypeIdField);
     }
 }

@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.planner.bloomfilter;
 
 import org.apache.spark.util.sketch.BloomFilter;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -132,19 +131,6 @@ public class CategoryTableImplTest {
     }
 
     @Test
-    public void testNonCreatedEmptyTable() {
-        DSLContext ctx = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-
-        Assertions.assertDoesNotThrow(new CategoryTableImpl(ctx, table, 0L, "test")::bloommatchCondition);
-    }
-
-    @Test
     public void testCreatedWithEmptyTable() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -153,10 +139,11 @@ public class CategoryTableImplTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-
-        CategoryTable tempTable = new CategoryTableImpl(ctx, table, 0L, "test");
-        tempTable.create();
-        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::insertFilters);
+        CategoryTable tempTable = new CategoryTableWithFilters(
+                new CategoryTableImpl(ctx, table, 0L, "test"),
+                new TableFilters(ctx, table, 0L, "test")
+        );
+        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::create);
         Assertions.assertEquals("Origin table was empty", ex.getMessage());
     }
 
@@ -186,9 +173,8 @@ public class CategoryTableImplTest {
                 .getTables()
                 .get(0);
 
-        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "ip=192.168.1.1");
-        Assertions.assertDoesNotThrow(categoryTable::create);
-        Assertions.assertDoesNotThrow(categoryTable::insertFilters);
+        CategoryTable tempTable = new CategoryTableWithFilters(ctx, table, 0L, "192.168.1.1");
+        Assertions.assertDoesNotThrow(tempTable::create);
         BloomFilter filter = Assertions.assertDoesNotThrow(() -> {
             ResultSet rs = conn.prepareStatement("SELECT * FROM term_0_target").executeQuery();
             rs.absolute(1);
@@ -199,42 +185,6 @@ public class CategoryTableImplTest {
         Assertions.assertTrue(filter.mightContain("192.168.1.1"));
         Assertions.assertFalse(filter.mightContain("ip=192.168.1.1"));
         Assertions.assertFalse(filter.mightContain("168.1.1"));
-    }
-
-    @Test
-    public void testConditionGeneration() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-
-        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 0L, "test");
-        Condition tableCond = tempTable.bloommatchCondition().condition();
-        String e = "(\n" + "  bloommatch(\n" + "    (\n" + "      select \"term_0_target\".\"filter\"\n"
-                + "      from \"term_0_target\"\n" + "      where (\n" + "        term_id = 0\n"
-                + "        and type_id = \"bloomdb\".\"target\".\"filter_type_id\"\n" + "      )\n" + "    ),\n"
-                + "    \"bloomdb\".\"target\".\"filter\"\n" + "  ) = true\n"
-                + "  and \"bloomdb\".\"target\".\"filter\" is not null\n" + ")";
-        Assertions.assertEquals(e, tableCond.toString());
-    }
-
-    @Test
-    public void testBloomTerm() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        CategoryTableImpl tempTable = new CategoryTableImpl(ctx, table, 1L, "test");
-        Condition condition = tempTable.bloommatchCondition().condition();
-        Assertions.assertTrue(condition.toString().contains("term_1_"));
     }
 
     @Test

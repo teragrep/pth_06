@@ -247,6 +247,7 @@ class TableFiltersTest {
                 .withNonnullFields("table")
                 .withNonnullFields("searchTerm")
                 .withNonnullFields("bloomTermId")
+                .withNonnullFields("categoryTable")
                 .verify();
     }
 

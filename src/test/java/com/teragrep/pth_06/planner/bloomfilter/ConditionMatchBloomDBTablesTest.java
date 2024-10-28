@@ -62,7 +62,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PatternMatchTablesTest {
+public class ConditionMatchBloomDBTablesTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -138,8 +138,8 @@ public class PatternMatchTablesTest {
     public void testSingleMatch() {
         DSLContext ctx = DSL.using(conn);
         String input = "192.168.1.1";
-        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.tables();
+        ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(ctx, input);
+        List<Table<?>> result = conditionMatchBloomDBTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
@@ -148,8 +148,8 @@ public class PatternMatchTablesTest {
     public void testSearchTermTokenizedMatch() {
         DSLContext ctx = DSL.using(conn);
         String input = "target_ip=192.168.1.1";
-        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.tables();
+        ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(ctx, input);
+        List<Table<?>> result = conditionMatchBloomDBTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("pattern_test_ip", result.get(0).getName());
     }
@@ -158,8 +158,8 @@ public class PatternMatchTablesTest {
     public void testRegexMatch() {
         DSLContext ctx = DSL.using(conn);
         String input = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
-        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.tables();
+        ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(ctx, input);
+        List<Table<?>> result = conditionMatchBloomDBTables.tables();
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals("parentheses_test", result.get(0).getName());
     }
@@ -168,9 +168,9 @@ public class PatternMatchTablesTest {
     public void testMultipleMatch() {
         DSLContext ctx = DSL.using(conn);
         String input = "255.255.255.255";
-        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.tables();
-        List<Table<?>> result2 = patternMatchTables.tables();
+        ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(ctx, input);
+        List<Table<?>> result = conditionMatchBloomDBTables.tables();
+        List<Table<?>> result2 = conditionMatchBloomDBTables.tables();
         List<String> tableNames = result.stream().map(Named::getName).collect(Collectors.toList());
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals(2, result2.size());
@@ -182,8 +182,8 @@ public class PatternMatchTablesTest {
     public void testNoMatch() {
         DSLContext ctx = DSL.using(conn);
         String input = "testinput";
-        PatternMatchTables patternMatchTables = new PatternMatchTables(ctx, input);
-        List<Table<?>> result = patternMatchTables.tables();
+        ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(ctx, input);
+        List<Table<?>> result = conditionMatchBloomDBTables.tables();
         Assertions.assertTrue(result.isEmpty());
     }
 
@@ -191,8 +191,8 @@ public class PatternMatchTablesTest {
     public void equalsTest() {
         DSLContext ctx = DSL.using(conn);
         String input = "testinput";
-        PatternMatchTables eq1 = new PatternMatchTables(ctx, input);
-        PatternMatchTables eq2 = new PatternMatchTables(ctx, input);
+        ConditionMatchBloomDBTables eq1 = new ConditionMatchBloomDBTables(ctx, input);
+        ConditionMatchBloomDBTables eq2 = new ConditionMatchBloomDBTables(ctx, input);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq2, eq1);
     }
@@ -200,8 +200,8 @@ public class PatternMatchTablesTest {
     @Test
     public void differentInputNotEqualsTest() {
         DSLContext ctx = DSL.using(conn);
-        PatternMatchTables eq1 = new PatternMatchTables(ctx, "testinput");
-        PatternMatchTables eq2 = new PatternMatchTables(ctx, "anotherinput");
+        ConditionMatchBloomDBTables eq1 = new ConditionMatchBloomDBTables(ctx, "testinput");
+        ConditionMatchBloomDBTables eq2 = new ConditionMatchBloomDBTables(ctx, "anotherinput");
         Assertions.assertNotEquals(eq1, eq2);
         Assertions.assertNotEquals(eq2, eq1);
     }
@@ -210,8 +210,8 @@ public class PatternMatchTablesTest {
     public void differentDSLContextNotEqualsTest() {
         DSLContext ctx1 = DSL.using(conn);
         DSLContext ctx2 = DSL.using(conn);
-        PatternMatchTables eq1 = new PatternMatchTables(ctx1, "testinput");
-        PatternMatchTables eq2 = new PatternMatchTables(ctx2, "testinput");
+        ConditionMatchBloomDBTables eq1 = new ConditionMatchBloomDBTables(ctx1, "testinput");
+        ConditionMatchBloomDBTables eq2 = new ConditionMatchBloomDBTables(ctx2, "testinput");
         Assertions.assertNotEquals(eq1, eq2);
         Assertions.assertNotEquals(eq2, eq1);
     }

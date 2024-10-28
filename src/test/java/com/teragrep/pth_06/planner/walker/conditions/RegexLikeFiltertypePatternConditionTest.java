@@ -43,34 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.bloomfilter;
+package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.jooq.Condition;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Decorator that inserts category tables filter types into database
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ *
+ * @see org.jooq.QueryPart
  */
-public final class CreatedCategoryTable implements CategoryTable {
+class RegexLikeFiltertypePatternConditionTest {
 
-    private final CategoryTable origin;
-
-    public CreatedCategoryTable(final CategoryTable origin) {
-        this.origin = origin;
+    @Test
+    void testCondition() {
+        Condition condition = new RegexLikeFiltertypePatternCondition("test").condition();
+        String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
+        Assertions.assertEquals(e, condition.toString());
     }
 
-    @Override
-    public void create() {
-        origin.create();
+    @Test
+    void testEquality() {
+        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
+        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("test");
+        Assertions.assertEquals(cond1, cond2);
     }
 
-    @Override
-    public void insertFilters() {
-        origin.insertFilters();
+    @Test
+    void testNotEquals() {
+        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
+        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("next");
+        Assertions.assertNotEquals(cond1, cond2);
     }
 
-    @Override
-    public QueryCondition bloommatchCondition() {
-        create();
-        return origin.bloommatchCondition();
+    @Test
+    void testHashCode() {
+        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
+        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("test");
+        RegexLikeFiltertypePatternCondition notEq = new RegexLikeFiltertypePatternCondition("next");
+        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(RegexLikeFiltertypePatternCondition.class).withNonnullFields("valueField").verify();
     }
 }

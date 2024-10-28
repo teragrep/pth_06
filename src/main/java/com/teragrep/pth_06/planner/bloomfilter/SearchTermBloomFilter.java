@@ -81,7 +81,6 @@ public final class SearchTermBloomFilter {
 
     public byte[] bytes() {
         LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>", expected, fpp);
-
         if (stringTokens.isEmpty()) {
             throw new IllegalStateException(
                     "Trying to insert empty filter, pattern match joined table should always have tokens"
@@ -90,6 +89,15 @@ public final class SearchTermBloomFilter {
         final BloomFilter filter = BloomFilter.create(expected, fpp);
         for (final String token : stringTokens) {
             filter.put(token);
+        }
+        if (LOGGER.isWarnEnabled()) {
+            if (stringTokens.size() > expected) {
+                LOGGER
+                        .warn(
+                                "Number of tokens <{}> was larger than the expected value <{}>, resulting FPP <{}>",
+                                stringTokens.size(), expected, filter.expectedFpp()
+                        );
+            }
         }
         try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);
