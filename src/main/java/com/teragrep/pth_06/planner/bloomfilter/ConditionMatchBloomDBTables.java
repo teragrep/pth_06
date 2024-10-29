@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.RegexLikeFiltertypePatternCondition;
+import com.teragrep.pth_06.planner.walker.conditions.RegexLikeCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -59,7 +59,7 @@ import java.util.List;
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
- * Class to get a collection of Tables that match the given PatternMatchCondition
+ * Class to get a collection of Tables that match the given QueryCondition
  */
 public final class ConditionMatchBloomDBTables implements DatabaseTables {
 
@@ -69,7 +69,7 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
     private final QueryCondition condition;
 
     public ConditionMatchBloomDBTables(DSLContext ctx, String pattern) {
-        this(ctx, new RegexLikeFiltertypePatternCondition(pattern));
+        this(ctx, new RegexLikeCondition(pattern, BLOOMDB.FILTERTYPE.PATTERN));
     }
 
     public ConditionMatchBloomDBTables(DSLContext ctx, QueryCondition condition) {
@@ -78,9 +78,9 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
     }
 
     /**
-     * List of tables from bloomdb that match patternMatchCondition Note: Table records are not fetched fully
+     * List of tables from bloomdb that match QueryCondition Note: Table records are not fetched fully
      *
-     * @return List of tables that matched condition and were not empty
+     * @return List of tables that matched QueryCondition and were not empty
      */
     public List<Table<?>> tables() {
         final List<Table<?>> tables = ctx
@@ -91,8 +91,8 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
                         .from(t)
                         .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(condition.condition())// select tables that match pattern condition
-                        .limit(1)// limit 1 since we are checking only if table is not empty
+                        .where(condition.condition())// select tables that match the condition
+                        .limit(1)// limit 1 since we are checking only if the table is not empty
                         .fetch()
                         .isNotEmpty() // select table if not empty
                 )

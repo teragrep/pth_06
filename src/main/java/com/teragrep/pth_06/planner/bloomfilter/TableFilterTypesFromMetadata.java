@@ -111,6 +111,12 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
         return records;
     }
 
+    /**
+     * Equal only if all values are equal and same instance of DSLContext
+     *
+     * @param object object compared against
+     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     */
     @Override
     public boolean equals(final Object object) {
         if (this == object)

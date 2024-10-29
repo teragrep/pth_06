@@ -52,21 +52,39 @@ import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-/** true if BLOOMDB.FILTERTYPE.PATTERN regex like with input value */
-public final class RegexLikeFiltertypePatternCondition implements QueryCondition {
+/** true if input value regex like comparedTo value, compared against BLOOMDB.FILTERTYPE.PATTERN by default */
+public final class RegexLikeCondition implements QueryCondition {
 
     private final Field<String> valueField;
+    private final Field<String> comparedToField;
 
-    public RegexLikeFiltertypePatternCondition(String input) {
-        this(DSL.val(input));
+    public RegexLikeCondition(String input) {
+        this(DSL.val(input), BLOOMDB.FILTERTYPE.PATTERN);
     }
 
-    public RegexLikeFiltertypePatternCondition(Field<String> valueField) {
+    public RegexLikeCondition(Field<String> input) {
+        this(input, BLOOMDB.FILTERTYPE.PATTERN);
+    }
+
+    public RegexLikeCondition(String input, String comparedTo) {
+        this(DSL.val(input), DSL.val(comparedTo));
+    }
+
+    public RegexLikeCondition(String input, Field<String> comparedTo) {
+        this(DSL.val(input), comparedTo);
+    }
+
+    public RegexLikeCondition(Field<String> input, String comparedTo) {
+        this(input, DSL.val(comparedTo));
+    }
+
+    public RegexLikeCondition(Field<String> valueField, Field<String> comparedToField) {
         this.valueField = valueField;
+        this.comparedToField = comparedToField;
     }
 
     public Condition condition() {
-        return valueField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN);
+        return valueField.likeRegex(comparedToField);
     }
 
     @Override
@@ -75,7 +93,7 @@ public final class RegexLikeFiltertypePatternCondition implements QueryCondition
             return true;
         if (object == null || object.getClass() != this.getClass())
             return false;
-        final RegexLikeFiltertypePatternCondition cast = (RegexLikeFiltertypePatternCondition) object;
+        final RegexLikeCondition cast = (RegexLikeCondition) object;
         return valueField.equals(cast.valueField);
     }
 

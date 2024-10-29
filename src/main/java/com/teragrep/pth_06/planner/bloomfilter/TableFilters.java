@@ -99,7 +99,7 @@ public final class TableFilters {
         if (table == null) {
             throw new IllegalStateException("Origin table was null");
         }
-        final List<InsertValuesStepN<?>> queryList = new ArrayList<>();
+        final List<InsertValuesStepN<?>> insertValuesStepNList = new ArrayList<>();
         final Result<Record> result = recordsInMetadata.toResult();
         for (final Record record : result) {
             final Field<?>[] insertFields = {
@@ -127,10 +127,10 @@ public final class TableFilters {
                     DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
                     DSL.val(filter.bytes(), byte[].class)
             };
-            InsertValuesStepN<?> query = ctx.insertInto(categoryTable).columns(insertFields).values(valueFields);
-            queryList.add(query);
+            final InsertValuesStepN<?> insertStep = ctx.insertInto(categoryTable).columns(insertFields).values(valueFields);
+            insertValuesStepNList.add(insertStep);
         }
-        final Batch batch = ctx.batch(queryList);
+        final Batch batch = ctx.batch(insertValuesStepNList);
         return new SafeBatch(batch);
     }
 

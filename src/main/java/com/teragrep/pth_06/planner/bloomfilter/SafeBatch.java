@@ -60,6 +60,7 @@ public final class SafeBatch {
         this.batch = batch;
     }
 
+    /** Does not roll back successfully inserted values on exception */
     public void execute() {
         try {
             final int[] results = batch.execute();

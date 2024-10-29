@@ -56,40 +56,40 @@ import org.junit.jupiter.api.Test;
  *
  * @see org.jooq.QueryPart
  */
-class RegexLikeFiltertypePatternConditionTest {
+class RegexLikeConditionTest {
 
     @Test
     void testCondition() {
-        Condition condition = new RegexLikeFiltertypePatternCondition("test").condition();
+        Condition condition = new RegexLikeCondition("test").condition();
         String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
         Assertions.assertEquals(e, condition.toString());
     }
 
     @Test
     void testEquality() {
-        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
-        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("test");
+        RegexLikeCondition cond1 = new RegexLikeCondition("test");
+        RegexLikeCondition cond2 = new RegexLikeCondition("test");
         Assertions.assertEquals(cond1, cond2);
     }
 
     @Test
     void testNotEquals() {
-        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
-        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("next");
+        RegexLikeCondition cond1 = new RegexLikeCondition("test");
+        RegexLikeCondition cond2 = new RegexLikeCondition("next");
         Assertions.assertNotEquals(cond1, cond2);
     }
 
     @Test
     void testHashCode() {
-        RegexLikeFiltertypePatternCondition cond1 = new RegexLikeFiltertypePatternCondition("test");
-        RegexLikeFiltertypePatternCondition cond2 = new RegexLikeFiltertypePatternCondition("test");
-        RegexLikeFiltertypePatternCondition notEq = new RegexLikeFiltertypePatternCondition("next");
+        RegexLikeCondition cond1 = new RegexLikeCondition("test");
+        RegexLikeCondition cond2 = new RegexLikeCondition("test");
+        RegexLikeCondition notEq = new RegexLikeCondition("next");
         Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), notEq.hashCode());
     }
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(RegexLikeFiltertypePatternCondition.class).withNonnullFields("valueField").verify();
+        EqualsVerifier.forClass(RegexLikeCondition.class).withNonnullFields("valueField").verify();
     }
 }
