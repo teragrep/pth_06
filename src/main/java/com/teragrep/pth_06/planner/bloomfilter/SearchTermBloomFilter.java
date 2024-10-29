@@ -104,7 +104,7 @@ public final class SearchTermBloomFilter {
             return filterBAOS.toByteArray();
         }
         catch (IOException e) {
-            throw new UncheckedIOException(new IOException("Error writing filter bytes: " + e.getMessage()));
+            throw new UncheckedIOException("Error writing filter bytes: ", e);
         }
     }
 
