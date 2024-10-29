@@ -49,6 +49,8 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
@@ -93,10 +95,11 @@ public final class TableFilters {
         this.searchTerm = searchTerm;
     }
 
-    public void insertFiltersIntoCategoryTable() {
+    public SafeBatch asBatch() {
         if (table == null) {
             throw new IllegalStateException("Origin table was null");
         }
+        final List<InsertValuesStepN<?>> queryList = new ArrayList<>();
         final Result<Record> result = recordsInMetadata.toResult();
         for (final Record record : result) {
             final Field<?>[] insertFields = {
@@ -124,8 +127,11 @@ public final class TableFilters {
                     DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
                     DSL.val(filter.bytes(), byte[].class)
             };
-            ctx.insertInto(categoryTable).columns(insertFields).values(valueFields).execute();
+            InsertValuesStepN<?> query = ctx.insertInto(categoryTable).columns(insertFields).values(valueFields);
+            queryList.add(query);
         }
+        final Batch batch = ctx.batch(queryList);
+        return new SafeBatch(batch);
     }
 
     /**

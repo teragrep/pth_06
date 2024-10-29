@@ -150,7 +150,7 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
         DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").insertFiltersIntoCategoryTable());
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
         Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
@@ -166,7 +166,7 @@ class TableFiltersTest {
                 .get(0);
         String query = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
         DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, query).insertFiltersIntoCategoryTable());
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, query).asBatch().execute());
         Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
     }
 
@@ -181,7 +181,7 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
         IllegalStateException exception = Assertions
-                .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").insertFiltersIntoCategoryTable());
+                .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").asBatch().execute());
         Assertions.assertTrue(exception.getMessage().contains("Trying to insert empty filter"));
     }
 
