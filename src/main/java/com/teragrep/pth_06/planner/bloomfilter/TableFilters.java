@@ -64,7 +64,7 @@ public final class TableFilters {
     private final TableRecords recordsInMetadata;
     private final DSLContext ctx;
     private final Table<?> table;
-    private final Table<?> categoryTable;
+    private final Table<?> thisTable;
     private final String searchTerm;
     private final long bloomTermId;
 
@@ -83,14 +83,14 @@ public final class TableFilters {
             TableFilterTypesFromMetadata recordsInMetadata,
             DSLContext ctx,
             Table<?> table,
-            Table<?> categoryTable,
+            Table<?> thisTable,
             long bloomTermId,
             String searchTerm
     ) {
         this.recordsInMetadata = recordsInMetadata;
         this.ctx = ctx;
         this.table = table;
-        this.categoryTable = categoryTable;
+        this.thisTable = thisTable;
         this.bloomTermId = bloomTermId;
         this.searchTerm = searchTerm;
     }
@@ -103,9 +103,9 @@ public final class TableFilters {
         final Result<Record> result = recordsInMetadata.toResult();
         for (final Record record : result) {
             final Field<?>[] insertFields = {
-                    DSL.field("term_id", BIGINTUNSIGNED.nullable(false)),
-                    DSL.field("type_id", BIGINTUNSIGNED.nullable(false)),
-                    DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class)
+                    DSL.field(DSL.name(thisTable.getName(), "term_id"), BIGINTUNSIGNED.nullable(false)),
+                    DSL.field(DSL.name(thisTable.getName(), "type_id"), BIGINTUNSIGNED.nullable(false)),
+                    DSL.field(DSL.name(thisTable.getName(), "filter"), byte[].class)
             };
             final ULong expectedField = record
                     .getValue(DSL.field(DSL.name(table.getName(), "expectedElements"), ULong.class));
@@ -127,7 +127,7 @@ public final class TableFilters {
                     DSL.val(record.getValue(BLOOMDB.FILTERTYPE.ID), ULong.class),
                     DSL.val(filter.bytes(), byte[].class)
             };
-            final InsertValuesStepN<?> insertStep = ctx.insertInto(categoryTable).columns(insertFields).values(valueFields);
+            final InsertValuesStepN<?> insertStep = ctx.insertInto(thisTable).columns(insertFields).values(valueFields);
             insertValuesStepNList.add(insertStep);
         }
         final Batch batch = ctx.batch(insertValuesStepNList);
@@ -150,11 +150,11 @@ public final class TableFilters {
         final TableFilters cast = (TableFilters) object;
         return bloomTermId == cast.bloomTermId && recordsInMetadata
                 .equals(cast.recordsInMetadata) && ctx == cast.ctx && table.equals(cast.table)
-                && categoryTable.equals(cast.categoryTable) && searchTerm.equals(cast.searchTerm);
+                && thisTable.equals(cast.thisTable) && searchTerm.equals(cast.searchTerm);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(recordsInMetadata, ctx, table, categoryTable, searchTerm, bloomTermId);
+        return Objects.hash(recordsInMetadata, ctx, table, thisTable, searchTerm, bloomTermId);
     }
 }

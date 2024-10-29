@@ -109,12 +109,12 @@ public final class SearchTermBloomFilter {
     }
 
     @Override
-    public boolean equals(Object object) {
+    public boolean equals(final Object object) {
         if (this == object)
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        SearchTermBloomFilter cast = (SearchTermBloomFilter) object;
+        final SearchTermBloomFilter cast = (SearchTermBloomFilter) object;
         return expected.equals(cast.expected) && fpp.equals(cast.fpp) && stringTokens.equals(cast.stringTokens);
     }
 

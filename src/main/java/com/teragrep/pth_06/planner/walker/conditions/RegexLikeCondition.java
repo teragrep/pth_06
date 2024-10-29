@@ -94,11 +94,11 @@ public final class RegexLikeCondition implements QueryCondition {
         if (object == null || object.getClass() != this.getClass())
             return false;
         final RegexLikeCondition cast = (RegexLikeCondition) object;
-        return valueField.equals(cast.valueField);
+        return valueField.equals(cast.valueField) && comparedToField.equals(cast.comparedToField);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueField);
+        return Objects.hash(valueField, comparedToField);
     }
 }
