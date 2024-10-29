@@ -50,7 +50,7 @@ import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SafeBatch {
+public final class SafeBatch {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SafeBatch.class);
 
@@ -62,7 +62,7 @@ public class SafeBatch {
 
     public void execute() {
         try {
-            int[] results = batch.execute();
+            final int[] results = batch.execute();
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Batch added <{}> row(s)", results.length);
             }
