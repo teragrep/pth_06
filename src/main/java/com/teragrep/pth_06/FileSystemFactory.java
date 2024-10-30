@@ -51,6 +51,6 @@ import java.io.IOException;
 
 public interface FileSystemFactory {
 
-    FileSystem fileSystem(boolean initializeUGI) throws IOException;
+    public abstract FileSystem fileSystem(boolean initializeUGI) throws IOException;
 
 }

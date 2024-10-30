@@ -51,10 +51,10 @@ import java.io.IOException;
 
 public interface AvroRead {
 
-    boolean next();
+    public abstract boolean next();
 
-    SyslogRecord record();
+    public abstract SyslogRecord record();
 
-    void close() throws IOException;
+    public abstract void close() throws IOException;
 
 }

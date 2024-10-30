@@ -595,6 +595,9 @@
                   <module name="Translation"></module>
                   <module name="UniqueProperties"></module>
                   <module name="BeforeExecutionExclusionFileFilter">
+                    <property name="fileNamePattern" value="SyslogRecord\.java$"></property>
+                  </module>
+                  <module name="BeforeExecutionExclusionFileFilter">
                     <property name="fileNamePattern" value=".*[\\/]src[\\/]main[\\/]java[\\/]com[\\/]teragrep[\\/]pth_06[\\/]jooq[\\/]generated[\\/].*$"></property>
                   </module>
                 </module>
@@ -722,6 +725,9 @@
                   </module>
                   <module name="OrderedProperties">
                     <property name="severity" value="warning"></property>
+                  </module>
+                  <module name="BeforeExecutionExclusionFileFilter">
+                    <property name="fileNamePattern" value="SyslogRecord\.java$"></property>
                   </module>
                   <module name="BeforeExecutionExclusionFileFilter">
                     <property name="fileNamePattern" value=".*[\\/]src[\\/]main[\\/]java[\\/]com[\\/]teragrep[\\/]pth_06[\\/]jooq[\\/]generated[\\/].*$"></property>

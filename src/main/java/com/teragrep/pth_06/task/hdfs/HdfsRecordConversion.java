@@ -51,8 +51,8 @@ import java.io.IOException;
 
 public interface HdfsRecordConversion {
 
-    boolean next() throws IOException;
+    public abstract boolean next() throws IOException;
 
-    InternalRow row();
+    public abstract InternalRow row();
 
 }
