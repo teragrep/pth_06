@@ -59,14 +59,14 @@ import java.sql.Date;
  */
 public interface ArchiveQuery {
 
-    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,
             long endHour
     );
 
-    void commit(long offset);
+    public abstract void commit(long offset);
 
-    Long getInitialOffset();
+    public abstract Long getInitialOffset();
 
-    Long incrementAndGetLatestOffset();
+    public abstract Long incrementAndGetLatestOffset();
 }

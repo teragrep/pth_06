@@ -106,8 +106,9 @@ public class Util {
         Instant rv = null;
         Matcher matcher = Pattern.compile("^-?\\d+").matcher(value);
 
-        if (!matcher.find())
+        if (!matcher.find()) {
             throw new NumberFormatException("Unknown relative time modifier string [" + value + "]");
+        }
 
         long v = Long.parseLong(matcher.group());
         matcher.group().length();

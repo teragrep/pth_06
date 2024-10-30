@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <h1>Mock Kafka Consumer Factory</h1> Mocked Kafka Consumer factory used for testing.
@@ -65,9 +66,9 @@ import java.util.HashMap;
  * @author Mikko Kortelainen
  */
 @VisibleForTesting
-public class MockKafkaConsumerFactory {
+public final class MockKafkaConsumerFactory {
 
-    final static private Logger LOGGER = LoggerFactory.getLogger(MockKafkaConsumerFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MockKafkaConsumerFactory.class);
 
     private MockKafkaConsumerFactory() {
 
@@ -251,13 +252,13 @@ public class MockKafkaConsumerFactory {
         consumer = new MockConsumer(OffsetResetStrategy.EARLIEST);
         consumer.assign(Collections.singletonList(new TopicPartition("testConsumerTopic", 0)));
 
-        HashMap<TopicPartition, Long> beginningOffsets = new HashMap<>();
+        Map<TopicPartition, Long> beginningOffsets = new HashMap<>();
         beginningOffsets.put(new TopicPartition("testConsumerTopic", 0), 0L); // start is inclusive
         consumer.updateBeginningOffsets(beginningOffsets);
 
         generateEvents(consumer);
 
-        HashMap<TopicPartition, Long> endOffsets = new HashMap<>();
+        Map<TopicPartition, Long> endOffsets = new HashMap<>();
         endOffsets.put(new TopicPartition("testConsumerTopic", 0), 14L); // end is exclusive
         consumer.updateEndOffsets(endOffsets);
         LOGGER.debug(endOffsets.toString());

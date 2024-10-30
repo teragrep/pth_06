@@ -68,16 +68,16 @@ public final class ElementCondition {
         this.config = config;
     }
 
-    private void validate(Element element) {
-        if (element.getTagName() == null) {
+    private void validate(Element elementInput) {
+        if (elementInput.getTagName() == null) {
             throw new IllegalStateException("Tag name for Element was null");
         }
-        if (!element.hasAttribute("operation")) {
+        if (!elementInput.hasAttribute("operation")) {
             throw new IllegalStateException(
                     "Could not find specified or default value for 'operation' attribute from Element"
             );
         }
-        if (!element.hasAttribute("value")) {
+        if (!elementInput.hasAttribute("value")) {
             throw new IllegalStateException(
                     "Could not find specified or default value for 'value' attribute from Element"
             );
@@ -133,12 +133,15 @@ public final class ElementCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final ElementCondition cast = (ElementCondition) object;
         boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
         boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));

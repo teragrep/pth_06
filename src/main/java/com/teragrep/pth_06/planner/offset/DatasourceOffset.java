@@ -61,7 +61,7 @@ import java.util.Map;
  */
 public class DatasourceOffset extends Offset implements Serializable {
 
-    SerializedDatasourceOffset serializedDatasourceOffset;
+    private final SerializedDatasourceOffset serializedDatasourceOffset;
 
     public DatasourceOffset(HdfsOffset hdfsOffset, KafkaOffset kafkaOffset) {
         this(hdfsOffset, null, kafkaOffset);

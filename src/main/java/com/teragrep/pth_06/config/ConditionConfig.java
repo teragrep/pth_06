@@ -86,12 +86,15 @@ public final class ConditionConfig {
 
     @Override
     public boolean equals(Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final ConditionConfig cast = (ConditionConfig) object;
         return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
                 && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;

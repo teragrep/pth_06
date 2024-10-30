@@ -186,8 +186,9 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     @Override
     public void close() throws IOException {
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("ArchiveMicroBatchInputPartitionReader.close>");
+        }
         if (rowConverter != null) {
             rowConverter.close();
         }

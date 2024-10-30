@@ -49,5 +49,5 @@ import org.jooq.Condition;
 
 public interface QueryCondition {
 
-    Condition condition();
+    public abstract Condition condition();
 }

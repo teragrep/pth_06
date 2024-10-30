@@ -87,12 +87,15 @@ public final class EarliestCondition implements QueryCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final EarliestCondition cast = (EarliestCondition) object;
         return this.value.equals(cast.value);
     }

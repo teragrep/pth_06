@@ -62,7 +62,7 @@ import java.io.Serializable;
  */
 public final class BatchSlice implements Serializable {
 
-    public enum Type {
+    public static enum Type {
         ARCHIVE, KAFKA, HDFS
     }
 

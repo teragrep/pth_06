@@ -166,7 +166,7 @@ public abstract class XmlWalker<T> {
             }
             else {
                 // leaf
-                if (op != null && op.equals("NOT")) {
+                if (op != null && "NOT".equals(op)) {
                     LOGGER.debug("Emit Unary operation op:" + op + " l:" + current);
                     rv = emitUnaryOperation(op, current);
                 }
@@ -218,15 +218,17 @@ public abstract class XmlWalker<T> {
      */
     public static String escapeSpecialCharacters(String input) {
         final List<String> specialCharacters = Arrays.asList("\\", "*", "+", "?", "%");
-        if (input.equals("*")) {
+        if ("*".equals(input)) {
             return "%";
         }
         else {
             return Arrays.stream(input.split("")).map((c) -> {
-                if (specialCharacters.contains(c))
+                if (specialCharacters.contains(c)) {
                     return "\\" + c;
-                else
+                }
+                else {
                     return c;
+                }
             }).collect(Collectors.joining());
         }
     }

@@ -53,17 +53,20 @@ import java.util.LinkedList;
 
 public interface HdfsQuery {
 
-    LinkedList<HdfsFileMetadata> processBetweenHdfsFileMetadata(HdfsOffset startOffset, HdfsOffset endOffset);
+    public abstract LinkedList<HdfsFileMetadata> processBetweenHdfsFileMetadata(
+            HdfsOffset startOffset,
+            HdfsOffset endOffset
+    );
 
-    void commit(HdfsOffset offset);
+    public abstract void commit(HdfsOffset offset);
 
-    JsonArray hdfsOffsetMapToJSON();
+    public abstract JsonArray hdfsOffsetMapToJSON();
 
-    HdfsOffset getBeginningOffsets();
+    public abstract HdfsOffset getBeginningOffsets();
 
-    HdfsOffset getInitialEndOffsets(); // Delete after testing incrementAndGetLatestOffset() functionality thoroughly.
+    public abstract HdfsOffset getInitialEndOffsets(); // Delete after testing incrementAndGetLatestOffset() functionality thoroughly.
 
-    HdfsOffset incrementAndGetLatestOffset(); // replaces getInitialEndOffsets()
+    public abstract HdfsOffset incrementAndGetLatestOffset(); // replaces getInitialEndOffsets()
 
-    boolean isStub();
+    public abstract boolean isStub();
 }

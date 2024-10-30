@@ -84,8 +84,8 @@ public class ConditionWalker extends XmlWalker<Condition> {
         this.bloomEnabled = bloomEnabled;
     }
 
-    public Condition fromString(String inXml, boolean streamQuery) throws Exception {
-        this.streamQuery = streamQuery;
+    public Condition fromString(String inXml, boolean streamQueryInput) throws Exception {
+        this.streamQuery = streamQueryInput;
         return fromString(inXml);
     }
 
@@ -98,13 +98,13 @@ public class ConditionWalker extends XmlWalker<Condition> {
         if (op == null) {
             throw new Exception("Parse error, unbalanced elements. " + left.toString());
         }
-        if (op.equalsIgnoreCase("AND")) {
+        if ("AND".equalsIgnoreCase(op)) {
             rv = left.and(right);
         }
-        else if (op.equalsIgnoreCase("OR")) {
+        else if ("OR".equalsIgnoreCase(op)) {
             rv = left.or(right);
         }
-        else if (op.equalsIgnoreCase("NOT")) {
+        else if ("NOT".equalsIgnoreCase(op)) {
             rv = left.not();
         }
         else {
@@ -126,7 +126,7 @@ public class ConditionWalker extends XmlWalker<Condition> {
             throw new Exception("Parse error, op was null");
         }
         if (rv != null) {
-            if (op.equalsIgnoreCase("NOT")) {
+            if ("NOT".equalsIgnoreCase(op)) {
                 rv = rv.not();
             }
             else {

@@ -64,8 +64,8 @@ public class KafkaWalker extends XmlWalker<String> {
 
         String queryCondition = null;
         // only index equals supported
-        if (tag.equalsIgnoreCase("index")) {
-            if (operation.equalsIgnoreCase("EQUALS")) {
+        if ("index".equalsIgnoreCase(tag)) {
+            if ("EQUALS".equalsIgnoreCase(operation)) {
                 queryCondition = GlobToRegEx.regexify(value);
             }
         }
