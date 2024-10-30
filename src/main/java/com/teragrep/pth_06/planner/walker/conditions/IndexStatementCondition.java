@@ -131,7 +131,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
     }
 
     @Override
-    public Set<Table<?>> patternMatchTables() {
+    public Set<Table<?>> requiredTables() {
         if (tableSet.isEmpty()) {
             condition();
         }

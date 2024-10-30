@@ -102,10 +102,11 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
     }
 
     /**
-     * Equal only if all values are equal and same instance of DSLContext
+     * Equal if the compared object is the same instance or if the compared object is of the same class, object fields
+     * are equal, and DSLContext is the same instance
      *
      * @param object object compared against
-     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     * @return true if equal
      */
     @Override
     public boolean equals(final Object object) {
@@ -116,6 +117,6 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
         if (object.getClass() != this.getClass())
             return false;
         final ConditionMatchBloomDBTables cast = (ConditionMatchBloomDBTables) object;
-        return this.condition.equals(cast.condition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+        return this.condition.equals(cast.condition) && this.ctx == cast.ctx;
     }
 }

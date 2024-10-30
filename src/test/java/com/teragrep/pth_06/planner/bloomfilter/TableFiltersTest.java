@@ -171,7 +171,7 @@ class TableFiltersTest {
     }
 
     @Test
-    public void testInsertFiltersWithoutPatternMatch() {
+    public void testCreateFilterWithoutItemsException() {
         fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -182,7 +182,8 @@ class TableFiltersTest {
                 .get(0);
         IllegalStateException exception = Assertions
                 .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").asBatch().execute());
-        Assertions.assertTrue(exception.getMessage().contains("Trying to insert empty filter"));
+        String expected = "Tried to create a filter without any items";
+        Assertions.assertEquals(expected, exception.getMessage());
     }
 
     @Test

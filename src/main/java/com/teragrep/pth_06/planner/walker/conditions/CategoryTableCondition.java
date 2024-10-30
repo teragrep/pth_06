@@ -85,13 +85,13 @@ public final class CategoryTableCondition implements QueryCondition {
 
     public Condition condition() {
         final Field<byte[]> filterField = DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class);
-        // select filter with correct bloom term id and filter type id from category table
+        // select filter with the correct bloom term id and filter type id from the category table
         final SelectConditionStep<Record1<byte[]>> selectFilterStep = DSL
                 .select(filterField)
                 .from(categoryTable)
                 .where(bloomTermCondition)
                 .and(typeIdCondition);
-        // compares category table filter byte[] against bloom filter byte[]
+        // function 'bloommatch' compares category table filter byte[] against bloom filter byte[]
         final Condition filterFieldCondition = DSL
                 .function("bloommatch", Boolean.class, selectFilterStep.asField(), comparedTo.field("filter"))
                 .eq(true);

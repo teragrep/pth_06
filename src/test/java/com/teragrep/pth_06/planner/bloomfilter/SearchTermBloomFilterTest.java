@@ -78,7 +78,7 @@ public class SearchTermBloomFilterTest {
     }
 
     @Test
-    public void testNoRegexExtractedTokensException() {
+    public void testEmptyFilterException() {
         String searchTerm = "NoMatch";
         SearchTermBloomFilter filter = new SearchTermBloomFilter(
                 1000L,
@@ -86,7 +86,7 @@ public class SearchTermBloomFilterTest {
                 new RegexExtractedValue(searchTerm, "Pattern")
         );
         IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, filter::bytes);
-        String expectedMessage = "Trying to insert empty filter, pattern match joined table should always have tokens";
+        String expectedMessage = "Tried to create a filter without any items";
         Assertions.assertEquals(expectedMessage, e.getMessage());
     }
 
@@ -122,9 +122,9 @@ public class SearchTermBloomFilterTest {
         String searchTerm = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         SearchTermBloomFilter filter = new SearchTermBloomFilter(10L, 0.01, new TokenizedValue(searchTerm));
         Assertions.assertDoesNotThrow(filter::bytes);
-        String e = "Number of tokens <132> was larger than the expected value <10>, resulting FPP <0.6002870054872016>";
+        String e = "Number of items <132> was larger than the expected number of items <10>, resulting FPP <0.6002870054872016>";
         String warn = captor.getWarnLogs().get(0);
-        Assertions.assertEquals(warn, e);
+        Assertions.assertEquals(e, warn);
 
     }
 

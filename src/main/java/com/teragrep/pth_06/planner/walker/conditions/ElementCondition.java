@@ -109,7 +109,7 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
                 condition = indexStatement.condition();
             }
         }
-        // bloom search can return condition unmodified
+        // bloom search can return the condition unmodified
         if (condition.equals(DSL.noCondition()) && !isBloomSearchCondition()) {
             throw new IllegalStateException("Unsupported Element tag " + tag);
         }
@@ -124,9 +124,10 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
                 && config.bloomEnabled();
     }
 
-    public Set<Table<?>> patternMatchTables() {
+    /** A set of tables needed to be joined to the query to use this condition */
+    public Set<Table<?>> requiredTables() {
         final String value = element.value();
-        return new IndexStatementCondition(value, config).patternMatchTables();
+        return new IndexStatementCondition(value, config).requiredTables();
     }
 
     @Override

@@ -51,7 +51,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
+ * Inherited from the QueryPart
  * 
  * @see org.jooq.QueryPart
  */

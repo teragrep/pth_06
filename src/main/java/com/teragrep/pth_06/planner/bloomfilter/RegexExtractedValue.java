@@ -79,7 +79,7 @@ public final class RegexExtractedValue implements Tokenizable<String> {
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        RegexExtractedValue cast = (RegexExtractedValue) object;
+        final RegexExtractedValue cast = (RegexExtractedValue) object;
         return value.equals(cast.value) && pattern.equals(cast.pattern);
     }
 

@@ -128,10 +128,11 @@ public final class CategoryTableImpl implements CategoryTable {
     }
 
     /**
-     * Equal only if all object parameters are same value and the instances of DSLContext are same
+     * Equal if the compared object is the same instance or if the compared object is of the same class, object fields
+     * are equal, and DSLContext is the same instance
      *
      * @param object object compared against
-     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     * @return true if equal
      */
     @Override
     public boolean equals(final Object object) {

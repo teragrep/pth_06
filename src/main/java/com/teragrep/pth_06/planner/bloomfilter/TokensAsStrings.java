@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner.bloomfilter;
 import com.teragrep.blf_01.Token;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public final class TokensAsStrings implements Tokenizable<String> {
@@ -61,5 +62,20 @@ public final class TokensAsStrings implements Tokenizable<String> {
     @Override
     public List<String> tokens() {
         return origin.tokens().stream().map(Token::toString).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final TokensAsStrings cast = (TokensAsStrings) object;
+        return origin.equals(cast.origin);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(origin);
     }
 }

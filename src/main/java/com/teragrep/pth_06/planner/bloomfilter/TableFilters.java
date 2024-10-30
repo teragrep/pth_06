@@ -96,9 +96,6 @@ public final class TableFilters {
     }
 
     public SafeBatch asBatch() {
-        if (table == null) {
-            throw new IllegalStateException("Origin table was null");
-        }
         final List<InsertValuesStepN<?>> insertValuesStepNList = new ArrayList<>();
         final Result<Record> result = recordsInMetadata.toResult();
         for (final Record record : result) {

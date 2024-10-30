@@ -137,7 +137,7 @@ public class ConditionWalkerTest {
         String e = "\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(0, walker.patternMatchTables().size());
+        Assertions.assertEquals(0, walker.conditionRequiredTables().size());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class ConditionWalkerTest {
         String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(0, walker.patternMatchTables().size());
+        Assertions.assertEquals(0, walker.conditionRequiredTables().size());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class ConditionWalkerTest {
         String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(0, walker.patternMatchTables().size());
+        Assertions.assertEquals(0, walker.conditionRequiredTables().size());
     }
 
     @Test
@@ -167,7 +167,7 @@ public class ConditionWalkerTest {
         String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(0, walker.patternMatchTables().size());
+        Assertions.assertEquals(0, walker.conditionRequiredTables().size());
     }
 
     @Test
@@ -184,9 +184,9 @@ public class ConditionWalkerTest {
                 + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(1, walker.patternMatchTables().size());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
     }
 
     @Test
@@ -197,9 +197,9 @@ public class ConditionWalkerTest {
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(1, walker.patternMatchTables().size());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
     }
 
     @Test
@@ -222,11 +222,11 @@ public class ConditionWalkerTest {
                 + "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "    )\n" + "  )\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions.assertEquals(2, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
     }
 
     @Test
@@ -264,11 +264,11 @@ public class ConditionWalkerTest {
                 + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions.assertEquals(2, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
     }
 
     @Test
@@ -284,9 +284,9 @@ public class ConditionWalkerTest {
                 + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(1, walker.patternMatchTables().size());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
     }
 
     @Test
@@ -315,11 +315,11 @@ public class ConditionWalkerTest {
                 + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions.assertEquals(2, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
     }
 
     @Test
@@ -331,11 +331,11 @@ public class ConditionWalkerTest {
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(2, walker.patternMatchTables().size());
+        Assertions.assertEquals(2, walker.conditionRequiredTables().size());
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.patternMatchTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
     }
 
     @Test
