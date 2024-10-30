@@ -226,7 +226,9 @@ public class ConditionWalkerTest {
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(
+                        walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255"))
+                );
     }
 
     @Test
@@ -268,7 +270,9 @@ public class ConditionWalkerTest {
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(
+                        walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255"))
+                );
     }
 
     @Test
@@ -319,7 +323,9 @@ public class ConditionWalkerTest {
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(
+                        walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255"))
+                );
     }
 
     @Test
@@ -335,7 +341,9 @@ public class ConditionWalkerTest {
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
         Assertions
-                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255")));
+                .assertTrue(
+                        walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255"))
+                );
     }
 
     @Test

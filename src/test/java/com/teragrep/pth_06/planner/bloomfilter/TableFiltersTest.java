@@ -151,7 +151,12 @@ class TableFiltersTest {
                 .get(0);
         DataAccessException exception = Assertions
                 .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
-        Assertions.assertTrue(exception.getMessage().contains("insert into \"term_0_target\" (\"term_id\", \"type_id\", \"filter\") values"));
+        Assertions
+                .assertTrue(
+                        exception
+                                .getMessage()
+                                .contains("insert into \"term_0_target\" (\"term_id\", \"type_id\", \"filter\") values")
+                );
     }
 
     @Test
@@ -167,7 +172,8 @@ class TableFiltersTest {
         String query = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
         DataAccessException exception = Assertions
                 .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, query).asBatch().execute());
-        Assertions.assertTrue(exception.getMessage().contains("\"term_0_target\" (\"term_id\", \"type_id\", \"filter\")"));
+        Assertions
+                .assertTrue(exception.getMessage().contains("\"term_0_target\" (\"term_id\", \"type_id\", \"filter\")"));
     }
 
     @Test

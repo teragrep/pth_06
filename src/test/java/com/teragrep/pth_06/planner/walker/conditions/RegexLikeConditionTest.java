@@ -90,7 +90,8 @@ class RegexLikeConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(RegexLikeCondition.class)
+        EqualsVerifier
+                .forClass(RegexLikeCondition.class)
                 .withNonnullFields("valueField")
                 .withNonnullFields("comparedToField")
                 .verify();

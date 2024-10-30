@@ -82,9 +82,7 @@ public final class SearchTermBloomFilter {
     public byte[] bytes() {
         LOGGER.debug("Create filter from Record with values: expected <{}>, fpp <{}>", expected, fpp);
         if (stringTokens.isEmpty()) {
-            throw new IllegalStateException(
-                    "Tried to create a filter without any items"
-            );
+            throw new IllegalStateException("Tried to create a filter without any items");
         }
         final BloomFilter filter = BloomFilter.create(expected, fpp);
         for (final String token : stringTokens) {

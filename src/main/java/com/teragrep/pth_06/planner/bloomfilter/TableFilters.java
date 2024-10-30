@@ -145,9 +145,8 @@ public final class TableFilters {
         if (object == null || getClass() != object.getClass())
             return false;
         final TableFilters cast = (TableFilters) object;
-        return bloomTermId == cast.bloomTermId && recordsInMetadata
-                .equals(cast.recordsInMetadata) && ctx == cast.ctx && table.equals(cast.table)
-                && thisTable.equals(cast.thisTable) && searchTerm.equals(cast.searchTerm);
+        return bloomTermId == cast.bloomTermId && recordsInMetadata.equals(cast.recordsInMetadata) && ctx == cast.ctx
+                && table.equals(cast.table) && thisTable.equals(cast.thisTable) && searchTerm.equals(cast.searchTerm);
     }
 
     @Override
