@@ -51,6 +51,8 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
@@ -145,5 +147,10 @@ public final class CategoryTableImpl implements CategoryTable {
         final CategoryTableImpl cast = (CategoryTableImpl) object;
         return this.originTable.equals(cast.originTable) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
                 this.bloomTermId == cast.bloomTermId && this.tableFilters.equals(cast.tableFilters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, originTable, bloomTermId, tableFilters);
     }
 }

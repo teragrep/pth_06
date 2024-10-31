@@ -55,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
@@ -118,5 +119,10 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
             return false;
         final ConditionMatchBloomDBTables cast = (ConditionMatchBloomDBTables) object;
         return this.condition.equals(cast.condition) && this.ctx == cast.ctx;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, condition);
     }
 }
