@@ -95,7 +95,7 @@ public final class TableFilters {
         this.searchTerm = searchTerm;
     }
 
-    public SafeBatch asBatch() {
+    public Batch asBatch() {
         final List<InsertValuesStepN<?>> insertValuesStepNList = new ArrayList<>();
         final Result<Record> result = recordsInMetadata.toResult();
         for (final Record record : result) {
@@ -127,8 +127,7 @@ public final class TableFilters {
             final InsertValuesStepN<?> insertStep = ctx.insertInto(thisTable).columns(insertFields).values(valueFields);
             insertValuesStepNList.add(insertStep);
         }
-        final Batch batch = ctx.batch(insertValuesStepNList);
-        return new SafeBatch(batch);
+        return ctx.batch(insertValuesStepNList);
     }
 
     /**

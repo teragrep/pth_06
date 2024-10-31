@@ -207,8 +207,6 @@ class TableFilterTypesFromMetadataResultTest {
                 .get(0);
         TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
         TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 1L);
-        System.out.println(result1);
-        System.out.println(result2);
         Assertions.assertNotEquals(result1, result2);
     }
 

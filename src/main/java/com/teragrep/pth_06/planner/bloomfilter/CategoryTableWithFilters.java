@@ -45,14 +45,19 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
+import org.jooq.Batch;
 import org.jooq.DSLContext;
 import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Decorator that inserts category tables filter types into the table
  */
 public final class CategoryTableWithFilters implements CategoryTable {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategoryTableWithFilters.class);
     private final CategoryTable origin;
     private final TableFilters filters;
 
@@ -71,6 +76,15 @@ public final class CategoryTableWithFilters implements CategoryTable {
     @Override
     public void create() {
         origin.create();
-        filters.asBatch().execute();
+        final Batch batch = filters.asBatch();
+        try {
+            final int[] results = batch.execute();
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Batch added <{}> row(s)", results.length);
+            }
+        }
+        catch (final DataAccessException e) {
+            throw new DataAccessException("Error executing batch: " + e);
+        }
     }
 }
