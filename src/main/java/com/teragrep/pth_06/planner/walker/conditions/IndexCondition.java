@@ -92,4 +92,17 @@ public final class IndexCondition implements QueryCondition {
         return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
                 && this.operation.equals(cast.operation);
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (value != null) {
+            result = 31 * result + value.hashCode();
+        }
+        if (operation != null) {
+            result = 31 * result + operation.hashCode();
+        }
+        result = 31 * result + (streamQuery ? 1 : 0);
+        return result;
+    }
 }

@@ -99,4 +99,16 @@ public final class ConditionConfig {
         return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
                 && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + (bloomEnabled ? 1 : 0);
+        result = 31 * result + (streamQuery ? 1 : 0);
+        result = 31 * result + (withoutFilters ? 1 : 0);
+        if (ctx != null) {
+            result = 31 * result + ctx.hashCode();
+        }
+        return result;
+    }
 }

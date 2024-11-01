@@ -45,6 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import javax.xml.transform.*;
@@ -67,6 +69,8 @@ import java.util.regex.Pattern;
  * @author Kimmo Leppinen
  */
 public class Util {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
     public static String stripQuotes(String value) {
         Matcher m = Pattern.compile("^\"(.*)\"$").matcher(value);
@@ -214,8 +218,14 @@ public class Util {
             str = buffer.toString();
         }
         catch (TransformerConfigurationException tex) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(tex.getMessage(), tex);
+            }
         }
         catch (TransformerException ex) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(ex.getMessage());
+            }
         }
         return str;
     }

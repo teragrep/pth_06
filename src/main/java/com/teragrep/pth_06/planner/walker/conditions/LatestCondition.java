@@ -96,4 +96,13 @@ public final class LatestCondition implements QueryCondition {
         final LatestCondition cast = (LatestCondition) object;
         return this.value.equals(cast.value);
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (value != null) {
+            result = 31 * result + value.hashCode();
+        }
+        return result;
+    }
 }

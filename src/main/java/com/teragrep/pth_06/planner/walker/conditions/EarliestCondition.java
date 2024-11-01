@@ -99,4 +99,13 @@ public final class EarliestCondition implements QueryCondition {
         final EarliestCondition cast = (EarliestCondition) object;
         return this.value.equals(cast.value);
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (value != null) {
+            result = 31 * result + value.hashCode();
+        }
+        return result;
+    }
 }

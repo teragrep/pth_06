@@ -156,4 +156,20 @@ public final class IndexStatementCondition implements QueryCondition {
         final IndexStatementCondition cast = (IndexStatementCondition) object;
         return this.value.equals(cast.value) && this.config.equals(cast.config) && this.tokenizer == cast.tokenizer; // expects same reference
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (value != null) {
+            result = 31 * result + value.hashCode();
+        }
+        if (tokenizer != null) {
+            result = 31 * result + tokenizer.hashCode();
+        }
+        if (config != null) {
+            result = 31 * result + config.hashCode();
+        }
+        return result;
+    }
+
 }

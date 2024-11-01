@@ -148,4 +148,22 @@ public final class ElementCondition {
         boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
         return equalName && equalOperation && equalValue && this.config.equals(cast.config);
     }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        if (element.getTagName() != null) {
+            result = 31 * result + element.getTagName().hashCode();
+        }
+        if (element.getAttribute("operation") != null) {
+            result = 31 * result + element.getAttribute("operation").hashCode();
+        }
+        if (element.getAttribute("value") != null) {
+            result = 31 * result + element.getAttribute("value").hashCode();
+        }
+        if (config != null) {
+            result = 31 * result + config.hashCode();
+        }
+        return result;
+    }
 }
