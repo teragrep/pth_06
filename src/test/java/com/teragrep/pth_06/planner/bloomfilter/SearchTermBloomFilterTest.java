@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
-import nl.altindag.log.LogCaptor;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.junit.jupiter.api.Assertions;
@@ -118,14 +117,11 @@ public class SearchTermBloomFilterTest {
 
     @Test
     public void testTokensSizeTooLarge() {
-        LogCaptor captor = Assertions.assertDoesNotThrow(() -> LogCaptor.forClass(SearchTermBloomFilter.class));
         String searchTerm = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
         SearchTermBloomFilter filter = new SearchTermBloomFilter(10L, 0.01, new TokenizedValue(searchTerm));
-        Assertions.assertDoesNotThrow(filter::bytes);
-        String e = "Number of items <132> was larger than the expected number of items <10>, resulting FPP <0.6002870054872016>";
-        String warn = captor.getWarnLogs().get(0);
-        Assertions.assertEquals(e, warn);
-
+        IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, filter::bytes);
+        String expected = "Number of items was larger than the expected number of items";
+        Assertions.assertEquals(expected, e.getMessage());
     }
 
     @Test
