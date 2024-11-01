@@ -111,7 +111,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
                     topicsRegexString // topicsRegexString only searches for the given topic/topics (aka. directories).
             );
         }
-        catch (Exception e) {
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
 
