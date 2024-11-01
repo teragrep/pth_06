@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.*;
+import com.teragrep.pth_06.planner.bloomfilter.*;
 import org.jooq.Condition;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 public final class IndexStatementCondition implements QueryCondition, BloomQueryCondition {
 
@@ -83,8 +85,13 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         }
         Condition newCondition = condition;
         if (tableSet.isEmpty()) {
-            final PatternMatchTables patternMatchTables = new PatternMatchTables(config.context(), value);
-            tableSet.addAll(patternMatchTables.toList());
+            // get all tables that pattern match with search value
+            final QueryCondition regexLikeCondition = new RegexLikeCondition(value, BLOOMDB.FILTERTYPE.PATTERN);
+            final DatabaseTables patternMatchTables = new ConditionMatchBloomDBTables(
+                    config.context(),
+                    regexLikeCondition
+            );
+            tableSet.addAll(patternMatchTables.tables());
         }
         if (!tableSet.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
@@ -94,11 +101,17 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             Condition combinedNullFilterCondition = DSL.noCondition();
 
             for (final Table<?> table : tableSet) {
-                final CategoryTable categoryTable = new CreatedCategoryTable(
-                        new SearchTermFiltersInserted(new CategoryTableImpl(config, table, value))
+                // create a category temp table with filters
+                final CategoryTable categoryTable = new CategoryTableWithFilters(
+                        config.context(),
+                        table,
+                        config.bloomTermId(),
+                        value
                 );
+                categoryTable.create();
+                // create table condition for table
                 final Condition nullFilterCondition = table.field("filter").isNull();
-                final QueryCondition tableCondition = categoryTable.bloommatchCondition();
+                final QueryCondition tableCondition = new CategoryTableCondition(table, config.bloomTermId());
                 combinedTableCondition = combinedTableCondition.or(tableCondition.condition());
                 combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
             }
@@ -118,7 +131,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
     }
 
     @Override
-    public Set<Table<?>> patternMatchTables() {
+    public Set<Table<?>> requiredTables() {
         if (tableSet.isEmpty()) {
             condition();
         }

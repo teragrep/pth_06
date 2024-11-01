@@ -43,15 +43,48 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public interface CategoryTable {
+public final class RegexExtractedValue implements Tokenizable<String> {
 
-    void create();
+    private final String value;
+    private final Pattern pattern;
 
-    void insertFilters();
+    public RegexExtractedValue(String value, String pattern) {
+        this(value, Pattern.compile(pattern));
+    }
 
-    QueryCondition bloommatchCondition();
+    public RegexExtractedValue(String value, Pattern pattern) {
+        this.value = value;
+        this.pattern = pattern;
+    }
+
+    public List<String> tokens() {
+        final Matcher matcher = pattern.matcher(value);
+        final List<String> tokens = new ArrayList<>();
+        while (matcher.find()) {
+            final String token = matcher.group();
+            tokens.add(token);
+        }
+        return tokens;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || getClass() != object.getClass())
+            return false;
+        final RegexExtractedValue cast = (RegexExtractedValue) object;
+        return value.equals(cast.value) && pattern.equals(cast.pattern);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, pattern);
+    }
 }

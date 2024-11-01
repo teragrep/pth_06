@@ -160,8 +160,8 @@ public class IndexStatementConditionTest {
         IndexStatementCondition cond2 = new IndexStatementCondition("test", withoutFiltersConfig, e2);
         Assertions.assertEquals(e1, cond1.condition());
         Assertions.assertEquals(e2, cond2.condition());
-        Assertions.assertTrue(cond1.patternMatchTables().isEmpty());
-        Assertions.assertTrue(cond2.patternMatchTables().isEmpty());
+        Assertions.assertTrue(cond1.requiredTables().isEmpty());
+        Assertions.assertTrue(cond2.requiredTables().isEmpty());
     }
 
     @Test
@@ -177,7 +177,7 @@ public class IndexStatementConditionTest {
                 + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
                 + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.patternMatchTables().size());
+        Assertions.assertEquals(1, cond.requiredTables().size());
     }
 
     @Test
@@ -187,7 +187,7 @@ public class IndexStatementConditionTest {
         IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config);
         String e = "\"bloomdb\".\"pattern_test_ip\".\"filter\" is null";
         Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.patternMatchTables().size());
+        Assertions.assertEquals(1, cond.requiredTables().size());
     }
 
     @Test
@@ -198,7 +198,7 @@ public class IndexStatementConditionTest {
         String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
                 + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.patternMatchTables().size());
+        Assertions.assertEquals(2, cond.requiredTables().size());
     }
 
     @Test
@@ -220,7 +220,7 @@ public class IndexStatementConditionTest {
                 + "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
                 + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  )\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.patternMatchTables().size());
+        Assertions.assertEquals(2, cond.requiredTables().size());
     }
 
     @Test

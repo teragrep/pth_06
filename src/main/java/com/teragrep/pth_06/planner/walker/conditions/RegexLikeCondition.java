@@ -43,34 +43,62 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import org.jooq.*;
+import org.jooq.impl.DSL;
 
-/**
- * Decorator that inserts category tables filter types into database
- */
-public final class SearchTermFiltersInserted implements CategoryTable {
+import java.util.Objects;
 
-    private final CategoryTable origin;
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-    public SearchTermFiltersInserted(final CategoryTable origin) {
-        this.origin = origin;
+/** true if input value regex like comparedTo value, compared against BLOOMDB.FILTERTYPE.PATTERN by default */
+public final class RegexLikeCondition implements QueryCondition {
+
+    private final Field<String> valueField;
+    private final Field<String> comparedToField;
+
+    public RegexLikeCondition(String input) {
+        this(DSL.val(input), BLOOMDB.FILTERTYPE.PATTERN);
+    }
+
+    public RegexLikeCondition(Field<String> input) {
+        this(input, BLOOMDB.FILTERTYPE.PATTERN);
+    }
+
+    public RegexLikeCondition(String input, String comparedTo) {
+        this(DSL.val(input), DSL.val(comparedTo));
+    }
+
+    public RegexLikeCondition(String input, Field<String> comparedTo) {
+        this(DSL.val(input), comparedTo);
+    }
+
+    public RegexLikeCondition(Field<String> input, String comparedTo) {
+        this(input, DSL.val(comparedTo));
+    }
+
+    public RegexLikeCondition(Field<String> valueField, Field<String> comparedToField) {
+        this.valueField = valueField;
+        this.comparedToField = comparedToField;
+    }
+
+    public Condition condition() {
+        return valueField.likeRegex(comparedToField);
     }
 
     @Override
-    public void create() {
-        origin.create();
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final RegexLikeCondition cast = (RegexLikeCondition) object;
+        return valueField.equals(cast.valueField) && comparedToField.equals(cast.comparedToField);
     }
 
     @Override
-    public void insertFilters() {
-        origin.insertFilters();
-    }
-
-    @Override
-    public QueryCondition bloommatchCondition() {
-        insertFilters();
-        return origin.bloommatchCondition();
+    public int hashCode() {
+        return Objects.hash(valueField, comparedToField);
     }
 }

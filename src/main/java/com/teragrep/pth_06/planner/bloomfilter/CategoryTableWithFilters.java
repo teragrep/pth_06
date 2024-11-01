@@ -43,41 +43,48 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.jooq.Batch;
+import org.jooq.DSLContext;
+import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * Inherited from the QueryPart
- * 
- * @see org.jooq.QueryPart
+ * Decorator that inserts category tables filter types into the table
  */
-public class EarliestConditionTest {
+public final class CategoryTableWithFilters implements CategoryTable {
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+    private static final Logger LOGGER = LoggerFactory.getLogger(CategoryTableWithFilters.class);
+    private final CategoryTable origin;
+    private final TableFilters filters;
+
+    public CategoryTableWithFilters(DSLContext ctx, Table<?> origin, long bloomTermId, String searchTerm) {
+        this(
+                new CategoryTableImpl(ctx, origin, bloomTermId, searchTerm),
+                new TableFilters(ctx, origin, bloomTermId, searchTerm)
+        );
     }
 
-    @Test
-    void equalsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        eq1.condition();
-        EarliestCondition eq2 = new EarliestCondition("946677600");
-        Assertions.assertEquals(eq1, eq2);
+    public CategoryTableWithFilters(CategoryTable origin, TableFilters filters) {
+        this.origin = origin;
+        this.filters = filters;
     }
 
-    @Test
-    void notEqualsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        EarliestCondition notEq = new EarliestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
+    @Override
+    public void create() {
+        origin.create();
+        final Batch batch = filters.asBatch();
+        try {
+            final int[] results = batch.execute();
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Batch added <{}> row(s)", results.length);
+            }
+        }
+        catch (final DataAccessException e) {
+            throw new DataAccessException("Error executing batch: " + e);
+        }
     }
 }

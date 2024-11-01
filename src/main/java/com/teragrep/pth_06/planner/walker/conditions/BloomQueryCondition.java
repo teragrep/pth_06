@@ -53,5 +53,5 @@ public interface BloomQueryCondition {
 
     boolean isBloomSearchCondition();
 
-    Set<Table<?>> patternMatchTables();
+    Set<Table<?>> requiredTables();
 }

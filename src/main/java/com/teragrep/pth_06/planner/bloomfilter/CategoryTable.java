@@ -43,39 +43,10 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.blf_01.Token;
-import com.teragrep.blf_01.Tokenizer;
+public interface CategoryTable {
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
+    void create();
 
-public final class TokenizedValue {
-
-    public final String value;
-
-    public TokenizedValue(String value) {
-        this.value = value;
-    }
-
-    public Set<Token> tokens() {
-        return new HashSet<>(
-                new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)))
-        );
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object)
-            return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
-            return false;
-        final TokenizedValue cast = (TokenizedValue) object;
-        return this.value.equals(cast.value);
-    }
 }

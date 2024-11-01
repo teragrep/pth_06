@@ -43,25 +43,32 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
-import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
+ * inherited from QueryPart
+ *
+ * @see org.jooq.QueryPart
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFiltersTest {
+public class CategoryTableImplTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -91,7 +98,7 @@ class TableFiltersTest {
             for (String pattern : patternList) {
                 PreparedStatement filterType = conn.prepareStatement(typeSQL);
                 filterType.setInt(1, id);
-                filterType.setInt(2, id * 1000);
+                filterType.setInt(2, 1000);
                 filterType.setDouble(3, 0.01);
                 filterType.setString(4, pattern);
                 filterType.executeUpdate();
@@ -124,6 +131,23 @@ class TableFiltersTest {
     }
 
     @Test
+    public void testCreatedWithEmptyTable() {
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTable tempTable = new CategoryTableWithFilters(
+                new CategoryTableImpl(ctx, table, 0L, "test"),
+                new TableFilters(ctx, table, 0L, "test")
+        );
+        RuntimeException ex = Assertions.assertThrows(RuntimeException.class, tempTable::create);
+        Assertions.assertEquals("Origin table was empty", ex.getMessage());
+    }
+
+    @Test
     public void testCreation() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
@@ -133,41 +157,13 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, "test"));
+
+        CategoryTable categoryTable = new CategoryTableImpl(ctx, table, 0L, "192.168.1.1");
+        Assertions.assertDoesNotThrow(categoryTable::create);
     }
 
     @Test
-    public void testInsertFiltersIntoCategoryTable() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").insertFiltersIntoCategoryTable());
-        Assertions.assertTrue(exception.getMessage().contains("term_0_target\" (term_id, type_id, \"filter\")"));
-    }
-
-    @Test
-    public void testInsertFiltersWithoutPatternMatch() {
-        fillTargetTable();
-        DSLContext ctx = DSL.using(conn);
-        Table<?> table = ctx
-                .meta()
-                .filterSchemas(s -> s.getName().equals("bloomdb"))
-                .filterTables(t -> !t.getName().equals("filtertype"))
-                .getTables()
-                .get(0);
-        IllegalStateException exception = Assertions
-                .assertThrows(IllegalStateException.class, () -> new TableFilters(ctx, table, 0L, "nomatch").insertFiltersIntoCategoryTable());
-        Assertions.assertTrue(exception.getMessage().contains("Trying to insert empty filter"));
-    }
-
-    @Test
-    public void testEquals() {
+    public void testFilterInsertion() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -177,13 +173,43 @@ class TableFiltersTest {
                 .getTables()
                 .get(0);
 
-        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
-        TableFilters filter2 = new TableFilters(ctx, table, 0L, "test");
-        Assertions.assertEquals(filter1, filter2);
+        CategoryTable tempTable = new CategoryTableWithFilters(ctx, table, 0L, "192.168.1.1");
+        Assertions.assertDoesNotThrow(tempTable::create);
+        BloomFilter filter = Assertions.assertDoesNotThrow(() -> {
+            ResultSet rs = conn.prepareStatement("SELECT * FROM term_0_target").executeQuery();
+            rs.absolute(1);
+            byte[] bytes = rs.getBytes(4);
+            return BloomFilter.readFrom(new ByteArrayInputStream(bytes));
+        });
+        // check that category table filter only has pattern matching tokens
+        Assertions.assertTrue(filter.mightContain("192.168.1.1"));
+        Assertions.assertFalse(filter.mightContain("ip=192.168.1.1"));
+        Assertions.assertFalse(filter.mightContain("168.1.1"));
     }
 
     @Test
-    public void testNotEquals() {
+    public void testEquality() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> target1 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Table<?> target2 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, target1, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, target2, 1L, "one");
+        Assertions.assertEquals(table1, table2);
+    }
+
+    @Test
+    public void testDifferentTokenSetNotEquals() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -192,12 +218,40 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 1L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, "two");
+        Assertions.assertNotEquals(table1, table2);
+    }
 
-        TableFilters filter1 = new TableFilters(ctx, table, 0L, "test");
-        TableFilters filter2 = new TableFilters(ctx, table, 1L, "test");
-        TableFilters filter3 = new TableFilters(ctx, table, 0L, "mest");
-        Assertions.assertNotEquals(filter1, filter2);
-        Assertions.assertNotEquals(filter1, filter3);
+    @Test
+    public void testDifferentBloomTermNotEquals() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx, table, 1L, "one");
+        Assertions.assertNotEquals(table1, table2);
+    }
+
+    @Test
+    public void testDifferentDSLContextNotEquals() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        DSLContext ctx2 = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        CategoryTableImpl table1 = new CategoryTableImpl(ctx, table, 0L, "one");
+        CategoryTableImpl table2 = new CategoryTableImpl(ctx2, table, 0L, "one");
+        Assertions.assertNotEquals(table1, table2);
     }
 
     void fillTargetTable() {

@@ -43,12 +43,13 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.Record;
-import org.jooq.Result;
+import org.jooq.Table;
 
-public interface TableRecords {
+import java.util.List;
 
-    Result<Record> toResult();
+public interface DatabaseTables {
+
+    List<Table<?>> tables();
 }

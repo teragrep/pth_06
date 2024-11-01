@@ -43,41 +43,40 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Token;
+import com.teragrep.blf_01.Tokenizer;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * Inherited from the QueryPart
- * 
- * @see org.jooq.QueryPart
- */
-public class EarliestConditionTest {
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
 
-    @Test
-    void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+public final class TokenizedValue implements Tokenizable<Token> {
+
+    private final String value;
+
+    public TokenizedValue(String value) {
+        this.value = value;
     }
 
-    @Test
-    void equalsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        eq1.condition();
-        EarliestCondition eq2 = new EarliestCondition("946677600");
-        Assertions.assertEquals(eq1, eq2);
+    public List<Token> tokens() {
+        return new Tokenizer(32).tokenize(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
     }
 
-    @Test
-    void notEqualsTest() {
-        EarliestCondition eq1 = new EarliestCondition("946677600");
-        EarliestCondition notEq = new EarliestCondition("1000");
-        Assertions.assertNotEquals(eq1, notEq);
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final TokenizedValue cast = (TokenizedValue) object;
+        return value.equals(cast.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }
