@@ -53,10 +53,12 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,11 +71,9 @@ class TableFiltersTest {
     final String password = "";
     // matches IPv4
     final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    // matches IPv4 starting with 255.
-    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     // matches with values surrounded by parentheses
     final String parenthesesPattern = "\\((.*?)\\)";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, parenthesesPattern));
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, parenthesesPattern));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -109,6 +109,9 @@ class TableFiltersTest {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS target").execute();
+            // drop temp tables created by tests
+            conn.prepareStatement("DROP TABLE IF EXISTS term_0_target").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS term_1_target").execute();
             String targetTable = "CREATE TABLE `target`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
@@ -140,7 +143,7 @@ class TableFiltersTest {
     }
 
     @Test
-    public void testInsertFiltersIntoCategoryTable() {
+    public void testFilterInsertion() {
         fillTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -149,19 +152,30 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
-        Assertions
-                .assertTrue(
-                        exception
-                                .getMessage()
-                                .contains("insert into \"term_0_target\" (\"term_id\", \"type_id\", \"filter\") values")
-                );
+        CategoryTable tableImpl = new CategoryTableImpl(ctx, table, 0L, "192.168.1.1");
+        Assertions.assertDoesNotThrow(tableImpl::create);
+        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
+        ResultSet result = Assertions.assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_0_target`").executeQuery());
+        Assertions.assertDoesNotThrow(() -> {
+            int loops = 0;
+            while (result.next()) {
+                long termId = result.getLong("term_id");
+                long typeId = result.getLong("type_id");
+                byte[] filterBytes = result.getBytes("filter");
+                Assertions.assertEquals(0, termId);
+                Assertions.assertEquals(1, typeId);
+                BloomFilter filter = BloomFilter.readFrom(new ByteArrayInputStream(filterBytes));
+                Assertions.assertTrue(filter.mightContain("192.168.1.1"));
+                Assertions.assertFalse(filter.mightContain("192"));
+                loops++;
+            }
+            Assertions.assertEquals(1, loops);
+        });
     }
 
     @Test
-    public void testInsertFiltersIntoCategoryTableRegexExtract() {
-        fillTargetTable(3);
+    public void testFilterInsertionWithRegexExtractedValue() {
+        fillTargetTable(2);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -169,11 +183,44 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        String query = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
-        DataAccessException exception = Assertions
-                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, query).asBatch().execute());
+        String value = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
+        CategoryTable tableImpl = new CategoryTableImpl(ctx, table, 1L, value);
+        Assertions.assertDoesNotThrow(tableImpl::create);
         Assertions
-                .assertTrue(exception.getMessage().contains("\"term_0_target\" (\"term_id\", \"type_id\", \"filter\")"));
+                .assertDoesNotThrow(() -> new TableFilters(ctx, table, 1L, value).asBatch().execute());
+        ResultSet result = Assertions.assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_1_target`").executeQuery());
+        Assertions.assertDoesNotThrow(() -> {
+            int loops = 0;
+            while (result.next()) {
+                long termId = result.getLong("term_id");
+                long typeId = result.getLong("type_id");
+                byte[] filterBytes = result.getBytes("filter");
+                Assertions.assertEquals(1, termId);
+                Assertions.assertEquals(2, typeId);
+                BloomFilter filter = BloomFilter.readFrom(new ByteArrayInputStream(filterBytes));
+                Assertions.assertTrue(filter.mightContain("(here is something else important as well)"));
+                Assertions.assertTrue(filter.mightContain("(very important though)"));
+                Assertions.assertFalse(filter.mightContain("content"));
+                Assertions.assertFalse(filter.mightContain("(very"));
+                Assertions.assertFalse(filter.mightContain("though)"));
+                loops++;
+            }
+            Assertions.assertEquals(1, loops);
+        });
+    }
+
+    @Test
+    public void testMissingTempTableDataAccessException() {
+        fillTargetTable(1);
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        DataAccessException ex = Assertions.assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
+        Assertions.assertTrue(ex.getMessage().contains("Table \"term_0_target\" not found"));
     }
 
     @Test

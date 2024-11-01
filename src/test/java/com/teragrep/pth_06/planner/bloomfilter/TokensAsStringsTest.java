@@ -59,5 +59,10 @@ public class TokensAsStringsTest {
         Assertions.assertTrue(allTokenClass);
         Tokenizable<String> toStrings = new TokensAsStrings(tokenizedValue);
         Assertions.assertTrue(toStrings.tokens().contains("one"));
+        Assertions.assertTrue(toStrings.tokens().contains("one."));
+        Assertions.assertTrue(toStrings.tokens().contains("one.two"));
+        Assertions.assertTrue(toStrings.tokens().contains("two"));
+        Assertions.assertTrue(toStrings.tokens().contains("three"));
+        Assertions.assertEquals(16, toStrings.tokens().size());
     }
 }
