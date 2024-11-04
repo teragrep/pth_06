@@ -53,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -133,11 +134,14 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final ElementCondition cast = (ElementCondition) object;
-        return this.element.equals(cast.element) && this.config.equals(cast.config);
+        return element.equals(cast.element) && config.equals(cast.config);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(element, config);
     }
 }

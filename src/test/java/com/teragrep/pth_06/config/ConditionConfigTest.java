@@ -43,58 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.config;
 
-import org.jooq.Condition;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+import org.jooq.tools.jdbc.MockConnection;
+import org.jooq.tools.jdbc.MockResult;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
-import java.time.Instant;
-import java.util.Objects;
+public class ConditionConfigTest {
 
-import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
+    DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
 
-public final class LatestCondition implements QueryCondition {
-
-    private final String value;
-
-    public LatestCondition(String value) {
-        this.value = value;
+    @Test
+    void testEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false, 1L);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1, cond2);
     }
 
-    public Condition condition() {
-        // SQL connection uses localTime in the session, so we use unix to come over the conversions
-        final Instant instant = Instant.ofEpochSecond(Integer.parseInt(value));
-        final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
-        Condition condition;
-        condition = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);
-        condition = condition
-                .and(
-                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))"
-                                + " <= " + instant.getEpochSecond()
-                );
-        // raw SQL used here since following not supported for mariadb:
-        // queryCondition = queryCondition.and(toTimestamp(
-        // regexpReplaceAll(JOURNALDB.LOGFILE.PATH, "((^.*\\/.*-)|(\\.log\\.gz.*))", ""),
-        // "YYYYMMDDHH24").lessOrEqual(Timestamp.from(instant)));
-        // to match
-        // 2021/09-27/sc-99-99-14-244/messages/messages-2021092722.gz.4
-        // 2018/04-29/sc-99-99-14-245/f17/f17.logGLOB-2018042900.log.gz
-        // NOTE uses literal path
-        return condition;
+    @Test
+    void testNonEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true, 1L);
+        Assertions.assertNotEquals(cond1, cond2);
+        Assertions.assertNotEquals(cond1, cond3);
+        Assertions.assertNotEquals(cond1, cond4);
     }
 
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object)
-            return true;
-        if (object == null || object.getClass() != this.getClass())
-            return false;
-        final LatestCondition cast = (LatestCondition) object;
-        return value.equals(cast.value);
+    @Test
+    void testHashCode() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond5 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond4.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond5.hashCode());
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(ConditionConfig.class).verify();
     }
 }

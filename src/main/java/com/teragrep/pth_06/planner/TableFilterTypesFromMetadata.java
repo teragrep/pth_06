@@ -49,6 +49,8 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
+import java.util.Objects;
+
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
@@ -98,11 +100,14 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || object.getClass() != this.getClass())
             return false;
         final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
-        return this.bloomTermId == cast.bloomTermId && this.table.equals(cast.table) && this.ctx == cast.ctx;
+        return bloomTermId == cast.bloomTermId && table.equals(cast.table) && ctx == cast.ctx;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, table, bloomTermId);
     }
 }
