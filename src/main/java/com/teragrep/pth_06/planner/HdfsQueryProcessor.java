@@ -54,7 +54,9 @@ import com.teragrep.pth_06.planner.walker.HdfsConditionWalker;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -96,7 +98,7 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 HdfsConditionWalker parser = new HdfsConditionWalker();
                 topicsRegexString = parser.fromString(config.query);
             }
-            catch (Exception e) {
+            catch (ParserConfigurationException | SAXException | IOException e) {
                 throw new RuntimeException(
                         "HdfsQueryProcessor problems when construction Query conditions query:" + config.query
                                 + " exception:" + e

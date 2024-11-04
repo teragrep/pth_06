@@ -47,6 +47,10 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.jue_01.GlobToRegEx;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 // HDFS planner walker, only aims to filter out the topics as the planner only outputs the metadata for AVRO-files containing the records. The rest of the condition handling is done in the separate tasker walker.
 public class HdfsConditionWalker extends XmlWalker<String> {
@@ -67,12 +71,12 @@ public class HdfsConditionWalker extends XmlWalker<String> {
         return queryCondition;
     }
 
-    public String fromString(String inXml) throws Exception {
+    public String fromString(String inXml) throws ParserConfigurationException, IOException, SAXException {
         return super.fromString(inXml);
     }
 
     @Override
-    String emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    String emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
         String left = (String) l;
         String right = (String) r;
 
@@ -88,7 +92,7 @@ public class HdfsConditionWalker extends XmlWalker<String> {
     }
 
     @Override
-    String emitUnaryOperation(String op, Element current) throws Exception {
+    String emitUnaryOperation(String op, Element current) throws IllegalStateException {
         // NOT is a filter, not a topic matcher
         return null;
     }
