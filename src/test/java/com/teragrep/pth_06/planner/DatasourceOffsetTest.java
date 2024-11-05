@@ -63,11 +63,8 @@ public class DatasourceOffsetTest {
         LongOffset longOffset = new LongOffset(0L);
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 0), 0L);
-        Map<String, Long> serializedKafkaOffset = new HashMap<>(topicPartitionLongMap.size());
-        for (Map.Entry<TopicPartition, Long> entry : topicPartitionLongMap.entrySet()) {
-            serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
-        KafkaOffset kafkaOffset = new KafkaOffset(serializedKafkaOffset);
+        KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        kafkaOffset.serialize();
         DatasourceOffset datasourceOffset = new DatasourceOffset(longOffset, kafkaOffset);
 
         String ser = datasourceOffset.json();
@@ -81,11 +78,8 @@ public class DatasourceOffsetTest {
     public void kafkaOffsetSerdeTest() {
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 777), 9999L);
-        Map<String, Long> serializedKafkaOffset = new HashMap<>(topicPartitionLongMap.size());
-        for (Map.Entry<TopicPartition, Long> entry : topicPartitionLongMap.entrySet()) {
-            serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
-        KafkaOffset kafkaOffset = new KafkaOffset(serializedKafkaOffset);
+        KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        kafkaOffset.serialize();
 
         String ser = kafkaOffset.json();
         KafkaOffset deser = new KafkaOffset(ser);
@@ -104,11 +98,8 @@ public class DatasourceOffsetTest {
     public void HdfsOffsetSerdeTest() {
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 777), 9999L);
-        Map<String, Long> serializedHdfsOffset = new HashMap<>(topicPartitionLongMap.size());
-        for (Map.Entry<TopicPartition, Long> entry : topicPartitionLongMap.entrySet()) {
-            serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue());
-        }
-        HdfsOffset hdfsOffset = new HdfsOffset(serializedHdfsOffset);
+        HdfsOffset hdfsOffset = new HdfsOffset(topicPartitionLongMap);
+        hdfsOffset.serialize();
 
         String ser = hdfsOffset.json();
         HdfsOffset deser = new HdfsOffset(ser);

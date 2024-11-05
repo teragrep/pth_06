@@ -60,29 +60,32 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public class KafkaOffset extends Offset implements Serializable {
+public class KafkaOffset extends Offset implements Serializable, OffsetInterface {
 
     private final Map<String, Long> serializedKafkaOffset;
     private final boolean stub;
+    private final transient Map<TopicPartition, Long> kafkaOffset;
 
     public KafkaOffset() {
-        this(new HashMap<>(), true);
+        this(new HashMap<>(), new HashMap<>(), true);
     }
 
     public KafkaOffset(String s) {
-        this(new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
+        this(new HashMap<>(), new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
         }.getType()), false);
     }
 
-    public KafkaOffset(Map<String, Long> serializedKafkaOffset) {
-        this(serializedKafkaOffset, false);
+    public KafkaOffset(Map<TopicPartition, Long> kafkaOffset) {
+        this(kafkaOffset, new HashMap<>(), false);
     }
 
-    public KafkaOffset(Map<String, Long> serializedKafkaOffset, boolean stub) {
+    public KafkaOffset(Map<TopicPartition, Long> kafkaOffset, Map<String, Long> serializedKafkaOffset, boolean stub) {
+        this.kafkaOffset = kafkaOffset;
         this.serializedKafkaOffset = serializedKafkaOffset;
         this.stub = stub;
     }
 
+    @Override
     public Map<TopicPartition, Long> getOffsetMap() {
         Map<TopicPartition, Long> rv = new HashMap<>(serializedKafkaOffset.size());
 
@@ -99,8 +102,19 @@ public class KafkaOffset extends Offset implements Serializable {
         return rv;
     }
 
+    @Override
     public boolean isStub() {
         return stub;
+    }
+
+    @Override
+    public void serialize() {
+        if (!kafkaOffset.isEmpty()) {
+            for (Map.Entry<TopicPartition, Long> entry : kafkaOffset.entrySet()) {
+                serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue());
+            }
+            kafkaOffset.clear();
+        }
     }
 
     @Override

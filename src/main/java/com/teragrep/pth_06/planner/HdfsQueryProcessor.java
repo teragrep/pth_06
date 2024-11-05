@@ -216,11 +216,9 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 }
             }
         }
-        Map<String, Long> serializedHdfsOffset = new HashMap<>(startOffset.size());
-        for (Map.Entry<TopicPartition, Long> entry : startOffset.entrySet()) {
-            serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
-        return new HdfsOffset(serializedHdfsOffset);
+        HdfsOffset hdfsOffset = new HdfsOffset(startOffset);
+        hdfsOffset.serialize();
+        return hdfsOffset;
     }
 
     // returns the end offsets for all available (aka. filtered) topic partitions.
@@ -241,11 +239,9 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 }
             }
         }
-        Map<String, Long> serializedHdfsOffset = new HashMap<>(endOffset.size());
-        for (Map.Entry<TopicPartition, Long> entry : endOffset.entrySet()) {
-            serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
-        return new HdfsOffset(serializedHdfsOffset);
+        HdfsOffset hdfsOffset = new HdfsOffset(endOffset);
+        hdfsOffset.serialize();
+        return hdfsOffset;
     }
 
     // Increments the latest offset values and returns that incremented offsets. Works by pulling data from the topicPartitionList until weight limit is reached.
@@ -267,11 +263,9 @@ public class HdfsQueryProcessor implements HdfsQuery {
                 batchSizeLimit.add(r.hdfsFileSize);
             }
         }
-        Map<String, Long> serializedHdfsOffset = new HashMap<>(latestHdfsOffsetMap.size());
-        for (Map.Entry<TopicPartition, Long> entry : latestHdfsOffsetMap.entrySet()) {
-            serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue()); // offset
-        }
-        return new HdfsOffset(serializedHdfsOffset);
+        HdfsOffset hdfsOffset = new HdfsOffset(latestHdfsOffsetMap);
+        hdfsOffset.serialize();
+        return hdfsOffset;
     }
 
     @Override

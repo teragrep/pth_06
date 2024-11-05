@@ -57,29 +57,32 @@ import java.util.Map;
 // Class for representing a serializable offset of HDFS data source.
 // S3 has epoch hours as offsets, kafka has native TopicPartition offsets and HDFS should have file-metadata (use same format as in Kafka, topicpartition + record offset, which can be extracted from the metadata).
 
-public class HdfsOffset extends Offset implements Serializable {
+public class HdfsOffset extends Offset implements Serializable, OffsetInterface {
 
     private final Map<String, Long> serializedHdfsOffset;
     private final boolean stub;
+    private final transient Map<TopicPartition, Long> hdfsOffset;
 
     public HdfsOffset() {
-        this(new HashMap<>(), true);
+        this(new HashMap<>(), new HashMap<>(), true);
     }
 
     public HdfsOffset(String s) {
-        this(new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
+        this(new HashMap<>(), new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
         }.getType()), false);
     }
 
-    public HdfsOffset(Map<String, Long> serializedHdfsOffset) {
-        this(serializedHdfsOffset, false);
+    public HdfsOffset(Map<TopicPartition, Long> serializedHdfsOffset) {
+        this(serializedHdfsOffset, new HashMap<>(), false);
     }
 
-    public HdfsOffset(Map<String, Long> serializedHdfsOffset, boolean stub) {
+    public HdfsOffset(Map<TopicPartition, Long> hdfsOffset, Map<String, Long> serializedHdfsOffset, boolean stub) {
+        this.hdfsOffset = hdfsOffset;
         this.serializedHdfsOffset = serializedHdfsOffset;
         this.stub = stub;
     }
 
+    @Override
     public Map<TopicPartition, Long> getOffsetMap() {
         Map<TopicPartition, Long> rv = new HashMap<>(serializedHdfsOffset.size());
 
@@ -96,8 +99,19 @@ public class HdfsOffset extends Offset implements Serializable {
         return rv;
     }
 
+    @Override
     public boolean isStub() {
         return stub;
+    }
+
+    @Override
+    public void serialize() {
+        if (!hdfsOffset.isEmpty()) {
+            for (Map.Entry<TopicPartition, Long> entry : hdfsOffset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue());
+            }
+            hdfsOffset.clear();
+        }
     }
 
     @Override
