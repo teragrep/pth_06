@@ -98,8 +98,8 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
         try {
             EarliestWalker earliestWalker = new EarliestWalker();
             this.earliestEpoch = earliestWalker.fromString(config.query);
-            // TODO hack to update startDay from query
-            rollingDay = Instant.ofEpochSecond(this.earliestEpoch).atZone(ZoneId.systemDefault()).toLocalDate();
+            // the earliest walker returns UTC time
+            rollingDay = Instant.ofEpochSecond(this.earliestEpoch).atZone(ZoneId.of("UTC")).toLocalDate();
 
         }
         catch (Exception ex) {
