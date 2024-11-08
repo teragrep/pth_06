@@ -48,7 +48,6 @@ package com.teragrep.pth_06.planner.offset;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -60,7 +59,7 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public class KafkaOffset extends Offset implements Serializable, OffsetInterface {
+public class KafkaOffset extends org.apache.spark.sql.connector.read.streaming.Offset implements Serializable, Offset {
 
     private final Map<String, Long> serializedKafkaOffset;
     private final boolean stub;

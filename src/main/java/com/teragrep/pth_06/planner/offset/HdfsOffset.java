@@ -48,7 +48,6 @@ package com.teragrep.pth_06.planner.offset;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ import java.util.Map;
 // Class for representing a serializable offset of HDFS data source.
 // S3 has epoch hours as offsets, kafka has native TopicPartition offsets and HDFS should have file-metadata (use same format as in Kafka, topicpartition + record offset, which can be extracted from the metadata).
 
-public class HdfsOffset extends Offset implements Serializable, OffsetInterface {
+public class HdfsOffset extends org.apache.spark.sql.connector.read.streaming.Offset implements Serializable, Offset {
 
     private final Map<String, Long> serializedHdfsOffset;
     private final boolean stub;

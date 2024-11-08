@@ -49,7 +49,7 @@ import org.apache.kafka.common.TopicPartition;
 
 import java.util.Map;
 
-public interface OffsetInterface {
+public interface Offset {
 
     public abstract Map<TopicPartition, Long> getOffsetMap();
 
