@@ -116,12 +116,10 @@ public class SearchTermBloomFilterTest {
     }
 
     @Test
-    public void testTokensSizeTooLarge() {
+    public void testSaturatedSearchTermFilterIsAllowed() {
         String searchTerm = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
-        SearchTermBloomFilter filter = new SearchTermBloomFilter(10L, 0.01, new TokenizedValue(searchTerm));
-        IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, filter::bytes);
-        String expected = "Number of items was larger than the expected number of items";
-        Assertions.assertEquals(expected, e.getMessage());
+        SearchTermBloomFilter filter = new SearchTermBloomFilter(1L, 0.01, new TokenizedValue(searchTerm));
+        Assertions.assertDoesNotThrow(filter::bytes);
     }
 
     @Test

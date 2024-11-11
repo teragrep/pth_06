@@ -88,16 +88,6 @@ public final class SearchTermBloomFilter {
         for (final String token : stringTokens) {
             filter.put(token);
         }
-        if (stringTokens.size() > expected) {
-            if (LOGGER.isErrorEnabled()) {
-                LOGGER
-                        .error(
-                                "Number of items <{}> was larger than the expected number of items <{}>, resulting FPP <{}>",
-                                stringTokens.size(), expected, filter.expectedFpp()
-                        );
-            }
-            throw new IllegalStateException("Number of items was larger than the expected number of items");
-        }
         try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);
             return filterBAOS.toByteArray();
