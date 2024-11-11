@@ -43,50 +43,39 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import org.jooq.Condition;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.teragrep.blf_01.Token;
 
-/**
- * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
- * inherited from QueryPart
- *
- * @see org.jooq.QueryPart
- */
-class PatternMatchConditionTest {
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-    @Test
-    void testSingleToken() {
-        Condition condition = new PatternMatchCondition("test").condition();
-        String e = "('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")";
-        Assertions.assertEquals(e, condition.toString());
+public final class TokensAsStrings implements Tokenizable<String> {
+
+    private final Tokenizable<Token> origin;
+
+    public TokensAsStrings(Tokenizable<Token> origin) {
+        this.origin = origin;
     }
 
-    @Test
-    void testMultipleTokens() {
-        Condition condition = new PatternMatchCondition("test.nest").condition();
-        String e = "(\n" + "  ('test.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
-                + "  or ('.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
-                + "  or ('test.nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
-                + "  or ('nest' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
-                + "  or ('.' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n"
-                + "  or ('test' like_regex \"bloomdb\".\"filtertype\".\"pattern\")\n" + ")";
-        Assertions.assertEquals(e, condition.toString());
+    @Override
+    public List<String> tokens() {
+        return origin.tokens().stream().map(Token::toString).collect(Collectors.toList());
     }
 
-    @Test
-    void testEquality() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("test");
-        Assertions.assertEquals(cond1, cond2);
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object)
+            return true;
+        if (object == null || object.getClass() != this.getClass())
+            return false;
+        final TokensAsStrings cast = (TokensAsStrings) object;
+        return origin.equals(cast.origin);
     }
 
-    @Test
-    void testNotEquals() {
-        PatternMatchCondition cond1 = new PatternMatchCondition("test");
-        PatternMatchCondition cond2 = new PatternMatchCondition("next");
-        Assertions.assertNotEquals(cond1, cond2);
+    @Override
+    public int hashCode() {
+        return Objects.hash(origin);
     }
 }

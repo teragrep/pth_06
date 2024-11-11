@@ -49,6 +49,8 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 
+import java.util.Objects;
+
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
 /**
@@ -57,25 +59,39 @@ import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 public final class CategoryTableCondition implements QueryCondition {
 
     private final Table<?> comparedTo;
-    private final long bloomTermId;
+    private final Condition bloomTermCondition;
+    private final Condition typeIdCondition;
+    private final Table<Record> categoryTable;
 
     public CategoryTableCondition(Table<?> comparedTo, long bloomTermId) {
+        this(
+                comparedTo,
+                DSL.field("term_id", BIGINTUNSIGNED.nullable(false)).eq(ULong.valueOf(bloomTermId)),
+                DSL.field("type_id", BIGINTUNSIGNED.nullable(false)).eq((Field<ULong>) comparedTo.field("filter_type_id")), DSL.table(DSL.name(("term_" + bloomTermId + "_" + comparedTo.getName())))
+        );
+    }
+
+    public CategoryTableCondition(
+            Table<?> comparedTo,
+            Condition bloomTermCondition,
+            Condition typeIdCondition,
+            Table<Record> categoryTable
+    ) {
         this.comparedTo = comparedTo;
-        this.bloomTermId = bloomTermId;
+        this.bloomTermCondition = bloomTermCondition;
+        this.typeIdCondition = typeIdCondition;
+        this.categoryTable = categoryTable;
     }
 
     public Condition condition() {
-        final Table<Record> categoryTable = DSL.table(DSL.name(("term_" + bloomTermId + "_" + comparedTo.getName())));
-        final Field<ULong> termIdField = DSL.field("term_id", BIGINTUNSIGNED.nullable(false));
-        final Field<ULong> typeIdField = DSL.field("type_id", BIGINTUNSIGNED.nullable(false));
         final Field<byte[]> filterField = DSL.field(DSL.name(categoryTable.getName(), "filter"), byte[].class);
-        // select filter with correct bloom term id and filter type id from category table
+        // select filter with the correct bloom term id and filter type id from the category table
         final SelectConditionStep<Record1<byte[]>> selectFilterStep = DSL
                 .select(filterField)
                 .from(categoryTable)
-                .where(termIdField.eq(ULong.valueOf(bloomTermId)))
-                .and(typeIdField.eq((Field<ULong>) comparedTo.field("filter_type_id")));
-        // compares category table filter byte[] against bloom filter byte[]
+                .where(bloomTermCondition)
+                .and(typeIdCondition);
+        // function 'bloommatch' compares category table filter byte[] against bloom filter byte[]
         final Condition filterFieldCondition = DSL
                 .function("bloommatch", Boolean.class, selectFilterStep.asField(), comparedTo.field("filter"))
                 .eq(true);
@@ -88,11 +104,15 @@ public final class CategoryTableCondition implements QueryCondition {
     public boolean equals(final Object object) {
         if (this == object)
             return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
         final CategoryTableCondition cast = (CategoryTableCondition) object;
-        return this.bloomTermId == cast.bloomTermId && this.comparedTo.equals(cast.comparedTo);
+        return comparedTo.equals(cast.comparedTo) && bloomTermCondition.equals(cast.bloomTermCondition)
+                && typeIdCondition.equals(cast.typeIdCondition) && categoryTable.equals(cast.categoryTable);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(comparedTo, bloomTermCondition, typeIdCondition, categoryTable);
     }
 }

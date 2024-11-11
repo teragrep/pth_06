@@ -43,47 +43,33 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.blf_01.Token;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
-class TokenizedValueTest {
+public class RegexExtractedValueTest {
 
     @Test
-    void testTokenization() {
-        TokenizedValue result = new TokenizedValue("test.nest");
-        Set<String> tokens = result.tokens().stream().map(Token::toString).collect(Collectors.toSet());
-        Assertions.assertEquals("test.nest", result.value);
-        Assertions.assertTrue(tokens.contains("nest"));
-        Assertions.assertTrue(tokens.contains("test"));
-        Assertions.assertTrue(tokens.contains("."));
-        Assertions.assertTrue(tokens.contains("test.nest"));
-        Assertions.assertTrue(tokens.contains(".nest"));
-        Assertions.assertTrue(tokens.contains("test."));
-        Assertions.assertEquals(6, tokens.size());
+    public void testRegexExtraction() {
+        String regex = "\\((.*?)\\)";
+        String value = "find all (important) values inside (very important) parentheses.";
+        RegexExtractedValue regexValue = new RegexExtractedValue(value, regex);
+        List<String> tokens = regexValue.tokens();
+        Assertions.assertEquals(2, tokens.size());
+        Assertions.assertTrue(tokens.contains("(important)"));
+        Assertions.assertTrue(tokens.contains("(very important)"));
     }
 
     @Test
-    void testEquality() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        Assertions.assertEquals(value1, value2);
-        Assertions.assertEquals(value2, value1);
-        value1.tokens();
-        Assertions.assertEquals(value2, value1);
-    }
-
-    @Test
-    void testNotEquals() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("nest");
-        Assertions.assertNotEquals(value1, value2);
-        Assertions.assertNotEquals(value2, value1);
-        Assertions.assertNotEquals(value1, null);
+    public void testEqualsHashCodeContract() {
+        EqualsVerifier
+                .forClass(RegexExtractedValue.class)
+                .withNonnullFields("value")
+                .withNonnullFields("pattern")
+                .verify();
     }
 }

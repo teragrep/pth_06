@@ -43,15 +43,15 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.walker.conditions.CategoryTableCondition;
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 import static org.jooq.impl.SQLDataType.BIGINTUNSIGNED;
 
@@ -88,7 +88,6 @@ public final class CategoryTableImpl implements CategoryTable {
     private final DSLContext ctx;
     private final Table<?> originTable;
     private final long bloomTermId;
-    private final CategoryTableCondition tableCondition;
     private final TableFilters tableFilters;
 
     public CategoryTableImpl(ConditionConfig config, Table<?> originTable, String value) {
@@ -96,32 +95,18 @@ public final class CategoryTableImpl implements CategoryTable {
                 config.context(),
                 originTable,
                 config.bloomTermId(),
-                new CategoryTableCondition(originTable, config.bloomTermId()),
                 new TableFilters(config.context(), originTable, config.bloomTermId(), value)
         );
     }
 
     public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, String value) {
-        this(
-                ctx,
-                originTable,
-                bloomTermId,
-                new CategoryTableCondition(originTable, bloomTermId),
-                new TableFilters(ctx, originTable, bloomTermId, value)
-        );
+        this(ctx, originTable, bloomTermId, new TableFilters(ctx, originTable, bloomTermId, value));
     }
 
-    public CategoryTableImpl(
-            DSLContext ctx,
-            Table<?> originTable,
-            long bloomTermId,
-            CategoryTableCondition tableCondition,
-            TableFilters tableFilters
-    ) {
+    public CategoryTableImpl(DSLContext ctx, Table<?> originTable, long bloomTermId, TableFilters tableFilters) {
         this.ctx = ctx;
         this.originTable = originTable;
         this.bloomTermId = bloomTermId;
-        this.tableCondition = tableCondition;
         this.tableFilters = tableFilters;
     }
 
@@ -144,24 +129,12 @@ public final class CategoryTableImpl implements CategoryTable {
         indexStep.execute();
     }
 
-    public void insertFilters() {
-        tableFilters.insertFiltersIntoCategoryTable();
-    }
-
     /**
-     * Row condition that selects the same sized filter arrays from this category table and the origin table.
-     * 
-     * @return condition
-     */
-    public QueryCondition bloommatchCondition() {
-        return tableCondition;
-    }
-
-    /**
-     * Equal only if all object parameters are same value and the instances of DSLContext are same
+     * Equal if the compared object is the same instance or if the compared object is of the same class, object fields
+     * are equal, and DSLContext is the same instance
      *
      * @param object object compared against
-     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     * @return true if equal
      */
     @Override
     public boolean equals(final Object object) {
@@ -174,5 +147,10 @@ public final class CategoryTableImpl implements CategoryTable {
         final CategoryTableImpl cast = (CategoryTableImpl) object;
         return this.originTable.equals(cast.originTable) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
                 this.bloomTermId == cast.bloomTermId && this.tableFilters.equals(cast.tableFilters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, originTable, bloomTermId, tableFilters);
     }
 }

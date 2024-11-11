@@ -43,50 +43,12 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.blf_01.Token;
-import com.teragrep.pth_06.planner.TokenizedValue;
-import org.jooq.*;
-import org.jooq.impl.DSL;
+import org.jooq.Record;
+import org.jooq.Result;
 
-import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+public interface TableRecords {
 
-/**
- * Combined regex match condition
- * <p>
- * true if any of the tokens regex match against bloomdb.filtertype.pattern
- */
-public final class PatternMatchCondition implements QueryCondition {
-
-    private final TokenizedValue value;
-
-    public PatternMatchCondition(String input) {
-        this(new TokenizedValue(input));
-    }
-
-    public PatternMatchCondition(TokenizedValue value) {
-        this.value = value;
-    }
-
-    public Condition condition() {
-        Condition patternCondition = DSL.noCondition();
-        for (Token token : value.tokens()) {
-            Field<String> tokenStringField = DSL.val(token.toString());
-            patternCondition = patternCondition.or(tokenStringField.likeRegex(BLOOMDB.FILTERTYPE.PATTERN));
-        }
-        return patternCondition;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object)
-            return true;
-        if (object == null)
-            return false;
-        if (object.getClass() != this.getClass())
-            return false;
-        final PatternMatchCondition cast = (PatternMatchCondition) object;
-        return this.value.equals(cast.value);
-    }
+    Result<Record> toResult();
 }

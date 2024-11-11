@@ -43,34 +43,26 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import com.teragrep.blf_01.Token;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-/**
- * Decorator that inserts category tables filter types into database
- */
-public final class CreatedCategoryTable implements CategoryTable {
+public class TokensAsStringsTest {
 
-    private final CategoryTable origin;
-
-    public CreatedCategoryTable(final CategoryTable origin) {
-        this.origin = origin;
-    }
-
-    @Override
-    public void create() {
-        origin.create();
-    }
-
-    @Override
-    public void insertFilters() {
-        origin.insertFilters();
-    }
-
-    @Override
-    public QueryCondition bloommatchCondition() {
-        create();
-        return origin.bloommatchCondition();
+    @Test
+    public void testTokensToStrings() {
+        String value = "one.two.three";
+        Tokenizable<Token> tokenizedValue = new TokenizedValue(value);
+        boolean allTokenClass = tokenizedValue.tokens().stream().allMatch(t -> t.getClass().equals(Token.class));
+        Assertions.assertTrue(allTokenClass);
+        Tokenizable<String> toStrings = new TokensAsStrings(tokenizedValue);
+        Assertions.assertTrue(toStrings.tokens().contains("one"));
+        Assertions.assertTrue(toStrings.tokens().contains("one."));
+        Assertions.assertTrue(toStrings.tokens().contains("one.two"));
+        Assertions.assertTrue(toStrings.tokens().contains("two"));
+        Assertions.assertTrue(toStrings.tokens().contains("three"));
+        Assertions.assertEquals(16, toStrings.tokens().size());
     }
 }

@@ -43,9 +43,9 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.bloomfilter;
 
-import com.teragrep.pth_06.planner.walker.conditions.PatternMatchCondition;
+import com.teragrep.pth_06.planner.walker.conditions.RegexLikeCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -55,34 +55,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 /**
- * Class to get a collection of Tables that match the given PatternMatchCondition
+ * Class to get a collection of Tables that match the given QueryCondition
  */
-public final class PatternMatchTables {
+public final class ConditionMatchBloomDBTables implements DatabaseTables {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PatternMatchTables.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConditionMatchBloomDBTables.class);
 
     private final DSLContext ctx;
-    private final QueryCondition patternMatchCondition;
+    private final QueryCondition condition;
 
-    public PatternMatchTables(DSLContext ctx, String pattern) {
-        this(ctx, new PatternMatchCondition(pattern));
+    public ConditionMatchBloomDBTables(DSLContext ctx, String pattern) {
+        this(ctx, new RegexLikeCondition(pattern, BLOOMDB.FILTERTYPE.PATTERN));
     }
 
-    public PatternMatchTables(DSLContext ctx, PatternMatchCondition patternMatchCondition) {
+    public ConditionMatchBloomDBTables(DSLContext ctx, QueryCondition condition) {
         this.ctx = ctx;
-        this.patternMatchCondition = patternMatchCondition;
+        this.condition = condition;
     }
 
     /**
-     * List of tables from bloomdb that match patternMatchCondition Note: Table records are not fetched fully
+     * List of tables from bloomdb that match QueryCondition Note: Table records are not fetched fully
      *
-     * @return List of tables that matched condition and were not empty
+     * @return List of tables that matched QueryCondition and were not empty
      */
-    public List<Table<?>> toList() {
+    public List<Table<?>> tables() {
         final List<Table<?>> tables = ctx
                 .meta()
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
@@ -91,8 +92,8 @@ public final class PatternMatchTables {
                         .from(t)
                         .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
                         .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(patternMatchCondition.condition())// select tables that match pattern condition
-                        .limit(1)// limit 1 since we are checking only if table is not empty
+                        .where(condition.condition())// select tables that match the condition
+                        .limit(1)// limit 1 since we are checking only if the table is not empty
                         .fetch()
                         .isNotEmpty() // select table if not empty
                 )
@@ -102,10 +103,11 @@ public final class PatternMatchTables {
     }
 
     /**
-     * Equal only if all values are equal and same instance of DSLContext
+     * Equal if the compared object is the same instance or if the compared object is of the same class, object fields
+     * are equal, and DSLContext is the same instance
      *
      * @param object object compared against
-     * @return true if all object is same class, object fields are equal and DSLContext is same instance
+     * @return true if equal
      */
     @Override
     public boolean equals(final Object object) {
@@ -115,7 +117,12 @@ public final class PatternMatchTables {
             return false;
         if (object.getClass() != this.getClass())
             return false;
-        final PatternMatchTables cast = (PatternMatchTables) object;
-        return this.patternMatchCondition.equals(cast.patternMatchCondition) && this.ctx == cast.ctx; // only same instance of DSLContext is equal
+        final ConditionMatchBloomDBTables cast = (ConditionMatchBloomDBTables) object;
+        return this.condition.equals(cast.condition) && this.ctx == cast.ctx;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, condition);
     }
 }
