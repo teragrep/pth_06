@@ -155,7 +155,8 @@ class TableFiltersTest {
         CategoryTable tableImpl = new CategoryTableImpl(ctx, table, 0L, "192.168.1.1");
         Assertions.assertDoesNotThrow(tableImpl::create);
         Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
-        ResultSet result = Assertions.assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_0_target`").executeQuery());
+        ResultSet result = Assertions
+                .assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_0_target`").executeQuery());
         Assertions.assertDoesNotThrow(() -> {
             int loops = 0;
             while (result.next()) {
@@ -186,9 +187,9 @@ class TableFiltersTest {
         String value = "biz baz boz data has no content today (very important though) but it would still have if one had a means to extract it from (here is something else important as well) the strange patterns called parentheses that it seems to have been put in.";
         CategoryTable tableImpl = new CategoryTableImpl(ctx, table, 1L, value);
         Assertions.assertDoesNotThrow(tableImpl::create);
-        Assertions
-                .assertDoesNotThrow(() -> new TableFilters(ctx, table, 1L, value).asBatch().execute());
-        ResultSet result = Assertions.assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_1_target`").executeQuery());
+        Assertions.assertDoesNotThrow(() -> new TableFilters(ctx, table, 1L, value).asBatch().execute());
+        ResultSet result = Assertions
+                .assertDoesNotThrow(() -> conn.prepareStatement("SELECT * FROM `term_1_target`").executeQuery());
         Assertions.assertDoesNotThrow(() -> {
             int loops = 0;
             while (result.next()) {
@@ -219,7 +220,8 @@ class TableFiltersTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
-        DataAccessException ex = Assertions.assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
+        DataAccessException ex = Assertions
+                .assertThrows(DataAccessException.class, () -> new TableFilters(ctx, table, 0L, "192.168.1.1").asBatch().execute());
         Assertions.assertTrue(ex.getMessage().contains("Table \"term_0_target\" not found"));
     }
 
