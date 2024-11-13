@@ -371,6 +371,8 @@ public final class RowConverter {
     }
 
     public void close() throws IOException {
+        final String logName = bucket + "/" + path;
+        LOGGER.info("S3FileHandler.close() on log: <{}> on offset <{}>", logName, currentOffset);
         if (inputStream != null) {
             inputStream.close();
         }
