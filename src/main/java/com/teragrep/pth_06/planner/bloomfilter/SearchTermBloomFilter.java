@@ -86,7 +86,7 @@ public final class SearchTermBloomFilter {
         }
         final BloomFilter filter = BloomFilter.create(expected, fpp);
         for (final String token : stringTokens) {
-            filter.put(token);
+            filter.put(token.toLowerCase());
         }
         try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);

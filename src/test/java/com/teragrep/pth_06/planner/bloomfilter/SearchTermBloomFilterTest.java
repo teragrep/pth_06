@@ -100,7 +100,7 @@ public class SearchTermBloomFilterTest {
         byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
         BloomFilter resultFilter = Assertions
                 .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
-        Assertions.assertTrue(resultFilter.mightContain("Pattern"));
+        Assertions.assertTrue(resultFilter.mightContain("pattern"));
     }
 
     @Test
@@ -110,9 +110,10 @@ public class SearchTermBloomFilterTest {
         byte[] bytes = Assertions.assertDoesNotThrow(filter::bytes);
         BloomFilter resultFilter = Assertions
                 .assertDoesNotThrow(() -> BloomFilter.readFrom(new ByteArrayInputStream(bytes)));
-        Assertions.assertFalse(resultFilter.mightContain("Pattern"));
-        Assertions.assertTrue(resultFilter.mightContain("Without"));
-        Assertions.assertTrue(resultFilter.mightContain("SearchValuePatternInThisString"));
+        // test that tokens present and in lower case
+        Assertions.assertFalse(resultFilter.mightContain("pattern"));
+        Assertions.assertTrue(resultFilter.mightContain("without"));
+        Assertions.assertTrue(resultFilter.mightContain("searchvaluepatterninthisstring"));
     }
 
     @Test
