@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
@@ -86,7 +87,7 @@ public final class SearchTermBloomFilter {
         }
         final BloomFilter filter = BloomFilter.create(expected, fpp);
         for (final String token : stringTokens) {
-            filter.put(token);
+            filter.put(token.toLowerCase());
         }
         try (final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream()) {
             filter.writeTo(filterBAOS);
