@@ -120,10 +120,12 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
      */
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null || getClass() != object.getClass())
+        }
+        if (object == null || getClass() != object.getClass()) {
             return false;
+        }
         final TableFilterTypesFromMetadata cast = (TableFilterTypesFromMetadata) object;
         return ctx == cast.ctx && Objects.equals(table, cast.table) && Objects
                 .equals(expectedField, cast.expectedField) && Objects.equals(fppField, cast.fppField) && Objects

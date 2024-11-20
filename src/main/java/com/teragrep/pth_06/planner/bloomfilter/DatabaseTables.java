@@ -51,5 +51,5 @@ import java.util.List;
 
 public interface DatabaseTables {
 
-    List<Table<?>> tables();
+    public abstract List<Table<?>> tables();
 }

@@ -51,7 +51,7 @@ import java.util.Set;
 
 public interface BloomQueryCondition {
 
-    boolean isBloomSearchCondition();
+    public abstract boolean isBloomSearchCondition();
 
-    Set<Table<?>> requiredTables();
+    public abstract Set<Table<?>> requiredTables();
 }

@@ -50,5 +50,5 @@ import org.jooq.Result;
 
 public interface TableRecords {
 
-    Result<Record> toResult();
+    public abstract Result<Record> toResult();
 }

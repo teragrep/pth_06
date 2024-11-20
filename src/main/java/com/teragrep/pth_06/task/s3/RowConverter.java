@@ -129,8 +129,9 @@ public final class RowConverter {
         this.stream = UTF8String.fromString(stream.toLowerCase());
         this.host = UTF8String.fromString(host.toLowerCase());
 
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("RowConverter> created with partition:" + this.bucket + " path: " + this.path);
+        }
 
         this.rowWriter = new UnsafeRowWriter(11);
 
@@ -138,8 +139,9 @@ public final class RowConverter {
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
 
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Initialized s3client:" + s3client);
+        }
 
         // initial status
         this.currentOffset = 0L;
@@ -246,12 +248,13 @@ public final class RowConverter {
 
     public InternalRow get() {
         //System.out.println("RowConverter.get>");
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER
                     .debug(
                             "RowConverter.get> Partition (" + this.id + "):" + bucket + "/" + path + " Get("
                                     + currentOffset + ")"
                     );
+        }
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Parsersyslog event:" + rfc5424Frame.toString());
@@ -285,8 +288,9 @@ public final class RowConverter {
         rowWriter.write(7, currentOffset);
         rowWriter.write(8, UTF8String.fromBytes(origin));
 
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Get Event,  row=written");
+        }
 
         auditPlugin
                 .audit(

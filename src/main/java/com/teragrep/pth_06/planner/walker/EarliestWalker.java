@@ -75,7 +75,7 @@ public class EarliestWalker extends XmlWalker<Long> {
 
         long earliestEpoch = globalEarliestEpoch;
 
-        if (tag.equalsIgnoreCase("earliest") || tag.equalsIgnoreCase("index_earliest")) {
+        if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
 
             earliestEpoch = Long.parseLong(value);
 
@@ -97,7 +97,7 @@ public class EarliestWalker extends XmlWalker<Long> {
             throw new Exception("Parse error, unbalanced elements. " + left);
         }
 
-        if (op.equalsIgnoreCase("AND") || op.equalsIgnoreCase("OR")) {
+        if ("AND".equalsIgnoreCase(op) || "OR".equalsIgnoreCase(op)) {
             rv = left < right ? left : right;
         }
 
@@ -118,7 +118,7 @@ public class EarliestWalker extends XmlWalker<Long> {
             throw new Exception("Parse error op was null");
         }
         if (rv != null) {
-            if (op.equalsIgnoreCase("NOT")) {
+            if ("NOT".equalsIgnoreCase(op)) {
                 // Unary operations ignored
                 rv = null;
             }

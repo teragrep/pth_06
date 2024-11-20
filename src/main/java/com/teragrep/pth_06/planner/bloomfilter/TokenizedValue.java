@@ -67,10 +67,12 @@ public final class TokenizedValue implements Tokenizable<Token> {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        }
+        if (object == null || object.getClass() != this.getClass()) {
             return false;
+        }
         final TokenizedValue cast = (TokenizedValue) object;
         return value.equals(cast.value);
     }

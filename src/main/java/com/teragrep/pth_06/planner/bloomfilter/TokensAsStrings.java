@@ -66,10 +66,12 @@ public final class TokensAsStrings implements Tokenizable<String> {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        }
+        if (object == null || object.getClass() != this.getClass()) {
             return false;
+        }
         final TokensAsStrings cast = (TokensAsStrings) object;
         return origin.equals(cast.origin);
     }

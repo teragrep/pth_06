@@ -49,5 +49,5 @@ import java.util.List;
 
 public interface Tokenizable<T> {
 
-    List<T> tokens();
+    public abstract List<T> tokens();
 }

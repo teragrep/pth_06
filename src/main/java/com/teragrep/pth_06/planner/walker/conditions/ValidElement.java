@@ -47,6 +47,8 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.w3c.dom.Element;
 
+import java.util.Objects;
+
 public final class ValidElement {
 
     private final Element element;
@@ -88,16 +90,24 @@ public final class ValidElement {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final ValidElement cast = (ValidElement) object;
         boolean equalName = this.element.getTagName().equals(cast.element.getTagName());
         boolean equalOperation = this.element.getAttribute("operation").equals(cast.element.getAttribute("operation"));
         boolean equalValue = this.element.getAttribute("value").equals(cast.element.getAttribute("value"));
         return equalName && equalOperation && equalValue;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(element.getTagName(), element.getAttribute("operation"), element.getAttribute("value"));
     }
 }

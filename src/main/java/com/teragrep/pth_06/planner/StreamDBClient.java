@@ -336,7 +336,7 @@ public class StreamDBClient {
                 logtimeFunction.as(logtime)
         };
 
-        private Table<Record> getTableStatement(Condition journaldbCondition, Date day) {
+        private Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
 
             SelectOnConditionStep<Record> selectOnConditionStep = select(resultFields)
                     .from(GetArchivedObjectsFilterTable.FILTER_TABLE)
@@ -359,7 +359,7 @@ public class StreamDBClient {
             }
 
             return selectOnConditionStep
-                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbCondition))
+                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
                     .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                     .asTable(innerTable);
         }

@@ -58,10 +58,10 @@ final class BatchSizeLimit {
     final long maxObjectCount;
 
     /** accumulated sum of weights */
-    float accumulatedWeight;
+    private float accumulatedWeight;
 
     /** accumulated sum of object count */
-    long accumulatedObjectCount;
+    private long accumulatedObjectCount;
 
     /**
      * Initialize the BatchSizeLimit with the given maximum size and maximum object count.
