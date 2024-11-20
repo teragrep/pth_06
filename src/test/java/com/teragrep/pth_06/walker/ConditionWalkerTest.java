@@ -474,6 +474,17 @@ public class ConditionWalkerTest {
         });
     }
 
+    @Test
+    public void testUnsupportedTagReturnsTrueCondition() {
+        // If walker gets an unsupported value, return a condition that is always true
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        String q = "<unsupported value=\"value\" operation=\"EQUALS\"/>";
+        Condition cond1 = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Condition cond2 = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
+        Assertions.assertEquals(DSL.noCondition(), cond1);
+        Assertions.assertEquals(DSL.noCondition(), cond2);
+    }
+
     private void writeFilter(String tableName, int filterId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
