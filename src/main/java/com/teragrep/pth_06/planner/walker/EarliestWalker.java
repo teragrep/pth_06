@@ -88,13 +88,13 @@ public class EarliestWalker extends XmlWalker<Long> {
     }
 
     @Override
-    public Long emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    public Long emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
         Long rv;
         Long left = (Long) l;
         Long right = (Long) r;
 
         if (op == null) {
-            throw new Exception("Parse error, unbalanced elements. " + left);
+            throw new IllegalStateException("Parse error, unbalanced elements. " + left);
         }
 
         if ("AND".equalsIgnoreCase(op) || "OR".equalsIgnoreCase(op)) {
@@ -102,20 +102,22 @@ public class EarliestWalker extends XmlWalker<Long> {
         }
 
         else {
-            throw new Exception("Parse error, unsorted logical operation. op: " + op + " expression: " + left);
+            throw new IllegalStateException(
+                    "Parse error, unsorted logical operation. op: " + op + " expression: " + left
+            );
         }
 
         return rv;
     }
 
     @Override
-    public Long emitUnaryOperation(String op, Element current) throws Exception {
+    public Long emitUnaryOperation(String op, Element current) throws IllegalStateException {
 
         Long rv = emitElem(current);
         LOGGER.info("EarliestWalker.emitUnaryOperation incoming op: " + op + " element: " + current);
 
         if (op == null) {
-            throw new Exception("Parse error op was null");
+            throw new IllegalStateException("Parse error op was null");
         }
         if (rv != null) {
             if ("NOT".equalsIgnoreCase(op)) {
@@ -123,7 +125,9 @@ public class EarliestWalker extends XmlWalker<Long> {
                 rv = null;
             }
             else {
-                throw new Exception("Parse error, unsupported logical operation: " + op + " expression: " + rv);
+                throw new IllegalStateException(
+                        "Parse error, unsupported logical operation: " + op + " expression: " + rv
+                );
             }
         }
 

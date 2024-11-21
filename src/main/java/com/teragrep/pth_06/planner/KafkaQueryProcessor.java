@@ -56,7 +56,10 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -91,7 +94,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
                 KafkaWalker parser = new KafkaWalker();
                 topicsRegexString = parser.fromString(config.query);
             }
-            catch (Exception ex) {
+            catch (ParserConfigurationException | IOException | SAXException ex) {
                 ex.printStackTrace();
                 throw new RuntimeException(
                         "KafkaQueryProcessor problems when construction Query conditions query:" + config.query

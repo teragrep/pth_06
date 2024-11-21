@@ -81,12 +81,12 @@ public class PlainWalker extends XmlWalker {
     private String indent = "\t";
 
     @Override
-    public Element emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    public Element emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
         Element rv = null;
         String left = (String) l;
         String right = (String) r;
         if (op == null) {
-            throw new Exception("Parse error, unbalanced elements. " + l.toString());
+            throw new IllegalStateException("Parse error, unbalanced elements. " + l.toString());
         }
         System.out.println(indent + op);
         indent += "\t";
@@ -96,10 +96,10 @@ public class PlainWalker extends XmlWalker {
     }
 
     @Override
-    public Element emitUnaryOperation(String op, Element current) throws Exception {
+    public Element emitUnaryOperation(String op, Element current) throws IllegalStateException {
         Element rv = null;
         if (op == null) {
-            throw new Exception("Parse error, unknown operation: " + op + " expression:" + current);
+            throw new IllegalStateException("Parse error, unknown operation: " + op + " expression:" + current);
         }
         System.out.println(indent + op);
         indent += "\t";

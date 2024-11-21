@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import java.io.IOException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.Set;
@@ -61,6 +62,9 @@ import org.jooq.types.ULong;
 import org.jooq.types.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
@@ -133,7 +137,7 @@ public class StreamDBClient {
             streamdbCondition = walker.fromString(config.query, true);
             this.journaldbCondition = walker.fromString(config.query, false);
         }
-        catch (Exception e) {
+        catch (ParserConfigurationException | IOException | SAXException e) {
             throw new IllegalArgumentException(e);
         }
 

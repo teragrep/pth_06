@@ -54,7 +54,10 @@ import org.jooq.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,7 +99,8 @@ public final class ConditionWalker extends XmlWalker<Condition> {
         this.combinedMatchSet = new HashSet<>();
     }
 
-    public Condition fromString(String inXml, boolean streamQueryArg) throws Exception {
+    public Condition fromString(String inXml, boolean streamQueryArg)
+            throws IllegalStateException, ParserConfigurationException, IOException, SAXException {
         this.streamQuery = streamQueryArg;
         return fromString(inXml);
     }
@@ -107,13 +111,13 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     @Override
-    public Condition emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    public Condition emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
         Condition rv;
         Condition left = (Condition) l;
         Condition right = (Condition) r;
 
         if (op == null) {
-            throw new Exception("Parse error, unbalanced elements. " + left.toString());
+            throw new IllegalStateException("Parse error, unbalanced elements. " + left.toString());
         }
         if ("AND".equalsIgnoreCase(op)) {
             rv = left.and(right);
@@ -125,7 +129,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
             rv = left.not();
         }
         else {
-            throw new Exception(
+            throw new IllegalStateException(
                     "Parse error, unssorted logical operation. op:" + op + " expression:" + left.toString()
             );
         }
@@ -133,21 +137,21 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     @Override
-    public Condition emitUnaryOperation(String op, Element current) throws Exception {
+    public Condition emitUnaryOperation(String op, Element current) throws IllegalStateException {
 
         Condition rv = emitElem(current);
 
         LOGGER.info("ConditionWalker.emitUnaryOperation incoming op:" + op + " element:" + current);
 
         if (op == null) {
-            throw new Exception("Parse error, op was null");
+            throw new IllegalStateException("Parse error, op was null");
         }
         if (rv != null) {
             if ("NOT".equalsIgnoreCase(op)) {
                 rv = rv.not();
             }
             else {
-                throw new Exception(
+                throw new IllegalStateException(
                         "Parse error, unsupported logical operation. op:" + op + " expression:" + rv.toString()
                 );
             }

@@ -55,9 +55,12 @@ import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.TreeWalker;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
@@ -81,7 +84,7 @@ public abstract class XmlWalker<T> {
 
     }
 
-    public T fromString(String inXml) throws Exception {
+    public T fromString(String inXml) throws ParserConfigurationException, IOException, SAXException {
         T rv;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder loader = factory.newDocumentBuilder();
@@ -102,9 +105,9 @@ public abstract class XmlWalker<T> {
      * @param walker
      * @param op     operation String
      * @return Class which expr-part contains actual catalyst query tree
-     * @throws Exception
+     * @throws IllegalStateException
      */
-    public T traverse(TreeWalker walker, String op) throws Exception {
+    public T traverse(TreeWalker walker, String op) throws IllegalStateException {
         Node parend = walker.getCurrentNode();
         Element current = ((Element) parend);
         T rv = null;
@@ -122,7 +125,7 @@ public abstract class XmlWalker<T> {
                 NodeList children = parend.getChildNodes();
                 int count = children.getLength();
                 if (count < 1 || count > 2) {
-                    throw new Exception("Error, wrong number of children:" + count + " op:" + op);
+                    throw new IllegalStateException("Error, wrong number of children:" + count + " op:" + op);
                 }
                 // get left and right
                 Node left = walker.firstChild();
@@ -150,7 +153,7 @@ public abstract class XmlWalker<T> {
                         }
                         if (lft != null && rht != null) {
                             if (op == null) {
-                                throw new Exception("Parse error, unbalanced elements. " + lft.toString());
+                                throw new IllegalStateException("Parse error, unbalanced elements. " + lft.toString());
                             }
                             rv = emitLogicalOperation(op, lft, rht);
                         }
@@ -181,7 +184,7 @@ public abstract class XmlWalker<T> {
             //    System.out.println("XmlWalker.traverse type:"+rv.getClass().getName() +" returns:"+((T)rv).toString());
             return (T) rv;
         }
-        catch (Exception e) {
+        catch (IllegalStateException e) {
             LOGGER.error(e.toString());
         }
         return null;
@@ -200,7 +203,7 @@ public abstract class XmlWalker<T> {
      *
      * @return correct query according to implementation class
      */
-    abstract T emitLogicalOperation(String op, Object left, Object right) throws Exception;
+    abstract T emitLogicalOperation(String op, Object left, Object right) throws IllegalStateException;
 
     /**
      * Abstract method which is called during traverse. Emits appropriate unary operation
@@ -208,7 +211,7 @@ public abstract class XmlWalker<T> {
      * @param current DOM-element
      * @return correct query according to implementation class
      */
-    abstract T emitUnaryOperation(String op, Element current) throws Exception;
+    abstract T emitUnaryOperation(String op, Element current) throws IllegalStateException;
     // escape special chars inside value
 
     /**
