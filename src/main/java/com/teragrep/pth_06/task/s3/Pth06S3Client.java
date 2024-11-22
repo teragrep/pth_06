@@ -92,11 +92,11 @@ public class Pth06S3Client {
     /**
      * Defines which signing algorithm is used. Default is V2.
      *
-     * @param signerKind Signing algorithm kind.
+     * @param signerKindArg Signing algorithm kind.
      * @return Reference to this builder.
      */
-    public Pth06S3Client withSigner(SignerKind signerKind) {
-        this.signerKind = signerKind;
+    public Pth06S3Client withSigner(SignerKind signerKindArg) {
+        this.signerKind = signerKindArg;
         return this;
     }
 
@@ -106,8 +106,9 @@ public class Pth06S3Client {
      * @return AmazonS3Client using the builder's values.
      */
     public AmazonS3 build() {
-        if (LOGGER.isDebugEnabled())
+        if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Building S3APIWrapper for endpoint {}.", S3endPoint);
+        }
 
         if (StringUtils.isBlank(this.S3endPoint)) {
             throw new IllegalStateException("S3 endpoint is required.");
@@ -168,7 +169,7 @@ public class Pth06S3Client {
     /**
      * S3 signing algorithm kinds.
      */
-    public enum SignerKind {
+    public static enum SignerKind {
 
         // These constants are from com.amazonaws.services.s3.AmazonS3Client. Constants are private so cannot be used
         // here directly. Values select the authorization signing algorithm. V2 has to be used with TOS, V4 with AWS.

@@ -89,10 +89,12 @@ public final class RegexLikeCondition implements QueryCondition {
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null || object.getClass() != this.getClass())
+        }
+        if (object == null || object.getClass() != this.getClass()) {
             return false;
+        }
         final RegexLikeCondition cast = (RegexLikeCondition) object;
         return valueField.equals(cast.valueField) && comparedToField.equals(cast.comparedToField);
     }

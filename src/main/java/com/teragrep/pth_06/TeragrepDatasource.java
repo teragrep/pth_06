@@ -99,7 +99,7 @@ public final class TeragrepDatasource implements DataSourceRegister, TableProvid
     });
 
     @Override
-    public Table getTable(StructType schema, Transform[] partitioning, Map<String, String> properties) {
+    public Table getTable(StructType schemaArg, Transform[] partitioning, Map<String, String> properties) {
         return this;
     }
 

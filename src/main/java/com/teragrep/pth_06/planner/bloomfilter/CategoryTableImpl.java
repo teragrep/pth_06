@@ -138,12 +138,15 @@ public final class CategoryTableImpl implements CategoryTable {
      */
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final CategoryTableImpl cast = (CategoryTableImpl) object;
         return this.originTable.equals(cast.originTable) && this.ctx == cast.ctx && // equal only if same instance of DSLContext
                 this.bloomTermId == cast.bloomTermId && this.tableFilters.equals(cast.tableFilters);

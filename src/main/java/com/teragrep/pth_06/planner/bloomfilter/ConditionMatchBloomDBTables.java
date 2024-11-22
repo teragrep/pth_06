@@ -111,12 +111,15 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
      */
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final ConditionMatchBloomDBTables cast = (ConditionMatchBloomDBTables) object;
         return this.condition.equals(cast.condition) && this.ctx == cast.ctx;
     }

@@ -51,7 +51,10 @@ import org.jooq.*;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -102,7 +105,7 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
             rollingDay = Instant.ofEpochSecond(this.earliestEpoch).atZone(ZoneId.systemDefault()).toLocalDate();
 
         }
-        catch (Exception ex) {
+        catch (ParserConfigurationException | IOException | SAXException ex) {
             throw new RuntimeException(
                     "ArchiveQueryProcessor problems when construction Query conditions query:" + config.query
                             + " exception:" + ex

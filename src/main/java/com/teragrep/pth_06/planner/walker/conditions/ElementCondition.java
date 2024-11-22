@@ -53,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -92,6 +93,8 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
                 QueryCondition host = new HostCondition(value, operation, config.streamQuery());
                 condition = host.condition();
                 break;
+            default:
+                LOGGER.debug("Element tag was not index, sourcetype or host: <{}>", tag);
         }
         if (!config.streamQuery()) {
             // Handle also time qualifiers
@@ -132,13 +135,21 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
 
     @Override
     public boolean equals(final Object object) {
-        if (this == object)
+        if (this == object) {
             return true;
-        if (object == null)
+        }
+        if (object == null) {
             return false;
-        if (object.getClass() != this.getClass())
+        }
+        if (object.getClass() != this.getClass()) {
             return false;
+        }
         final ElementCondition cast = (ElementCondition) object;
         return this.element.equals(cast.element) && this.config.equals(cast.config);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(element, config);
     }
 }

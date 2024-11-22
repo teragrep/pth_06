@@ -47,6 +47,6 @@ package com.teragrep.pth_06.planner.bloomfilter;
 
 public interface CategoryTable {
 
-    void create();
+    public abstract void create();
 
 }

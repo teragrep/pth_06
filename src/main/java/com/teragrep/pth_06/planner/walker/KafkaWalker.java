@@ -47,6 +47,10 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.jue_01.GlobToRegEx;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 /**
  * <h1>Kafka Walker</h1>
@@ -64,20 +68,20 @@ public class KafkaWalker extends XmlWalker<String> {
 
         String queryCondition = null;
         // only index equals supported
-        if (tag.equalsIgnoreCase("index")) {
-            if (operation.equalsIgnoreCase("EQUALS")) {
+        if ("index".equalsIgnoreCase(tag)) {
+            if ("EQUALS".equalsIgnoreCase(operation)) {
                 queryCondition = GlobToRegEx.regexify(value);
             }
         }
         return queryCondition;
     }
 
-    public String fromString(String inXml) throws Exception {
+    public String fromString(String inXml) throws ParserConfigurationException, IOException, SAXException {
         return super.fromString(inXml);
     }
 
     @Override
-    public String emitLogicalOperation(String op, Object l, Object r) throws Exception {
+    public String emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
         String left = (String) l;
         String right = (String) r;
 

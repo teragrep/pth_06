@@ -58,11 +58,11 @@ import java.util.Map;
  */
 public interface KafkaQuery {
 
-    Map<TopicPartition, Long> getInitialEndOffsets();
+    public abstract Map<TopicPartition, Long> getInitialEndOffsets();
 
-    Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
+    public abstract Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
 
-    Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
+    public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
 
-    void commit(KafkaOffset offset);
+    public abstract void commit(KafkaOffset offset);
 }
