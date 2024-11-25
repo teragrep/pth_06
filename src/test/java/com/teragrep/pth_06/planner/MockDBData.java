@@ -69,7 +69,7 @@ public class MockDBData {
                         generateResult(
                                 "19181", "f17_v2", "log:f17_v2:0", "sc-99-99-14-40", "f17_v2", "2010-01-08",
                                 "hundred-year", "2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz",
-                                "1262905200", "28306039", "283060390"
+                                "1262905200", "28306039", null
                         )
                 );
         virtualDatabaseMap
@@ -423,7 +423,11 @@ public class MockDBData {
                     newRecord.set(StreamDBClient.SliceTable.path, path);
                     newRecord.set(StreamDBClient.SliceTable.logtime, Long.valueOf(logtime));
                     newRecord.set(StreamDBClient.SliceTable.filesize, ULong.valueOf(filesize));
-                    newRecord.set(StreamDBClient.SliceTable.uncompressedFilesize, ULong.valueOf(uncompressedFilesize));
+                    newRecord
+                            .set(
+                                    StreamDBClient.SliceTable.uncompressedFilesize,
+                                    uncompressedFilesize != null ? ULong.valueOf(uncompressedFilesize) : null
+                            );
 
                     result.add(newRecord);
                 } // else empty set

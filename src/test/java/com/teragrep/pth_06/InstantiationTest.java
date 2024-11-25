@@ -75,11 +75,9 @@ import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class InstantiationTest {
@@ -188,11 +186,12 @@ public class InstantiationTest {
                 }
             }
         }
-        Assertions.assertEquals(expectedRows, rowCount);
+        assertEquals(expectedRows, rowCount);
     }
 
     @Test
     public void metadataTest() throws StreamingQueryException, TimeoutException {
+        Map<String, String> partitionToUncompressedMapping = new HashMap<>();
         // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
         Dataset<Row> df = spark
                 .readStream()
@@ -225,28 +224,32 @@ public class InstantiationTest {
                 .load();
 
         StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds.show(false);
-            List<String> rawCol = ds
-                    .select("_raw")
+            ds
+                    .select("partition", "_raw")
                     .collectAsList()
-                    .stream()
-                    .map(r -> r.getAs(0).toString())
-                    .collect(Collectors.toList());
-            assertFalse(rawCol.isEmpty());
-            for (String c : rawCol) {
-                assertFalse(c.isEmpty());
-                JsonObject jo = new Gson().fromJson(c, JsonObject.class);
-                assertTrue(jo.has("compressed"));
-                assertTrue(jo.has("uncompressed"));
-            }
+                    .forEach(r -> partitionToUncompressedMapping.put(r.getAs(0), r.getAs(1)));
         }).start();
         sq.processAllAvailable();
         sq.stop();
         sq.awaitTermination();
+
+        int loops = 0;
+        for (Map.Entry<String, String> entry : partitionToUncompressedMapping.entrySet()) {
+            assertFalse(entry.getValue().isEmpty());
+            JsonObject jo = new Gson().fromJson(entry.getValue(), JsonObject.class);
+            assertTrue(jo.has("compressed"));
+            assertTrue(jo.has("uncompressed"));
+            loops++;
+        }
+        Assertions.assertEquals(33, loops);
+        //partition=19181 has NULL for uncompressed size
+        assertEquals(
+                -1L, new Gson().fromJson(partitionToUncompressedMapping.get("19181"), JsonObject.class).get("uncompressed").getAsLong()
+        );
     }
 
     private boolean isArchiveDone(StreamingQuery outQ) {
-        Boolean archiveDone = true;
+        boolean archiveDone = true;
         for (int i = 0; i < outQ.lastProgress().sources().length; i++) {
             String startOffset = outQ.lastProgress().sources()[i].startOffset();
             String endOffset = outQ.lastProgress().sources()[i].endOffset();
