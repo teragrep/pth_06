@@ -80,6 +80,12 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
                 );
 
         for (Record r : result) {
+            // uncompressed size can be null
+            long uncompressedSize = -1L;
+            if (r.get(10) != null) {
+                uncompressedSize = r.get(10, Long.class);
+            }
+
             this
                     .add(new BatchSlice(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
                             r.get(6, String.class), // bucket
@@ -89,7 +95,7 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
                             r.get(3, String.class), // host
                             r.get(8, Long.class), // logtime
                             r.get(9, Long.class), // compressedSize
-                            r.get(10, Long.class) // uncompressedSize
+                            uncompressedSize // uncompressedSize
                     )));
         }
         return this;
