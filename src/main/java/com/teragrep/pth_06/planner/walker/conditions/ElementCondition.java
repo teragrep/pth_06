@@ -112,10 +112,6 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
                 condition = indexStatement.condition();
             }
         }
-        // bloom search can return the condition unmodified
-        if (condition.equals(DSL.noCondition()) && !isBloomSearchCondition()) {
-            throw new IllegalStateException("Unsupported Element tag " + tag);
-        }
         LOGGER.debug("Query condition: <{}>", condition);
         return condition;
     }
