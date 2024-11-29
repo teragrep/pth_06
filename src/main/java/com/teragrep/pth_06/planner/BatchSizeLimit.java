@@ -52,10 +52,10 @@ package com.teragrep.pth_06.planner;
 final class BatchSizeLimit {
 
     /** Maximum weight of the batch (length of executor queue * amount of executors) */
-    final long maxWeight;
+    private final long maxWeight;
 
     /** Maximum count of total objects, in case the weights of the objects are small */
-    final long maxObjectCount;
+    private final long maxObjectCount;
 
     /** accumulated sum of weights */
     private float accumulatedWeight;
