@@ -73,15 +73,7 @@ jobs:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Cache Coverity
-        id: cache_coverity
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.COVERITY }}
-          key: coverity
-
       - name: Download Coverity
-        if: steps.cache_coverity.outputs.cache-hit != 'true'
         run: |
           wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${{ env.COVERITY }}.tgz
           mkdir -p ${{ env.COVERITY }}
