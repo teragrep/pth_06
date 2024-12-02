@@ -75,15 +75,15 @@ jobs:
 
       - name: Download Coverity
         run: |
-          wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }}.tgz
-          mkdir -p ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }}
-          tar zxvf ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }}.tgz -C ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }} --strip-components 1
+          wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=pth_06" -O ${RUNNER_TEMP}/${{ env.COVERITY }}.tgz
+          mkdir -p ${RUNNER_TEMP}/${{ env.COVERITY }}
+          tar zxvf ${RUNNER_TEMP}/${{ env.COVERITY }}.tgz -C ${RUNNER_TEMP}/${{ env.COVERITY }} --strip-components 1
 
       - name: Compile Coverity
         run: |
-          ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }}/bin/cov-configure --java
-          ${{ env.RUNNER_TEMP }}/${{ env.COVERITY }}/bin/cov-build --dir ${{ env.RUNNER_TEMP }}/cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= -DskipTests=true clean compile
-          tar czvf ${{ env.RUNNER_TEMP }}/pth_06.tgz ${{ env.RUNNER_TEMP }}/cov-int
+          ${RUNNER_TEMP}/${{ env.COVERITY }}/bin/cov-configure --java
+          ${RUNNER_TEMP}/${{ env.COVERITY }}/bin/cov-build --dir ${RUNNER_TEMP}/cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= -DskipTests=true clean compile
+          tar czvf ${RUNNER_TEMP}/pth_06.tgz ${RUNNER_TEMP}/cov-int
 
       - name: Debug find src contents
         run: find src/ -exec ls -l {} \;
@@ -95,16 +95,16 @@ jobs:
         run: du -sh pth_06.tgz
       - name: Debug find cov-int
         run: find cov-int
-      - name: Debug search ${{ env.RUNNER_TEMP }}
-        run: find ${{ env.RUNNER_TEMP }} -exec ls -l {} \;
-      - name: Debug size ${{ env.RUNNER_TEMP }}
-        run: du -sh ${{ env.RUNNER_TEMP }}/*
+      - name: Debug search ${RUNNER_TEMP}
+        run: find ${RUNNER_TEMP} -exec ls -l {} \;
+      - name: Debug size ${RUNNER_TEMP}
+        run: du -sh ${RUNNER_TEMP}/*
 
       - name: Upload to Coverity
         run: |
             curl --silent --form token=${{ secrets.COVERITY_TOKEN }} \
             --form email=${{ secrets.COVERITY_EMAIL }}  \
-            --form file=@${{ env.RUNNER_TEMP }}/pth_06.tgz \
+            --form file=@${RUNNER_TEMP}/pth_06.tgz \
             --form version="${GITHUB_REF##*/}" \
             --form description="automated upload" \
             https://scan.coverity.com/builds?project=pth_06
