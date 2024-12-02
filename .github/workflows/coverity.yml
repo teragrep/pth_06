@@ -81,7 +81,7 @@ jobs:
 
       - name: Compile Coverity
         run: |
-          ${{ env.COVEIRTY }}/bin/cov-configure --java
+          ${{ env.COVERITY }}/bin/cov-configure --java
           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= -DskipTests=true clean install
           tar czvf pth_06.tgz cov-int
 
