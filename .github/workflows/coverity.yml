@@ -85,6 +85,10 @@ jobs:
           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= -DskipTests=true clean compile
           tar czvf pth_06.tgz cov-int
 
+      - name: Debug find src contents
+        run: find src/ -exec ls -l {} \;
+      - name: Print all directory sizes
+        run: du -sh *
       - name: Debug print contents
         run: tar tvzf pth_06.tgz
       - name: Debug print size
