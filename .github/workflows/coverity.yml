@@ -94,7 +94,7 @@ jobs:
       - name: Debug print size
         run: du -sh ${RUNNER_TEMP}/pth_06.tgz
       - name: Debug find cov-int
-        run: find cov-int
+        run: find ${RUNNER_TEMP}/cov-int
       - name: Debug search ${RUNNER_TEMP}
         run: find ${RUNNER_TEMP} -exec ls -l {} \;
       - name: Debug size ${RUNNER_TEMP}
