@@ -74,15 +74,7 @@ jobs:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Cache Coverity
-        id: cache_coverity
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.COVERITY }}
-          key: coverity
-
       - name: Download Coverity
-        if: steps.cache_coverity.outputs.cache-hit != 'true'
         run: |
           wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=${{ vars.COVERITY_PROJECT_URL_NAME }}" -O ${{ env.COVERITY }}.tgz
           mkdir -p ${{ env.COVERITY }}
@@ -104,7 +96,7 @@ jobs:
           -d description="automated upload" \
           -d email=${{ secrets.COVERITY_EMAIL }} \
           -d token=${{ secrets.COVERITY_TOKEN }} \
-          -d file_name="'${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz'" \
+          -d file_name="${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz" \
           https://scan.coverity.com/projects/${{ vars.COVERITY_PROJECT_URL_ID }}/builds/init \
           | tee response
 
