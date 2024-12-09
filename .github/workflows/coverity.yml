@@ -27,6 +27,18 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install jq
+
+      - name: Fetch cloud upload url
+        run: curl -X POST -d version="${{ env.RELEASE_VERSION }}" -d description="automated upload" -d email=${{ secrets.COVERITY_EMAIL }} -d token=${{ secrets.COVERITY_TOKEN }} -d file_name="${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz" https://scan.coverity.com/projects/${{ vars.COVERITY_PROJECT_URL_ID }}/builds/init -o response
+
+      - name: Show the response
+        run: cat response
+
+      - name: jq the json
+        run: jq '.' response
+
       - name: Initialize MariaDB
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
@@ -84,24 +96,6 @@ jobs:
         run: |
            ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -DskipTests -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile
            tar czvf ${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz cov-int
-
-      - name: Install jq
-        run: |
-          sudo apt-get update && sudo apt-get install jq
-
-      - name: Fetch cloud upload url
-        run: |
-          curl -X POST \
-          -d version="${{ env.RELEASE_VERSION }}" \
-          -d description="automated upload" \
-          -d email=${{ secrets.COVERITY_EMAIL }} \
-          -d token=${{ secrets.COVERITY_TOKEN }} \
-          -d file_name="${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz" \
-          https://scan.coverity.com/projects/${{ vars.COVERITY_PROJECT_URL_ID }}/builds/init \
-          | tee response
-
-      - name: jq content debug
-        run: jq '.' response
 
       - name: Prepare response url
         run: echo "RESPONSE_URL=$(jq -r '.url' response)" >> $GITHUB_ENV
