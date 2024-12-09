@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.bloomfilter;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -63,7 +64,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TableFilterTypesFromMetadataResultTest {
+public class TableFilterTypesFromMetadataResultTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -103,7 +104,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -118,7 +119,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -126,7 +127,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testNoFilterTypes() {
+    public void testNoFilterTypes() {
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
                 .meta()
@@ -140,7 +141,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testOneFilterType() {
+    public void testOneFilterType() {
         insertSizedFilterIntoTargetTable(1);
         DSLContext ctx = DSL.using(conn);
         Table<?> table = ctx
@@ -157,7 +158,7 @@ class TableFilterTypesFromMetadataResultTest {
     }
 
     @Test
-    void testMultipleFilterTypes() {
+    public void testMultipleFilterTypes() {
         insertSizedFilterIntoTargetTable(1);
         insertSizedFilterIntoTargetTable(2);
         DSLContext ctx = DSL.using(conn);
@@ -210,7 +211,31 @@ class TableFilterTypesFromMetadataResultTest {
         Assertions.assertNotEquals(result1, result2);
     }
 
-    void insertSizedFilterIntoTargetTable(int filterTypeId) {
+    @Test
+    public void testHashCode() {
+        DSLContext ctx = DSL.using(conn);
+        Table<?> table = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        TableFilterTypesFromMetadata result1 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata result2 = new TableFilterTypesFromMetadata(ctx, table, 0L);
+        TableFilterTypesFromMetadata notEq = new TableFilterTypesFromMetadata(ctx, table, 1L);
+        Assertions.assertEquals(result1.hashCode(), result2.hashCode());
+        Assertions.assertNotEquals(result1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(TableFilterTypesFromMetadata.class)
+                .withNonnullFields("ctx", "table", "expectedField", "fppField", "patternField", "filterTypeIdField")
+                .verify();
+    }
+
+    private void insertSizedFilterIntoTargetTable(int filterTypeId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();

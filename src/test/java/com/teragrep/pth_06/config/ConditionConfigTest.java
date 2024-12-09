@@ -43,32 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.bloomfilter;
+package com.teragrep.pth_06.config;
 
-import com.teragrep.blf_01.Token;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
+import org.jooq.tools.jdbc.MockConnection;
+import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TokensAsStringsTest {
+public class ConditionConfigTest {
+
+    DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
 
     @Test
-    public void testTokensToStrings() {
-        String value = "one.two.three";
-        Tokenizable<Token> tokenizedValue = new TokenizedValue(value);
-        boolean allTokenClass = tokenizedValue.tokens().stream().allMatch(t -> t.getClass().equals(Token.class));
-        Assertions.assertTrue(allTokenClass);
-        Tokenizable<String> toStrings = new TokensAsStrings(tokenizedValue);
-        Assertions.assertTrue(toStrings.tokens().contains("one"));
-        Assertions.assertTrue(toStrings.tokens().contains("one."));
-        Assertions.assertTrue(toStrings.tokens().contains("one.two"));
-        Assertions.assertTrue(toStrings.tokens().contains("two"));
-        Assertions.assertTrue(toStrings.tokens().contains("three"));
-        Assertions.assertEquals(16, toStrings.tokens().size());
+    void testEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false, 1L);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1, cond2);
     }
 
     @Test
-    public void equalsVerifierTest() {
-        EqualsVerifier.forClass(TokensAsStrings.class).withNonnullFields("origin").verify();
+    void testNonEquality() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true, 1L);
+        Assertions.assertNotEquals(cond1, cond2);
+        Assertions.assertNotEquals(cond1, cond3);
+        Assertions.assertNotEquals(cond1, cond4);
+    }
+
+    @Test
+    void testHashCode() {
+        ConditionConfig cond1 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond2 = new ConditionConfig(ctx, false, false);
+        ConditionConfig cond3 = new ConditionConfig(ctx, true, false);
+        ConditionConfig cond4 = new ConditionConfig(ctx, false, true);
+        ConditionConfig cond5 = new ConditionConfig(ctx, false, false, 1L);
+        Assertions.assertEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond4.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond5.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(ConditionConfig.class).verify();
     }
 }

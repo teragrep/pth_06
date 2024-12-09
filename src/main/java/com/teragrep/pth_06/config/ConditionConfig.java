@@ -107,6 +107,7 @@ public final class ConditionConfig {
         return streamQuery;
     }
 
+    //* DSLContext must be same instance to be equal */
     @Override
     public boolean equals(Object object) {
         if (this == object) {
@@ -120,11 +121,12 @@ public final class ConditionConfig {
         }
         final ConditionConfig cast = (ConditionConfig) object;
         return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx;
+                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx
+                && this.bloomTermId == cast.bloomTermId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ctx, streamQuery, bloomEnabled, withoutFilters);
+        return Objects.hash(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId);
     }
 }

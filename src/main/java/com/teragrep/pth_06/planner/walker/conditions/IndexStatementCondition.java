@@ -151,11 +151,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         }
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config);
+        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.condition.equals(cast.condition)
+                && this.tableSet.equals(cast.tableSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config);
+        return Objects.hash(value, config, condition, tableSet);
     }
 }
