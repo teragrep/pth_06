@@ -45,29 +45,19 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 
-import java.util.Map;
+public class TopicFilter implements PathFilter {
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+    private final String topicsRegexString;
 
-    public abstract Map<TopicPartition, Long> getInitialEndOffsets();
+    public TopicFilter(String topicsRegexString) {
+        this.topicsRegexString = topicsRegexString;
+    }
 
-    public abstract Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
-
-    public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
-
-    public abstract void commit(KafkaOffset offset);
-
-    public abstract void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
-
-    public abstract Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
+    @Override
+    public boolean accept(Path path) {
+        return path.getName().matches(topicsRegexString); // Catches the directory names.
+    }
 }
