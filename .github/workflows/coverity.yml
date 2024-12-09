@@ -6,6 +6,7 @@ jobs:
   verify:
     name: Verify Code
     runs-on: ubuntu-latest
+    if: ${{ startsWith(github.repository, 'teragrep/') }}
 
     env:
       COVERITY: coverity_tool
