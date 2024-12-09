@@ -214,10 +214,12 @@ public class CategoryTableConditionTest {
                 .filterTables(t -> !t.getName().equals("filtertype"))
                 .getTables()
                 .get(0);
+        Table<?> target2 = ctx.meta().filterSchemas(s -> s.getName().equals("bloomdb")).getTables().get(0);
+
         CategoryTableCondition cond1 = new CategoryTableCondition(target1, 0L);
         CategoryTableCondition condEq = new CategoryTableCondition(target1, 0L);
         CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
-        CategoryTableCondition cond3 = new CategoryTableCondition(null, 1L);
+        CategoryTableCondition cond3 = new CategoryTableCondition(target2, 1L);
         Assertions.assertEquals(cond1.hashCode(), condEq.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond2.hashCode());
         Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
@@ -227,8 +229,7 @@ public class CategoryTableConditionTest {
     public void equalsverifier() {
         EqualsVerifier
                 .forClass(CategoryTableCondition.class)
-                .withNonnullFields("bloomTermId")
-                .withNonnullFields("comparedTo")
+                .withNonnullFields("comparedTo", "bloomTermCondition", "typeIdCondition", "categoryTable")
                 .verify();
     }
 

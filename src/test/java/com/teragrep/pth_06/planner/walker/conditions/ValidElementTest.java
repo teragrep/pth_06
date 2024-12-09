@@ -146,6 +146,18 @@ public class ValidElementTest {
 
     @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(ValidElement.class).withNonnullFields("element").verify();
+        // Element is abstract, have to give prefab values to EqualsVerifier
+        Element element = document.createElement("test");
+        element.setAttribute("value", "value");
+        element.setAttribute("operation", "operation");
+        Element element2 = document.createElement("test");
+        element2.setAttribute("value", "value");
+        element2.setAttribute("operation", "notOperation");
+
+        EqualsVerifier
+                .forClass(ValidElement.class)
+                .withNonnullFields("element")
+                .withPrefabValues(Element.class, element, element2)
+                .verify();
     }
 }

@@ -218,22 +218,8 @@ public class ConditionMatchBloomDBTablesTest {
     }
 
     @Test
-    public void hashCodeTest() {
-        DSLContext ctx = DSL.using(conn);
-        PatternMatchTables eq1 = new PatternMatchTables(ctx, "testinput");
-        PatternMatchTables eq2 = new PatternMatchTables(ctx, "testinput");
-        PatternMatchTables notEq = new PatternMatchTables(ctx, "somethingelse");
-        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
-        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
-    }
-
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier
-                .forClass(PatternMatchTables.class)
-                .withNonnullFields("ctx")
-                .withNonnullFields("patternMatchCondition")
-                .verify();
+    public void equalsVerifierTest() {
+        EqualsVerifier.forClass(ConditionMatchBloomDBTables.class).withNonnullFields("ctx", "condition").verify();
     }
 
     private void writeFilter(String tableName, int filterId) {

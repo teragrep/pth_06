@@ -262,10 +262,22 @@ public class ElementConditionTest {
 
     @Test
     public void equalsHashCodeContractTest() {
+        Element element = document.createElement("index");
+        element.setAttribute("value", "f17");
+        element.setAttribute("operation", "EQUALS");
+        Element element2 = document.createElement("source");
+        element2.setAttribute("value", "f11");
+        element2.setAttribute("operation", "EQUALS");
+
+        // Equalsverifier can't use abstract equals from Element, have to create prefab values
+        ValidElement validElement = new ValidElement(element);
+        ValidElement validElement2 = new ValidElement(element2);
+
         EqualsVerifier
                 .forClass(ElementCondition.class)
                 .withNonnullFields("element")
                 .withNonnullFields("config")
+                .withPrefabValues(ValidElement.class, validElement, validElement2)
                 .verify();
     }
 }

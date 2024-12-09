@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.blf_01.Token;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -64,5 +65,10 @@ public class TokensAsStringsTest {
         Assertions.assertTrue(toStrings.tokens().contains("two"));
         Assertions.assertTrue(toStrings.tokens().contains("three"));
         Assertions.assertEquals(16, toStrings.tokens().size());
+    }
+
+    @Test
+    public void equalsVerifierTest() {
+        EqualsVerifier.forClass(TokensAsStrings.class).withNonnullFields("origin").verify();
     }
 }

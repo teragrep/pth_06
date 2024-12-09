@@ -97,18 +97,4 @@ public class TokenizedValueTest {
     public void equalsHashCodeContractTest() {
         EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
     }
-
-    @Test
-    public void testHashCode() {
-        TokenizedValue value1 = new TokenizedValue("test");
-        TokenizedValue value2 = new TokenizedValue("test");
-        TokenizedValue notEq = new TokenizedValue("nest");
-        Assertions.assertEquals(value1.hashCode(), value2.hashCode());
-        Assertions.assertNotEquals(value1.hashCode(), notEq.hashCode());
-    }
-
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier.forClass(TokenizedValue.class).withNonnullFields("value").verify();
-    }
 }

@@ -231,9 +231,7 @@ public class TableFilterTypesFromMetadataResultTest {
     public void equalsHashCodeContractTest() {
         EqualsVerifier
                 .forClass(TableFilterTypesFromMetadata.class)
-                .withNonnullFields("ctx")
-                .withNonnullFields("table")
-                .withNonnullFields("bloomTermId")
+                .withNonnullFields("ctx", "table", "expectedField", "fppField", "patternField", "filterTypeIdField")
                 .verify();
     }
 
