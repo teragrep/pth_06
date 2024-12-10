@@ -101,5 +101,8 @@ jobs:
       - name: Prepare build id
         run: printf "COVERITY_BUILD_ID='%q'\n" "$(jq -r '.build_id' response)" >> $GITHUB_ENV
 
+      - name: Build Coverity Submit URL
+        run: printf 'COVERITY_SUBMIT_URL=%q/%s/builds/%s/enqueue' "https://scan.coverity.com/projects" "${{ vars.COVERITY_PROJECT_URL_ID }}" "${{ env.COVERITY_BUILD_ID }}" >> $GITHUB_ENV
+
       - name: Trigger Coverity build
-        run: curl -X PUT -d token${{ secrets.COVERITY_TOKEN }} "https://scan.coverity.com/projects/${{ vars.COVERITY_PROJECT_URL_ID }}/builds/${{ env.COVERITY_BUILD_ID }}/enqueue"
+        run: curl -X PUT -d token${{ secrets.COVERITY_TOKEN }} ${{ env.COVERITY_SUBMIT_URL }}
