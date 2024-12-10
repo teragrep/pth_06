@@ -62,11 +62,13 @@ jobs:
           server-id: github
           settings-path: ${{ github.workspace }}
 
-      - name: Cache .m2
+      - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: m2-repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Generate sources
         run: mvn -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
