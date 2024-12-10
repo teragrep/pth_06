@@ -62,6 +62,12 @@ jobs:
           server-id: github
           settings-path: ${{ github.workspace }}
 
+      - name: Cache .m2
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-repository-${{ hashFiles('~/.m2/repository/**/*') }}
+
       - name: Generate sources
         run: mvn -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= generate-sources
         env:
