@@ -94,12 +94,6 @@ jobs:
           mkdir -p ${{ env.COVERITY }}
           tar zxf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
 
-      - name: Cache Coverity distribution with the md5sum as the cache key
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.COVERITY }}
-          key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
-
       - name: Compile Coverity
         run: |
            ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -DskipTests -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile
