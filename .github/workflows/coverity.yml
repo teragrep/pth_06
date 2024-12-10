@@ -94,8 +94,7 @@ jobs:
           mkdir -p ${{ env.COVERITY }}
           tar zxf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
 
-      - name: Cache Coverity distribution if cache-miss with the md5sum as the cache key
-        if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
+      - name: Cache Coverity distribution with the md5sum as the cache key
         uses: actions/cache@v4
         with:
           path: ${{ env.COVERITY }}
