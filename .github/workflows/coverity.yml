@@ -77,11 +77,29 @@ jobs:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Download Coverity
+      - name: Download Coverity distribution md5sum for cache key
+        run: wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=${{ vars.COVERITY_PROJECT_URL_NAME }}&md5=1" -O coverity_tool.md5
+
+      - name: Cache pull Coverity distribution, extracted
+        id: cache-pull-coverity-distribution
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COVERITY }}
+          key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
+
+      - name: Download and extract Coverity distribution if cache-miss
+        if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
         run: |
           wget --quiet https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=${{ vars.COVERITY_PROJECT_URL_NAME }}" -O ${{ env.COVERITY }}.tgz
           mkdir -p ${{ env.COVERITY }}
-          tar zxvf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
+          tar zxf ${{ env.COVERITY }}.tgz -C ${{ env.COVERITY }} --strip-components 1
+
+      - name: Cache Coverity distribution if cache-miss with the md5sum as the cache key
+        if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COVERITY }}
+          key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
 
       - name: Compile Coverity
         run: |
