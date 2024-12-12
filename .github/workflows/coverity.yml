@@ -80,7 +80,7 @@ jobs:
         run: bash add_headers_to_generated.sh
 
       - name: Test run
-        run: mvn -DskipTests -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= verify
+        run: mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= verify
         env:
           MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -124,7 +124,7 @@ jobs:
 
       - name: Compile Coverity
         run: |
-           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -DskipTests -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile
+           ${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean compile
            tar czvf ${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz cov-int
 
       - name: Prepare response url
