@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -66,7 +67,7 @@ import java.util.List;
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CategoryTableConditionTest {
+public class CategoryTableConditionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -106,7 +107,7 @@ class CategoryTableConditionTest {
     }
 
     @BeforeEach
-    void createTargetTable() {
+    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -121,7 +122,7 @@ class CategoryTableConditionTest {
     }
 
     @AfterAll
-    void tearDown() {
+    public void tearDown() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
             conn.close();
@@ -129,7 +130,7 @@ class CategoryTableConditionTest {
     }
 
     @Test
-    void testCondition() {
+    public void testCondition() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> target1 = ctx
@@ -148,7 +149,7 @@ class CategoryTableConditionTest {
     }
 
     @Test
-    void testBloomTermId() {
+    public void testBloomTermId() {
         fillTargetTable();
         DSLContext ctx = DSL.using(conn);
         Table<?> target1 = ctx
@@ -201,6 +202,35 @@ class CategoryTableConditionTest {
         CategoryTableCondition cond1 = new CategoryTableCondition(target1, 0L);
         CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
         Assertions.assertNotEquals(cond1, cond2);
+    }
+
+    @Test
+    public void testHashCode() {
+        fillTargetTable();
+        DSLContext ctx = DSL.using(conn);
+        Table<?> target1 = ctx
+                .meta()
+                .filterSchemas(s -> s.getName().equals("bloomdb"))
+                .filterTables(t -> !t.getName().equals("filtertype"))
+                .getTables()
+                .get(0);
+        Table<?> target2 = ctx.meta().filterSchemas(s -> s.getName().equals("bloomdb")).getTables().get(0);
+
+        CategoryTableCondition cond1 = new CategoryTableCondition(target1, 0L);
+        CategoryTableCondition condEq = new CategoryTableCondition(target1, 0L);
+        CategoryTableCondition cond2 = new CategoryTableCondition(target1, 1L);
+        CategoryTableCondition cond3 = new CategoryTableCondition(target2, 1L);
+        Assertions.assertEquals(cond1.hashCode(), condEq.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond2.hashCode());
+        Assertions.assertNotEquals(cond1.hashCode(), cond3.hashCode());
+    }
+
+    @Test
+    public void equalsverifier() {
+        EqualsVerifier
+                .forClass(CategoryTableCondition.class)
+                .withNonnullFields("comparedTo", "bloomTermCondition", "typeIdCondition", "categoryTable")
+                .verify();
     }
 
     void fillTargetTable() {

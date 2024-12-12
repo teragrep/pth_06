@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -58,13 +59,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * 
  * @see org.jooq.QueryPart
  */
-class ValidElementTest {
+public class ValidElementTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
 
     @Test
-    void validTest() {
+    public void validTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "value");
         element.setAttribute("operation", "operation");
@@ -77,7 +78,7 @@ class ValidElementTest {
     }
 
     @Test
-    void missingValueTest() {
+    public void missingValueTest() {
         Element noValue = document.createElement("test");
         noValue.setAttribute("operation", "operation");
         ValidElement invalid1 = new ValidElement(noValue);
@@ -85,7 +86,7 @@ class ValidElementTest {
     }
 
     @Test
-    void missingOperationTest() {
+    public void missingOperationTest() {
         Element noValue = document.createElement("test");
         noValue.setAttribute("value", "value");
         ValidElement invalid1 = new ValidElement(noValue);
@@ -93,7 +94,7 @@ class ValidElementTest {
     }
 
     @Test
-    void equalityTest() {
+    public void equalityTest() {
         Element element = document.createElement("test");
         element.setAttribute("value", "value");
         element.setAttribute("operation", "operation");
@@ -103,7 +104,7 @@ class ValidElementTest {
     }
 
     @Test
-    void notEqualValueTest() {
+    public void notEqualValueTest() {
         Element element1 = document.createElement("test");
         element1.setAttribute("value", "value");
         element1.setAttribute("operation", "operation");
@@ -116,7 +117,7 @@ class ValidElementTest {
     }
 
     @Test
-    void notEqualOperationTest() {
+    public void notEqualOperationTest() {
         Element element1 = document.createElement("test");
         element1.setAttribute("value", "value");
         element1.setAttribute("operation", "operation");
@@ -126,5 +127,37 @@ class ValidElementTest {
         ValidElement eq1 = new ValidElement(element1);
         ValidElement eq2 = new ValidElement(element2);
         Assertions.assertNotEquals(eq1, eq2);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        Element element = document.createElement("test");
+        element.setAttribute("value", "value");
+        element.setAttribute("operation", "operation");
+        Element element2 = document.createElement("test");
+        element2.setAttribute("value", "value");
+        element2.setAttribute("operation", "notOperation");
+        ValidElement eq1 = new ValidElement(element);
+        ValidElement eq2 = new ValidElement(element);
+        ValidElement notEq = new ValidElement(element2);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        // Element is abstract, have to give prefab values to EqualsVerifier
+        Element element = document.createElement("test");
+        element.setAttribute("value", "value");
+        element.setAttribute("operation", "operation");
+        Element element2 = document.createElement("test");
+        element2.setAttribute("value", "value");
+        element2.setAttribute("operation", "notOperation");
+
+        EqualsVerifier
+                .forClass(ValidElement.class)
+                .withNonnullFields("element")
+                .withPrefabValues(Element.class, element, element2)
+                .verify();
     }
 }

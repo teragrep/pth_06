@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ import org.junit.jupiter.api.Test;
 public class HostConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         HostCondition elementCondition = new HostCondition("f17", "EQUALS", false);
         HostCondition streamElementCondition = new HostCondition("f17", "EQUALS", true);
         String e = "\"getArchivedObjects_filter_table\".\"host\" like 'f17'";
@@ -70,7 +71,7 @@ public class HostConditionTest {
     }
 
     @Test
-    void negationTest() {
+    public void negationTest() {
         HostCondition elementCondition = new HostCondition("f17", "NOT_EQUALS", false);
         HostCondition streamElementCondition = new HostCondition("f17", "NOT_EQUALS", true);
         String e = "not (\"getArchivedObjects_filter_table\".\"host\" like 'f17')";
@@ -82,7 +83,7 @@ public class HostConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
         eq1.condition();
         HostCondition eq2 = new HostCondition("946677600", "EQUALS", false);
@@ -94,12 +95,35 @@ public class HostConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
         HostCondition notEq = new HostCondition("1000", "EQUALS", false);
         HostCondition notEq2 = new HostCondition("946677600", "EQUALS", true);
         Assertions.assertNotEquals(eq1, notEq);
         Assertions.assertNotEquals(eq1, notEq2);
         Assertions.assertNotEquals(notEq, notEq2);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition eq2 = new HostCondition("946677600", "EQUALS", false);
+        HostCondition eq3 = new HostCondition("946677600", "EQUALS", true);
+        HostCondition eq4 = new HostCondition("946677600", "EQUALS", true);
+        HostCondition eq5 = new HostCondition("12344", "EQUALS", false);
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertEquals(eq3.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq4.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), eq5.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier
+                .forClass(HostCondition.class)
+                .withNonnullFields("value")
+                .withNonnullFields("operation")
+                .withNonnullFields("streamQuery")
+                .verify();
     }
 }

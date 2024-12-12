@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -55,10 +56,10 @@ import org.junit.jupiter.api.Test;
  * 
  * @see org.jooq.QueryPart
  */
-class LatestConditionTest {
+public class LatestConditionTest {
 
     @Test
-    void conditionTest() {
+    public void conditionTest() {
         String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
                 + ")";
@@ -67,7 +68,7 @@ class LatestConditionTest {
     }
 
     @Test
-    void conditionUpdatedTest() {
+    public void conditionUpdatedTest() {
         String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
                 + ")";
@@ -76,7 +77,7 @@ class LatestConditionTest {
     }
 
     @Test
-    void equalsTest() {
+    public void equalsTest() {
         LatestCondition eq1 = new LatestCondition("946720800");
         eq1.condition();
         LatestCondition eq2 = new LatestCondition("946720800");
@@ -88,9 +89,23 @@ class LatestConditionTest {
     }
 
     @Test
-    void notEqualsTest() {
+    public void notEqualsTest() {
         LatestCondition eq1 = new LatestCondition("946720800");
         LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
+    }
+
+    @Test
+    public void hashCodeTest() {
+        LatestCondition eq1 = new LatestCondition("946720800");
+        LatestCondition eq2 = new LatestCondition("946720800");
+        LatestCondition notEq = new LatestCondition("1000");
+        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
+        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void equalsHashCodeContractTest() {
+        EqualsVerifier.forClass(LatestCondition.class).withNonnullFields("value").verify();
     }
 }
