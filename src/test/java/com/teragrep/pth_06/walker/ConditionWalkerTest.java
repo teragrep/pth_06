@@ -474,6 +474,18 @@ public class ConditionWalkerTest {
         });
     }
 
+    @Test
+    public void testStreamingWalkerPassThroughNotNegated() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), false);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><earliest operation=\"EQUALS\" value=\"32154742\"/></AND>";
+        String qNeq = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><NOT><earliest operation=\"EQUALS\" value=\"32154742\"/></NOT></AND>";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
+        Condition condNeq = Assertions.assertDoesNotThrow(() -> walker.fromString(qNeq, true));
+        String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(e, condNeq.toString());
+    }
+
     private void writeFilter(String tableName, int filterId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();

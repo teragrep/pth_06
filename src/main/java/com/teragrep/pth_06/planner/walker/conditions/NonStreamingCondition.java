@@ -47,61 +47,62 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
-import org.jooq.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
+import org.jooq.impl.DSL;
 
 import java.util.Objects;
-import java.util.Set;
 
-/**
- * Creates a query condition from provided dom element
- */
-public final class ElementCondition implements QueryCondition, BloomQueryCondition {
+public final class NonStreamingCondition implements QueryCondition {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ElementCondition.class);
-
-    private final ValidElement element;
+    private final String tag;
+    private final String value;
+    private final String operation;
     private final ConditionConfig config;
 
-    public ElementCondition(Element element, ConditionConfig config) {
-        this(new ValidElement(element), config);
-    }
-
-    public ElementCondition(ValidElement element, ConditionConfig config) {
-        this.element = element;
+    public NonStreamingCondition(String tag, String value, String operation, ConditionConfig config) {
+        this.tag = tag;
+        this.value = value;
+        this.operation = operation;
         this.config = config;
     }
 
     public Condition condition() {
-        final String tag = element.tag();
-        final String value = element.value();
-        final String operation = element.operation();
-        final QueryCondition queryCond;
-        // create condition for a streaming query or a non-streaming query
-        if (config.streamQuery()) {
-            queryCond = new StreamingCondition(tag, value, operation);
+        final Condition condition;
+        switch (tag.toLowerCase()) {
+            case "index":
+                final QueryCondition index = new IndexCondition(value, operation, false);
+                condition = index.condition();
+                break;
+            case "sourcetype":
+                final QueryCondition sourceType = new SourceTypeCondition(value, operation, false);
+                condition = sourceType.condition();
+                break;
+            case "host":
+                final QueryCondition host = new HostCondition(value, operation, false);
+                condition = host.condition();
+                break;
+            case "earliest":
+            case "index_earliest":
+                final QueryCondition earliest = new EarliestCondition(value);
+                condition = earliest.condition();
+                break;
+            case "latest":
+            case "index_latest":
+                final QueryCondition latest = new LatestCondition(value);
+                condition = latest.condition();
+                break;
+            case "indexstatement":
+                if ("EQUALS".equals(operation) && config.bloomEnabled()) {
+                    final QueryCondition indexStatement = new IndexStatementCondition(value, config);
+                    condition = indexStatement.condition();
+                }
+                else {
+                    condition = DSL.noCondition();
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported element tag <" + tag + ">");
         }
-        else {
-            queryCond = new NonStreamingCondition(tag, value, operation, config);
-        }
-        final Condition resultCondition = queryCond.condition();
-        LOGGER.debug("Query condition: <{}>", resultCondition);
-        return resultCondition;
-    }
-
-    public boolean isBloomSearchCondition() {
-        final String tag = element.tag();
-        final String operation = element.operation();
-        return "indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && !config.streamQuery()
-                && config.bloomEnabled();
-    }
-
-    /** A set of tables needed to be joined to the query to use this condition */
-    public Set<Table<?>> requiredTables() {
-        final String value = element.value();
-        return new IndexStatementCondition(value, config).requiredTables();
+        return condition;
     }
 
     @Override
@@ -115,12 +116,13 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
         if (object.getClass() != this.getClass()) {
             return false;
         }
-        final ElementCondition cast = (ElementCondition) object;
-        return this.element.equals(cast.element) && this.config.equals(cast.config);
+        final NonStreamingCondition that = (NonStreamingCondition) object;
+        return Objects.equals(tag, that.tag) && Objects.equals(value, that.value)
+                && Objects.equals(operation, that.operation) && Objects.equals(config, that.config);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(element, config);
+        return Objects.hash(tag, value, operation, config);
     }
 }
