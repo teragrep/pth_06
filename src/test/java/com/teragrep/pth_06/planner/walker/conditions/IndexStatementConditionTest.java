@@ -266,6 +266,7 @@ public class IndexStatementConditionTest {
         EqualsVerifier
                 .forClass(IndexStatementCondition.class)
                 .withNonnullFields("value")
+                .withNonnullFields("operation")
                 .withNonnullFields("config")
                 .withNonnullFields("tableSet")
                 .withIgnoredFields("LOGGER")
