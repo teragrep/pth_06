@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -55,7 +56,9 @@ import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,12 +74,19 @@ public class NonStreamingConditionTest {
                 .asList("index", "sourcetype", "host", "earliest", "index_earliest", "latest", "index_latest");
         final String value = "123456789";
         final String operation = "EQUALS";
+        final List<Condition> conditions = new ArrayList<>();
         int loops = 0;
-        for (String tag : validTags) {
-            Assertions.assertDoesNotThrow(() -> new NonStreamingCondition(tag, value, operation, config).condition());
+        for (final String tag : validTags) {
+            final Condition result = Assertions
+                    .assertDoesNotThrow(() -> new NonStreamingCondition(tag, value, operation, config).condition());
+            Assertions.assertNotEquals(DSL.noCondition(), result);
+            conditions.add(result);
             loops++;
         }
         Assertions.assertEquals(7, loops);
+        final List<Condition> expectedResults = Collections
+                .unmodifiableList(Arrays.asList(new IndexCondition(value, operation, false).condition(), new SourceTypeCondition(value, operation, false).condition(), new HostCondition(value, operation, false).condition(), new EarliestCondition(value).condition(), new EarliestCondition(value).condition(), new LatestCondition(value).condition(), new LatestCondition(value).condition()));
+        Assertions.assertEquals(expectedResults, conditions);
     }
 
     @Test

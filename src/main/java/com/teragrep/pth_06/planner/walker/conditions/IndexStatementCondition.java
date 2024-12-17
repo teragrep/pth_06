@@ -64,19 +64,31 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
     private final String value;
+    private final String operation;
     private final ConditionConfig config;
     private final Set<Table<?>> tableSet;
 
     public IndexStatementCondition(String value, ConditionConfig config) {
+        this(value, "EQUALS", config);
+    }
+
+    public IndexStatementCondition(String value, String operation, ConditionConfig config) {
         this.value = value;
+        this.operation = operation;
         this.config = config;
         this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
         Condition newCondition = DSL.noCondition();
-        if (!config.bloomEnabled()) {
-            LOGGER.debug("Indexstatement reached with bloom disabled");
+        if (!"EQUALS".equals(operation) || !config.bloomEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER
+                        .debug(
+                                "Indexstatement reached without equals operation or bloom disabled. (operation=<{}>, bloom.enabled=<{}>)",
+                                operation, config.bloomEnabled()
+                        );
+            }
             return newCondition;
         }
         if (tableSet.isEmpty()) {
@@ -145,12 +157,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         }
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return Objects.equals(value, cast.value) && Objects.equals(config, cast.config)
-                && Objects.equals(tableSet, cast.tableSet);
+        return Objects.equals(value, cast.value) && Objects.equals(operation, cast.operation)
+                && Objects.equals(config, cast.config) && Objects.equals(tableSet, cast.tableSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config, tableSet);
+        return Objects.hash(value, operation, config, tableSet);
     }
 }

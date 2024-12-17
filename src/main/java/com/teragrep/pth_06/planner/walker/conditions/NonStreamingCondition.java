@@ -47,7 +47,6 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 import java.util.Objects;
 
@@ -91,13 +90,8 @@ public final class NonStreamingCondition implements QueryCondition {
                 condition = latest.condition();
                 break;
             case "indexstatement":
-                if ("EQUALS".equals(operation) && config.bloomEnabled()) {
-                    final QueryCondition indexStatement = new IndexStatementCondition(value, config);
-                    condition = indexStatement.condition();
-                }
-                else {
-                    condition = DSL.noCondition();
-                }
+                final QueryCondition indexStatement = new IndexStatementCondition(value, operation, config);
+                condition = indexStatement.condition();
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported element tag <" + tag + ">");

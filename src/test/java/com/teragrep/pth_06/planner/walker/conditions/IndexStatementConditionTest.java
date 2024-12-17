@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import com.teragrep.pth_06.config.ConditionConfig;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -136,6 +137,22 @@ public class IndexStatementConditionTest {
             conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
             conn.close();
         });
+    }
+
+    @Test
+    public void testNonEqualsOperation() {
+        final DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
+        final ConditionConfig config = new ConditionConfig(ctx, false, true);
+        final Condition condition = new IndexStatementCondition("test", "NOT_EQUALS", config).condition();
+        Assertions.assertEquals(DSL.noCondition(), condition);
+    }
+
+    @Test
+    public void testBloomDisabled() {
+        final DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
+        final ConditionConfig config = new ConditionConfig(ctx, false, false);
+        final Condition condition = new IndexStatementCondition("test", config).condition();
+        Assertions.assertEquals(DSL.noCondition(), condition);
     }
 
     @Test

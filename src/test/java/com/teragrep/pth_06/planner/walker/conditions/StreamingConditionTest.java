@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class StreamingConditionTest {
@@ -64,7 +65,7 @@ public class StreamingConditionTest {
         final String operation = "EQUALS";
         final List<Condition> conditions = new ArrayList<>();
         int loops = 0;
-        for (String tag : tags) {
+        for (final String tag : tags) {
             final Condition result = Assertions
                     .assertDoesNotThrow(() -> new StreamingCondition(tag, value, operation).condition());
             Assertions.assertNotEquals(DSL.noCondition(), result);
@@ -72,8 +73,8 @@ public class StreamingConditionTest {
             loops++;
         }
         Assertions.assertEquals(3, loops);
-        final List<Condition> expectedResults = Arrays
-                .asList(new IndexCondition(value, operation, true).condition(), new SourceTypeCondition(value, operation, true).condition(), new HostCondition(value, operation, true).condition());
+        final List<Condition> expectedResults = Collections
+                .unmodifiableList(Arrays.asList(new IndexCondition(value, operation, true).condition(), new SourceTypeCondition(value, operation, true).condition(), new HostCondition(value, operation, true).condition()));
         Assertions.assertEquals(expectedResults, conditions);
     }
 
@@ -84,7 +85,7 @@ public class StreamingConditionTest {
         final String value = "123456";
         final String operation = "EQUALS";
         int loops = 0;
-        for (String tag : tags) {
+        for (final String tag : tags) {
             final Condition result = Assertions
                     .assertDoesNotThrow(() -> new StreamingCondition(tag, value, operation).condition());
             Assertions.assertEquals(DSL.noCondition(), result);
