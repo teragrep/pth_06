@@ -1,0 +1,64 @@
+name: CI
+
+on: [ push ]
+
+jobs:
+  upload:
+    name: CI
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.5
+        env:
+          MYSQL_DB: pth_06
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Initialize MariaDB
+      env:
+        MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
+      run: |
+        echo "Creating databases"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE streamdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE journaldb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "CREATE DATABASE bloomdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        echo "Creating users"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on streamdb.* to streamdb@'%' identified by 'streamdb_pass';"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on journaldb.* to streamdb@'%' identified by 'streamdb_pass';"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "grant all privileges on bloomdb.* to streamdb@'%' identified by 'streamdb_pass';"
+        echo "Importing journaldb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D journaldb < database/journaldb.sql
+        echo "Importing streamdb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D streamdb < database/streamdb.sql
+        echo "Importing bloomdb"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} -D bloomdb < database/bloomdb.sql
+        echo "Flushing privileges"
+        mysql -u root -h127.0.0.1 -P${MARIADB_PORT} <<< "flush privileges;"
+
+    - name: Cache Local Maven Repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: 8.0.292+10
+        distribution: 'adopt'
+
+    - name: Generate sources
+      run: mvn -B generate-sources
+      env:
+        MARIADB_PORT: ${{ job.services.mariadb.ports[3306] }}
+
+    - name: Inject licenses to generated files
+      run: bash add_headers_to_generated.sh
+
+    - name: Run CI
+      run: mvn -Pbuild-nogenerate --batch-mode clean package
