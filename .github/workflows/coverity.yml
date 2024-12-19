@@ -92,7 +92,7 @@ jobs:
         id: cache-pull-coverity-distribution
         uses: actions/cache@v4
         with:
-          path: ${{ env.COVERITY }}
+          path: ${RUNNER_TEMP}/${{ env.COVERITY }}
           key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
 
       - name: Remove coverity_tool.md5 file
