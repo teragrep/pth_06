@@ -93,7 +93,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.COVERITY }}
-          key: ${{ runner.os }}-coverity-${{ hashFiles('${RUNNER_TEMP}/coverity_tool.md5') }}
+          key: ${{ runner.os }}-coverity-${{ hashFiles(format('{0}/coverity_tool.md5', runner.temp)) }}
 
       - name: Download and extract Coverity distribution if cache-miss
         if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
