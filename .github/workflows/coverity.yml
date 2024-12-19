@@ -95,8 +95,8 @@ jobs:
           path: ${RUNNER_TEMP}/${{ env.COVERITY }}
           key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
 
-      - name: Remove coverity_tool.md5 file
-        run: rm -f coverity_tool.md5
+      - name: Move coverity_tool.md5 file so it won't conflict with maven
+        run: mv coverity_tool.md5 ${RUNNER_TEMP}/coverity_tool.md5
 
       - name: Download and extract Coverity distribution if cache-miss
         if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
@@ -145,3 +145,6 @@ jobs:
 
       - name: Trigger Coverity analysis
         run: curl -X PUT -d token=${{ secrets.COVERITY_TOKEN }} ${{ env.COVERITY_SUBMIT_URL }}
+
+      - name: Restore coverity_tool.md5 file so caches can be generated
+        run: mv ${RUNNER_TEMP}/coverity_tool.md5 coverity_tool.md5
