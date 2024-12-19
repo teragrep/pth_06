@@ -86,14 +86,14 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Download Coverity distribution md5sum for cache key
-        run: wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=${{ vars.COVERITY_PROJECT_URL_NAME }}&md5=1" -O coverity_tool.md5
+        run: wget https://scan.coverity.com/download/linux64 --post-data "token=${{ secrets.COVERITY_TOKEN }}&project=${{ vars.COVERITY_PROJECT_URL_NAME }}&md5=1" -O ${RUNNER_TEMP}/coverity_tool.md5
 
       - name: Cache pull Coverity distribution, extracted
         id: cache-pull-coverity-distribution
         uses: actions/cache@v4
         with:
           path: ${{ env.COVERITY }}
-          key: ${{ runner.os }}-coverity-${{ hashFiles('coverity_tool.md5') }}
+          key: ${{ runner.os }}-coverity-${{ hashFiles('${RUNNER_TEMP}/coverity_tool.md5') }}
 
       - name: Download and extract Coverity distribution if cache-miss
         if: steps.cache-pull-coverity-distribution.outputs.cache-hit != 'true'
@@ -124,8 +124,8 @@ jobs:
 
       - name: Compile Coverity
         run: |
-           ${RUNNER_TEMP}/${{ env.COVERITY }}/bin/cov-build --dir cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean verify
-           tar czvf ${RUNNER_TEMP}/${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz cov-int
+           ${RUNNER_TEMP}/${{ env.COVERITY }}/bin/cov-build --dir ${RUNNER_TEMP}/cov-int mvn -Pbuild-nogenerate -B -Drevision=${{ env.RELEASE_VERSION }} -Dsha1= -Dchangelist= clean verify
+           tar czvf ${RUNNER_TEMP}/${{ vars.COVERITY_PROJECT_URL_NAME }}.tgz ${RUNNER_TEMP}/cov-int
 
       - name: Prepare response url
         run: printf "RESPONSE_URL=%q\n" "$(jq -r '.url' ${RUNNER_TEMP}/response)" >> $GITHUB_ENV
