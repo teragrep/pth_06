@@ -90,7 +90,9 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
 
         Meta meta = ctx.meta();
 
-        LOGGER.trace("Found meta <[{}]>", meta);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("Found meta.getTables() <[{}]>", meta.getTables());
+        }
 
         final List<Table<?>> tables = meta
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
