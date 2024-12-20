@@ -47,9 +47,7 @@ package com.teragrep.pth_06.planner.bloomfilter;
 
 import com.teragrep.pth_06.planner.walker.conditions.RegexLikeCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.Table;
+import org.jooq.*;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,22 +82,68 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
      * @return List of tables that matched QueryCondition and were not empty
      */
     public List<Table<?>> tables() {
-        final List<Table<?>> tables = ctx
-                .meta()
+        LOGGER.debug("Matching tables for condition <[{}]>, using ctx <{}>", condition, ctx);
+        TablesWithMatchingRegexAndNotEmpty tablesWithMatchingRegexAndNotEmpty = new TablesWithMatchingRegexAndNotEmpty(
+                ctx,
+                condition
+        );
+
+        Meta meta = ctx.meta();
+
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("Found meta.getTables() <[{}]>", meta.getTables());
+        }
+
+        final List<Table<?>> tables = meta
                 .filterSchemas(s -> s.equals(BLOOMDB)) // select bloomdb
                 .filterTables(t -> !t.equals(BLOOMDB.FILTERTYPE)) // remove filtertype table
-                .filterTables(t -> ctx.select((Field<ULong>) t.field("id"))// for each remaining table
-                        .from(t)
-                        .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
-                        .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
-                        .where(condition.condition())// select tables that match the condition
-                        .limit(1)// limit 1 since we are checking only if the table is not empty
-                        .fetch()
-                        .isNotEmpty() // select table if not empty
-                )
+                .filterTables(tablesWithMatchingRegexAndNotEmpty) // for each remaining table
                 .getTables();
+
         LOGGER.debug("Table(s) with a pattern match <{}>", tables);
+
         return tables;
+    }
+
+    private static class TablesWithMatchingRegexAndNotEmpty implements Meta.Predicate<Table<?>> {
+
+        private final DSLContext ctx;
+        private final QueryCondition condition;
+
+        public TablesWithMatchingRegexAndNotEmpty(DSLContext ctx, QueryCondition condition) {
+            this.ctx = ctx;
+            this.condition = condition;
+        }
+
+        @Override
+        public boolean test(final Table<?> t) {
+            // select id from each of the tables from the first row, then join to 'filtertype' via the filter_type_id, to access the pattern so that we know if the table is relevant for the query
+
+            SelectLimitPercentStep<Record1<ULong>> selectQuery = ctx
+                    .select((Field<ULong>) t.field("id"))
+                    .from(t)
+                    .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
+                    .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
+                    .where(condition.condition())// select tables that match the condition
+                    .limit(1); // limit 1 since we are checking only if the table is not empty
+
+            LOGGER.trace("Testing a match for table <[{}]> using selectQuery <[{}]> ", t, selectQuery);
+
+            Result<Record1<ULong>> firstRowIdOnBloomCategoryTable = selectQuery.fetch();
+
+            LOGGER
+                    .trace(
+                            "Result for table <[{}]> firstRowIdOnBloomCategoryTable <[{}]>", t,
+                            firstRowIdOnBloomCategoryTable
+                    );
+
+            boolean isIncluded = firstRowIdOnBloomCategoryTable.isNotEmpty(); // select table if not empty
+
+            LOGGER.debug("Table <[{}]>, isIncluded <{}>", t, isIncluded);
+
+            return isIncluded;
+        }
+
     }
 
     /**
