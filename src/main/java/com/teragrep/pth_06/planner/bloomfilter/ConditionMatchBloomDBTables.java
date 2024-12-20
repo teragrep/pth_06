@@ -88,7 +88,7 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
                 condition
         );
 
-        Meta meta = ctx.meta().snapshot();
+        Meta meta = ctx.meta();
 
         LOGGER.trace("Found meta <[{}]>", meta);
 
