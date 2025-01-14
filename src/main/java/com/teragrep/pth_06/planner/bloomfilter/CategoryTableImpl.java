@@ -115,18 +115,24 @@ public final class CategoryTableImpl implements CategoryTable {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Creating temporary table <{}>", namedTable.getName());
         }
-        ctx.dropTemporaryTableIfExists(namedTable).execute();
+
+        try (final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(namedTable)) {
+            dropTableStep.execute();
+        }
+
         final String sql = "create temporary table " + namedTable.getName()
                 + "(id bigint auto_increment primary key, term_id bigint, type_id bigint, filter longblob, unique key "
                 + namedTable.getName() + "_unique_key (term_id, type_id))";
         final Query createQuery = ctx.query(sql);
         createQuery.execute();
         final Index typeIndex = DSL.index(DSL.name(namedTable.getName() + "_ix_type_id"));
-        final CreateIndexIncludeStep indexStep = ctx
-                .createIndex(typeIndex)
-                .on(namedTable, DSL.field("type_id", BIGINTUNSIGNED.nullable(false)));
-        LOGGER.trace("BloomFilterTempTable create index <{}>", indexStep);
-        indexStep.execute();
+
+        try (
+                final CreateIndexIncludeStep indexStep = ctx.createIndex(typeIndex).on(namedTable, DSL.field("type_id", BIGINTUNSIGNED.nullable(false)))
+        ) {
+            LOGGER.trace("BloomFilterTempTable create index <{}>", indexStep);
+            indexStep.execute();
+        }
     }
 
     /**
