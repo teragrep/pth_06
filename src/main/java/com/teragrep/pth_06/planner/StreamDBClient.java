@@ -171,7 +171,11 @@ public class StreamDBClient {
 
         LOGGER.trace("StreamDBClient.pullToSliceTable select <{}>", select);
         final Instant stopwatch = Instant.now();
-        int rows = ctx.insertInto(SliceTable.SLICE_TABLE).select(select).execute();
+        final int rows;
+
+        try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
+            rows = selectStep.execute();
+        }
 
         LOGGER
                 .info(
@@ -246,17 +250,13 @@ public class StreamDBClient {
         private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
 
         private static void create(DSLContext ctx) {
-            DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(SLICE_TABLE);
-            dropQuery.execute();
-            CreateTableColumnStep query = ctx
-                    .createTemporaryTable(SLICE_TABLE)
-                    .columns(
-                            id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
-                            uncompressedFilesize
-                    );
-            query.execute();
-
-            ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime).execute();
+            try (
+                    final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE); final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize); final CreateIndexIncludeStep createIndexStep = ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime)
+            ) {
+                dropTableStep.execute();
+                createTableStep.execute();
+                createIndexStep.execute();
+            }
         }
 
     }
@@ -303,14 +303,16 @@ public class StreamDBClient {
             query.execute();
 
             // this could be within tmpTableCreateSql but JOOQ can't (yet) https://github.com/jOOQ/jOOQ/issues/11752
-            ctx
-                    .createIndex(GetArchivedObjectsFilterTable.hostIndex)
-                    //.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.
-                    .on(
-                            GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,
-                            GetArchivedObjectsFilterTable.tag
-                    )
-                    .execute();
+            try (
+                    final CreateIndexIncludeStep indexStep = ctx.createIndex(GetArchivedObjectsFilterTable.hostIndex)
+                            //.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.
+                            .on(
+                                    GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,
+                                    GetArchivedObjectsFilterTable.tag
+                            )
+            ) {
+                indexStep.execute();
+            }
         }
 
     }
