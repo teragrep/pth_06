@@ -43,31 +43,64 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.task.hdfs;
 
-import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import com.teragrep.pth_06.HdfsFileMetadata;
+import com.teragrep.pth_06.avro.SyslogRecord;
+import org.apache.avro.file.DataFileStream;
+import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.io.IOException;
+import java.util.LinkedList;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+// This class will allow reading the contents of the avro-files that are using SyslogRecord schema from hdfs.
+public final class AvroReadImpl implements AvroRead {
 
-    public abstract Map<TopicPartition, Long> getInitialEndOffsets();
+    final Logger LOGGER = LoggerFactory.getLogger(AvroReadImpl.class);
 
-    public abstract Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
+    private final DataFileStream<SyslogRecord> reader;
+    private final LinkedList<SyslogRecord> syslogRecordBuffer;
 
-    public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
+    public AvroReadImpl(FileSystem fs, HdfsFileMetadata hdfsFileMetadata) throws IOException {
+        this.reader = new DataFileStream<>(
+                fs.open(new Path(hdfsFileMetadata.hdfsFilePath)),
+                new SpecificDatumReader<>(SyslogRecord.class)
+        );
+        syslogRecordBuffer = new LinkedList<>();
+    }
 
-    public abstract void commit(KafkaOffset offset);
+    @Override
+    public boolean next() {
+        boolean hasnext = reader.hasNext();
+        if (hasnext) {
+            syslogRecordBuffer.clear();
+            syslogRecordBuffer.add(reader.next());
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
-    public abstract void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
+    @Override
+    public SyslogRecord record() {
+        if (syslogRecordBuffer.size() == 1) {
+            return syslogRecordBuffer.getFirst();
+        }
+        else {
+            throw new IllegalStateException(
+                    "Invalid amount of records in the buffer, expected 1 got " + syslogRecordBuffer.size()
+            );
+        }
+    }
 
-    public abstract Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
+    @Override
+    public void close() throws IOException {
+        reader.close();
+    }
+
 }
