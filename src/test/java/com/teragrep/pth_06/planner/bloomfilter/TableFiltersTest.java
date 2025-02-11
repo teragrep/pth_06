@@ -123,10 +123,7 @@ public class TableFiltersTest {
 
     @AfterAll
     public void tearDown() {
-        Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
-            conn.close();
-        });
+        Assertions.assertDoesNotThrow(conn::close);
     }
 
     @Test
