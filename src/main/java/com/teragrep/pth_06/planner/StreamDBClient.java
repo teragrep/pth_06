@@ -250,11 +250,17 @@ public class StreamDBClient {
         private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
 
         private static void create(DSLContext ctx) {
-            try (
-                    final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE); final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize); final CreateIndexIncludeStep createIndexStep = ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime)
-            ) {
+            try (final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE)) {
                 dropTableStep.execute();
+            }
+            try (
+                    final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize)
+            ) {
                 createTableStep.execute();
+            }
+            try (
+                    final CreateIndexIncludeStep createIndexStep = ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime)
+            ) {
                 createIndexStep.execute();
             }
         }
