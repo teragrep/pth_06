@@ -251,6 +251,7 @@ public class TableFilterTypesFromMetadataResultTest {
             stmt.setBytes(3, filterBAOS.toByteArray());
             int success = stmt.executeUpdate();
             Assertions.assertEquals(1, success);
+            stmt.close();
         });
     }
 }
