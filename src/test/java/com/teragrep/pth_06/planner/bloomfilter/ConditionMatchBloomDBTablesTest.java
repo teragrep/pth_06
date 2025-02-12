@@ -236,6 +236,7 @@ public class ConditionMatchBloomDBTablesTest {
             stmt.setInt(2, filterId);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
+            stmt.close();
         });
     }
 }

@@ -177,6 +177,7 @@ public class CategoryTableImplTest {
             ResultSet rs = conn.prepareStatement("SELECT * FROM term_0_target").executeQuery();
             rs.absolute(1);
             byte[] bytes = rs.getBytes(4);
+            rs.close();
             return BloomFilter.readFrom(new ByteArrayInputStream(bytes));
         });
         // check that category table filter only has pattern matching tokens
@@ -302,6 +303,7 @@ public class CategoryTableImplTest {
             stmt.setInt(2, 1);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
+            stmt.close();
         });
     }
 }
