@@ -61,4 +61,4 @@ jobs:
       run: bash add_headers_to_generated.sh
 
     - name: Run CI
-      run: mvn -Pbuild-nogenerate --batch-mode clean verify package
+      run: mvn -Pbuild-nogenerate --batch-mode clean verify
