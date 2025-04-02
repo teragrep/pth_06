@@ -5,15 +5,16 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
-public class RegexStringFromQuery {
+public class KafkaSubscriptionPatternFromQuery {
     private final String query;
 
-    public RegexStringFromQuery(final String query) {
+    public KafkaSubscriptionPatternFromQuery(final String query) {
         this.query = query;
     }
 
-    public String regexString() {
+    public Pattern pattern() {
         String topicsRegexString;
             try {
                 KafkaWalker parser = new KafkaWalker();
@@ -21,13 +22,13 @@ public class RegexStringFromQuery {
             }
             catch (ParserConfigurationException | IOException | SAXException ex) {
                 throw new RuntimeException(
-                        "Exception walking query <" + query
-                                + "> exception:" + ex
+                        "Exception building kafka pattern from query <" + query
+                                + "> exception: " + ex
                 );
             }
         if (topicsRegexString == null) {
             topicsRegexString = "^.*$"; // all topics if null
         }
-        return topicsRegexString;
+        return Pattern.compile(topicsRegexString);
     }
 }
