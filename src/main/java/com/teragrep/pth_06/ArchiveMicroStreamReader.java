@@ -106,7 +106,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
 
         if (config.isKafkaEnabled) {
-            this.kq = new KafkaQueryProcessor(config);
+            this.kq = new KafkaQueryImpl(config);
         }
         else {
             this.kq = null;
