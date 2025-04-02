@@ -45,37 +45,36 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+public class KafkaSubscriptionPatternFromQueryTest {
 
-public final class KafkaSubscriptionPatternFromQuery {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
-
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    @Test
+    public void testCorrectIndex() {
+        final String query = "<index value=\"test_topic\" operation=\"EQUALS\"/>";
+        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+                query
+        );
+        Assertions.assertEquals("^test_topic$", kafkaSubscriptionPatternFromQuery.pattern().pattern());
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
-        }
-        catch (ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+    @Test
+    public void testEmptyIndex() {
+        final String query = "<index operation=\"EQUALS\"/>";
+        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+                query
+        );
+        Assertions.assertEquals("^$", kafkaSubscriptionPatternFromQuery.pattern().pattern());
+    }
+
+    @Test
+    public void testUnparseableIndexToAnyIndex() {
+        // NOT_EQUALS causes walker to return null, in those cases we return a match any pattern
+        final String query = "<index value=\"test_topic\" operation=\"NOT_EQUALS\"/>";
+        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+                query
+        );
+        Assertions.assertEquals(".*", kafkaSubscriptionPatternFromQuery.pattern().pattern());
     }
 }
