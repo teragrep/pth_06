@@ -97,6 +97,8 @@ public final class KafkaQueryImpl implements KafkaQuery {
     public Set<TopicPartition> authorizedMatchingTopicPartitions() {
         final Pattern pattern = patternFromQuery.pattern();
         LOGGER.info("Filtering topics using pattern <{}>", pattern.pattern());
+
+        // get all authorized topics in the kafka cluster and filter using regex
         final Set<String> matchingTopics = consumer
                 .listTopics()
                 .keySet()
@@ -106,7 +108,7 @@ public final class KafkaQueryImpl implements KafkaQuery {
 
         final Set<TopicPartition> authorizedTopicPartitions = new HashSet<>();
 
-        // filter out topics that do not match regex or that have no authorization
+        // check that authorized to all topics
         for (final String topic : matchingTopics) {
             try {
                 final List<PartitionInfo> partitions = consumer.partitionsFor(topic); // can throw TopicAuthorizationException same as poll()
@@ -124,7 +126,7 @@ public final class KafkaQueryImpl implements KafkaQuery {
         }
 
         if (authorizedTopicPartitions.isEmpty()) {
-            LOGGER.warn("Found no authorized topics for given pattern <{}>, no kafka data will be available", pattern);
+            LOGGER.warn("Found no authorized topics found for pattern <{}>, no kafka data will be available", pattern);
         }
 
         return authorizedTopicPartitions;
