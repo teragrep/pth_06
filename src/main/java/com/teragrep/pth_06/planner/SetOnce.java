@@ -57,7 +57,7 @@ public final class SetOnce<T> {
         this(false);
     }
 
-    private SetOnce(boolean isSet) {
+    private SetOnce(final boolean isSet) {
         this.isSet = isSet;
     }
 
