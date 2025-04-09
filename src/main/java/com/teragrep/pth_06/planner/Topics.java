@@ -45,38 +45,28 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import java.util.Collections;
+import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+public interface Topics<T> {
 
-public final class KafkaSubscriptionPatternFromQuery {
+    public abstract List<T> asList();
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
+    public static class FakeTopics implements Topics {
 
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
-    }
+        private final List list;
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
+        public FakeTopics() {
+            this.list = Collections.emptyList();
         }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
+
+        public FakeTopics(final List list) {
+            this.list = list;
         }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
+
+        @Override
+        public List asList() {
+            return list;
         }
-        return Pattern.compile(topicsRegexString);
     }
 }

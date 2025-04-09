@@ -45,38 +45,35 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
-public final class KafkaSubscriptionPatternFromQuery {
+public final class RegexMatchingKafkaTopicsTest {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
-
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    @Test
+    public void testRegexFiltering() {
+        final List<String> topicsList = Arrays.asList("topic-1", "topic-2");
+        final Topics.FakeTopics topics = new Topics.FakeTopics(topicsList);
+        final RegexMatchingKafkaTopics regexMatchingKafkaTopics = new RegexMatchingKafkaTopics(
+                topics,
+                Pattern.compile("^topic-1$")
+        );
+        Assertions.assertEquals(1, regexMatchingKafkaTopics.asList().size());
+        Assertions.assertEquals("topic-1", regexMatchingKafkaTopics.asList().get(0));
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
-        }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+    @Test
+    public void testNoMatch() {
+        final List<String> topicsList = Arrays.asList("topic-1", "topic-2");
+        final Topics.FakeTopics topics = new Topics.FakeTopics(topicsList);
+        final RegexMatchingKafkaTopics regexMatchingKafkaTopics = new RegexMatchingKafkaTopics(
+                topics,
+                Pattern.compile("^nomatches$")
+        );
+        Assertions.assertEquals(0, regexMatchingKafkaTopics.asList().size());
     }
 }

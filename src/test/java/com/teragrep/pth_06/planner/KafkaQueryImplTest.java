@@ -45,184 +45,218 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.PartitionInfo;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.errors.TopicAuthorizationException;
+import com.teragrep.pth_06.config.Config;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.KafkaFuture;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.testcontainers.kafka.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+@EnabledIfSystemProperty(
+        named = "runContainerTests",
+        matches = "true"
+)
+public final class KafkaQueryImplTest {
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class KafkaQueryImplTest {
+    private final static KafkaContainer kafka = Assertions
+            .assertDoesNotThrow(() -> new KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0")));
+    Map<String, String> opts;
+    AdminClient adminClient;
+    KafkaProducer<String, String> producer;
 
-    private final Set<TopicPartition> authorizedTopics = new HashSet<>();
-    private final Set<TopicPartition> unauthorizedTopics = new HashSet<>();
+    @BeforeEach
+    public void start() {
+        Assertions.assertDoesNotThrow(kafka::start);
+        this.opts = new HashMap<>();
+        opts.put("queryXML", "<index value=\"*\" operation=\"EQUALS\"/>");
+        opts.put("kafka.enabled", "true");
+        opts.put("kafka.bootstrap.servers", kafka.getBootstrapServers());
+        opts.put("kafka.sasl.mechanism", "GSSAPI");
+        opts.put("kafka.security.protocol", "PLAINTEXT");
+        opts.put("kafka.sasl.jaas.config", "");
+        this.adminClient = AdminClient
+                .create(Collections.singletonMap(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers()));
+        final Map<String, Object> producerOpts = new HashMap<>();
+        producerOpts.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());
+        producerOpts.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerOpts.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        this.producer = new KafkaProducer<>(producerOpts);
+    }
 
-    @BeforeAll
-    public void setup() {
-        authorizedTopics.add(new TopicPartition("auth-topic-1", 0));
-        authorizedTopics.add(new TopicPartition("auth-topic-2", 0));
-        unauthorizedTopics.add(new TopicPartition("unauth-topic-1", 0));
-        unauthorizedTopics.add(new TopicPartition("unauth-topic-2", 0));
+    @AfterEach
+    public void tearDown() {
+        Assertions.assertDoesNotThrow(() -> adminClient.close(10, TimeUnit.SECONDS));
+        Assertions.assertDoesNotThrow(() -> producer.close(10, TimeUnit.SECONDS));
+        Assertions.assertDoesNotThrow(kafka::stop);
     }
 
     @Test
-    public void testMatchAnyTopic() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        final KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                new KafkaSubscriptionPatternFromQuery("<index value=\"*\" operation=\"EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(2, topicPartitions.size());
-        final List<String> topicNames = topicPartitions
-                .stream()
-                .map(TopicPartition::topic)
-                .collect(Collectors.toList());
-        Assertions.assertTrue(topicNames.contains("auth-topic-1"));
-        Assertions.assertTrue(topicNames.contains("auth-topic-2"));
+    public void testOffsetWithoutTopics() {
+        final KafkaQuery kafkaQuery = new KafkaQueryImpl(new Config(opts));
+        final long start = System.nanoTime();
+        final Collection<Long> beginningOffsetsMap = kafkaQuery.beginningOffsets().values();
+        Assertions.assertEquals(0, beginningOffsetsMap.size());
+        final Collection<Long> endOffsetsMap = kafkaQuery.endOffsets().values();
+        Assertions.assertEquals(0, endOffsetsMap.size());
+        final long end = System.nanoTime();
+        final long executionTime = end - start;
+        Assertions.assertTrue(executionTime < 10L * 1E9, "should not wait for topics to appear in kafka");
     }
 
     @Test
-    public void testNullTopicFromWalker() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                // operation NOT_EQUALS causes KafkaWalker to return a null String, this is replaced to match all regex
-                new KafkaSubscriptionPatternFromQuery("<index value=\"unauth-topic-1\" operation=\"NOT_EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(2, topicPartitions.size());
-        final List<String> topicNames = topicPartitions
-                .stream()
-                .map(TopicPartition::topic)
-                .collect(Collectors.toList());
-        Assertions.assertTrue(topicNames.contains("auth-topic-1"));
-        Assertions.assertTrue(topicNames.contains("auth-topic-2"));
-    }
-
-    @Test
-    public void testAuthorizedMatchingTopic() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        final KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                new KafkaSubscriptionPatternFromQuery("<index value=\"auth-topic-1\" operation=\"EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(1, topicPartitions.size());
-        Assertions.assertEquals("auth-topic-1", topicPartitions.stream().findFirst().get().topic());
-    }
-
-    @Test
-    public void testAuthorizedMatchingTopicWildcard() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        final KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                new KafkaSubscriptionPatternFromQuery("<index value=\"auth-topic-*\" operation=\"EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(2, topicPartitions.size());
-        final List<String> topicNames = topicPartitions
-                .stream()
-                .map(TopicPartition::topic)
-                .collect(Collectors.toList());
-        Assertions.assertTrue(topicNames.contains("auth-topic-1"));
-        Assertions.assertTrue(topicNames.contains("auth-topic-2"));
-    }
-
-    @Test
-    public void testAuthorizedMatchingTopicDoesNotGetUnauthorized() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        final KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                new KafkaSubscriptionPatternFromQuery("<index value=\"unauth-topic-1\" operation=\"EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(0, topicPartitions.size());
-    }
-
-    @Test
-    public void testAuthorizedMatchingTopicDoesNotGetUnauthorizedWildcard() {
-        final Consumer<byte[], byte[]> consumer = mockConsumer();
-        final KafkaQueryImpl kafkaQuery = new KafkaQueryImpl(
-                new KafkaSubscriptionPatternFromQuery("<index value=\"unauth-topic-*\" operation=\"EQUALS\"/>"),
-                consumer,
-                new HashMap<>(),
-                false
-        );
-        final Set<TopicPartition> topicPartitions = kafkaQuery.authorizedMatchingTopicPartitions();
-        Assertions.assertEquals(0, topicPartitions.size());
-    }
-
-    private Consumer<byte[], byte[]> mockConsumer() {
-        final Consumer<byte[], byte[]> consumerMock = mock(KafkaConsumer.class);
-        final Map<String, List<PartitionInfo>> allTopics = new HashMap<>();
-        for (final TopicPartition partition : authorizedTopics) {
-            allTopics
-                    .put(
-                            partition.topic(),
-                            Collections.singletonList(new PartitionInfo(partition.topic(), 0, null, null, null))
-                    );
+    public void testOffsetsWithoutRecords() {
+        final String emptyTopic = "empty-topic-1";
+        final NewTopic topic = new NewTopic(emptyTopic, 1, (short) 1);
+        final KafkaFuture<Void> all = adminClient.createTopics(Collections.singleton(topic)).all();
+        Assertions.assertDoesNotThrow(() -> all.get(10, TimeUnit.SECONDS));
+        final boolean topicCreated = Assertions
+                .assertDoesNotThrow(() -> adminClient.listTopics().names().get(10, TimeUnit.SECONDS).contains(emptyTopic));
+        Assertions.assertTrue(topicCreated);
+        final KafkaQuery kafkaQuery = new KafkaQueryImpl(new Config(opts), Pattern.compile("^empty-topic-1$"));
+        final long start = System.nanoTime();
+        final Collection<Long> beginningOffsets = kafkaQuery.beginningOffsets().values();
+        final Collection<Long> endOffsets = kafkaQuery.endOffsets().values();
+        Assertions.assertEquals(1, beginningOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : beginningOffsets) {
+            Assertions.assertEquals(0, offset, "partition should not have any records");
         }
-
-        for (final TopicPartition partition : unauthorizedTopics) {
-            allTopics
-                    .put(
-                            partition.topic(),
-                            Collections.singletonList(new PartitionInfo(partition.topic(), 0, null, null, null))
-                    );
+        Assertions.assertEquals(1, endOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : endOffsets) {
+            Assertions.assertEquals(0, offset, "partition should not have any records");
         }
-
-        when(consumerMock.listTopics()).thenReturn(allTopics);
-
-        for (final TopicPartition partition : unauthorizedTopics) {
-            when(consumerMock.partitionsFor(partition.topic()))
-                    .thenThrow(new TopicAuthorizationException(String.valueOf(Collections.singletonList(partition))));
-        }
-
-        for (final TopicPartition partition : authorizedTopics) {
-            when(consumerMock.partitionsFor(partition.topic()))
-                    .thenReturn(Collections.singletonList(new PartitionInfo(partition.topic(), 0, null, null, null)));
-        }
-
-        final Map<TopicPartition, Long> beginningOffsets = new HashMap<>();
-        final Map<TopicPartition, Long> endOffsets = new HashMap<>();
-
-        for (final TopicPartition partition : authorizedTopics) {
-            beginningOffsets.put(partition, 10L);
-            endOffsets.put(partition, 100L);
-        }
-
-        final Duration duration = Duration.ofSeconds(60);
-        when(consumerMock.beginningOffsets(authorizedTopics, duration)).thenReturn(beginningOffsets);
-        when(consumerMock.endOffsets(authorizedTopics, duration)).thenReturn(endOffsets);
-
-        return consumerMock;
+        final long end = System.nanoTime();
+        final long kafkaQueryExecutiontime = end - start;
+        Assertions
+                .assertTrue(
+                        kafkaQueryExecutiontime < 3L * 1E9,
+                        "topics without records should not wait for records to appear in kafka"
+                );
     }
 
+    @Test
+    public void testOffsetWithRecords() {
+        final String topicName = "topic-1";
+        final NewTopic topic = new NewTopic(topicName, 1, (short) 1);
+        final KafkaFuture<Void> all = adminClient.createTopics(Collections.singleton(topic)).all();
+        Assertions.assertDoesNotThrow(() -> all.get(10, TimeUnit.SECONDS));
+        final boolean topicCreated = Assertions
+                .assertDoesNotThrow(() -> adminClient.listTopics().names().get().contains(topicName));
+        Assertions.assertTrue(topicCreated);
+        final ProducerRecord<String, String> record1 = new ProducerRecord<>(topicName, "key-1", "message-1");
+        final ProducerRecord<String, String> record2 = new ProducerRecord<>(topicName, "key-2", "message-2");
+        producer.send(record1, (meta, exception) -> Assertions.assertNull(exception));
+        producer.send(record2, (meta, exception) -> Assertions.assertNull(exception));
+        final KafkaQuery kafkaQuery = new KafkaQueryImpl(new Config(opts), Pattern.compile("^topic-1$"));
+        final Collection<Long> beginningOffsets = kafkaQuery.beginningOffsets().values();
+        final Collection<Long> endOffsets = kafkaQuery.endOffsets().values();
+        Assertions.assertEquals(1, beginningOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : beginningOffsets) {
+            Assertions.assertEquals(0, offset, "beginning offset should be at 0");
+        }
+        Assertions.assertEquals(1, endOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : endOffsets) {
+            Assertions.assertEquals(2, offset, "end offset should be at 2 since end offset is exclusive");
+        }
+    }
+
+    @Test
+    public void testImmutabilityWhenNotContinuouslyProcessing() {
+        final String topicName = "topic-1";
+        final NewTopic topic = new NewTopic(topicName, 1, (short) 1);
+        final KafkaFuture<Void> all = adminClient.createTopics(Collections.singleton(topic)).all();
+        Assertions.assertDoesNotThrow(() -> all.get(10, TimeUnit.SECONDS));
+        final boolean topicCreated = Assertions
+                .assertDoesNotThrow(() -> adminClient.listTopics().names().get().contains(topicName));
+        Assertions.assertTrue(topicCreated);
+        final ProducerRecord<String, String> record1 = new ProducerRecord<>(topicName, "key-1", "message-1");
+        final ProducerRecord<String, String> record2 = new ProducerRecord<>(topicName, "key-2", "message-2");
+        producer.send(record1, (meta, exception) -> Assertions.assertNull(exception));
+        producer.send(record2, (meta, exception) -> Assertions.assertNull(exception));
+        final KafkaQuery kafkaQuery = new KafkaQueryImpl(new Config(opts), Pattern.compile("^topic-1$"));
+        final Collection<Long> beginningOffsets = kafkaQuery.beginningOffsets().values();
+        final Collection<Long> endOffsets = kafkaQuery.endOffsets().values();
+        Assertions.assertEquals(1, beginningOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : beginningOffsets) {
+            Assertions.assertEquals(0, offset, "beginning offset should be at 0");
+        }
+        Assertions.assertEquals(1, endOffsets.size(), "topic should have exactly one partition");
+        for (final Long offset : endOffsets) {
+            Assertions.assertEquals(2, offset, "end offset should be at 2 since end offset is exclusive");
+        }
+        // add more records
+        final ProducerRecord<String, String> record3 = new ProducerRecord<>(topicName, "key-3", "message-3");
+        final ProducerRecord<String, String> record4 = new ProducerRecord<>(topicName, "key-4", "message-4");
+        producer.send(record3, (meta, exception) -> Assertions.assertNull(exception));
+        producer.send(record4, (meta, exception) -> Assertions.assertNull(exception));
+        // offsets should not be changed
+        Assertions.assertEquals(beginningOffsets.size(), kafkaQuery.beginningOffsets().size());
+        Assertions.assertEquals(endOffsets.size(), kafkaQuery.endOffsets().size());
+    }
+
+    @Test
+    public void testContinuousProcessing() {
+        final Map<String, String> withContinuousProcessing = new HashMap<>(opts);
+        withContinuousProcessing.put("kafka.continuousProcessing", "true");
+        final String topicName = "topic-1";
+        final NewTopic topic = new NewTopic(topicName, 1, (short) 1);
+        final KafkaFuture<Void> all = adminClient.createTopics(Collections.singleton(topic)).all();
+        Assertions.assertDoesNotThrow(() -> all.get(10, TimeUnit.SECONDS));
+        final boolean topicCreated = Assertions
+                .assertDoesNotThrow(() -> adminClient.listTopics().names().get().contains(topicName));
+        Assertions.assertTrue(topicCreated);
+        final ProducerRecord<String, String> record1 = new ProducerRecord<>(topicName, "key-1", "message-1");
+        final ProducerRecord<String, String> record2 = new ProducerRecord<>(topicName, "key-2", "message-2");
+        producer.send(record1, (meta, exception) -> Assertions.assertNull(exception));
+        producer.send(record2, (meta, exception) -> Assertions.assertNull(exception));
+        final KafkaQuery kafkaQuery = new KafkaQueryImpl(
+                new Config(withContinuousProcessing),
+                Pattern.compile("^topic-1$")
+        );
+        final Collection<Long> beginningOffsets = kafkaQuery.beginningOffsets().values();
+        final Collection<Long> endOffsets = kafkaQuery.endOffsets().values();
+        Assertions.assertEquals(1, beginningOffsets.size(), "topic should have exactly one partition");
+        int beginningLoops = 0;
+        for (final Long offset : beginningOffsets) {
+            beginningLoops++;
+            Assertions.assertEquals(0, offset, "beginning offset should be at 0");
+        }
+        Assertions.assertEquals(1, beginningLoops);
+        Assertions.assertEquals(1, endOffsets.size(), "topic should have exactly one partition");
+        int endLoops = 0;
+        for (final Long offset : endOffsets) {
+            endLoops++;
+            Assertions.assertEquals(2, offset, "end offset should be at 2 since end offset is exclusive");
+        }
+        Assertions.assertEquals(1, endLoops);
+        // add more records
+        final ProducerRecord<String, String> record3 = new ProducerRecord<>(topicName, "key-3", "message-3");
+        final ProducerRecord<String, String> record4 = new ProducerRecord<>(topicName, "key-4", "message-4");
+        producer.send(record3, (meta, exception) -> Assertions.assertNull(exception));
+        producer.send(record4, (meta, exception) -> Assertions.assertNull(exception));
+        // end offset should be moved
+        final Collection<Long> updatedEndOffsets = kafkaQuery.endOffsets().values();
+        int updatedLoops = 0;
+        for (final Long offset : updatedEndOffsets) {
+            updatedLoops++;
+            Assertions.assertEquals(4, offset, "end offset should be at 4 since end offset is exclusive");
+        }
+        Assertions.assertEquals(1, updatedLoops);
+    }
 }

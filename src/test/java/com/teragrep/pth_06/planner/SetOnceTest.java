@@ -45,38 +45,44 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+import static org.junit.jupiter.api.Assertions.*;
 
-public final class KafkaSubscriptionPatternFromQuery {
+public final class SetOnceTest {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
-
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    @Test
+    public void testSetState() {
+        final SetOnce<String> stringSetOnce = new SetOnce<>();
+        stringSetOnce.set("test");
+        Assertions.assertEquals("test", stringSetOnce.value());
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
-        }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+    @Test
+    public void testIsSet() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        Assertions.assertFalse(setOnce.isSet());
+        setOnce.set("test");
+        Assertions.assertTrue(setOnce.isSet());
+    }
+
+    @Test
+    public void testExceptionOnMultipleSets() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        setOnce.set("test");
+        final IllegalStateException illegalStateException = assertThrows(
+                IllegalStateException.class, () -> setOnce.set("test-2")
+        );
+        final String expectedMessage = "Value is already set";
+        Assertions.assertEquals(expectedMessage, illegalStateException.getMessage());
+    }
+
+    @Test
+    public void testExceptionOnValueIfNotSet() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        final IllegalStateException illegalStateException = assertThrows(IllegalStateException.class, setOnce::value);
+        final String expectedMessage = "Value is not set";
+        Assertions.assertEquals(expectedMessage, illegalStateException.getMessage());
     }
 }

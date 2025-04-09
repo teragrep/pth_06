@@ -45,38 +45,38 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class KafkaSubscriptionPatternFromQuery {
+/** Snapshot of Kafka topics */
+public final class TopicsFromKafka implements Topics<String> {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
+    private final Logger LOGGER = LoggerFactory.getLogger(TopicsFromKafka.class);
 
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    private final Consumer<byte[], byte[]> consumer;
+    private final SetOnce<List<String>> setOnce;
+
+    public TopicsFromKafka(final Consumer<byte[], byte[]> consumer) {
+        this(consumer, new SetOnce<>());
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
+    private TopicsFromKafka(final Consumer<byte[], byte[]> consumer, final SetOnce<List<String>> setOnce) {
+        this.consumer = consumer;
+        this.setOnce = setOnce;
+    }
+
+    @Override
+    public List<String> asList() {
+        if (!setOnce.isSet()) {
+            final List<String> topics = new ArrayList<>(consumer.listTopics(Duration.ofSeconds(60)).keySet());
+            LOGGER.debug("Found <{}> number of topics from Kafka", topics.size());
+            setOnce.set(topics);
         }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+        return setOnce.value();
     }
 }

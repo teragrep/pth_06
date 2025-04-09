@@ -45,38 +45,32 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.TopicPartition;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class KafkaSubscriptionPatternFromQuery {
+/** Combines al the partitions of Topics */
+public final class CombinedTopicPartitions implements Topics<TopicPartition> {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
+    private final Topics<String> origin;
+    private final Consumer<byte[], byte[]> consumer;
 
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    public CombinedTopicPartitions(final Topics<String> origin, final Consumer<byte[], byte[]> consumer) {
+        this.origin = origin;
+        this.consumer = consumer;
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
+    @Override
+    public List<TopicPartition> asList() {
+        final List<String> topics = origin.asList();
+        final List<TopicPartition> allTopicPartitions = new ArrayList<>();
+
+        for (final String topic : topics) {
+            final List<TopicPartition> topicPartitions = new TopicPartitions(topic, consumer).asList();
+            allTopicPartitions.addAll(topicPartitions);
         }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+        return allTopicPartitions;
     }
 }

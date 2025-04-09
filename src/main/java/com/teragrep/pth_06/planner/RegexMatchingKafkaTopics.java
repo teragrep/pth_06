@@ -45,38 +45,33 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public final class KafkaSubscriptionPatternFromQuery {
+public final class RegexMatchingKafkaTopics implements Topics<String> {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
+    private final Logger LOGGER = LoggerFactory.getLogger(RegexMatchingKafkaTopics.class);
 
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    private final Topics<String> origin;
+    private final Pattern pattern;
+
+    public RegexMatchingKafkaTopics(final Topics<String> origin, final Pattern pattern) {
+        this.origin = origin;
+        this.pattern = pattern;
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
-        }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
-        }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+    @Override
+    public List<String> asList() {
+        final List<String> matchingTopics = origin
+                .asList()
+                .stream()
+                .filter(topic -> pattern.matcher(topic).matches())
+                .collect(Collectors.toList());
+        LOGGER.debug("Pattern <{}> matched with topics <{}>", pattern.pattern(), matchingTopics);
+        return matchingTopics;
     }
 }

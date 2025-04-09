@@ -143,13 +143,13 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
             // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getBeginningOffsets(null)));
+            rv = new DatasourceOffset(new KafkaOffset(this.kq.beginningOffsets()));
         }
         else if (this.config.isArchiveEnabled) {
             // both
             rv = new DatasourceOffset(
                     new LongOffset(this.aq.getInitialOffset() - 3600L),
-                    new KafkaOffset(this.kq.getBeginningOffsets(null))
+                    new KafkaOffset(this.kq.beginningOffsets())
             );
         }
         else {
@@ -194,13 +194,13 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
             // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+            rv = new DatasourceOffset(new KafkaOffset(this.kq.endOffsets()));
         }
         else if (this.config.isArchiveEnabled) {
             // both
             rv = new DatasourceOffset(
                     new LongOffset(this.aq.incrementAndGetLatestOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
+                    new KafkaOffset(this.kq.endOffsets())
             );
         }
         else {

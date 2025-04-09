@@ -48,12 +48,12 @@ package com.teragrep.pth_06.planner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class KafkaSubscriptionPatternFromQueryTest {
+public final class KafkaSubscriptionPatternFromQueryTest {
 
     @Test
     public void testCorrectIndex() {
         final String query = "<index value=\"test_topic\" operation=\"EQUALS\"/>";
-        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+        final KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
                 query
         );
         Assertions.assertEquals("^test_topic$", kafkaSubscriptionPatternFromQuery.pattern().pattern());
@@ -62,7 +62,7 @@ public class KafkaSubscriptionPatternFromQueryTest {
     @Test
     public void testEmptyIndex() {
         final String query = "<index operation=\"EQUALS\"/>";
-        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+        final KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
                 query
         );
         Assertions.assertEquals("^$", kafkaSubscriptionPatternFromQuery.pattern().pattern());
@@ -72,9 +72,20 @@ public class KafkaSubscriptionPatternFromQueryTest {
     public void testUnparseableIndexToAnyIndex() {
         // NOT_EQUALS causes walker to return null, in those cases we return a match any pattern
         final String query = "<index value=\"test_topic\" operation=\"NOT_EQUALS\"/>";
-        KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+        final KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
                 query
         );
         Assertions.assertEquals(".*", kafkaSubscriptionPatternFromQuery.pattern().pattern());
+    }
+
+    @Test
+    public void testInvalidQuery() {
+        final KafkaSubscriptionPatternFromQuery kafkaSubscriptionPatternFromQuery = new KafkaSubscriptionPatternFromQuery(
+                "invalid"
+        );
+        final RuntimeException exception = Assertions
+                .assertThrows(RuntimeException.class, kafkaSubscriptionPatternFromQuery::pattern);
+        final String expectedMessage = "Exception building kafka pattern from query <invalid> exception: org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 1; Content is not allowed in prolog.";
+        Assertions.assertEquals(expectedMessage, exception.getMessage());
     }
 }

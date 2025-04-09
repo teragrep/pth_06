@@ -45,38 +45,38 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+/**
+ * SetOnce that is immutable after it is set
+ */
+public final class SetOnce<T> {
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+    private T value;
+    private boolean isSet;
 
-public final class KafkaSubscriptionPatternFromQuery {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
-
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    public SetOnce() {
+        this(false);
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
-        try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
+    private SetOnce(boolean isSet) {
+        this.isSet = isSet;
+    }
+
+    public void set(final T updatedValue) {
+        if (isSet) {
+            throw new IllegalStateException("Value is already set");
         }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
+        this.value = updatedValue;
+        this.isSet = true;
+    }
+
+    public T value() {
+        if (!isSet) {
+            throw new IllegalStateException("Value is not set");
         }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+        return value;
+    }
+
+    public boolean isSet() {
+        return isSet;
     }
 }

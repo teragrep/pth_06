@@ -45,38 +45,42 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.walker.KafkaWalker;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public final class KafkaSubscriptionPatternFromQuery {
+/** Represents the partitions of a Kafka topic */
+public final class TopicPartitions {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
-    private final String query;
+    private final Logger LOGGER = LoggerFactory.getLogger(TopicPartitions.class);
 
-    public KafkaSubscriptionPatternFromQuery(final String query) {
-        this.query = query;
+    private final String topicName;
+    private final Consumer<byte[], byte[]> consumer;
+
+    TopicPartitions(final String topicName, final Consumer<byte[], byte[]> consumer) {
+        this.topicName = topicName;
+        this.consumer = consumer;
     }
 
-    public Pattern pattern() {
-        String topicsRegexString;
+    public List<TopicPartition> asList() {
+        final List<PartitionInfo> partitions = new ArrayList<>();
         try {
-            final KafkaWalker parser = new KafkaWalker();
-            topicsRegexString = parser.fromString(query);
+            partitions.addAll(consumer.partitionsFor(topicName));
         }
-        catch (final ParserConfigurationException | IOException | SAXException ex) {
-            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
+        catch (final TopicAuthorizationException e) {
+            LOGGER.warn("Was not authorized to view topic <{}>", topicName);
         }
-        // KafkaWalker can return null
-        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
-            topicsRegexString = ".*";
-            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
-        }
-        return Pattern.compile(topicsRegexString);
+
+        return partitions
+                .stream()
+                .map(partitionInfo -> new TopicPartition(topicName, partitionInfo.partition()))
+                .collect(Collectors.toList());
     }
 }
