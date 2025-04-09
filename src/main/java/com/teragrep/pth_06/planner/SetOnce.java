@@ -45,10 +45,15 @@
  */
 package com.teragrep.pth_06.planner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * SetOnce that is immutable after it is set
  */
 public final class SetOnce<T> {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(SetOnce.class);
 
     private T value;
     private boolean isSet;
@@ -67,6 +72,8 @@ public final class SetOnce<T> {
         }
         this.value = updatedValue;
         this.isSet = true;
+
+        LOGGER.debug("Set value <{}>", updatedValue);
     }
 
     public T value() {

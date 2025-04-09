@@ -71,7 +71,10 @@ public final class RegexMatchingKafkaTopics implements Topics<String> {
                 .stream()
                 .filter(topic -> pattern.matcher(topic).matches())
                 .collect(Collectors.toList());
-        LOGGER.debug("Pattern <{}> matched with topics <{}>", pattern.pattern(), matchingTopics);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Pattern <{}> matched with topics <{}>", pattern.pattern(), matchingTopics);
+        }
         return matchingTopics;
     }
 }

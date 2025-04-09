@@ -74,7 +74,6 @@ public final class TopicsFromKafka implements Topics<String> {
     public List<String> asList() {
         if (!setOnce.isSet()) {
             final List<String> topics = new ArrayList<>(consumer.listTopics(Duration.ofSeconds(60)).keySet());
-            LOGGER.debug("Found <{}> number of topics from Kafka", topics.size());
             setOnce.set(topics);
         }
         return setOnce.value();

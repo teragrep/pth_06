@@ -72,13 +72,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@EnabledIfSystemProperty(
-        named = "runContainerTests",
-        matches = "true"
-)
 public final class CombinedTopicPartitionsTest {
 
-    private final static KafkaContainer kafka = Assertions
+    private final KafkaContainer kafka = Assertions
             .assertDoesNotThrow(() -> new KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0")));
     AdminClient adminClient;
     KafkaProducer<String, String> producer;
@@ -111,6 +107,10 @@ public final class CombinedTopicPartitionsTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testCombinedPartitions() {
         final String firstTopicName = "topic-1";
         final String secondTopicName = "topic-2";
@@ -129,6 +129,10 @@ public final class CombinedTopicPartitionsTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testNoTopics() {
         final Set<String> topicsInKafka = assertDoesNotThrow(() -> adminClient.listTopics().names().get());
         Assertions.assertTrue(topicsInKafka.isEmpty());
@@ -140,6 +144,10 @@ public final class CombinedTopicPartitionsTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testImmutability() {
         final Set<String> topicsInKafka = assertDoesNotThrow(() -> adminClient.listTopics().names().get());
         Assertions.assertTrue(topicsInKafka.isEmpty());

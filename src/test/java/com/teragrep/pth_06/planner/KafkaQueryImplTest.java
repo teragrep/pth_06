@@ -69,13 +69,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-@EnabledIfSystemProperty(
-        named = "runContainerTests",
-        matches = "true"
-)
 public final class KafkaQueryImplTest {
 
-    private final static KafkaContainer kafka = Assertions
+    private final KafkaContainer kafka = Assertions
             .assertDoesNotThrow(() -> new KafkaContainer(DockerImageName.parse("apache/kafka-native:3.8.0")));
     Map<String, String> opts;
     AdminClient adminClient;
@@ -108,6 +104,10 @@ public final class KafkaQueryImplTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testOffsetWithoutTopics() {
         final KafkaQuery kafkaQuery = new KafkaQueryImpl(new Config(opts));
         final long start = System.nanoTime();
@@ -121,6 +121,10 @@ public final class KafkaQueryImplTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testOffsetsWithoutRecords() {
         final String emptyTopic = "empty-topic-1";
         final NewTopic topic = new NewTopic(emptyTopic, 1, (short) 1);
@@ -151,6 +155,10 @@ public final class KafkaQueryImplTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testOffsetWithRecords() {
         final String topicName = "topic-1";
         final NewTopic topic = new NewTopic(topicName, 1, (short) 1);
@@ -177,6 +185,10 @@ public final class KafkaQueryImplTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testImmutabilityWhenNotContinuouslyProcessing() {
         final String topicName = "topic-1";
         final NewTopic topic = new NewTopic(topicName, 1, (short) 1);
@@ -211,6 +223,10 @@ public final class KafkaQueryImplTest {
     }
 
     @Test
+    @EnabledIfSystemProperty(
+            named = "runContainerTests",
+            matches = "true"
+    )
     public void testContinuousProcessing() {
         final Map<String, String> withContinuousProcessing = new HashMap<>(opts);
         withContinuousProcessing.put("kafka.continuousProcessing", "true");
