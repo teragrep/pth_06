@@ -51,7 +51,7 @@ import org.apache.kafka.common.TopicPartition;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Combines al the partitions of Topics */
+/** Combines all the partitions of Topics */
 public final class CombinedTopicPartitions implements Topics<TopicPartition> {
 
     private final Topics<String> origin;
