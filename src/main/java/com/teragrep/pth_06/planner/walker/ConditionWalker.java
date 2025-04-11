@@ -51,6 +51,7 @@ import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -126,7 +127,11 @@ public final class ConditionWalker extends XmlWalker<Condition> {
             rv = left.or(right);
         }
         else if ("NOT".equalsIgnoreCase(op)) {
-            rv = left.not();
+            rv = left;
+            if (!rv.equals(DSL.noCondition())) {
+                // negate if not a noCondition
+                rv = rv.not();
+            }
         }
         else {
             throw new IllegalStateException(
@@ -148,7 +153,10 @@ public final class ConditionWalker extends XmlWalker<Condition> {
         }
         if (rv != null) {
             if ("NOT".equalsIgnoreCase(op)) {
-                rv = rv.not();
+                if (!rv.equals(DSL.noCondition())) {
+                    // negate if not a noCondition
+                    rv = rv.not();
+                }
             }
             else {
                 throw new IllegalStateException(
