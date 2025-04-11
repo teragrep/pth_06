@@ -138,10 +138,7 @@ public class WithoutFiltersConditionTest {
 
     @AfterAll
     public void tearDown() {
-        Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
-            conn.close();
-        });
+        Assertions.assertDoesNotThrow(conn::close);
     }
 
     @Test
