@@ -69,13 +69,12 @@ public final class WithoutFiltersCondition implements QueryCondition, BloomQuery
 
     public WithoutFiltersCondition(ConditionConfig config, Set<Table<?>> tables) {
         this.config = config;
-        this.tables = new HashSet<>();
+        this.tables = tables;
     }
 
     @Override
     public Condition condition() {
         final String withoutFiltersPattern = config.withoutFiltersPattern();
-        final Condition condition;
 
         if (tables.isEmpty()) {
 
@@ -92,19 +91,13 @@ public final class WithoutFiltersCondition implements QueryCondition, BloomQuery
             tables.addAll(conditionMatchingTables.tables());
         }
 
-        if (tables.isEmpty()) {
-            condition = DSL.noCondition();
-        }
-        else {
-            Condition combinedNullFilterCondition = DSL.noCondition();
-            for (final Table<?> table : tables) {
-                final Condition nullFilterCondition = table.field("filter").isNull();
-                combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
-            }
-            condition = combinedNullFilterCondition;
+        Condition combinedNullFilterCondition = DSL.noCondition();
+        for (final Table<?> table : tables) {
+            final Condition nullFilterCondition = table.field("filter").isNull();
+            combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
         }
 
-        return condition;
+        return combinedNullFilterCondition;
     }
 
     @Override

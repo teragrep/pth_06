@@ -64,6 +64,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -131,8 +132,9 @@ public class WithoutFiltersConditionTest {
                 filterType.executeUpdate();
                 id++;
             }
-            writeFilter("pattern_test_ip", 1);
-            writeFilter("pattern_test_ip255", 2);
+
+            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test_ip", 1));
+            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test_ip255", 2));
         });
     }
 
@@ -168,29 +170,37 @@ public class WithoutFiltersConditionTest {
     }
 
     @Test
+    public void testIsBloomSearchMethod() {
+        final DSLContext ctx = DSL.using(conn);
+        final WithoutFiltersCondition withoutFiltersCondition = new WithoutFiltersCondition(
+                new ConditionConfig(ctx, false, true, true, "nomatch-pattern")
+        );
+        Assertions.assertFalse(withoutFiltersCondition.isBloomSearchCondition());
+    }
+
+    @Test
     public void testContract() {
         EqualsVerifier.forClass(WithoutFiltersCondition.class).withNonnullFields("config", "tables").verify();
     }
 
-    private void writeFilter(String tableName, int filterId) {
+    // helper method
+    private void writeFilter(String tableName, int filterId) throws SQLException {
+        conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
+        conn.prepareStatement("USE BLOOMDB").execute();
+        String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
+                + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        BloomFilter filter = BloomFilter.create(1000, 0.01);
+        final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
-            conn.prepareStatement("USE BLOOMDB").execute();
-            String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
-                    + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            BloomFilter filter = BloomFilter.create(1000, 0.01);
-            final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
-            Assertions.assertDoesNotThrow(() -> {
-                filter.writeTo(filterBAOS);
-                filterBAOS.close();
-            });
-            stmt.setInt(1, 1);
-            stmt.setInt(2, filterId);
-            stmt.setBytes(3, filterBAOS.toByteArray());
-            stmt.executeUpdate();
-            stmt.close();
+            filter.writeTo(filterBAOS);
+            filterBAOS.close();
         });
+        stmt.setInt(1, 1);
+        stmt.setInt(2, filterId);
+        stmt.setBytes(3, filterBAOS.toByteArray());
+        stmt.executeUpdate();
+        stmt.close();
     }
 
 }
