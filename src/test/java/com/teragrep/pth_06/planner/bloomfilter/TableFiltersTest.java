@@ -168,6 +168,7 @@ public class TableFiltersTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result.close();
         });
     }
 
@@ -204,6 +205,7 @@ public class TableFiltersTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result.close();
         });
     }
 
@@ -321,6 +323,7 @@ public class TableFiltersTest {
             stmt.setInt(2, id); // filter type id
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
+            stmt.close();
         });
     }
 }

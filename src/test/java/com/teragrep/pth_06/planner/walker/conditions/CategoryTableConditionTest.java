@@ -123,10 +123,7 @@ public class CategoryTableConditionTest {
 
     @AfterAll
     public void tearDown() {
-        Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("DROP ALL OBJECTS").execute(); //h2 clear database
-            conn.close();
-        });
+        Assertions.assertDoesNotThrow(conn::close);
     }
 
     @Test
@@ -250,6 +247,7 @@ public class CategoryTableConditionTest {
             stmt.setInt(2, 1);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
+            stmt.close();
         });
     }
 

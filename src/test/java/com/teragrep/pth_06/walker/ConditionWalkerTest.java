@@ -366,6 +366,7 @@ public class ConditionWalkerTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result.close();
         });
     }
 
@@ -395,6 +396,7 @@ public class ConditionWalkerTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result1.close();
         });
 
         // check pattern_test_ip244 table
@@ -417,6 +419,7 @@ public class ConditionWalkerTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result2.close();
         });
     }
 
@@ -446,6 +449,7 @@ public class ConditionWalkerTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result1.close();
         });
 
         // check term 1
@@ -468,6 +472,7 @@ public class ConditionWalkerTest {
                 loops++;
             }
             Assertions.assertEquals(1, loops);
+            result2.close();
         });
     }
 
@@ -488,6 +493,7 @@ public class ConditionWalkerTest {
             stmt.setInt(2, filterId);
             stmt.setBytes(3, filterBAOS.toByteArray());
             stmt.executeUpdate();
+            stmt.close();
         });
     }
 }
