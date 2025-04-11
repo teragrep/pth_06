@@ -58,6 +58,22 @@ public class ConditionConfigTest {
     DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
 
     @Test
+    public void testWithoutFilterPattern() {
+        final ConditionConfig cond = new ConditionConfig(ctx, false, false, true, "test");
+        final String patternFromConfig = cond.withoutFiltersPattern();
+        Assertions.assertEquals("test", patternFromConfig);
+    }
+
+    @Test
+    public void testWithoutFiltersEnabledWithoutPatternThrowsException() {
+        final ConditionConfig cond = new ConditionConfig(ctx, false, false, true, "");
+        final IllegalArgumentException exception = Assertions
+                .assertThrows(IllegalArgumentException.class, cond::withoutFilters);
+        final String expectedMessage = "Without filters option was enabled without a pattern";
+        Assertions.assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    @Test
     void testEquality() {
         ConditionConfig cond1 = new ConditionConfig(ctx, false, false, 1L);
         ConditionConfig cond2 = new ConditionConfig(ctx, false, false, 1L);

@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner.walker;
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.walker.conditions.ElementCondition;
 import com.teragrep.pth_06.planner.walker.conditions.ValidElement;
+import com.teragrep.pth_06.planner.walker.conditions.WithoutFiltersCondition;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
@@ -71,9 +72,11 @@ import java.util.Set;
  */
 public final class ConditionWalker extends XmlWalker<Condition> {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
+
     private final boolean bloomEnabled;
     private final boolean withoutFilters;
-    private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
+    private final String withoutFiltersPattern;
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
@@ -84,18 +87,19 @@ public final class ConditionWalker extends XmlWalker<Condition> {
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        this(null, false, false);
+        this(null, false, false, "");
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
-        this(ctx, bloomEnabled, false);
+        this(ctx, bloomEnabled, false, "");
     }
 
-    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters) {
+    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters, String withoutFiltersPattern) {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
         this.withoutFilters = withoutFilters;
+        this.withoutFiltersPattern = withoutFiltersPattern;
         this.combinedMatchSet = new HashSet<>();
     }
 
@@ -160,16 +164,32 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     }
 
     Condition emitElem(final Element current) {
-        final ElementCondition elementCondition = new ElementCondition(
-                new ValidElement(current),
-                new ConditionConfig(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId)
+        final ValidElement element = new ValidElement(current);
+        final ConditionConfig conditionConfig = new ConditionConfig(
+                ctx,
+                streamQuery,
+                bloomEnabled,
+                withoutFilters,
+                withoutFiltersPattern,
+                bloomTermId
         );
+        final ElementCondition elementCondition = new ElementCondition(element, conditionConfig);
+        Condition condition = elementCondition.condition();
+
+        // add without filters condition for index
+        if (withoutFilters && elementCondition.isIndexCondition()) {
+            final WithoutFiltersCondition withoutFiltersQueryCondition = new WithoutFiltersCondition(conditionConfig);
+            conditionRequiredTables().addAll(withoutFiltersQueryCondition.requiredTables());
+            final Condition withoutFiltersCondition = withoutFiltersQueryCondition.condition();
+            LOGGER.debug("Without filters option enabled with condition <{}>", withoutFiltersCondition);
+            condition = condition.and(withoutFiltersCondition);
+        }
         if (elementCondition.isBloomSearchCondition()) {
             final Set<Table<?>> conditionRequiredTables = elementCondition.requiredTables();
             // add tables condition found to walker pattern match tables
             conditionRequiredTables().addAll(conditionRequiredTables);
             bloomTermId++;
         }
-        return elementCondition.condition();
+        return condition;
     }
 }

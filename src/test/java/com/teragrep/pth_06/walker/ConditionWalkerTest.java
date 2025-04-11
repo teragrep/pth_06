@@ -70,13 +70,11 @@ public class ConditionWalkerTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final List<String> patternList = new ArrayList<>(
-            Arrays
-                    .asList(
-                            "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
-                            "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}"
-                    )
-    );
+    // matches IPv4
+    final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    // matches IPv4 starting with 255.
+    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -149,12 +147,13 @@ public class ConditionWalkerTest {
 
     @Test
     void bloomNoMatchStreamQueryWithoutFiltersTest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
-        String e = "\"streamdb\".\"stream\".\"directory\" like 'haproxy'";
+        String e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
+                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(0, walker.conditionRequiredTables().size());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
     }
 
     @Test
@@ -187,9 +186,9 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void singleTablePatternMatchWithoutFiltersTest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
-        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
+    void withoutFiltersEnabledTest() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        String q = "<index value=\"haproxy\" operation=\"EQUALS\"/>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
@@ -255,21 +254,16 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void twoTablePatternMatchWithoutFiltersTest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
-        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/></AND>";
+    void testWithoutFiltersEnabled() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"unerlated searchterm\"/></AND>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
+                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
-        Assertions.assertEquals(2, walker.conditionRequiredTables().size());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
-        Assertions
-                .assertTrue(
-                        walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip255"))
-                );
     }
 
     @Test
@@ -326,14 +320,36 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void multipleSearchTermTwoAndOneMatchWithoutFiltersTest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true);
-        String q = "<AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
-        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+    void testWithoutFiltersConditionAddedAfterIndex() {
+        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipStartingWith255);
+        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND></AND>";
+        // without filters condition after index condition but rest of query is still build normally
+        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
+                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  and (\n" + "    (\n"
+                + "      bloommatch(\n" + "        (\n" + "          select \"term_0_pattern_test_ip\".\"filter\"\n"
+                + "          from \"term_0_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 0\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n" + "    or (\n"
+                + "      bloommatch(\n" + "        (\n" + "          select \"term_0_pattern_test_ip255\".\"filter\"\n"
+                + "          from \"term_0_pattern_test_ip255\"\n" + "          where (\n" + "            term_id = 0\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "    )\n" + "    or (\n"
+                + "      \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "      and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "    )\n" + "  )\n"
+                + "  and (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
+                + "          select \"term_1_pattern_test_ip\".\"filter\"\n"
+                + "          from \"term_1_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 1\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
+                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
+        // expect 2 tables here because we allow for other conditions after the without filters condition that can add tables to the required tables
+        // first table is from the without filters condition, and the second table is from the indexstatement pattern match
+        // the is null condition of without filters will still limit the results
         Assertions.assertEquals(2, walker.conditionRequiredTables().size());
         Assertions
                 .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));

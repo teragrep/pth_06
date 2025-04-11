@@ -46,91 +46,78 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.config.ConditionConfig;
-import com.teragrep.pth_06.planner.bloomfilter.*;
+import com.teragrep.pth_06.planner.bloomfilter.ConditionMatchBloomDBTables;
+import com.teragrep.pth_06.planner.bloomfilter.DatabaseTables;
 import org.jooq.Condition;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public final class IndexStatementCondition implements QueryCondition, BloomQueryCondition {
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
-    private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
+public final class WithoutFiltersCondition implements QueryCondition, BloomQueryCondition {
 
-    private final String value;
     private final ConditionConfig config;
-    private final Condition condition;
-    private final Set<Table<?>> tableSet;
+    private final Set<Table<?>> tables;
 
-    public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config, DSL.noCondition());
+    public WithoutFiltersCondition(ConditionConfig config) {
+        this(config, new HashSet<>());
     }
 
-    public IndexStatementCondition(String value, ConditionConfig config, Condition condition) {
-        this.value = value;
+    public WithoutFiltersCondition(ConditionConfig config, Set<Table<?>> tables) {
         this.config = config;
-        this.condition = condition;
-        this.tableSet = new HashSet<>();
+        this.tables = new HashSet<>();
     }
 
+    @Override
     public Condition condition() {
-        if (!config.bloomEnabled()) {
-            LOGGER.debug("Indexstatement reached with bloom disabled");
-            return condition;
-        }
-        Condition newCondition = condition;
-        if (tableSet.isEmpty()) {
-            // get all tables that pattern match with search value
-            final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
+        final String withoutFiltersPattern = config.withoutFiltersPattern();
+        final Condition condition;
+
+        if (tables.isEmpty()) {
+
+            final QueryCondition tableFilteringCondition = new StringEqualsCondition(
+                    withoutFiltersPattern,
+                    BLOOMDB.FILTERTYPE.PATTERN
+            );
+
             final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
                     config.context(),
                     tableFilteringCondition
             );
-            tableSet.addAll(conditionMatchingTables.tables());
-        }
-        if (!tableSet.isEmpty()) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found pattern match on <{}> table(s)", tableSet.size());
-            }
-            Condition combinedTableCondition = DSL.noCondition();
-            Condition combinedNullFilterCondition = DSL.noCondition();
 
-            for (final Table<?> table : tableSet) {
-                // create a category temp table with filters
-                final CategoryTable categoryTable = new CategoryTableWithFilters(
-                        config.context(),
-                        table,
-                        config.bloomTermId(),
-                        value
-                );
-                categoryTable.create();
-                // create table condition for table
+            tables.addAll(conditionMatchingTables.tables());
+        }
+
+        if (tables.isEmpty()) {
+            condition = DSL.noCondition();
+        }
+        else {
+            Condition combinedNullFilterCondition = DSL.noCondition();
+            for (final Table<?> table : tables) {
                 final Condition nullFilterCondition = table.field("filter").isNull();
-                final QueryCondition tableCondition = new CategoryTableCondition(table, config.bloomTermId());
-                combinedTableCondition = combinedTableCondition.or(tableCondition.condition());
                 combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
             }
-
-            newCondition = combinedTableCondition.or(combinedNullFilterCondition);
+            condition = combinedNullFilterCondition;
         }
-        return newCondition;
+
+        return condition;
     }
 
     @Override
     public boolean isBloomSearchCondition() {
-        return config.bloomEnabled() && !config.streamQuery();
+        return false;
     }
 
     @Override
     public Set<Table<?>> requiredTables() {
-        if (tableSet.isEmpty()) {
+        if (tables.isEmpty()) {
             condition();
         }
-        return tableSet;
+        return tables;
     }
 
     @Override
@@ -141,16 +128,15 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         if (object == null) {
             return false;
         }
-        if (object.getClass() != this.getClass()) {
+        if (getClass() != object.getClass()) {
             return false;
         }
-        final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.condition.equals(cast.condition)
-                && this.tableSet.equals(cast.tableSet);
+        final WithoutFiltersCondition that = (WithoutFiltersCondition) object;
+        return Objects.equals(config, that.config) && Objects.equals(tables, that.tables);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config, condition, tableSet);
+        return Objects.hash(config, tables);
     }
 }

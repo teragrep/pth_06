@@ -120,6 +120,11 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
         return condition;
     }
 
+    public boolean isIndexCondition() {
+        final String tag = element.tag();
+        return "index".equalsIgnoreCase(tag);
+    }
+
     public boolean isBloomSearchCondition() {
         final String tag = element.tag();
         final String operation = element.operation();

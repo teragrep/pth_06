@@ -50,11 +50,15 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.exception.DataAccessException;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.tools.jdbc.MockConnection;
 import org.jooq.tools.jdbc.MockResult;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
@@ -63,15 +67,16 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
- * 
+ *
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class IndexStatementConditionTest {
+public class WithoutFiltersConditionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -133,106 +138,41 @@ public class IndexStatementConditionTest {
 
     @AfterAll
     public void tearDown() {
-        Assertions.assertDoesNotThrow(conn::close);
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("DROP ALL OBJECTS"); // h2 clear database
+            conn.close();
+        });
     }
 
     @Test
-    public void testConnectionException() {
-        DSLContext ctx = DSL.using(new MockConnection(c -> new MockResult[0]));
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        ConditionConfig noBloomConfig = new ConditionConfig(ctx, false);
-        IndexStatementCondition cond1 = new IndexStatementCondition("test", config, DSL.trueCondition());
-        IndexStatementCondition cond2 = new IndexStatementCondition("test", noBloomConfig, DSL.trueCondition());
-        Assertions.assertThrows(DataAccessException.class, cond1::condition);
-        Assertions.assertDoesNotThrow(cond2::condition);
+    public void testMatch() {
+        final DSLContext ctx = DSL.using(conn);
+        final WithoutFiltersCondition withoutFiltersCondition = new WithoutFiltersCondition(
+                new ConditionConfig(ctx, false, true, true, ipRegex)
+        );
+        final Condition condition = withoutFiltersCondition.condition();
+        final Set<Table<?>> tables = withoutFiltersCondition.requiredTables();
+        final String expectedCondition = "\"bloomdb\".\"pattern_test_ip\".\"filter\" is null";
+        Assertions.assertEquals(expectedCondition, condition.toString());
+        Assertions.assertEquals(1, tables.size());
     }
 
     @Test
-    public void noMatchesTest() {
-        DSLContext ctx = DSL.using(conn);
-        Condition e1 = DSL.falseCondition();
-        Condition e2 = DSL.trueCondition();
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        ConditionConfig withoutFiltersConfig = new ConditionConfig(ctx, false, true, false, "", 0L);
-        IndexStatementCondition cond1 = new IndexStatementCondition("test", config, e1);
-        IndexStatementCondition cond2 = new IndexStatementCondition("test", withoutFiltersConfig, e2);
-        Assertions.assertEquals(e1, cond1.condition());
-        Assertions.assertEquals(e2, cond2.condition());
-        Assertions.assertTrue(cond1.requiredTables().isEmpty());
-        Assertions.assertTrue(cond2.requiredTables().isEmpty());
+    public void testNoMatch() {
+        final DSLContext ctx = DSL.using(conn);
+        final WithoutFiltersCondition withoutFiltersCondition = new WithoutFiltersCondition(
+                new ConditionConfig(ctx, false, true, true, "nomatch-pattern")
+        );
+        final Condition condition = withoutFiltersCondition.condition();
+        final Set<Table<?>> tables = withoutFiltersCondition.requiredTables();
+        final String expectedCondition = "true"; // no-condition
+        Assertions.assertEquals(expectedCondition, condition.toString());
+        Assertions.assertEquals(0, tables.size());
     }
 
     @Test
-    public void oneMatchingTableTest() {
-        DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config);
-        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.requiredTables().size());
-    }
-
-    @Test
-    public void twoMatchingTableTest() {
-        DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true);
-        IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config);
-        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
-                + "    bloommatch(\n" + "      (\n" + "        select \"term_0_pattern_test_ip255\".\"filter\"\n"
-                + "        from \"term_0_pattern_test_ip255\"\n" + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip255\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip255\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is not null\n" + "  )\n" + "  or (\n"
-                + "    \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "    and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + "  )\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.requiredTables().size());
-    }
-
-    @Test
-    public void equalsTest() {
-        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
-        IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
-        Assertions.assertEquals(eq1, eq2);
-    }
-
-    @Test
-    public void notEqualsTest() {
-        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
-        IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);
-        Assertions.assertNotEquals(eq1, notEq);
-    }
-
-    @Test
-    public void hashCodeTest() {
-        IndexStatementCondition eq1 = new IndexStatementCondition("946677600", mockConfig);
-        IndexStatementCondition eq2 = new IndexStatementCondition("946677600", mockConfig);
-        IndexStatementCondition notEq = new IndexStatementCondition("1000", mockConfig);
-        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
-        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
-    }
-
-    @Test
-    public void equalsHashCodeContractTest() {
-        EqualsVerifier
-                .forClass(IndexStatementCondition.class)
-                .withNonnullFields("value")
-                .withNonnullFields("config")
-                .withNonnullFields("condition")
-                .withNonnullFields("tableSet")
-                .withIgnoredFields("LOGGER")
-                .verify();
+    public void testContract() {
+        EqualsVerifier.forClass(WithoutFiltersCondition.class).withNonnullFields("config", "tables").verify();
     }
 
     private void writeFilter(String tableName, int filterId) {
@@ -255,4 +195,5 @@ public class IndexStatementConditionTest {
             stmt.close();
         });
     }
+
 }

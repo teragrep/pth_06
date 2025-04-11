@@ -111,6 +111,7 @@ public class StreamDBClient {
         final String bloomdbName = config.archiveConfig.bloomDbName;
         final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
         final boolean withoutFilters = config.archiveConfig.withoutFilters;
+        final String withoutFiltersPattern = config.archiveConfig.withoutFiltersPattern;
 
         // https://blog.jooq.org/how-i-incorrectly-fetched-jdbc-resultsets-again/
         Settings settings = new Settings()
@@ -129,7 +130,7 @@ public class StreamDBClient {
             ctx.execute("SET sql_mode = 'NO_ENGINE_SUBSTITUTION';");
         }
         // -- TODO use dslContext.batch for all initial operations
-        this.walker = new ConditionWalker(ctx, bloomEnabled, withoutFilters);
+        this.walker = new ConditionWalker(ctx, bloomEnabled, withoutFilters, withoutFiltersPattern);
         Condition streamdbCondition;
 
         try {
