@@ -68,6 +68,7 @@ public final class ArchiveConfig {
     // bloom
     public final boolean bloomEnabled;
     public final boolean withoutFilters;
+    public final String withoutFiltersPattern;
     public final String bloomDbName;
 
     public final boolean isStub;
@@ -81,6 +82,7 @@ public final class ArchiveConfig {
         dbUrl = getOrThrow(opts, "DBurl");
         bloomEnabled = opts.getOrDefault("bloom.enabled", "false").equalsIgnoreCase("true");
         withoutFilters = opts.getOrDefault("bloom.withoutFilters", "false").equalsIgnoreCase("true");
+        withoutFiltersPattern = opts.getOrDefault("bloom.withoutFiltersPattern", "");
         bloomDbName = opts.getOrDefault("DBbloomdbname", "bloomdb");
 
         dbJournalDbName = opts.getOrDefault("DBjournaldbname", "journaldb");
@@ -111,6 +113,7 @@ public final class ArchiveConfig {
 
         bloomEnabled = false;
         withoutFilters = false;
+        withoutFiltersPattern = "";
         bloomDbName = "";
 
         hideDatabaseExceptions = false;

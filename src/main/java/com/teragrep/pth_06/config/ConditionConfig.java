@@ -55,22 +55,19 @@ public final class ConditionConfig {
     private final boolean streamQuery;
     private final boolean bloomEnabled;
     private final boolean withoutFilters;
+    private final String withoutFiltersPattern;
     private final long bloomTermId;
 
     public ConditionConfig(DSLContext ctx, boolean streamQuery) {
-        this(ctx, streamQuery, false, false, 0L);
+        this(ctx, streamQuery, false);
     }
 
     public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled) {
-        this(ctx, streamQuery, bloomEnabled, false, 0L);
-    }
-
-    public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, boolean withoutFilters) {
-        this(ctx, streamQuery, bloomEnabled, withoutFilters, 0L);
+        this(ctx, streamQuery, bloomEnabled, 0L);
     }
 
     public ConditionConfig(DSLContext ctx, boolean streamQuery, boolean bloomEnabled, long bloomTermId) {
-        this(ctx, streamQuery, bloomEnabled, false, bloomTermId);
+        this(ctx, streamQuery, bloomEnabled, false, "", bloomTermId);
     }
 
     public ConditionConfig(
@@ -78,12 +75,24 @@ public final class ConditionConfig {
             boolean streamQuery,
             boolean bloomEnabled,
             boolean withoutFilters,
+            String withoutFiltersPattern
+    ) {
+        this(ctx, streamQuery, bloomEnabled, withoutFilters, withoutFiltersPattern, 0L);
+    }
+
+    public ConditionConfig(
+            DSLContext ctx,
+            boolean streamQuery,
+            boolean bloomEnabled,
+            boolean withoutFilters,
+            String withoutFiltersPattern,
             long bloomTermId
     ) {
         this.ctx = ctx;
         this.streamQuery = streamQuery;
         this.bloomEnabled = bloomEnabled;
         this.withoutFilters = withoutFilters;
+        this.withoutFiltersPattern = withoutFiltersPattern;
         this.bloomTermId = bloomTermId;
     }
 
@@ -96,7 +105,14 @@ public final class ConditionConfig {
     }
 
     public boolean withoutFilters() {
+        if (withoutFilters && withoutFiltersPattern.isEmpty()) {
+            throw new IllegalArgumentException("Without filters option was enabled without a pattern");
+        }
         return withoutFilters;
+    }
+
+    public String withoutFiltersPattern() {
+        return withoutFiltersPattern;
     }
 
     public long bloomTermId() {
@@ -121,12 +137,13 @@ public final class ConditionConfig {
         }
         final ConditionConfig cast = (ConditionConfig) object;
         return this.bloomEnabled == cast.bloomEnabled && this.streamQuery == cast.streamQuery
-                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx
+                && this.withoutFilters == cast.withoutFilters && this.ctx == cast.ctx && Objects
+                        .equals(this.withoutFiltersPattern, cast.withoutFiltersPattern)
                 && this.bloomTermId == cast.bloomTermId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ctx, streamQuery, bloomEnabled, withoutFilters, bloomTermId);
+        return Objects.hash(ctx, streamQuery, bloomEnabled, withoutFilters, withoutFiltersPattern, bloomTermId);
     }
 }
