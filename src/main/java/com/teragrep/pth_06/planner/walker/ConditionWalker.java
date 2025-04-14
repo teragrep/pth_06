@@ -174,6 +174,11 @@ public final class ConditionWalker extends XmlWalker<Condition> {
                 bloomTermId
         );
         final ElementCondition elementCondition = new ElementCondition(element, conditionConfig);
+
+        if (elementCondition.isBloomSearchCondition() && withoutFilters) {
+            throw new RuntimeException("Search terms are not allowed when 'without filters' option is enabled");
+        }
+
         Condition condition = elementCondition.condition();
 
         // add without filters condition for index

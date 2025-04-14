@@ -49,7 +49,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class StringEqualsConditionTest {
+public final class StringEqualsConditionTest {
 
     @Test
     public void testCondition() {

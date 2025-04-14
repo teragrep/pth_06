@@ -52,11 +52,9 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.tools.jdbc.MockConnection;
-import org.jooq.tools.jdbc.MockResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -65,9 +63,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -77,64 +72,55 @@ import java.util.Set;
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class WithoutFiltersConditionTest {
+public final class WithoutFiltersConditionTest {
 
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
-    final String userName = "sa";
-    final String password = "";
+    private final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+    private final String userName = "sa";
+    private final String password = "";
     // matches IPv4
-    final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    // matches IPv4 starting with 255.
-    final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
-    final ConditionConfig mockConfig = new ConditionConfig(
-            DSL.using(new MockConnection(ctx -> new MockResult[0])),
-            false,
-            true
-    );
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    private final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
+    private final Connection conn = Assertions
+            .assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
-            String filtertype = "CREATE TABLE`filtertype`" + "("
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_2").execute();
+            final String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
                     + "    `targetFpp`        DOUBLE(2) unsigned NOT NULL,"
                     + "    `pattern`          VARCHAR(2048) NOT NULL,"
-                    + "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`)" + ")";
-            String ip = "CREATE TABLE `pattern_test_ip`("
+                    + "    UNIQUE KEY (`expectedElements`, `targetFpp`, `pattern`))";
+            final String ip = "CREATE TABLE `pattern_test`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
                     + "    `filter`         longblob            NOT NULL)";
-            String ip255 = "CREATE TABLE `pattern_test_ip255`("
+            final String ip_2 = "CREATE TABLE `pattern_test_2`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
                     + "    `filter`         longblob            NOT NULL)";
             conn.prepareStatement(filtertype).execute();
             conn.prepareStatement(ip).execute();
-            conn.prepareStatement(ip255).execute();
-            String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
-            int id = 1;
-            for (String pattern : patternList) {
-                PreparedStatement filterType = conn.prepareStatement(typeSQL);
-                filterType.setInt(1, id);
-                filterType.setInt(2, 1000);
+            conn.prepareStatement(ip_2).execute();
+            final String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
+            for (int i = 1; i < 3; i++) {
+                final PreparedStatement filterType = conn.prepareStatement(typeSQL);
+                filterType.setInt(1, i);
+                filterType.setInt(2, 1000 + i);
                 filterType.setDouble(3, 0.01);
-                filterType.setString(4, pattern);
+                filterType.setString(4, ipRegex);
                 filterType.executeUpdate();
-                id++;
             }
 
-            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test_ip", 1));
-            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test_ip255", 2));
+            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test", 1));
+            Assertions.assertDoesNotThrow(() -> writeFilter("pattern_test_2", 2));
         });
     }
 
@@ -144,16 +130,31 @@ public class WithoutFiltersConditionTest {
     }
 
     @Test
-    public void testMatch() {
+    public void testSingleFilterTypeMatchesWithoutFiltersPattern() {
+        Assertions.assertDoesNotThrow(() -> conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_2").execute());
         final DSLContext ctx = DSL.using(conn);
         final WithoutFiltersCondition withoutFiltersCondition = new WithoutFiltersCondition(
                 new ConditionConfig(ctx, false, true, true, ipRegex)
         );
         final Condition condition = withoutFiltersCondition.condition();
         final Set<Table<?>> tables = withoutFiltersCondition.requiredTables();
-        final String expectedCondition = "\"bloomdb\".\"pattern_test_ip\".\"filter\" is null";
+        final String expectedCondition = "\"bloomdb\".\"pattern_test\".\"filter\" is null";
         Assertions.assertEquals(expectedCondition, condition.toString());
         Assertions.assertEquals(1, tables.size());
+    }
+
+    @Test
+    public void testTwoFilterTypesMatchWithoutFiltersPattern() {
+        final DSLContext ctx = DSL.using(conn);
+        final WithoutFiltersCondition withoutFiltersCondition = new WithoutFiltersCondition(
+                new ConditionConfig(ctx, false, true, true, ipRegex)
+        );
+        final Condition condition = withoutFiltersCondition.condition();
+        final Set<Table<?>> tables = withoutFiltersCondition.requiredTables();
+        final String expectedCondition = "(\n" + "  \"bloomdb\".\"pattern_test_2\".\"filter\" is null\n"
+                + "  and \"bloomdb\".\"pattern_test\".\"filter\" is null\n" + ")";
+        Assertions.assertEquals(expectedCondition, condition.toString());
+        Assertions.assertEquals(2, tables.size());
     }
 
     @Test
@@ -184,13 +185,13 @@ public class WithoutFiltersConditionTest {
     }
 
     // helper method
-    private void writeFilter(String tableName, int filterId) throws SQLException {
+    private void writeFilter(final String tableName, final int filterId) throws SQLException {
         conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
         conn.prepareStatement("USE BLOOMDB").execute();
-        String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
+        final String sql = "INSERT INTO `" + tableName + "` (`partition_id`, `filter_type_id`, `filter`) "
                 + "VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        BloomFilter filter = BloomFilter.create(1000, 0.01);
+        final PreparedStatement stmt = conn.prepareStatement(sql);
+        final BloomFilter filter = BloomFilter.create(1000, 0.01);
         final ByteArrayOutputStream filterBAOS = new ByteArrayOutputStream();
         Assertions.assertDoesNotThrow(() -> {
             filter.writeTo(filterBAOS);
