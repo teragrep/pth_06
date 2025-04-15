@@ -64,27 +64,33 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
 
     private final String value;
+    private final String operation;
     private final ConditionConfig config;
-    private final Condition condition;
     private final Set<Table<?>> tableSet;
 
     public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config, DSL.noCondition());
+        this(value, "EQUALS", config);
     }
 
-    public IndexStatementCondition(String value, ConditionConfig config, Condition condition) {
+    public IndexStatementCondition(String value, String operation, ConditionConfig config) {
         this.value = value;
+        this.operation = operation;
         this.config = config;
-        this.condition = condition;
         this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
-        if (!config.bloomEnabled()) {
-            LOGGER.debug("Indexstatement reached with bloom disabled");
-            return condition;
+        Condition newCondition = DSL.noCondition();
+        if (!"EQUALS".equals(operation) || !config.bloomEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER
+                        .debug(
+                                "Indexstatement reached without equals operation or bloom disabled. (operation=<{}>, bloom.enabled=<{}>)",
+                                operation, config.bloomEnabled()
+                        );
+            }
+            return newCondition;
         }
-        Condition newCondition = condition;
         if (tableSet.isEmpty()) {
             // get all tables that pattern match with search value
             final QueryCondition regexLikeCondition = new RegexLikeCondition(value, BLOOMDB.FILTERTYPE.PATTERN);
@@ -151,12 +157,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         }
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.condition.equals(cast.condition)
-                && this.tableSet.equals(cast.tableSet);
+        return Objects.equals(value, cast.value) && Objects.equals(operation, cast.operation)
+                && Objects.equals(config, cast.config) && Objects.equals(tableSet, cast.tableSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config, condition, tableSet);
+        return Objects.hash(value, operation, config, tableSet);
     }
 }
