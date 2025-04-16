@@ -181,7 +181,10 @@ public final class WithoutFiltersConditionTest {
 
     @Test
     public void testContract() {
-        EqualsVerifier.forClass(WithoutFiltersCondition.class).withNonnullFields("config", "tables").verify();
+        EqualsVerifier
+                .forClass(WithoutFiltersCondition.class)
+                .withNonnullFields("ctx", "withoutFiltersPattern", "tables")
+                .verify();
     }
 
     // helper method

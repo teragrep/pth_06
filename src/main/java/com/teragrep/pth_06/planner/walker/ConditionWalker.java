@@ -75,8 +75,7 @@ public final class ConditionWalker extends XmlWalker<Condition> {
     private final Logger LOGGER = LoggerFactory.getLogger(ConditionWalker.class);
 
     private final boolean bloomEnabled;
-    private final boolean withoutFilters;
-    private final String withoutFiltersPattern;
+    private final FilterlessSearch filterlessSearch;
     // Default query is full
     private boolean streamQuery = false;
     private final DSLContext ctx;
@@ -87,19 +86,22 @@ public final class ConditionWalker extends XmlWalker<Condition> {
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        this(null, false, false, "");
+        this(null, false, new FilterlessSearch());
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
-        this(ctx, bloomEnabled, false, "");
+        this(ctx, bloomEnabled, new FilterlessSearch());
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters, String withoutFiltersPattern) {
+        this(ctx, bloomEnabled, new FilterlessSearch(ctx, withoutFiltersPattern));
+    }
+
+    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, FilterlessSearch filterlessSearch) {
         super();
         this.ctx = ctx;
         this.bloomEnabled = bloomEnabled;
-        this.withoutFilters = withoutFilters;
-        this.withoutFiltersPattern = withoutFiltersPattern;
+        this.filterlessSearch = filterlessSearch;
         this.combinedMatchSet = new HashSet<>();
     }
 
@@ -165,25 +167,18 @@ public final class ConditionWalker extends XmlWalker<Condition> {
 
     Condition emitElem(final Element current) {
         final ValidElement element = new ValidElement(current);
-        final ConditionConfig conditionConfig = new ConditionConfig(
-                ctx,
-                streamQuery,
-                bloomEnabled,
-                withoutFilters,
-                withoutFiltersPattern,
-                bloomTermId
-        );
+        final ConditionConfig conditionConfig = new ConditionConfig(ctx, streamQuery, bloomEnabled, bloomTermId);
         final ElementCondition elementCondition = new ElementCondition(element, conditionConfig);
 
-        if (elementCondition.isBloomSearchCondition() && withoutFilters) {
+        if (elementCondition.isBloomSearchCondition() && !filterlessSearch.isStub()) {
             throw new RuntimeException("Search terms are not allowed when 'without filters' option is enabled");
         }
 
         Condition condition = elementCondition.condition();
 
         // add without filters condition for index
-        if (withoutFilters && elementCondition.isIndexCondition()) {
-            final WithoutFiltersCondition withoutFiltersQueryCondition = new WithoutFiltersCondition(conditionConfig);
+        if (!filterlessSearch.isStub() && elementCondition.isIndexCondition()) {
+            final WithoutFiltersCondition withoutFiltersQueryCondition = filterlessSearch.condition();
             conditionRequiredTables().addAll(withoutFiltersQueryCondition.requiredTables());
             final Condition withoutFiltersCondition = withoutFiltersQueryCondition.condition();
             LOGGER.debug("Without filters option enabled with condition <{}>", withoutFiltersCondition);

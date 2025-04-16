@@ -49,6 +49,7 @@ import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.bloomfilter.ConditionMatchBloomDBTables;
 import com.teragrep.pth_06.planner.bloomfilter.DatabaseTables;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
@@ -60,22 +61,30 @@ import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 
 public final class WithoutFiltersCondition implements QueryCondition, BloomQueryCondition {
 
-    private final ConditionConfig config;
+    private final DSLContext ctx;
+    private final String withoutFiltersPattern;
     private final Set<Table<?>> tables;
 
-    public WithoutFiltersCondition(ConditionConfig config) {
-        this(config, new HashSet<>());
+    public WithoutFiltersCondition(final ConditionConfig config) {
+        this(config.context(), config.withoutFiltersPattern());
     }
 
-    public WithoutFiltersCondition(ConditionConfig config, Set<Table<?>> tables) {
-        this.config = config;
+    public WithoutFiltersCondition(final DSLContext ctx, final String withoutFiltersPattern) {
+        this(ctx, withoutFiltersPattern, new HashSet<>());
+    }
+
+    private WithoutFiltersCondition(
+            final DSLContext ctx,
+            final String withoutFiltersPattern,
+            final Set<Table<?>> tables
+    ) {
+        this.ctx = ctx;
+        this.withoutFiltersPattern = withoutFiltersPattern;
         this.tables = tables;
     }
 
     @Override
     public Condition condition() {
-        final String withoutFiltersPattern = config.withoutFiltersPattern();
-
         if (tables.isEmpty()) {
 
             final QueryCondition tableFilteringCondition = new StringEqualsCondition(
@@ -84,7 +93,7 @@ public final class WithoutFiltersCondition implements QueryCondition, BloomQuery
             );
 
             final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
-                    config.context(),
+                    ctx,
                     tableFilteringCondition
             );
 
@@ -125,11 +134,13 @@ public final class WithoutFiltersCondition implements QueryCondition, BloomQuery
             return false;
         }
         final WithoutFiltersCondition that = (WithoutFiltersCondition) object;
-        return Objects.equals(config, that.config) && Objects.equals(tables, that.tables);
+        // ctx must be the same object instance
+        return ctx == that.ctx && Objects.equals(withoutFiltersPattern, that.withoutFiltersPattern)
+                && Objects.equals(tables, that.tables);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(config, tables);
+        return Objects.hash(ctx, withoutFiltersPattern, tables);
     }
 }
