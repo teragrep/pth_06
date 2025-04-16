@@ -47,9 +47,25 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.planner.walker.conditions.WithoutFiltersCondition;
 
-public interface FilterlessSearch {
+public class FilterlessSearchStub implements FilterlessSearch {
 
-    public abstract WithoutFiltersCondition condition();
+    private final boolean isStub;
 
-    public abstract boolean isStub();
+    public FilterlessSearchStub() {
+        this(true);
+    }
+
+    private FilterlessSearchStub(boolean isStub) {
+        this.isStub = isStub;
+    }
+
+    @Override
+    public WithoutFiltersCondition condition() {
+        throw new UnsupportedOperationException("FilterlessSearchStub does not implement condition()");
+    }
+
+    @Override
+    public boolean isStub() {
+        return isStub;
+    }
 }

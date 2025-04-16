@@ -86,15 +86,11 @@ public final class ConditionWalker extends XmlWalker<Condition> {
      * Constructor without connection. Used during unit-tests. Enables jooq-query construction.
      */
     public ConditionWalker() {
-        this(null, false, new FilterlessSearch());
+        this(null, false, new FilterlessSearchStub());
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled) {
-        this(ctx, bloomEnabled, new FilterlessSearch());
-    }
-
-    public ConditionWalker(DSLContext ctx, boolean bloomEnabled, boolean withoutFilters, String withoutFiltersPattern) {
-        this(ctx, bloomEnabled, new FilterlessSearch(ctx, withoutFiltersPattern));
+        this(ctx, bloomEnabled, new FilterlessSearchStub());
     }
 
     public ConditionWalker(DSLContext ctx, boolean bloomEnabled, FilterlessSearch filterlessSearch) {

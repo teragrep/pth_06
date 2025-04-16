@@ -45,11 +45,26 @@
  */
 package com.teragrep.pth_06.planner.walker;
 
-import com.teragrep.pth_06.planner.walker.conditions.WithoutFiltersCondition;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public interface FilterlessSearch {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public abstract WithoutFiltersCondition condition();
+public final class FilterlessSearchStubTest {
 
-    public abstract boolean isStub();
+    @Test
+    public void testIsStub() {
+        final FilterlessSearchStub filterlessSearchStub = new FilterlessSearchStub();
+        Assertions.assertTrue(filterlessSearchStub.isStub());
+    }
+
+    @Test
+    public void testConditionThrowException() {
+        final FilterlessSearchStub filterlessSearchStub = new FilterlessSearchStub();
+        final UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class, filterlessSearchStub::condition
+        );
+        final String expectedMessage = "FilterlessSearchStub does not implement condition()";
+        Assertions.assertEquals(expectedMessage, exception.getMessage());
+    }
 }

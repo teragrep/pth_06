@@ -46,10 +46,23 @@
 package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.planner.walker.conditions.WithoutFiltersCondition;
+import org.jooq.DSLContext;
 
-public interface FilterlessSearch {
+public final class FilterlessSearchImpl implements FilterlessSearch {
 
-    public abstract WithoutFiltersCondition condition();
+    private final DSLContext ctx;
+    private final String pattern;
 
-    public abstract boolean isStub();
+    public FilterlessSearchImpl(DSLContext ctx, String pattern) {
+        this.ctx = ctx;
+        this.pattern = pattern;
+    }
+
+    public WithoutFiltersCondition condition() {
+        return new WithoutFiltersCondition(ctx, pattern);
+    }
+
+    public boolean isStub() {
+        return false;
+    }
 }

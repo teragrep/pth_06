@@ -46,8 +46,10 @@
 package com.teragrep.pth_06.walker;
 
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
+import com.teragrep.pth_06.planner.walker.FilterlessSearchImpl;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
@@ -147,7 +149,8 @@ public class ConditionWalkerTest {
 
     @Test
     void bloomNoMatchStreamQueryWithoutFiltersTest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
         String e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
@@ -187,7 +190,8 @@ public class ConditionWalkerTest {
 
     @Test
     void withoutFiltersEnabled() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index operation=\"EQUALS\" value=\"haproxy\"/>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n)";
@@ -200,7 +204,8 @@ public class ConditionWalkerTest {
 
     @Test
     void withoutFiltersEnabledWithTimeConstraints() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<AND><index operation=\"EQUALS\" value=\"haproxy\"/><AND><earliest operation=\"GE\" value=\"1643207821\"/><latest operation=\"LE\" value=\"1729435021\"/></AND></AND>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
@@ -273,7 +278,8 @@ public class ConditionWalkerTest {
 
     @Test
     void testWithoutFiltersEnabled() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index value=\"haproxy\" operation=\"EQUALS\"/>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
@@ -286,7 +292,8 @@ public class ConditionWalkerTest {
 
     @Test
     void testWithoutFiltersEnabledWithEarliest() {
-        ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipRegex);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index value=\"haproxy\" operation=\"EQUALS\"/>";
         String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
@@ -352,7 +359,8 @@ public class ConditionWalkerTest {
 
     @Test
     void testWithoutFiltersOptionActiveWithSearchTermThrowsException() {
-        final ConditionWalker walker = new ConditionWalker(DSL.using(conn), true, true, ipStartingWith255);
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipStartingWith255));
         final String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND></AND>";
         final RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> walker.fromString(q));
         final String expectedMessage = "Search terms are not allowed when 'without filters' option is enabled";

@@ -53,6 +53,8 @@ import java.util.Set;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
 import com.teragrep.pth_06.planner.walker.FilterlessSearch;
+import com.teragrep.pth_06.planner.walker.FilterlessSearchImpl;
+import com.teragrep.pth_06.planner.walker.FilterlessSearchStub;
 import org.jooq.*;
 import org.jooq.conf.MappedSchema;
 import org.jooq.conf.RenderMapping;
@@ -130,8 +132,17 @@ public class StreamDBClient {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
             ctx.execute("SET sql_mode = 'NO_ENGINE_SUBSTITUTION';");
         }
+
         // -- TODO use dslContext.batch for all initial operations
-        this.walker = new ConditionWalker(ctx, bloomEnabled, new FilterlessSearch(ctx, withoutFiltersPattern));
+        final FilterlessSearch filterlessSearch;
+        if (withoutFilters) {
+            filterlessSearch = new FilterlessSearchImpl(ctx, withoutFiltersPattern);
+        }
+        else {
+            filterlessSearch = new FilterlessSearchStub();
+        }
+
+        this.walker = new ConditionWalker(ctx, bloomEnabled, filterlessSearch);
         Condition streamdbCondition;
 
         try {
