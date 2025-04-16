@@ -59,7 +59,7 @@ public final class FilterlessSearchStubTest {
     }
 
     @Test
-    public void testConditionThrowException() {
+    public void testConditionThrowsException() {
         final FilterlessSearchStub filterlessSearchStub = new FilterlessSearchStub();
         final UnsupportedOperationException exception = assertThrows(
                 UnsupportedOperationException.class, filterlessSearchStub::condition

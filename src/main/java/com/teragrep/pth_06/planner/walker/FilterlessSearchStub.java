@@ -55,7 +55,7 @@ public class FilterlessSearchStub implements FilterlessSearch {
         this(true);
     }
 
-    private FilterlessSearchStub(boolean isStub) {
+    private FilterlessSearchStub(final boolean isStub) {
         this.isStub = isStub;
     }
 

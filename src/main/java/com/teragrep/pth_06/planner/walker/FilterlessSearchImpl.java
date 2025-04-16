@@ -53,7 +53,7 @@ public final class FilterlessSearchImpl implements FilterlessSearch {
     private final DSLContext ctx;
     private final String pattern;
 
-    public FilterlessSearchImpl(DSLContext ctx, String pattern) {
+    public FilterlessSearchImpl(final DSLContext ctx, final String pattern) {
         this.ctx = ctx;
         this.pattern = pattern;
     }
