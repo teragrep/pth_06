@@ -152,8 +152,8 @@ public class ConditionWalkerTest {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
-        String e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, true));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -189,12 +189,40 @@ public class ConditionWalkerTest {
     }
 
     @Test
-    void withoutFiltersEnabled() {
+    void testWithoutFiltersWithIndex() {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index operation=\"EQUALS\" value=\"haproxy\"/>";
-        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n)";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + ")";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
+        Assertions
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+    }
+
+    @Test
+    void testWithoutFiltersWithSourcetype() {
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
+        String q = "<sourcetype operation=\"EQUALS\" value=\"haproxy\"/>";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'haproxy'\n" + ")";
+        Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
+        Assertions.assertEquals(e, cond.toString());
+        Assertions.assertEquals(1, walker.conditionRequiredTables().size());
+        Assertions
+                .assertTrue(walker.conditionRequiredTables().stream().anyMatch(t -> t.getName().equals("pattern_test_ip")));
+    }
+
+    @Test
+    void testWithoutFiltersWithHost() {
+        DSLContext ctx = DSL.using(conn);
+        ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
+        String q = "<host operation=\"EQUALS\" value=\"haproxy\"/>";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"host\" like 'haproxy'\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -207,8 +235,8 @@ public class ConditionWalkerTest {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<AND><index operation=\"EQUALS\" value=\"haproxy\"/><AND><earliest operation=\"GE\" value=\"1643207821\"/><latest operation=\"LE\" value=\"1729435021\"/></AND></AND>";
-        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
                 + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '2022-01-26'\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1643205600)\n"
                 + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2024-10-20'\n"
@@ -281,8 +309,8 @@ public class ConditionWalkerTest {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index value=\"haproxy\" operation=\"EQUALS\"/>";
-        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -295,8 +323,8 @@ public class ConditionWalkerTest {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<index value=\"haproxy\" operation=\"EQUALS\"/>";
-        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
+                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -363,7 +391,7 @@ public class ConditionWalkerTest {
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipStartingWith255));
         final String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><AND><indexstatement operation=\"EQUALS\" value=\"255.255.255.255\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND></AND>";
         final RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> walker.fromString(q));
-        final String expectedMessage = "Search terms are not allowed when 'without filters' option is enabled";
+        final String expectedMessage = "Search terms are not allowed when <bloom.withoutFilters> option is enabled";
         Assertions.assertEquals(expectedMessage, exception.getMessage());
     }
 
