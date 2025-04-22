@@ -47,17 +47,7 @@ package com.teragrep.pth_06.planner.walker;
 
 import com.teragrep.pth_06.planner.walker.conditions.WithoutFiltersCondition;
 
-public class FilterlessSearchStub implements FilterlessSearch {
-
-    private final boolean isStub;
-
-    public FilterlessSearchStub() {
-        this(true);
-    }
-
-    private FilterlessSearchStub(final boolean isStub) {
-        this.isStub = isStub;
-    }
+public final class FilterlessSearchStub implements FilterlessSearch {
 
     @Override
     public WithoutFiltersCondition condition() {
@@ -66,6 +56,6 @@ public class FilterlessSearchStub implements FilterlessSearch {
 
     @Override
     public boolean isStub() {
-        return isStub;
+        return true;
     }
 }
