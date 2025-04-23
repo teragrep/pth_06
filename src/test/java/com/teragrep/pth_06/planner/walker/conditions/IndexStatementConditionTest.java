@@ -153,7 +153,7 @@ public class IndexStatementConditionTest {
         Condition e1 = DSL.falseCondition();
         Condition e2 = DSL.trueCondition();
         ConditionConfig config = new ConditionConfig(ctx, false, true);
-        ConditionConfig withoutFiltersConfig = new ConditionConfig(ctx, false, true, true, 1L);
+        ConditionConfig withoutFiltersConfig = new ConditionConfig(ctx, false, true, false, "", 0L);
         IndexStatementCondition cond1 = new IndexStatementCondition("test", config, e1);
         IndexStatementCondition cond2 = new IndexStatementCondition("test", withoutFiltersConfig, e2);
         Assertions.assertEquals(e1, cond1.condition());
@@ -176,27 +176,6 @@ public class IndexStatementConditionTest {
                 + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
         Assertions.assertEquals(e, cond.condition().toString());
         Assertions.assertEquals(1, cond.requiredTables().size());
-    }
-
-    @Test
-    public void testOneMatchWithoutFilters() {
-        DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true, true);
-        IndexStatementCondition cond = new IndexStatementCondition("192.168.1.1", config);
-        String e = "\"bloomdb\".\"pattern_test_ip\".\"filter\" is null";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(1, cond.requiredTables().size());
-    }
-
-    @Test
-    public void testTwoMatchWithoutFilters() {
-        DSLContext ctx = DSL.using(conn);
-        ConditionConfig config = new ConditionConfig(ctx, false, true, true);
-        IndexStatementCondition cond = new IndexStatementCondition("255.255.255.255", config);
-        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "  and \"bloomdb\".\"pattern_test_ip255\".\"filter\" is null\n" + ")";
-        Assertions.assertEquals(e, cond.condition().toString());
-        Assertions.assertEquals(2, cond.requiredTables().size());
     }
 
     @Test

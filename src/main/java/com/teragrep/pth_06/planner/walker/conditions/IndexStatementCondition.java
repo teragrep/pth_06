@@ -57,8 +57,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
-
 public final class IndexStatementCondition implements QueryCondition, BloomQueryCondition {
 
     private final Logger LOGGER = LoggerFactory.getLogger(IndexStatementCondition.class);
@@ -87,12 +85,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
         Condition newCondition = condition;
         if (tableSet.isEmpty()) {
             // get all tables that pattern match with search value
-            final QueryCondition regexLikeCondition = new RegexLikeCondition(value, BLOOMDB.FILTERTYPE.PATTERN);
-            final DatabaseTables patternMatchTables = new ConditionMatchBloomDBTables(
+            final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
+            final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
                     config.context(),
-                    regexLikeCondition
+                    tableFilteringCondition
             );
-            tableSet.addAll(patternMatchTables.tables());
+            tableSet.addAll(conditionMatchingTables.tables());
         }
         if (!tableSet.isEmpty()) {
             if (LOGGER.isDebugEnabled()) {
@@ -116,12 +114,8 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
                 combinedTableCondition = combinedTableCondition.or(tableCondition.condition());
                 combinedNullFilterCondition = combinedNullFilterCondition.and(nullFilterCondition);
             }
-            if (config.withoutFilters()) {
-                newCondition = combinedNullFilterCondition;
-            }
-            else {
-                newCondition = combinedTableCondition.or(combinedNullFilterCondition);
-            }
+
+            newCondition = combinedTableCondition.or(combinedNullFilterCondition);
         }
         return newCondition;
     }
