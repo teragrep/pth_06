@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.execution.streaming.LongOffset;
@@ -63,6 +64,7 @@ public class DatasourceOffsetTest {
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 0), 0L);
         KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        kafkaOffset.serialize();
         DatasourceOffset datasourceOffset = new DatasourceOffset(longOffset, kafkaOffset);
 
         String ser = datasourceOffset.json();
@@ -77,9 +79,30 @@ public class DatasourceOffsetTest {
         Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
         topicPartitionLongMap.put(new TopicPartition("test", 777), 9999L);
         KafkaOffset kafkaOffset = new KafkaOffset(topicPartitionLongMap);
+        kafkaOffset.serialize();
 
         String ser = kafkaOffset.json();
         KafkaOffset deser = new KafkaOffset(ser);
+
+        for (Map.Entry<TopicPartition, Long> entry : deser.getOffsetMap().entrySet()) {
+            TopicPartition topicPartition = entry.getKey();
+            long offset = entry.getValue();
+
+            Assertions.assertEquals("test", topicPartition.topic());
+            Assertions.assertEquals(777, topicPartition.partition());
+            Assertions.assertEquals(9999L, offset);
+        }
+    }
+
+    @Test
+    public void HdfsOffsetSerdeTest() {
+        Map<TopicPartition, Long> topicPartitionLongMap = new HashMap<>();
+        topicPartitionLongMap.put(new TopicPartition("test", 777), 9999L);
+        HdfsOffset hdfsOffset = new HdfsOffset(topicPartitionLongMap);
+        hdfsOffset.serialize();
+
+        String ser = hdfsOffset.json();
+        HdfsOffset deser = new HdfsOffset(ser);
 
         for (Map.Entry<TopicPartition, Long> entry : deser.getOffsetMap().entrySet()) {
             TopicPartition topicPartition = entry.getKey();
