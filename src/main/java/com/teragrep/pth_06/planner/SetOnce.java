@@ -45,20 +45,45 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
-
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
+ * SetOnce that is immutable after it is set
  */
-public interface KafkaQuery {
+public final class SetOnce<T> {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(SetOnce.class);
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    private T value;
+    private boolean isSet;
 
+    public SetOnce() {
+        this(false);
+    }
+
+    private SetOnce(final boolean isSet) {
+        this.isSet = isSet;
+    }
+
+    public void set(final T updatedValue) {
+        if (isSet) {
+            throw new IllegalStateException("Value is already set");
+        }
+        this.value = updatedValue;
+        this.isSet = true;
+
+        LOGGER.debug("Set value <{}>", updatedValue);
+    }
+
+    public T value() {
+        if (!isSet) {
+            throw new IllegalStateException("Value is not set");
+        }
+        return value;
+    }
+
+    public boolean isSet() {
+        return isSet;
+    }
 }
