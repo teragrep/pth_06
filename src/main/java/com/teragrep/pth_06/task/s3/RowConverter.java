@@ -348,7 +348,7 @@ public final class RowConverter {
         }
 
         Fragment sourceSourceFragment = rfc5424Frame.structuredData.getValue(eventNodeSourceSource);
-        if (sourceHostnameFragment.isStub) {
+        if (sourceSourceFragment.isStub) {
             sourceSourceFragment = rfc5424Frame.structuredData.getValue(eventNodeRelaySource);
         }
 
