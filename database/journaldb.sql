@@ -62,14 +62,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Current Database: `journaldb`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `journaldb` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
-
-USE `journaldb`;
-
---
 -- Table structure for table `bucket`
 --
 
