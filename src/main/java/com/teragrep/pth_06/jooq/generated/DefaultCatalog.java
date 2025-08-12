@@ -76,17 +76,12 @@ import org.jooq.impl.CatalogImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class DefaultCatalog extends CatalogImpl {
 
-    private static final long serialVersionUID = -1407841952;
+    private static final long serialVersionUID = -520877140;
 
     /**
      * The reference instance of <code></code>
      */
     public static final DefaultCatalog DEFAULT_CATALOG = new DefaultCatalog();
-
-    /**
-     * The schema <code>journaldb</code>.
-     */
-    public final Journaldb JOURNALDB = com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
     /**
      * The schema <code>streamdb</code>.
@@ -97,6 +92,11 @@ public class DefaultCatalog extends CatalogImpl {
      * The schema <code>bloomdb</code>.
      */
     public final Bloomdb BLOOMDB = com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
+
+    /**
+     * The schema <code>journaldb</code>.
+     */
+    public final Journaldb JOURNALDB = com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
     /**
      * No further instances allowed
@@ -114,8 +114,8 @@ public class DefaultCatalog extends CatalogImpl {
 
     private final List<Schema> getSchemas0() {
         return Arrays.<Schema>asList(
-            Journaldb.JOURNALDB,
             Streamdb.STREAMDB,
-            Bloomdb.BLOOMDB);
+            Bloomdb.BLOOMDB,
+            Journaldb.JOURNALDB);
     }
 }
