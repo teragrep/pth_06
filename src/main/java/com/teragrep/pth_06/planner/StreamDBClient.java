@@ -72,6 +72,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
+import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.select;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
@@ -358,7 +359,7 @@ public class StreamDBClient {
                 JOURNALDB.LOGFILE.ID.as(id),
                 GetArchivedObjectsFilterTable.directory.as(directory),
                 GetArchivedObjectsFilterTable.stream.as(stream),
-                logtimeFunction.as(logtime)
+                coalesce(JOURNALDB.LOGFILE.EPOCH_HOUR, logtimeFunction).as(logtime)
         };
 
         private Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
