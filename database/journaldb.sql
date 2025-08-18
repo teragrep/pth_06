@@ -44,11 +44,11 @@
  * a licensee so wish it.
  */
 
--- MariaDB dump 10.18  Distrib 10.5.8-MariaDB, for Linux (x86_64)
+-- MariaDB dump 10.19  Distrib 10.11.11-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: journaldb
 -- ------------------------------------------------------
--- Server version	10.5.8-MariaDB-log
+-- Server version	10.11.11-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -67,13 +67,13 @@
 
 DROP TABLE IF EXISTS `bucket`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bucket` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Name of the bucket',
+  `name` varchar(64) NOT NULL COMMENT 'Name of the bucket',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_bucket_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Buckets in object storage';
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Buckets in object storage';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,13 +91,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `category` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(175) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Category''s name',
+  `name` varchar(175) DEFAULT NULL COMMENT 'Category''s name',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_category_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different categories.';
+) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different categories.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -115,7 +115,7 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `corrupted_archive`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `corrupted_archive` (
   `logfile_id` bigint(20) unsigned NOT NULL COMMENT 'The logfile that is the corrupted archive (references logfile.id).',
   PRIMARY KEY (`logfile_id`),
@@ -138,15 +138,15 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `flyway_schema_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `flyway_schema_history` (
   `installed_rank` int(11) NOT NULL,
-  `version` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `script` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `version` varchar(50) DEFAULT NULL,
+  `description` varchar(200) NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `script` varchar(1000) NOT NULL,
   `checksum` int(11) DEFAULT NULL,
-  `installed_by` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `installed_by` varchar(100) NOT NULL,
   `installed_on` timestamp NOT NULL DEFAULT current_timestamp(),
   `execution_time` int(11) NOT NULL,
   `success` tinyint(1) NOT NULL,
@@ -170,13 +170,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `host`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `host` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(175) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Name of the host',
+  `name` varchar(175) NOT NULL COMMENT 'Name of the host',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_host_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=511 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';
+) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -194,37 +194,42 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `logfile`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `logfile` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `logdate` date NOT NULL COMMENT 'Log file''s date',
   `expiration` date NOT NULL COMMENT 'Log file''s expiration date',
   `bucket_id` smallint(5) unsigned NOT NULL COMMENT 'Reference to bucket table',
-  `path` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Log file''s path in object storage',
+  `path` varchar(2048) NOT NULL COMMENT 'Log file''s path in object storage',
   `object_key_hash` char(64) GENERATED ALWAYS AS (sha2(concat(`path`,`bucket_id`),256)) STORED COMMENT 'Hash of path and bucket_id for uniqueness checks. Known length: 64 characters (SHA-256)',
   `host_id` smallint(5) unsigned NOT NULL COMMENT 'Reference to host table',
-  `original_filename` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Log file''s original file name',
+  `original_filename` varchar(255) NOT NULL COMMENT 'Log file''s original file name',
   `archived` datetime NOT NULL COMMENT 'Date and time when the log file was archived',
   `file_size` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s size in bytes',
-  `sha256_checksum` char(44) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'An SHA256 hash of the log file (Note: known to be 44 characters long)',
-  `archive_etag` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Object storage''s MD5 hash of the log file (Note: room left for possible implementation changes)',
-  `logtag` varchar(48) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'A link back to CFEngine',
+  `sha256_checksum` char(44) NOT NULL COMMENT 'An SHA256 hash of the log file (Note: known to be 44 characters long)',
+  `archive_etag` varchar(64) NOT NULL COMMENT 'Object storage''s MD5 hash of the log file (Note: room left for possible implementation changes)',
+  `logtag` varchar(48) NOT NULL COMMENT 'A link back to CFEngine',
   `source_system_id` smallint(5) unsigned NOT NULL COMMENT 'Log file''s source system (references source_system.id)',
   `category_id` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s category (references category.id)',
   `uncompressed_file_size` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  uncompressed file size',
+  `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
+  `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
+  `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
   KEY `bucket_id` (`bucket_id`),
-  KEY `host_id` (`host_id`),
   KEY `category_id` (`category_id`),
   KEY `ix_logfile_expiration` (`expiration`),
   KEY `ix_logfile__source_system_id` (`source_system_id`),
   KEY `cix_logfile_logdate_host_id_logtag` (`logdate`,`host_id`,`logtag`),
+  KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
+  KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
+  KEY `ix_logfile_epoch_expires` (`epoch_expires`),
   CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
   CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
   CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
   CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8287 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
+) ENGINE=InnoDB AUTO_INCREMENT=135 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -242,16 +247,16 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `metadata_value`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `metadata_value` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `logfile_id` bigint(20) unsigned NOT NULL COMMENT 'Foreign key referencing Logfile.id',
-  `value_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Identifier key for the attribute',
-  `value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Value of the attribute',
+  `value_key` varchar(255) NOT NULL COMMENT 'Identifier key for the attribute',
+  `value` varchar(255) NOT NULL COMMENT 'Value of the attribute',
   PRIMARY KEY (`id`),
   KEY `logfile_id` (`logfile_id`),
   CONSTRAINT `metadata_value_ibfk_1` FOREIGN KEY (`logfile_id`) REFERENCES `logfile` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8287 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains additional attributes for logfiles. The attributes do not apply to each logfile and therefore are not columns in Logfile table';
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains additional attributes for logfiles. The attributes do not apply to each logfile and therefore are not columns in Logfile table';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -269,12 +274,12 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `restore_job`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `restore_job` (
-  `job_id` varchar(768) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Job id from aws glacier',
+  `job_id` varchar(768) NOT NULL COMMENT 'Job id from aws glacier',
   `logfile_id` bigint(20) unsigned NOT NULL COMMENT 'Reference to logfile which is going to be restored',
   `created` datetime NOT NULL COMMENT 'Job creation time',
-  `task_id` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Task id this job belongs to',
+  `task_id` varchar(5) DEFAULT NULL COMMENT 'Task id this job belongs to',
   PRIMARY KEY (`job_id`),
   KEY `logfile_id` (`logfile_id`),
   CONSTRAINT `restore_job_ibfk_1` FOREIGN KEY (`logfile_id`) REFERENCES `logfile` (`id`)
@@ -296,13 +301,13 @@ UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `source_system`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `source_system` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(175) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Source system''s name',
+  `name` varchar(175) NOT NULL COMMENT 'Source system''s name',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_source_system_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different applications.';
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different applications.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -323,4 +328,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-04-08 15:30:14
+-- Dump completed on 2025-08-12 15:52:17
