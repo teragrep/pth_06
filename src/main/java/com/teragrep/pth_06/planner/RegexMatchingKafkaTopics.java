@@ -45,20 +45,36 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public final class RegexMatchingKafkaTopics implements Topics<String> {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(RegexMatchingKafkaTopics.class);
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    private final Topics<String> origin;
+    private final Pattern pattern;
 
+    public RegexMatchingKafkaTopics(final Topics<String> origin, final Pattern pattern) {
+        this.origin = origin;
+        this.pattern = pattern;
+    }
+
+    @Override
+    public List<String> asList() {
+        final List<String> matchingTopics = origin
+                .asList()
+                .stream()
+                .filter(topic -> pattern.matcher(topic).matches())
+                .collect(Collectors.toList());
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Pattern <{}> matched with topics <{}>", pattern.pattern(), matchingTopics);
+        }
+        return matchingTopics;
+    }
 }
