@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
+import com.teragrep.pth_06.HdfsFileMetadata;
 import com.teragrep.pth_06.KafkaTopicPartitionOffsetMetadata;
 
 import java.io.Serializable;
@@ -62,23 +63,34 @@ import java.io.Serializable;
 public final class BatchSlice implements Serializable {
 
     public static enum Type {
-        ARCHIVE, KAFKA
+        ARCHIVE, KAFKA, HDFS
     }
 
     public final Type type;
     public final ArchiveS3ObjectMetadata archiveS3ObjectMetadata;
     public final KafkaTopicPartitionOffsetMetadata kafkaTopicPartitionOffsetMetadata;
+    public final HdfsFileMetadata hdfsFileMetadata;
 
     public BatchSlice(ArchiveS3ObjectMetadata archiveS3ObjectMetadata) {
         this.type = Type.ARCHIVE;
         this.archiveS3ObjectMetadata = archiveS3ObjectMetadata;
         this.kafkaTopicPartitionOffsetMetadata = null;
+        this.hdfsFileMetadata = null;
     }
 
     public BatchSlice(KafkaTopicPartitionOffsetMetadata kafkaTopicPartitionOffsetMetadata) {
         this.type = Type.KAFKA;
         this.archiveS3ObjectMetadata = null;
         this.kafkaTopicPartitionOffsetMetadata = kafkaTopicPartitionOffsetMetadata;
+        this.hdfsFileMetadata = null;
+    }
+
+    public BatchSlice(HdfsFileMetadata hdfsFileMetadata) {
+        this.type = Type.HDFS;
+        this.archiveS3ObjectMetadata = null;
+        this.kafkaTopicPartitionOffsetMetadata = null;
+        this.hdfsFileMetadata = hdfsFileMetadata;
+
     }
 
     public long getSize() {
@@ -95,6 +107,14 @@ public final class BatchSlice implements Serializable {
             case KAFKA:
                 // TODO estimate based on offset delta
                 return 1024 * 1024 * 16;
+            case HDFS:
+                // The files in HDFS have a default size limiter set to them during creation. Use that limit (64000000) or hdfsFileMetadata.getFileSize().
+                if (hdfsFileMetadata != null) {
+                    return hdfsFileMetadata.hdfsFileSize;
+                }
+                else {
+                    throw new RuntimeException("Expected HDFS file metadata, instead was null");
+                }
             default:
                 throw new IllegalStateException("unknown BatchSliceType " + type);
         }
@@ -103,6 +123,7 @@ public final class BatchSlice implements Serializable {
     @Override
     public String toString() {
         return "BatchSlice{" + "batchSliceType=" + type + ", archiveS3ObjectMetadata=" + archiveS3ObjectMetadata
-                + ", kafkaTopicPartitionOffsetMetadata=" + kafkaTopicPartitionOffsetMetadata + '}';
+                + ", kafkaTopicPartitionOffsetMetadata=" + kafkaTopicPartitionOffsetMetadata + ", hdfsFileMetadata="
+                + hdfsFileMetadata + '}';
     }
 }

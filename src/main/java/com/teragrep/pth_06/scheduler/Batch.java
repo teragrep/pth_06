@@ -47,6 +47,7 @@ package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.HdfsQuery;
 import com.teragrep.pth_06.planner.KafkaQuery;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
@@ -67,17 +68,18 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     private long numberOfBatches = 0;
     private final LinkedList<BatchTaskQueue> runQueueArray;
     private final Config config;
+    private final HdfsQuery hdfsQuery;
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
 
-    public Batch(Config config, ArchiveQuery aq, KafkaQuery kq) {
+    public Batch(Config config, HdfsQuery hq, ArchiveQuery aq, KafkaQuery kq) {
         this.config = config;
         this.runQueueArray = new LinkedList<>();
 
         for (int i = 0; i < config.batchConfig.numPartitions; i++) {
             this.runQueueArray.add(new BatchTaskQueue());
         }
-
+        this.hdfsQuery = hq;
         this.archiveQuery = aq;
         this.kafkaQuery = kq;
     }
@@ -85,20 +87,30 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     public Batch processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
-        BatchSliceCollection slice = null;
+        BatchSliceCollection slice = new StubBatchSliceCollection();
+
+        if (config.isHdfsEnabled) {
+            slice = new HdfsBatchSliceCollection(this.hdfsQuery).processRange(start, end);
+        }
+
         if (config.isArchiveEnabled) {
-            slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
+            if (slice.isEmpty()) {
+                slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
+            }
+            else {
+                slice.addAll(new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end));
+            }
         }
 
         if (config.isKafkaEnabled) {
-            if (slice == null) {
+            if (slice.isEmpty()) {
                 slice = new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end);
             }
             else {
                 slice.addAll(new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end));
             }
         }
-        if (slice != null && !slice.isEmpty()) {
+        if (!slice.isEmpty()) {
             this.addSlice(slice);
         }
 

@@ -29,6 +29,7 @@
   </scm>
   <properties>
     <changelist>-SNAPSHOT</changelist>
+    <hadoop.version>3.3.6</hadoop.version>
     <java.version>1.8</java.version>
     <jclouds.version>2.3.0</jclouds.version>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -104,18 +105,36 @@
       <artifactId>spark-streaming_2.12</artifactId>
       <version>3.4.0</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
       <version>3.4.0</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_2.12</artifactId>
       <version>3.4.0</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -129,6 +148,41 @@
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
       <version>1.4.0</version>
+    </dependency>
+    <!-- hadoop -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
     </dependency>
     <!-- tests -->
     <dependency>
@@ -215,6 +269,17 @@
       <version>2.1.0</version>
       <scope>compile</scope>
     </dependency>
+    <!-- avro -->
+    <dependency>
+      <groupId>org.xerial.snappy</groupId>
+      <artifactId>snappy-java</artifactId>
+      <version>1.1.10.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.11.3</version>
+    </dependency>
   </dependencies>
   <build>
     <directory>${project.basedir}/target</directory>
@@ -287,6 +352,9 @@
             <!-- readme -->
             <exclude>README.adoc</exclude>
             <exclude>README.md</exclude>
+            <!-- avro -->
+            <exclude>src/main/avro/KafkaRecord.avsc</exclude>
+            <exclude>src/main/java/com/teragrep/pth_06/avro/SyslogRecord.java</exclude>
           </excludes>
         </configuration>
         <executions>
@@ -295,6 +363,23 @@
               <goal>check</goal>
             </goals>
             <phase>test</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <version>1.11.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+              <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -351,6 +436,7 @@
             </licenseHeader>
             <excludes>
               <exclude>src/main/java/com/teragrep/pth_06/jooq/generated/**/*.*</exclude>
+              <exclude>src/main/java/com/teragrep/pth_06/avro/SyslogRecord.java</exclude>
             </excludes>
           </java>
           <pom>
@@ -510,6 +596,9 @@
                   <module name="Translation"></module>
                   <module name="UniqueProperties"></module>
                   <module name="BeforeExecutionExclusionFileFilter">
+                    <property name="fileNamePattern" value="SyslogRecord\.java$"></property>
+                  </module>
+                  <module name="BeforeExecutionExclusionFileFilter">
                     <property name="fileNamePattern" value=".*[\\/]src[\\/]main[\\/]java[\\/]com[\\/]teragrep[\\/]pth_06[\\/]jooq[\\/]generated[\\/].*$"></property>
                   </module>
                 </module>
@@ -637,6 +726,9 @@
                   </module>
                   <module name="OrderedProperties">
                     <property name="severity" value="warning"></property>
+                  </module>
+                  <module name="BeforeExecutionExclusionFileFilter">
+                    <property name="fileNamePattern" value="SyslogRecord\.java$"></property>
                   </module>
                   <module name="BeforeExecutionExclusionFileFilter">
                     <property name="fileNamePattern" value=".*[\\/]src[\\/]main[\\/]java[\\/]com[\\/]teragrep[\\/]pth_06[\\/]jooq[\\/]generated[\\/].*$"></property>

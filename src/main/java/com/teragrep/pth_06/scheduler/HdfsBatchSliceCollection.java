@@ -43,31 +43,38 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.scheduler;
 
-import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import com.teragrep.pth_06.HdfsFileMetadata;
+import com.teragrep.pth_06.planner.HdfsQuery;
+import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.HdfsOffset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.spark.sql.connector.read.streaming.Offset;
 
-import java.util.Map;
+import java.util.LinkedList;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public final class HdfsBatchSliceCollection extends BatchSliceCollection {
 
-    public abstract Map<TopicPartition, Long> getInitialEndOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(HdfsBatchSliceCollection.class);
+    private final HdfsQuery hq;
 
-    public abstract Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
+    public HdfsBatchSliceCollection(HdfsQuery hq) {
+        super();
+        this.hq = hq;
+    }
 
-    public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
+    public HdfsBatchSliceCollection processRange(Offset start, Offset end) {
+        // HDFS:
+        LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
+        HdfsOffset hdfsStartOffset = ((DatasourceOffset) start).getHdfsOffset();
+        HdfsOffset hdfsEndOffset = ((DatasourceOffset) end).getHdfsOffset();
+        LinkedList<HdfsFileMetadata> result = hq.processBetweenHdfsFileMetadata(hdfsStartOffset, hdfsEndOffset);
+        for (HdfsFileMetadata r : result) {
+            this.add(new BatchSlice(r));
+        }
+        return this;
+    }
 
-    public abstract void commit(KafkaOffset offset);
-
-    public abstract void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
-
-    public abstract Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
 }

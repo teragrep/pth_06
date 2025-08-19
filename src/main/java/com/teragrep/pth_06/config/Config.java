@@ -59,12 +59,14 @@ public final class Config {
     public final String query;
     public final ArchiveConfig archiveConfig;
     public final KafkaConfig kafkaConfig;
+    public final HdfsConfig hdfsConfig;
 
     public final BatchConfig batchConfig;
     public final AuditConfig auditConfig;
 
     public final boolean isArchiveEnabled;
     public final boolean isKafkaEnabled;
+    public final boolean isHdfsEnabled;
 
     public final boolean isMetadataQuery;
 
@@ -93,8 +95,16 @@ public final class Config {
             kafkaConfig = new KafkaConfig();
         }
 
+        isHdfsEnabled = opts.getOrDefault("hdfs.enabled", "false").equalsIgnoreCase("true");
+        if (isHdfsEnabled) {
+            hdfsConfig = new HdfsConfig(opts);
+        }
+        else {
+            hdfsConfig = new HdfsConfig();
+        }
+
         // check that at least one datasource is enabled
-        if (!isArchiveEnabled && !isKafkaEnabled) {
+        if (!isArchiveEnabled && !isKafkaEnabled && !isHdfsEnabled) {
             throw new IllegalStateException("No datasources enabled");
         }
 

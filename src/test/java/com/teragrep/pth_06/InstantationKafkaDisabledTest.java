@@ -51,8 +51,6 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.SyslogMessage;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockHDFS;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
@@ -74,14 +72,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InstantiationTest {
+public class InstantationKafkaDisabledTest {
 
     private SparkSession spark = null;
 
@@ -107,8 +106,8 @@ public class InstantiationTest {
 
         mockS3.start();
 
-        // Start mock hdfs with 10 out of 14 records from kafka inserted inside.
-        hdfsUri = mockHDFS.startMiniCluster(false);
+        // Start mock hdfs with a full set of records from kafka inserted inside.
+        hdfsUri = mockHDFS.startMiniCluster(true);
 
         spark = SparkSession
                 .builder()
@@ -122,11 +121,11 @@ public class InstantiationTest {
         //spark.sparkContext().setLogLevel("ERROR");
 
         expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
-        /*File 0.9 is stored to HDFS, 10 records out of 14 will be read from HDFS instead of Kafka.*/
+        /*Files 0.9 and 0.13 are stored to HDFS, 14 records out of 14 will be read from HDFS instead of Kafka.*/
     }
 
     @Test
-    public void fullScanTest() throws StreamingQueryException, TimeoutException {
+    public void fullScanDisabledKafkaTest() throws StreamingQueryException, TimeoutException {
         // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
         Dataset<Row> df = spark
                 .readStream()
@@ -147,7 +146,7 @@ public class InstantiationTest {
                 .option("TeragrepAuditReason", "test run at fullScanTest()")
                 .option("TeragrepAuditUser", System.getProperty("user.name"))
                 // kafka options
-                .option("kafka.enabled", "true")
+                .option("kafka.enabled", "false")
                 .option("kafka.bootstrap.servers", "")
                 .option("kafka.sasl.mechanism", "")
                 .option("kafka.security.protocol", "")
@@ -158,7 +157,7 @@ public class InstantiationTest {
                 .option("hdfs.enabled", "true")
                 .option("hdfs.hdfsPath", hdfsPath)
                 .option("hdfs.hdfsUri", hdfsUri)
-                .option("hdfs.useHostName", "false")
+                .option("hdfs.UseHostName", "false")
                 .option("hdfs.transferProtection", "test")
                 .option("hdfs.cipherSuites", "test")
                 .option("hdfs.useMockHdfsDatabase", "true")
@@ -212,12 +211,11 @@ public class InstantiationTest {
                 }
             }
         }
-        assertEquals(expectedRows, rowCount);
+        Assertions.assertEquals(expectedRows, rowCount);
     }
 
     @Test
-    public void metadataTest() throws StreamingQueryException, TimeoutException {
-        Map<String, String> partitionToUncompressedMapping = new HashMap<>();
+    public void fullScanDisabledHdfsAndKafkaTest() throws StreamingQueryException, TimeoutException {
         // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
         Dataset<Row> df = spark
                 .readStream()
@@ -232,7 +230,7 @@ public class InstantiationTest {
                 .option("DBstreamdbname", "mock")
                 .option("DBjournaldbname", "mock")
                 .option("num_partitions", "1")
-                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
+                .option("queryXML", "<index value=\"testConsumer*\" operation=\"EQUALS\"/>") // Only affects HDFS execution in the current test configuration.
                 // audit information
                 .option("TeragrepAuditQuery", "index=f17")
                 .option("TeragrepAuditReason", "test run at fullScanTest()")
@@ -245,37 +243,69 @@ public class InstantiationTest {
                 .option("kafka.sasl.jaas.config", "")
                 .option("kafka.useMockKafkaConsumer", "true")
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                // metadata options
-                .option("metadataQuery.enabled", "true")
+                // HDFS options
+                .option("hdfs.enabled", "false")
+                .option("hdfs.hdfsPath", hdfsPath)
+                .option("hdfs.hdfsUri", hdfsUri)
+                .option("hdfs.UseHostName", "false")
+                .option("hdfs.transferProtection", "test")
+                .option("hdfs.cipherSuites", "test")
+                .option("hdfs.useMockHdfsDatabase", "true")
+                .option("hdfs.krbAuthentication", "false")
+                .option("hdfs.krbAuthorization", "test")
+                .option("hdfs.krbPrincipalPattern", "test")
+                .option("hdfs.krbKdc", "test")
+                .option("hdfs.krbRealm", "test")
+                .option("hdfs.krbKeytabUser", "test")
+                .option("hdfs.krbKeytabPath", "test")
+                .option("hdfs.useKerberosAutorenewal", "true")
+                .option("hdfs.includeRecordEpochAndAfter", 0L) // record timestamps are in 1650872090806000 granularity (epochMicros)
                 .load();
 
+        Dataset<Row> df2 = df.agg(functions.count("*"));
+
+        StreamingQuery streamingQuery = df2
+                .writeStream()
+                .outputMode("complete")
+                .format("memory")
+                .trigger(Trigger.ProcessingTime(0))
+                .queryName("MockArchiveQuery")
+                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                .start();
+
         StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds
-                    .select("partition", "_raw")
-                    .collectAsList()
-                    .forEach(r -> partitionToUncompressedMapping.put(r.getAs(0), r.getAs(1)));
+            ds.show(false);
         }).start();
         sq.processAllAvailable();
         sq.stop();
         sq.awaitTermination();
 
-        int loops = 0;
-        for (Map.Entry<String, String> entry : partitionToUncompressedMapping.entrySet()) {
-            assertFalse(entry.getValue().isEmpty());
-            JsonObject jo = new Gson().fromJson(entry.getValue(), JsonObject.class);
-            assertTrue(jo.has("compressed"));
-            assertTrue(jo.has("uncompressed"));
-            loops++;
+        long rowCount = 0;
+        while (!streamingQuery.awaitTermination(1000)) {
+
+            long resultSize = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").count();
+            if (resultSize > 0) {
+                rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
+                System.out.println(rowCount);
+            }
+            if (
+                streamingQuery.lastProgress() == null
+                        || streamingQuery.status().message().equals("Initializing sources")
+            ) {
+                // query has not started
+            }
+            else if (streamingQuery.lastProgress().sources().length != 0) {
+                if (isArchiveDone(streamingQuery)) {
+                    streamingQuery.stop();
+                }
+            }
         }
-        Assertions.assertEquals(33, loops);
-        //partition=19181 has NULL for uncompressed size
-        assertEquals(
-                -1L, new Gson().fromJson(partitionToUncompressedMapping.get("19181"), JsonObject.class).get("uncompressed").getAsLong()
-        );
+        Assertions.assertEquals(expectedRows - MockKafkaConsumerFactory.getNumRecords(), rowCount);
     }
 
     private boolean isArchiveDone(StreamingQuery outQ) {
-        boolean archiveDone = true;
+        Boolean archiveDone = true;
         for (int i = 0; i < outQ.lastProgress().sources().length; i++) {
             String startOffset = outQ.lastProgress().sources()[i].startOffset();
             String endOffset = outQ.lastProgress().sources()[i].endOffset();

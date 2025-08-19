@@ -63,21 +63,41 @@ public class DatasourceOffset extends Offset implements Serializable {
 
     private final SerializedDatasourceOffset serializedDatasourceOffset;
 
+    public DatasourceOffset(HdfsOffset hdfsOffset, KafkaOffset kafkaOffset) {
+        this(hdfsOffset, null, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset) {
+        this(hdfsOffset, archiveOffset, new KafkaOffset());
+    }
+
     public DatasourceOffset(LongOffset archiveOffset, KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(archiveOffset, kafkaOffset);
+        this(new HdfsOffset(), archiveOffset, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset) {
+        this(hdfsOffset, null, new KafkaOffset());
     }
 
     public DatasourceOffset(LongOffset archiveOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(archiveOffset);
+        this(new HdfsOffset(), archiveOffset, new KafkaOffset());
     }
 
     public DatasourceOffset(KafkaOffset kafkaOffset) {
-        this.serializedDatasourceOffset = new SerializedDatasourceOffset(kafkaOffset);
+        this(new HdfsOffset(), null, kafkaOffset);
+    }
+
+    public DatasourceOffset(HdfsOffset hdfsOffset, LongOffset archiveOffset, KafkaOffset kafkaOffset) {
+        this.serializedDatasourceOffset = new SerializedDatasourceOffset(hdfsOffset, archiveOffset, kafkaOffset);
     }
 
     public DatasourceOffset(String s) {
         Gson gson = new Gson();
         this.serializedDatasourceOffset = gson.fromJson(s, SerializedDatasourceOffset.class);
+    }
+
+    public HdfsOffset getHdfsOffset() {
+        return serializedDatasourceOffset.hdfsOffset;
     }
 
     public LongOffset getArchiveOffset() {
@@ -87,8 +107,8 @@ public class DatasourceOffset extends Offset implements Serializable {
     public KafkaOffset getKafkaOffset() {
         KafkaOffset kafkaOffset = serializedDatasourceOffset.kafkaOffset;
 
-        if (kafkaOffset == null || kafkaOffset.getOffsetMap() == null) {
-            return null;
+        if (kafkaOffset.isStub() || kafkaOffset.getOffsetMap().isEmpty()) {
+            throw new RuntimeException("kafkaOffset must not be empty");
         }
 
         for (Map.Entry<TopicPartition, Long> entry : kafkaOffset.getOffsetMap().entrySet()) {

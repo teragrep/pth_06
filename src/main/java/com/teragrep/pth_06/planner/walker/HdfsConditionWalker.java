@@ -43,31 +43,57 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.walker;
 
-import com.google.gson.JsonArray;
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import com.teragrep.jue_01.GlobToRegEx;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
-import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+// HDFS planner walker, only aims to filter out the topics as the planner only outputs the metadata for AVRO-files containing the records. The rest of the condition handling is done in the separate tasker walker.
+public class HdfsConditionWalker extends XmlWalker<String> {
 
-    public abstract Map<TopicPartition, Long> getInitialEndOffsets();
+    @Override
+    String emitElem(Element current) {
+        String tag = current.getTagName();
+        String value = current.getAttribute("value");
+        String operation = current.getAttribute("operation");
 
-    public abstract Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset);
+        String queryCondition = null;
+        // only index equals supported
+        if ("index".equalsIgnoreCase(tag)) {
+            if ("EQUALS".equalsIgnoreCase(operation)) {
+                queryCondition = GlobToRegEx.regexify(value);
+            }
+        }
+        return queryCondition;
+    }
 
-    public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
+    public String fromString(String inXml) throws ParserConfigurationException, IOException, SAXException {
+        return super.fromString(inXml);
+    }
 
-    public abstract void commit(KafkaOffset offset);
+    @Override
+    String emitLogicalOperation(String op, Object l, Object r) throws IllegalStateException {
+        String left = (String) l;
+        String right = (String) r;
 
-    public abstract void seekToHdfsOffsets(JsonArray hdfsStartOffsets);
+        String rv = null;
+        /*
+        index can not have two values at the same go therefore "AND".equals(op)
+        is not implemented
+         */
+        if ("OR".equals(op)) {
+            rv = "(" + left + "|" + right + ")";
+        }
+        return rv;
+    }
 
-    public abstract Map<TopicPartition, Long> getConsumerPositions(JsonArray startOffsets);
+    @Override
+    String emitUnaryOperation(String op, Element current) throws IllegalStateException {
+        // NOT is a filter, not a topic matcher
+        return null;
+    }
 }

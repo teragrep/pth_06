@@ -53,42 +53,39 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * <h1>Kafka Offset</h1> Class for representing a serializable offset of Kafka data source.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public class KafkaOffset extends org.apache.spark.sql.connector.read.streaming.Offset implements Serializable, Offset {
+// Class for representing a serializable offset of HDFS data source.
+// S3 has epoch hours as offsets, kafka has native TopicPartition offsets and HDFS should have file-metadata (use same format as in Kafka, topicpartition + record offset, which can be extracted from the metadata).
 
-    private final Map<String, Long> serializedKafkaOffset;
+public class HdfsOffset extends org.apache.spark.sql.connector.read.streaming.Offset implements Serializable, Offset {
+
+    private final Map<String, Long> serializedHdfsOffset;
     private final boolean stub;
-    private final transient Map<TopicPartition, Long> kafkaOffset;
+    private final transient Map<TopicPartition, Long> hdfsOffset;
 
-    public KafkaOffset() {
+    public HdfsOffset() {
         this(new HashMap<>(), new HashMap<>(), true);
     }
 
-    public KafkaOffset(String s) {
+    public HdfsOffset(String s) {
         this(new HashMap<>(), new Gson().fromJson(s, new TypeToken<Map<String, Long>>() {
         }.getType()), false);
     }
 
-    public KafkaOffset(Map<TopicPartition, Long> kafkaOffset) {
-        this(kafkaOffset, new HashMap<>(), false);
+    public HdfsOffset(Map<TopicPartition, Long> serializedHdfsOffset) {
+        this(serializedHdfsOffset, new HashMap<>(), false);
     }
 
-    public KafkaOffset(Map<TopicPartition, Long> kafkaOffset, Map<String, Long> serializedKafkaOffset, boolean stub) {
-        this.kafkaOffset = kafkaOffset;
-        this.serializedKafkaOffset = serializedKafkaOffset;
+    public HdfsOffset(Map<TopicPartition, Long> hdfsOffset, Map<String, Long> serializedHdfsOffset, boolean stub) {
+        this.hdfsOffset = hdfsOffset;
+        this.serializedHdfsOffset = serializedHdfsOffset;
         this.stub = stub;
     }
 
     @Override
     public Map<TopicPartition, Long> getOffsetMap() {
-        Map<TopicPartition, Long> rv = new HashMap<>(serializedKafkaOffset.size());
+        Map<TopicPartition, Long> rv = new HashMap<>(serializedHdfsOffset.size());
 
-        for (Map.Entry<String, Long> entry : serializedKafkaOffset.entrySet()) {
+        for (Map.Entry<String, Long> entry : serializedHdfsOffset.entrySet()) {
             String topicAndPartition = entry.getKey();
             long offset = entry.getValue();
 
@@ -108,22 +105,22 @@ public class KafkaOffset extends org.apache.spark.sql.connector.read.streaming.O
 
     @Override
     public void serialize() {
-        if (!kafkaOffset.isEmpty()) {
-            for (Map.Entry<TopicPartition, Long> entry : kafkaOffset.entrySet()) {
-                serializedKafkaOffset.put(entry.getKey().toString(), entry.getValue());
+        if (!hdfsOffset.isEmpty()) {
+            for (Map.Entry<TopicPartition, Long> entry : hdfsOffset.entrySet()) {
+                serializedHdfsOffset.put(entry.getKey().toString(), entry.getValue());
             }
-            kafkaOffset.clear();
+            hdfsOffset.clear();
         }
     }
 
     @Override
     public String json() {
         Gson gson = new Gson();
-        return gson.toJson(serializedKafkaOffset);
+        return gson.toJson(serializedHdfsOffset);
     }
 
     @Override
     public String toString() {
-        return "KafkaOffset{" + "serializedKafkaOffset=" + serializedKafkaOffset + '}';
+        return "HdfsOffset{" + "serializedHdfsOffset=" + serializedHdfsOffset + '}';
     }
 }
