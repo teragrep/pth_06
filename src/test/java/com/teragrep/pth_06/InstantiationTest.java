@@ -106,11 +106,9 @@ import com.teragrep.pth_06.task.s3.Pth06S3Client;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.functions;
-import org.apache.spark.sql.streaming.SourceProgress;
-import org.apache.spark.sql.streaming.StreamingQuery;
-import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.apache.spark.sql.streaming.Trigger;
+import org.apache.spark.sql.execution.QueryExecution;
+import org.apache.spark.sql.streaming.*;
+import org.apache.spark.sql.util.QueryExecutionListener;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -122,6 +120,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
@@ -151,6 +150,48 @@ public class InstantiationTest {
 
         mockS3.start();
 
+        StreamingQueryListener metricSQListener = new StreamingQueryListener() {
+
+            @Override
+            public void onQueryStarted(final QueryStartedEvent event) {
+
+            }
+
+            @Override
+            public void onQueryProgress(final QueryProgressEvent event) {
+                System.out.println("SEE THIS TOO " + event.progress().observedMetrics());
+
+                System.out.println("SEE THIS NOT " + event.progress().sources()[0].json());
+                for (SourceProgress sourceProgress : event.progress().sources()) {
+                    System.out.println("SEE THIS sourceProgress.metrics( " + sourceProgress.metrics());
+                }
+
+                for (StateOperatorProgress sop : event.progress().stateOperators()) {
+                    System.out.println("SEE THIS SOP " + sop.json());
+                    System.out.println("SEE THIS SOP CUSTOM " + sop.customMetrics());
+                }
+
+            }
+
+            @Override
+            public void onQueryTerminated(final QueryTerminatedEvent event) {
+
+            }
+        };
+
+        QueryExecutionListener queryExecutionListener = new QueryExecutionListener() {
+
+            @Override
+            public void onSuccess(final String funcName, final QueryExecution qe, final long durationNs) {
+                System.out.println("YYY qe.executedPlan().metrics() " + qe.executedPlan().metrics());
+            }
+
+            @Override
+            public void onFailure(final String funcName, final QueryExecution qe, final Exception exception) {
+                System.out.println("YYY qe.executedPlan().metrics() " + qe.executedPlan().metrics());
+            }
+        };
+
         spark = SparkSession
                 .builder()
                 .appName("Java Spark SQL basic example")
@@ -158,8 +199,13 @@ public class InstantiationTest {
                 .config("spark.driver.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.executor.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.sql.session.timeZone", "UTC")
-                //.config("spark.sql.streaming.metricsEnabled", "true")
+                .config("spark.sql.streaming.metricsEnabled", "true")
                 .getOrCreate();
+
+        spark.sparkContext().addSparkListener(new SuperSparkListener());
+
+        spark.streams().addListener(metricSQListener);
+        spark.listenerManager().register(queryExecutionListener);
 
         //spark.sparkContext().setLogLevel("ERROR");
 
@@ -170,7 +216,7 @@ public class InstantiationTest {
     public void fullScanTest() throws StreamingQueryException, TimeoutException {
         // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
 
-        Dataset<Row> df = spark
+        DataStreamReader dsr = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
                 .option("archive.enabled", "true")
@@ -195,54 +241,47 @@ public class InstantiationTest {
                 .option("kafka.security.protocol", "")
                 .option("kafka.sasl.jaas.config", "")
                 .option("kafka.useMockKafkaConsumer", "true")
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                .load();
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true");
 
-        Dataset<Row> df2 = df.agg(functions.count("*"));
+        Dataset<Row> df = dsr.load();
 
-        StreamingQuery streamingQuery = df2
-                .writeStream()
-                .outputMode("complete")
-                .format("memory")
-                .trigger(Trigger.ProcessingTime(0))
-                .queryName("MockArchiveQuery")
-                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                .start();
+        final AtomicLong receivedRows = new AtomicLong();
 
         StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
+            System.out.println("XXX df.logicalPlan().producedAttributes() " + ds.logicalPlan().producedAttributes());
+            System.out.println("XXX df.logicalPlan().metadataOutput() " + ds.logicalPlan().metadataOutput());
+            System.out.println("XXX df.logicalPlan().stats() " + ds.logicalPlan().stats());
+
+            System.out
+                    .println(
+                            "XXX ds.sqlContext().sparkContext().statusStore().activeStages().toList() "
+                                    + ds.sqlContext().sparkContext().statusStore().activeStages().toList()
+                    );
             ds.show(false);
+            receivedRows.getAndAdd(ds.collectAsList().size());
         }).start();
         sq.processAllAvailable();
-        sq.stop();
-        sq.awaitTermination();
 
-        long rowCount = 0;
-        while (!streamingQuery.awaitTermination(1000)) {
-            long resultSize = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").count();
-            if (resultSize > 0) {
-                rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
-                System.out.println(rowCount);
-            }
-            if (
-                streamingQuery.lastProgress() == null
-                        || streamingQuery.status().message().equals("Initializing sources")
-            ) {
+        while (!sq.awaitTermination(1000)) {
+            if (sq.lastProgress() == null || sq.status().message().equals("Initializing sources")) {
                 // query has not started
             }
-            else if (streamingQuery.lastProgress().sources().length != 0) {
-                if (isArchiveDone(streamingQuery)) {
-                    streamingQuery.stop();
+            else if (sq.lastProgress().sources().length != 0) {
+                if (isArchiveDone(sq)) {
+                    sq.stop();
                 }
             }
         }
+        sq.awaitTermination();
 
-        System.out.println("a wild sleeping beauty appears");
         for (SourceProgress sourceProgress : sq.lastProgress().sources()) {
             System.out.println("sourceProgress.metrics(): " + sourceProgress.metrics());
         }
+        System.out.println("a wild sleeping beauty appears");
+
         Assertions.assertDoesNotThrow(() -> Thread.sleep(Long.MAX_VALUE));
-        Assertions.assertEquals(expectedRows, rowCount);
+
+        Assertions.assertEquals(expectedRows, receivedRows.get());
     }
 
     @Test

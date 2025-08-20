@@ -49,6 +49,12 @@ import org.apache.spark.sql.connector.metric.CustomMetric;
 
 public class SuperMetric implements CustomMetric {
 
+    private SuperMetric() {
+    }
+
+    public SuperMetric(final String x) {
+    }
+
     @Override
     public String name() {
         return "super_metric";
