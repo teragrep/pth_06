@@ -158,7 +158,7 @@ public class InstantiationTest {
                 .config("spark.driver.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.executor.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.sql.session.timeZone", "UTC")
-                .config("spark.sql.streaming.metricsEnabled", "true")
+                //.config("spark.sql.streaming.metricsEnabled", "true")
                 .getOrCreate();
 
         //spark.sparkContext().setLogLevel("ERROR");
