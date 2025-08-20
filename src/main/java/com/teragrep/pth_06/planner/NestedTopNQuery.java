@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
+import static org.jooq.impl.DSL.coalesce;
 
 public final class NestedTopNQuery {
 
@@ -84,7 +85,7 @@ public final class NestedTopNQuery {
             JOURNALDB.LOGFILE.ID.as(id),
             GetArchivedObjectsFilterTable.directory.as(directory),
             GetArchivedObjectsFilterTable.stream.as(stream),
-            logtimeFunction.as(logtime)
+            coalesce(JOURNALDB.LOGFILE.EPOCH_HOUR, logtimeFunction).as(logtime)
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
