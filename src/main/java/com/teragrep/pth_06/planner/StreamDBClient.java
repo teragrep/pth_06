@@ -73,6 +73,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
+import static org.jooq.impl.DSL.coalesce;
+
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
 
@@ -213,7 +215,8 @@ public final class StreamDBClient implements AutoCloseable {
 
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
-
+        final Field<Date> logdateFunction = DSL
+                .field("CAST(FROM_UNIXTIME({0}) as DATETIME)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
         SelectConditionStep<Record1<Integer>> corruptedLogfilesField = DSL
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
@@ -222,7 +225,9 @@ public final class StreamDBClient implements AutoCloseable {
         final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, logfileSelection.directory(), logfileSelection.stream(),
-                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
+                        JOURNALDB.HOST.NAME, coalesce(
+                                logdateFunction, JOURNALDB.LOGFILE.LOGDATE
+                        ), JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
                         logfileSelection.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
                         JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
