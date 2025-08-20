@@ -1,3 +1,48 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
 package com.teragrep.pth_06;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
@@ -6,26 +51,28 @@ public class DummyTaskMetricAggregator implements CustomMetric {
 
     @Override
     public String name() {
+        System.out.println("i gief dummy_task_metric name in aggregator");
         // I guess names need to match with CustomTaskMetrics and here
         // guess based on lines 1150 and 1158 in SQLAppStatusListenerSuite.scala
-        return "DummyTaskMetric";
+        return "dummy_task_metric";
     }
 
     @Override
     public String description() {
-        return "DummyTaskMetric yadda yadda DummyTaskMetric";
+        System.out.println("i gief dummy_task_metric description in aggregator");
+        return "suchDummyMetric";
     }
 
     @Override
     public String aggregateTaskMetrics(final long[] longs) {
-        long count = 0;
+        System.out.println("i gief dummy_task_metric aggregation in aggregator");
+
+        long sum = 0;
         for (long l : longs) {
-            if (l != Long.MIN_VALUE) {
-                throw new IllegalArgumentException("long not expected, DummyTaskMetric is supposed to return only Long.MIN_VALUES");
-            }
-            count++;
+            sum = sum + l;
         }
-        return "Many Long.MIN_VALUES were present, can't summarize or so but their total count was: " + count;
+        System.out.println("i gief dummy_task_metric aggregation in aggregator as " + sum);
+        return String.valueOf(sum);
     }
 
 }

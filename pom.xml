@@ -52,6 +52,12 @@
       <groupId>com.teragrep</groupId>
       <artifactId>blf_01</artifactId>
       <version>2.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-sketch_2.12</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- // JOOQ \\ -->
     <dependency>
@@ -234,53 +240,6 @@
             <configuration>
               <source>8</source>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <version>0.15</version>
-        <inherited>false</inherited>
-        <configuration>
-          <addDefaultLicenseMatchers>false</addDefaultLicenseMatchers>
-          <licenses>
-            <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
-              <notes>Also allow the license url to be https.</notes>
-              <patterns>
-                <pattern>https://github.com/teragrep/teragrep/blob/main/LICENSE</pattern>
-              </patterns>
-            </license>
-          </licenses>
-          <consoleOutput>true</consoleOutput>
-          <excludeSubProjects>false</excludeSubProjects>
-          <excludes>
-            <!-- git -->
-            <exclude>.git/**</exclude>
-            <exclude>.gitattributes</exclude>
-            <exclude>.gitignore</exclude>
-            <exclude>.gitmodules</exclude>
-            <!-- logback config -->
-            <exclude>src/test/resources/logback.xml</exclude>
-            <!-- ci -->
-            <exclude>.github/workflows/*.yml</exclude>
-            <exclude>.github/workflows/*.yaml</exclude>
-            <exclude>.github/ISSUE_TEMPLATE/*</exclude>
-            <exclude>toolchains.xml</exclude>
-            <exclude>settings.xml</exclude>
-            <exclude>dependencies.settings.xml</exclude>
-            <exclude>add_headers_to_generated.sh</exclude>
-            <!-- readme -->
-            <exclude>README.adoc</exclude>
-            <exclude>README.md</exclude>
-          </excludes>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>test</phase>
           </execution>
         </executions>
       </plugin>

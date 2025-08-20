@@ -107,6 +107,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.functions;
+import org.apache.spark.sql.streaming.SourceProgress;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.Trigger;
@@ -157,6 +158,7 @@ public class InstantiationTest {
                 .config("spark.driver.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.executor.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.sql.session.timeZone", "UTC")
+                .config("spark.sql.streaming.metricsEnabled", "true")
                 .getOrCreate();
 
         //spark.sparkContext().setLogLevel("ERROR");
@@ -167,6 +169,7 @@ public class InstantiationTest {
     @Test
     public void fullScanTest() throws StreamingQueryException, TimeoutException {
         // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
+
         Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
@@ -216,7 +219,6 @@ public class InstantiationTest {
 
         long rowCount = 0;
         while (!streamingQuery.awaitTermination(1000)) {
-
             long resultSize = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").count();
             if (resultSize > 0) {
                 rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
@@ -234,6 +236,12 @@ public class InstantiationTest {
                 }
             }
         }
+
+        System.out.println("a wild sleeping beauty appears");
+        for (SourceProgress sourceProgress : sq.lastProgress().sources()) {
+            System.out.println("sourceProgress.metrics(): " + sourceProgress.metrics());
+        }
+        Assertions.assertDoesNotThrow(() -> Thread.sleep(Long.MAX_VALUE));
         Assertions.assertEquals(expectedRows, rowCount);
     }
 

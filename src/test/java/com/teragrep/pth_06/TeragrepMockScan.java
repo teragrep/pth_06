@@ -46,20 +46,27 @@
 package com.teragrep.pth_06;
 
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.*;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.Scan;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.util.CaseInsensitiveStringMap;
 
-public class TeragrepScan implements Scan {
+public final class TeragrepMockScan implements Scan {
 
+    private final CaseInsensitiveStringMap options;
     private final StructType schema;
-    private final Config config;
+    private final CustomTaskMetric[] metric;
 
-    TeragrepScan(StructType schema, Config config) {
+    public TeragrepMockScan(CaseInsensitiveStringMap options, StructType schema) {
+        this.options = options;
         this.schema = schema;
-        this.config = config;
+        this.metric = new CustomTaskMetric[] {
+                new SuperTaskMetric()
+        };
     }
 
     @Override
@@ -69,17 +76,32 @@ public class TeragrepScan implements Scan {
 
     @Override
     public MicroBatchStream toMicroBatchStream(String checkpointLocation) {
-        return new ArchiveMicroStreamReader(config);
+        Config config = new Config(options);
+
+        ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(
+                "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
+        );
+
+        KafkaQuery kafkaQueryProcessor;
+        if (config.isKafkaEnabled) {
+            Consumer<byte[], byte[]> kafkaConsumer = MockKafkaConsumerFactory.getConsumer();
+
+            kafkaQueryProcessor = new KafkaQueryProcessor(kafkaConsumer);
+        }
+        else {
+            kafkaQueryProcessor = null;
+        }
+
+        return new ArchiveMicroStreamReader(archiveQueryProcessor, kafkaQueryProcessor, config);
     }
 
     @Override
     public CustomMetric[] supportedCustomMetrics() {
         System.out.println("i gief supported custom metrics in TeragrepScan");
         // see examples at sql/core/src/test/scala/org/apache/spark/sql/execution/ui/SQLAppStatusListenerSuite.scala
-
-        CustomMetric[] customMetrics = new CustomMetric[1];
-        customMetrics[0] = new DummyTaskMetricAggregator();
-        return customMetrics;
+        return new CustomMetric[] {
+                new SuperMetric()
+        };
     }
 
     @Override
@@ -87,7 +109,6 @@ public class TeragrepScan implements Scan {
         System.out.println("i gief reportDriverMetrics in TeragrepScan");
         // there needs to be an Aggregator for this too, registered in supportedCustomMetrics
         // these are driver specific metrics
-        return new CustomTaskMetric[] {};
+        return metric;
     }
-
 }

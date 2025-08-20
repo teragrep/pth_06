@@ -43,22 +43,25 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.task;
+package com.teragrep.pth_06;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.apache.spark.sql.connector.metric.CustomMetric;
 
-public class DummyTaskMetric implements CustomTaskMetric {
+public class SuperMetric implements CustomMetric {
 
     @Override
     public String name() {
-        System.out.println("i gief dummy_task_metric name in task");
-        return "dummy_task_metric";
+        return "super_metric";
     }
 
     @Override
-    public long value() {
-        System.out.println("i gief dummy_task_metric value in task");
-        return 1;
+    public String description() {
+        return "gives super_metric";
+    }
+
+    @Override
+    public String aggregateTaskMetrics(final long[] longs) {
+        return "1337";
     }
 
 }
