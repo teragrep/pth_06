@@ -205,7 +205,7 @@ public final class StreamDBClient implements AutoCloseable {
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
         final Field<Date> logdateFunction = DSL
-                .field("CAST(FROM_UNIXTIME({0}) as DATETIME)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
+                .field("CAST(FROM_UNIXTIME({0}) as DATE)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
         SelectConditionStep<Record1<Integer>> corruptedLogfilesField = DSL
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
