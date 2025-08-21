@@ -191,7 +191,7 @@ public final class StreamDBClient {
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
         final Field<Date> logdateFunction = DSL
-                .field("CAST(FROM_UNIXTIME({0}) as DATETIME)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
+                .field("CAST(FROM_UNIXTIME({0}) as DATE)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
