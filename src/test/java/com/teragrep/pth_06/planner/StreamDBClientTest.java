@@ -228,6 +228,42 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing situation where epoch_hour is used as a source for logtime and logdate fields.
+     */
+    @Test
+    public void epochHourTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04 instead of the correct 2023-10-05 which epoch_hour is at, to test if epoch_hour takes priority or not.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Long earliestEpoch = 1696377600L; // 2023-10-04
+        Long latestOffset = earliestEpoch;
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        latestOffset = nextHourAndSizeFromSliceTable.offset();
+        Assertions.assertEquals(1696471200L, latestOffset);
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Assert that the resulting logfile metadata is as expected for logdate and logtime.
+        Assertions.assertEquals(1696471200L, hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
+    }
+
+    /**
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
      * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */
