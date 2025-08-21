@@ -118,8 +118,10 @@ public final class NestedTopNQuery {
         }
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
+        final Field<Date> logdateFunction = DSL
+                .field("CAST(FROM_UNIXTIME({0}) as DATE)", Date.class, JOURNALDB.LOGFILE.EPOCH_HOUR);
         return selectOnConditionStep
-                .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
+                .where(coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE).eq(day).and(journaldbConditionArg))
                 .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
     }
