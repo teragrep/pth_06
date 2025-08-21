@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.task;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.teragrep.pth_06.metrics.offsets.KafkaOffsetTaskMetric;
 import com.teragrep.pth_06.task.kafka.KafkaRecordConverter;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.rlo_06.ParseException;
@@ -53,6 +54,7 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.PartitionReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -246,6 +248,13 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
     public InternalRow get() {
         LOGGER.debug("get(): " + currentOffset);
         return currentRow;
+    }
+
+    @Override
+    public CustomTaskMetric[] currentMetricsValues() {
+        return new CustomTaskMetric[] {
+                new KafkaOffsetTaskMetric(endOffset)
+        };
     }
 
     @Override

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06;
 
+import com.amazonaws.services.costexplorer.model.MetricValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.cloudbees.syslog.Facility;
@@ -57,17 +58,28 @@ import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
+import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.execution.QueryExecution;
+import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
+import org.apache.spark.sql.execution.ui.SQLExecutionUIData;
+import org.apache.spark.sql.execution.ui.SQLPlanMetric;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
+import org.apache.spark.sql.util.QueryExecutionListener;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
+import scala.Function1;
+import scala.Option;
+import scala.collection.JavaConversions;
+import scala.collection.Seq;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -104,11 +116,13 @@ public class InstantiationTest {
 
         spark = SparkSession
                 .builder()
-                .appName("Java Spark SQL basic example")
+                .appName("teragrep")
                 .master("local[2]")
                 .config("spark.driver.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.executor.extraJavaOptions", "-Duser.timezone=EET")
                 .config("spark.sql.session.timeZone", "UTC")
+                .config("spark.sql.streaming.metricsEnabled", "true")
+                .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
         //spark.sparkContext().setLogLevel("ERROR");
@@ -187,6 +201,21 @@ public class InstantiationTest {
             }
         }
         assertEquals(expectedRows, rowCount);
+
+        // Metrics printing
+        SQLAppStatusStore statusStore = spark.sharedState().statusStore();
+        while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        statusStore.executionsList().foreach((Function1<SQLExecutionUIData, Object>) v1 -> {
+            Option<SQLPlanMetric> archiveOffset = v1.metrics().find(v2 -> v2.name().equals("ArchiveOffset"));
+            if (archiveOffset.isDefined()) {
+                final long id = archiveOffset.get().accumulatorId();
+                System.out.println("value= " + JavaConversions.mapAsJavaMap(v1.metricValues()).get(id));
+            }
+            return 0;
+        });
     }
 
     @Test

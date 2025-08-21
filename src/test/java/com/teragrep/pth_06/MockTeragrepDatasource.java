@@ -53,9 +53,7 @@ import org.apache.spark.sql.connector.catalog.Table;
 import org.apache.spark.sql.connector.catalog.TableCapability;
 import org.apache.spark.sql.connector.catalog.TableProvider;
 import org.apache.spark.sql.connector.expressions.Transform;
-import org.apache.spark.sql.connector.read.Scan;
 import org.apache.spark.sql.connector.read.ScanBuilder;
-import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.sources.DataSourceRegister;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MetadataBuilder;
@@ -115,33 +113,29 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
 
     @Override
     public ScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
-        return () -> new Scan() {
+        return () -> {
+            Config config = new Config(options);
 
-            @Override
-            public StructType readSchema() {
-                return schema;
+            ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(
+                    "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
+            );
+
+            KafkaQuery kafkaQueryProcessor;
+            if (config.isKafkaEnabled) {
+                Consumer<byte[], byte[]> kafkaConsumer = MockKafkaConsumerFactory.getConsumer();
+
+                kafkaQueryProcessor = new KafkaQueryProcessor(kafkaConsumer);
+            }
+            else {
+                kafkaQueryProcessor = null;
             }
 
-            @Override
-            public MicroBatchStream toMicroBatchStream(String checkpointLocation) {
-                Config config = new Config(options);
-
-                ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(
-                        "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
-                );
-
-                KafkaQuery kafkaQueryProcessor;
-                if (config.isKafkaEnabled) {
-                    Consumer<byte[], byte[]> kafkaConsumer = MockKafkaConsumerFactory.getConsumer();
-
-                    kafkaQueryProcessor = new KafkaQueryProcessor(kafkaConsumer);
-                }
-                else {
-                    kafkaQueryProcessor = null;
-                }
-
-                return new ArchiveMicroStreamReader(archiveQueryProcessor, kafkaQueryProcessor, config);
-            }
+            ArchiveMicroStreamReader stream = new ArchiveMicroStreamReader(
+                    archiveQueryProcessor,
+                    kafkaQueryProcessor,
+                    config
+            );
+            return new TeragrepScan(schema, stream);
         };
     }
 

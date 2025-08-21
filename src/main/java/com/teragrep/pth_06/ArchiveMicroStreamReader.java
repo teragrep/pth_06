@@ -277,4 +277,24 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public PartitionReaderFactory createReaderFactory() {
         return new TeragrepPartitionReaderFactory(config.isMetadataQuery);
     }
+
+    public DatasourceOffset lastUsedOffset() {
+        DatasourceOffset rv;
+        if (config.isArchiveEnabled && config.isKafkaEnabled) {
+            rv = new DatasourceOffset(
+                    new LongOffset(this.aq.latestOffset()),
+                    new KafkaOffset(this.kq.getInitialEndOffsets())
+            );
+        }
+        else if (config.isArchiveEnabled) {
+            rv = new DatasourceOffset(new LongOffset(this.aq.latestOffset()));
+        }
+        else if (config.isKafkaEnabled) {
+            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+        }
+        else {
+            throw new IllegalStateException("No datasources enabled, can't get last used offset");
+        }
+        return rv;
+    }
 }

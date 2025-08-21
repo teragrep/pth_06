@@ -225,4 +225,9 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
         LOGGER.info("Return latest offset: {}", this.latestOffset);
         return this.latestOffset;
     }
+
+    @Override
+    public Long latestOffset() {
+        return latestOffset;
+    }
 }

@@ -46,12 +46,16 @@
 package com.teragrep.pth_06.task;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.teragrep.pth_06.metrics.bytes.BytesProcessedTaskMetric;
+import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetTaskMetric;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
+import com.teragrep.pth_06.metrics.records.RecordsProcessedTaskMetric;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
 import com.teragrep.pth_06.task.s3.RowConverter;
 import com.teragrep.rad_01.AuditPlugin;
 import com.teragrep.rad_01.AuditPluginFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.PartitionReader;
 
 import java.io.IOException;
@@ -182,6 +186,14 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     @Override
     public InternalRow get() {
         return rowConverter.get();
+    }
+
+    @Override
+    public CustomTaskMetric[] currentMetricsValues() {
+        return new CustomTaskMetric[] {
+                new BytesProcessedTaskMetric(0),
+                new RecordsProcessedTaskMetric(0)
+        };
     }
 
     @Override
