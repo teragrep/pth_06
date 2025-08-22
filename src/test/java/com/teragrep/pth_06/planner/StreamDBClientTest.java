@@ -67,7 +67,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -374,13 +374,15 @@ class StreamDBClientTest {
         WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         latestOffset = nextHourAndSizeFromSliceTable.offset();
-        Assertions.assertEquals(1696471200L, latestOffset);
+        // zonedDateTime is used for compensating timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2023, 10, 5, 5, 0, 0, 0, ZoneId.systemDefault());
+        Assertions.assertEquals(zonedDateTime.toEpochSecond(), latestOffset);
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile metadata is as expected for logdate and logtime.
         long logtime = hourRange.get(0).get(8, Long.class);
-        Assertions.assertEquals(1696471200L, logtime);
+        Assertions.assertEquals(zonedDateTime.toEpochSecond(), logtime);
         Date logdate = hourRange.get(0).get(5, Date.class);
         Assertions.assertEquals(Date.valueOf(date), logdate);
     }
