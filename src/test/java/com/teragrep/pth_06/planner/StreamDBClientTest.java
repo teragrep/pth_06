@@ -662,6 +662,43 @@ class StreamDBClientTest {
         Assertions.assertTrue(nextHourAndSizeFromSliceTable.isStub);
     }
 
+    /**
+     * Testing timezone handling of epoch_hour and logtime near midnight.
+     */
+    @Test
+    public void epochHourTimezoneTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set epoch_hour to 2023-10-05 01:00 UTC, which will cause issues if session timezone (America/New_York, UTC-4) is affecting logtime and logdate result.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696467600L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Long earliestEpoch = 1696377600L; // 2023-10-04
+        Long latestOffset = earliestEpoch;
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        latestOffset = nextHourAndSizeFromSliceTable.offset();
+        Assertions.assertEquals(1696467600L, latestOffset);
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Assert that the resulting logfile metadata is as expected for logdate and logtime, they should not be affected by session timezone.
+        ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 1, 0, 0, 0, ZoneId.of("UTC"));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
+    }
+
     @Test
     public void equalsHashCodeContractTest() {
         EqualsVerifier
