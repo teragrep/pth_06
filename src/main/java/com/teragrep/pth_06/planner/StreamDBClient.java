@@ -169,7 +169,7 @@ public class StreamDBClient {
         final Field<Date> logdateFunction = DSL
                 .field(
                         "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
-                        JOURNALDB.LOGFILE.EPOCH_HOUR
+                        JOURNALDB.LOGFILE.EPOCH_ARCHIVED
                 );
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
@@ -388,7 +388,7 @@ public class StreamDBClient {
             final Field<Date> logdateFunction = DSL
                     .field(
                             "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
-                            JOURNALDB.LOGFILE.EPOCH_HOUR
+                            JOURNALDB.LOGFILE.EPOCH_ARCHIVED
                     );
             return selectOnConditionStep
                     .where(coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE).eq(day).and(journaldbConditionArg))
