@@ -185,7 +185,7 @@ class StreamDBClientTest {
                 "2023/10-05/example.tg.dev.test/example/example.log-@1696471200-2023100423.log.gz",
                 null,
                 UShort.valueOf(1),
-                "example.log-@1696471200-2023100505.log.gz",
+                "example.log-@1696471200-2023100423.log.gz",
                 new Timestamp(2025, 8, 13, 16, 18, 22, 0),
                 ULong.valueOf(120L),
                 "e2I8CnejWweTSk8tmo4tNkDO2fU7RajqI111FPlF7Mw=",
@@ -196,7 +196,7 @@ class StreamDBClientTest {
                 ULong.valueOf(390L),
                 ULong.valueOf(1696471200L),
                 ULong.valueOf(4910716800L),
-                ULong.valueOf(1755091102L)
+                ULong.valueOf(1696464000L)
         );
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
@@ -381,6 +381,7 @@ class StreamDBClientTest {
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile metadata is as expected for logdate and logtime.
         long logtime = hourRange.get(0).get(8, Long.class);
+        // logtime result is not static because session timezone affects the synthetic creation of logtime field from logfile path.
         Assertions.assertEquals(zonedDateTime.toEpochSecond(), logtime);
         Date logdate = hourRange.get(0).get(5, Date.class);
         Assertions.assertEquals(Date.valueOf(date), logdate);
@@ -469,7 +470,7 @@ class StreamDBClientTest {
                 "2023/10-05/example.tg.dev.test/example/example.log-@1696546800-2023100523.log.gz",
                 null,
                 UShort.valueOf(1),
-                "example.log-@1696471200-2023100505.log.gz",
+                "example.log-@1696546800-2023100523.log.gz",
                 new Timestamp(2025, 8, 13, 16, 18, 22, 0),
                 ULong.valueOf(120L),
                 "e2I8CnejWweTSk8tmo4tNkDO2fU7RajqI111FPlF7Mw=",
@@ -480,7 +481,7 @@ class StreamDBClientTest {
                 ULong.valueOf(390L),
                 ULong.valueOf(1696546800L),
                 ULong.valueOf(4910716800L),
-                ULong.valueOf(1755091102L)
+                ULong.valueOf(1696464000L)
         );
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
