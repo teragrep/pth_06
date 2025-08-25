@@ -103,11 +103,11 @@ class StreamDBClientTest {
     }
 
     /**
-     * Testing situation where epoch_hour is used as a source for logtime and logdate fields.
+     * Testing situation where epoch_hour is used as a source for logtime field and epoch_archived for logdate field.
      */
     @Test
     public void epochHourTest() {
-        // Init mandatory Config object.
+        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
         Map<String, String> opts = new HashMap<>();
         opts.put("S3endPoint", "mock");
         opts.put("S3identity", "mock");
@@ -117,31 +117,10 @@ class StreamDBClientTest {
         opts.put("DBurl", streamDBUrl);
         opts.put("DBstreamdbname", streamdbName);
         opts.put("DBjournaldbname", journaldbName);
-        opts.put("num_partitions", "1");
-        opts.put("scheduler", "BatchScheduler");
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        // audit information
-        opts.put("TeragrepAuditQuery", "index=firewall-data");
-        opts.put("TeragrepAuditReason", "test run at fullScanTest()");
-        opts.put("TeragrepAuditUser", System.getProperty("user.name"));
         opts.put("archive.enabled", "true");
-        // kafka options
-        opts.put("kafka.enabled", "false");
-        opts
-                .put(
-                        "kafka.bootstrap.servers",
-                        "kafkadev01.example.com:9092,kafkadev02.example.com:9092,kafkadev03.example.com:9092"
-                );
-        opts.put("kafka.sasl.mechanism", "PLAIN");
-        opts.put("kafka.security.protocol", "SASL_PLAINTEXT");
-        opts
-                .put(
-                        "kafka.sasl.jaas.config",
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"superuser\" password=\"SuperSecretSuperuserPassword\";"
-                );
-        opts.put("checkpointLocation", "/tmp/checkpoint");
-        final Config config = new Config(opts);
-
+        Config config = new Config(opts);
+        // Add test data to journaldb and streamdb, there are several tables in both databases.
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(config.archiveConfig.dbStreamDbName), new MappedSchema().withInput("journaldb").withOutput(config.archiveConfig.dbJournalDbName), new MappedSchema().withInput("bloomdb").withOutput(config.archiveConfig.bloomDbName)));
         final Connection connection = Assertions
@@ -153,8 +132,6 @@ class StreamDBClientTest {
                                 )
                 );
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-
-        // Add test data to journaldb and streamdb, there are several tables in both databases.
 
         BucketRecord bucketRecord = new BucketRecord(UShort.valueOf(1), "bucket1");
         ctx.insertInto(JOURNALDB.BUCKET).set(bucketRecord).execute();
@@ -249,7 +226,7 @@ class StreamDBClientTest {
      */
     @Test
     public void epochHourNullTest() {
-        // Init mandatory Config object.
+        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
         Map<String, String> opts = new HashMap<>();
         opts.put("S3endPoint", "mock");
         opts.put("S3identity", "mock");
@@ -259,31 +236,10 @@ class StreamDBClientTest {
         opts.put("DBurl", streamDBUrl);
         opts.put("DBstreamdbname", streamdbName);
         opts.put("DBjournaldbname", journaldbName);
-        opts.put("num_partitions", "1");
-        opts.put("scheduler", "BatchScheduler");
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        // audit information
-        opts.put("TeragrepAuditQuery", "index=firewall-data");
-        opts.put("TeragrepAuditReason", "test run at fullScanTest()");
-        opts.put("TeragrepAuditUser", System.getProperty("user.name"));
         opts.put("archive.enabled", "true");
-        // kafka options
-        opts.put("kafka.enabled", "false");
-        opts
-                .put(
-                        "kafka.bootstrap.servers",
-                        "kafkadev01.example.com:9092,kafkadev02.example.com:9092,kafkadev03.example.com:9092"
-                );
-        opts.put("kafka.sasl.mechanism", "PLAIN");
-        opts.put("kafka.security.protocol", "SASL_PLAINTEXT");
-        opts
-                .put(
-                        "kafka.sasl.jaas.config",
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"superuser\" password=\"SuperSecretSuperuserPassword\";"
-                );
-        opts.put("checkpointLocation", "/tmp/checkpoint");
-        final Config config = new Config(opts);
-
+        Config config = new Config(opts);
+        // Add test data to journaldb and streamdb, there are several tables in both databases.
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(config.archiveConfig.dbStreamDbName), new MappedSchema().withInput("journaldb").withOutput(config.archiveConfig.dbJournalDbName), new MappedSchema().withInput("bloomdb").withOutput(config.archiveConfig.bloomDbName)));
         final Connection connection = Assertions
@@ -295,8 +251,6 @@ class StreamDBClientTest {
                                 )
                 );
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-
-        // Add test data to journaldb and streamdb, there are several tables in both databases.
 
         BucketRecord bucketRecord = new BucketRecord(UShort.valueOf(1), "bucket1");
         ctx.insertInto(JOURNALDB.BUCKET).set(bucketRecord).execute();
@@ -394,7 +348,7 @@ class StreamDBClientTest {
      */
     @Test
     public void epochHourTimezoneTest() {
-        // Init mandatory Config object.
+        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
         Map<String, String> opts = new HashMap<>();
         opts.put("S3endPoint", "mock");
         opts.put("S3identity", "mock");
@@ -404,31 +358,10 @@ class StreamDBClientTest {
         opts.put("DBurl", streamDBUrl);
         opts.put("DBstreamdbname", streamdbName);
         opts.put("DBjournaldbname", journaldbName);
-        opts.put("num_partitions", "1");
-        opts.put("scheduler", "BatchScheduler");
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        // audit information
-        opts.put("TeragrepAuditQuery", "index=firewall-data");
-        opts.put("TeragrepAuditReason", "test run at fullScanTest()");
-        opts.put("TeragrepAuditUser", System.getProperty("user.name"));
         opts.put("archive.enabled", "true");
-        // kafka options
-        opts.put("kafka.enabled", "false");
-        opts
-                .put(
-                        "kafka.bootstrap.servers",
-                        "kafkadev01.example.com:9092,kafkadev02.example.com:9092,kafkadev03.example.com:9092"
-                );
-        opts.put("kafka.sasl.mechanism", "PLAIN");
-        opts.put("kafka.security.protocol", "SASL_PLAINTEXT");
-        opts
-                .put(
-                        "kafka.sasl.jaas.config",
-                        "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"superuser\" password=\"SuperSecretSuperuserPassword\";"
-                );
-        opts.put("checkpointLocation", "/tmp/checkpoint");
-        final Config config = new Config(opts);
-
+        Config config = new Config(opts);
+        // Add test data to journaldb and streamdb, there are several tables in both databases.
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(config.archiveConfig.dbStreamDbName), new MappedSchema().withInput("journaldb").withOutput(config.archiveConfig.dbJournalDbName), new MappedSchema().withInput("bloomdb").withOutput(config.archiveConfig.bloomDbName)));
         final Connection connection = Assertions
@@ -440,8 +373,6 @@ class StreamDBClientTest {
                                 )
                 );
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-
-        // Add test data to journaldb and streamdb, there are several tables in both databases.
 
         BucketRecord bucketRecord = new BucketRecord(UShort.valueOf(1), "bucket1");
         ctx.insertInto(JOURNALDB.BUCKET).set(bucketRecord).execute();
