@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -88,6 +89,22 @@ public class IndexConditionTest {
         IndexCondition eq4 = new IndexCondition("946677600", "EQUALS", true);
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq3, eq4);
+    }
+
+    @Test
+    public void wildcardAsTrueTest() {
+        IndexCondition elementCondition = new IndexCondition("*", "EQUALS", false);
+        IndexCondition streamElementCondition = new IndexCondition("*", "EQUALS", true);
+        Assertions.assertEquals(DSL.trueCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.trueCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void wildcardNegationAsFalseTest() {
+        IndexCondition elementCondition = new IndexCondition("*", "NOT_EQUALS", false);
+        IndexCondition streamElementCondition = new IndexCondition("*", "NOT_EQUALS", true);
+        Assertions.assertEquals(DSL.falseCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.falseCondition(), streamElementCondition.condition());
     }
 
     @Test
