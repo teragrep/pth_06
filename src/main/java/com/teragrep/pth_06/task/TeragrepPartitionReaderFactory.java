@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.MetricRegistry;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReader;
@@ -80,6 +81,7 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
             // metadata only
             ArchiveMicroBatchInputPartition aip = (ArchiveMicroBatchInputPartition) inputPartition;
             return new MetadataMicroBatchInputPartitionReader(
+                    new MetricRegistry(),
                     aip.taskObjectList,
                     aip.TeragrepAuditQuery,
                     aip.TeragrepAuditReason,
@@ -90,6 +92,7 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
         else if (inputPartition instanceof ArchiveMicroBatchInputPartition) {
             ArchiveMicroBatchInputPartition aip = (ArchiveMicroBatchInputPartition) inputPartition;
             return new ArchiveMicroBatchInputPartitionReader(
+                    new MetricRegistry(),
                     aip.S3endPoint,
                     aip.S3identity,
                     aip.S3credential,
@@ -104,6 +107,7 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
         else if (inputPartition instanceof KafkaMicroBatchInputPartition) {
             KafkaMicroBatchInputPartition kip = (KafkaMicroBatchInputPartition) inputPartition;
             return new KafkaMicroBatchInputPartitionReader(
+                    new MetricRegistry(),
                     kip.executorKafkaProperties,
                     kip.topicPartition,
                     kip.startOffset,

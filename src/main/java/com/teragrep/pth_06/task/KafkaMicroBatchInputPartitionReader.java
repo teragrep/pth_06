@@ -45,8 +45,9 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
-import com.teragrep.pth_06.metrics.offsets.KafkaOffsetTaskMetric;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.task.kafka.KafkaRecordConverter;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.rlo_06.ParseException;
@@ -95,7 +96,10 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
     private Instant startTime;
     private long dataLength;
 
+    private final MetricRegistry metricRegistry;
+
     public KafkaMicroBatchInputPartitionReader(
+            MetricRegistry metricRegistry,
             Map<String, Object> executorKafkaProperties,
             TopicPartition topicPartition,
             long startOffset,
@@ -144,6 +148,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         // set cut-off time
         includeRowsAtAndAfterEpochMicros = Math
                 .multiplyExact(Long.parseLong(executorConfig.get("includeEpochAndAfter")), 1000L * 1000L);
+
+        this.metricRegistry = metricRegistry;
     }
 
     @VisibleForTesting
@@ -167,6 +173,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
         // set cut-off time
         includeRowsAtAndAfterEpochMicros = Math.multiplyExact(Long.MIN_VALUE / (1000 * 1000), 1000L * 1000L);
+
+        this.metricRegistry = new MetricRegistry();
     }
 
     @Override
@@ -194,6 +202,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             ConsumerRecord<byte[], byte[]> consumerRecord = kafkaRecordsIterator.next();
 
             currentOffset = consumerRecord.offset(); // update current
+            metricRegistry.counter("RecordsProcessed").inc();
+            metricRegistry.meter("RecordsPerSecond").mark();
 
             try {
                 currentRow = convertToRow(consumerRecord);
@@ -252,8 +262,13 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
     @Override
     public CustomTaskMetric[] currentMetricsValues() {
+        final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
+        metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
+        final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
+
         return new CustomTaskMetric[] {
-                new KafkaOffsetTaskMetric(endOffset)
+                new TaskMetric("RecordsProcessed", recordsProcessed),
+                new TaskMetric("RecordsPerSecond", (long)recordsPerSecond)
         };
     }
 

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06;
 
+import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
 import org.apache.spark.sql.connector.catalog.SupportsRead;
 import org.apache.spark.sql.connector.catalog.Table;
@@ -81,7 +82,6 @@ import java.util.stream.Stream;
 public final class TeragrepDatasource implements DataSourceRegister, TableProvider, Table, SupportsRead {
 
     private final Logger LOGGER = LoggerFactory.getLogger(TeragrepDatasource.class);
-
     private final String name = "teragrep";
 
     private final StructType schema = new StructType(new StructField[] {

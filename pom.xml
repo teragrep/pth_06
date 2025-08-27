@@ -39,6 +39,7 @@
     <teragrep.jue_01.version>0.4.3</teragrep.jue_01.version>
     <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
     <teragrep.rlo_06.version>9.0.1</teragrep.rlo_06.version>
+    <metrics.version>4.2.0</metrics.version>
   </properties>
   <dependencies>
     <dependency>
@@ -215,6 +216,12 @@
       <version>2.1.0</version>
       <scope>compile</scope>
     </dependency>
+      <!-- metrics -->
+      <dependency>
+          <groupId>io.dropwizard.metrics</groupId>
+          <artifactId>metrics-core</artifactId>
+          <version>${metrics.version}</version>
+      </dependency>
   </dependencies>
   <build>
     <directory>${project.basedir}/target</directory>

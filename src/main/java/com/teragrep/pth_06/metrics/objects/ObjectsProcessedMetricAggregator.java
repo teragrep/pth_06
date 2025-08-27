@@ -1,21 +1,21 @@
-package com.teragrep.pth_06.metrics.records;
+package com.teragrep.pth_06.metrics.objects;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
-public final class RecordsProcessedMetricAggregator implements CustomMetric {
+public final class ObjectsProcessedMetricAggregator implements CustomMetric {
 
-    public RecordsProcessedMetricAggregator() {
+    public ObjectsProcessedMetricAggregator() {
         // 0-arg ctor required by Spark
     }
 
     @Override
     public String name() {
-        return "RecordsProcessed";
+        return "ObjectsProcessed";
     }
 
     @Override
     public String description() {
-        return "RecordsProcessed";
+        return "ObjectsProcessed";
     }
 
     @Override
@@ -25,6 +25,6 @@ public final class RecordsProcessedMetricAggregator implements CustomMetric {
             sum += taskMetric;
         }
 
-        return sum + " records";
+        return sum + " objects";
     }
 }

@@ -3,6 +3,11 @@ package com.teragrep.pth_06.metrics.bytes;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
 public final class BytesProcessedMetricAggregator implements CustomMetric {
+
+    public BytesProcessedMetricAggregator() {
+        // 0-arg ctor required by Spark
+    }
+
     @Override
     public String name() {
         return "BytesProcessed";
@@ -19,7 +24,6 @@ public final class BytesProcessedMetricAggregator implements CustomMetric {
         for (final long taskMetric : taskMetrics) {
             sum += taskMetric;
         }
-
         return sum + " bytes";
     }
 }

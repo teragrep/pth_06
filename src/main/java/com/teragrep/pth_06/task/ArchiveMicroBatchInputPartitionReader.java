@@ -46,10 +46,9 @@
 package com.teragrep.pth_06.task;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.teragrep.pth_06.metrics.bytes.BytesProcessedTaskMetric;
-import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetTaskMetric;
+import com.codahale.metrics.MetricRegistry;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-import com.teragrep.pth_06.metrics.records.RecordsProcessedTaskMetric;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
 import com.teragrep.pth_06.task.s3.RowConverter;
 import com.teragrep.rad_01.AuditPlugin;
@@ -89,8 +88,10 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     private final AmazonS3 s3client;
 
     private final boolean skipNonRFC5424Files;
+    private final MetricRegistry metricRegistry;
 
     public ArchiveMicroBatchInputPartitionReader(
+            MetricRegistry metricRegistry,
             String S3endPoint,
             String S3identity,
             String S3credential,
@@ -123,6 +124,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         }
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
+        this.metricRegistry = metricRegistry;
     }
 
     // read zip until it ends
@@ -146,6 +148,9 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         taskObjectList.getFirst().host,
                         skipNonRFC5424Files
                 );
+                metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                metricRegistry.counter("ObjectsProcessed").inc();
+                metricRegistry.meter("BytesPerSecond").mark();
                 rowConverter.open();
             }
 
@@ -190,9 +195,15 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     @Override
     public CustomTaskMetric[] currentMetricsValues() {
+        final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
+        final long objectsProcessed = metricRegistry.counter("ObjectsProcessed").getCount();
+        metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
+        final double bytesPerSecond =  metricRegistry.meter("BytesPerSecond").getMeanRate();
+
         return new CustomTaskMetric[] {
-                new BytesProcessedTaskMetric(0),
-                new RecordsProcessedTaskMetric(0)
+                new TaskMetric("BytesPerSecond", (long)bytesPerSecond),
+                new TaskMetric("BytesProcessed",bytesProcessed),
+                new TaskMetric("ObjectsProcessed",objectsProcessed),
         };
     }
 

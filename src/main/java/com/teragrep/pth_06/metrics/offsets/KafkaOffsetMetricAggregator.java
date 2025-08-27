@@ -50,6 +50,7 @@ import org.apache.spark.sql.connector.metric.CustomMetric;
 public final class KafkaOffsetMetricAggregator implements CustomMetric {
 
     public KafkaOffsetMetricAggregator() {
+        // 0-arg ctor required by Spark
     }
 
     @Override

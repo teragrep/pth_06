@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06;
 
+import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.*;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -73,7 +74,6 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
     private final String name = "teragrep";
 
     private final Logger LOGGER = LoggerFactory.getLogger(MockTeragrepDatasource.class);
-
     private final StructType schema = new StructType(new StructField[] {
             new StructField("_time", DataTypes.TimestampType, false, new MetadataBuilder().build()),
             new StructField("_raw", DataTypes.StringType, false, new MetadataBuilder().build()),

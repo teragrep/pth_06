@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.gson.Gson;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.rad_01.AuditPlugin;
@@ -73,8 +74,10 @@ public class MetadataMicroBatchInputPartitionReader implements PartitionReader<I
     private final LinkedList<ArchiveS3ObjectMetadata> taskObjectList;
 
     private long currentOffset;
+    private final MetricRegistry metricRegistry;
 
     public MetadataMicroBatchInputPartitionReader(
+            MetricRegistry metricRegistry,
             LinkedList<ArchiveS3ObjectMetadata> taskObjectList,
             String TeragrepAuditQuery,
             String TeragrepAuditReason,
@@ -102,7 +105,7 @@ public class MetadataMicroBatchInputPartitionReader implements PartitionReader<I
 
         this.rowWriter = new UnsafeRowWriter(11);
         this.currentOffset = 0L;
-
+        this.metricRegistry = metricRegistry;
     }
 
     @Override

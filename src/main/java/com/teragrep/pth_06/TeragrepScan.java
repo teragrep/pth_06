@@ -45,11 +45,16 @@
  */
 package com.teragrep.pth_06;
 
+import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.metrics.TaskMetric;
+import com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator;
+import com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator;
+import com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator;
-import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetTaskMetric;
 import com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator;
-import com.teragrep.pth_06.metrics.offsets.KafkaOffsetTaskMetric;
+import com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator;
+import com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
@@ -92,6 +97,11 @@ public final class TeragrepScan implements Scan {
     @Override
     public CustomMetric[] supportedCustomMetrics() {
         return new CustomMetric[] {
+                new BytesProcessedMetricAggregator(),
+                new BytesPerSecondMetricAggregator(),
+                new RecordsProcessedMetricAggregator(),
+                new RecordsPerSecondMetricAggregator(),
+                new ObjectsProcessedMetricAggregator(),
                 new KafkaOffsetMetricAggregator(),
                 new ArchiveOffsetMetricAggregator(),
         };
@@ -102,12 +112,12 @@ public final class TeragrepScan implements Scan {
         final DatasourceOffset offset = stream.lastUsedOffset();
         final List<CustomTaskMetric> metrics = new ArrayList<>();
 
-        if (offset.getArchiveOffset()!=null){
-            metrics.add(new ArchiveOffsetTaskMetric(offset.getArchiveOffset().offset()));
+        if (offset.getArchiveOffset() != null) {
+            metrics.add(new TaskMetric("ArchiveOffset", offset.getArchiveOffset().offset()));
         }
 
-        if (offset.getKafkaOffset()!=null){
-            metrics.add(new KafkaOffsetTaskMetric(-1000L));
+        if (offset.getKafkaOffset() != null) {
+            metrics.add(new TaskMetric("KafkaOffset", -1000L));
         }
 
         return metrics.toArray(new CustomTaskMetric[0]);

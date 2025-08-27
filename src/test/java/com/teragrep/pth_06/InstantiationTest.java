@@ -79,6 +79,7 @@ import org.junit.jupiter.api.*;
 import scala.Function1;
 import scala.Option;
 import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
 import scala.collection.Seq;
 
 import java.io.ByteArrayInputStream;
@@ -202,19 +203,30 @@ public class InstantiationTest {
         }
         assertEquals(expectedRows, rowCount);
 
+
+
         // Metrics printing
+        final Map<String, List<Object>> metricsValues = new HashMap<>();
+
         SQLAppStatusStore statusStore = spark.sharedState().statusStore();
         while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
             Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
         }
 
         statusStore.executionsList().foreach((Function1<SQLExecutionUIData, Object>) v1 -> {
-            Option<SQLPlanMetric> archiveOffset = v1.metrics().find(v2 -> v2.name().equals("ArchiveOffset"));
-            if (archiveOffset.isDefined()) {
-                final long id = archiveOffset.get().accumulatorId();
-                System.out.println("value= " + JavaConversions.mapAsJavaMap(v1.metricValues()).get(id));
+            final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
+            for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
+                final long id = spm.accumulatorId();
+                final Object value = mv.get(id);
+                final List<Object> preExistingValues = metricsValues.getOrDefault(spm.name(), new ArrayList<>());
+                preExistingValues.add(value);
+                metricsValues.put(spm.name(), preExistingValues);
             }
             return 0;
+        });
+
+        metricsValues.forEach((key, value) -> {
+            System.out.println("k= " + key + " v= " + value);
         });
     }
 

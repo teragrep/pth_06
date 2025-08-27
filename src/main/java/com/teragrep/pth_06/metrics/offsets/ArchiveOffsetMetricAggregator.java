@@ -50,6 +50,7 @@ import org.apache.spark.sql.connector.metric.CustomMetric;
 public final class ArchiveOffsetMetricAggregator implements CustomMetric {
 
     public ArchiveOffsetMetricAggregator() {
+        // 0-arg ctor required by Spark
     }
 
     @Override
