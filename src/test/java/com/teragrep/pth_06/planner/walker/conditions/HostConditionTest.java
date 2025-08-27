@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +81,22 @@ public class HostConditionTest {
         Condition streamElementResult = streamElementCondition.condition();
         Assertions.assertEquals(e, elementResult.toString());
         Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void wildcardAsTrueTest() {
+        HostCondition elementCondition = new HostCondition("*", "EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("*", "EQUALS", true);
+        Assertions.assertEquals(DSL.trueCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.trueCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void wildcardNegationAsFalseTest() {
+        HostCondition elementCondition = new HostCondition("*", "NOT_EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("*", "NOT_EQUALS", true);
+        Assertions.assertEquals(DSL.falseCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.falseCondition(), streamElementCondition.condition());
     }
 
     @Test
