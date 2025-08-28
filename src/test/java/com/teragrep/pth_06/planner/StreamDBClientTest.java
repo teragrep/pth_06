@@ -48,9 +48,6 @@ package com.teragrep.pth_06.planner;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord;
 import org.jooq.*;
-import org.jooq.conf.MappedSchema;
-import org.jooq.conf.RenderMapping;
-import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.jooq.types.UShort;
@@ -235,11 +232,7 @@ class StreamDBClientTest {
         mariadb.stop();
     }
 
-    /**
-     * Testing situation where epoch_hour is used as a source for logtime field and epoch_archived for logdate field.
-     */
-    @Test
-    public void epochHourTest() {
+    private Config testConfiguration() {
         // Init mandatory Config object with the minimum options required for testing StreamDBClient.
         Map<String, String> opts = new HashMap<>();
         opts.put("S3endPoint", "mock");
@@ -252,12 +245,16 @@ class StreamDBClientTest {
         opts.put("DBjournaldbname", journaldbName);
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
         opts.put("archive.enabled", "true");
-        Config config = new Config(opts);
-        // Add test data to logfile table in journaldb.
-        Settings settings = new Settings()
-                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
-        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
+        return new Config(opts);
+    }
 
+    /**
+     * Testing situation where epoch_hour is used as a source for logtime field and epoch_archived for logdate field.
+     */
+    @Test
+    public void epochHourTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-04 instead of the correct 2023-10-05 to emulate timezone issues, and test if epoch_hour takes priority or not.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
@@ -283,6 +280,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
@@ -314,23 +312,8 @@ class StreamDBClientTest {
      */
     @Test
     public void epochHourNullTest() {
-        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
-        Map<String, String> opts = new HashMap<>();
-        opts.put("S3endPoint", "mock");
-        opts.put("S3identity", "mock");
-        opts.put("S3credential", "mock");
-        opts.put("DBusername", streamDBUsername);
-        opts.put("DBpassword", streamDBPassword);
-        opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("DBstreamdbname", streamdbName);
-        opts.put("DBjournaldbname", journaldbName);
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        opts.put("archive.enabled", "true");
-        Config config = new Config(opts);
         // Add test data to logfile table in journaldb.
-        Settings settings = new Settings()
-                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(config.archiveConfig.dbStreamDbName), new MappedSchema().withInput("journaldb").withOutput(config.archiveConfig.dbJournalDbName), new MappedSchema().withInput("bloomdb").withOutput(config.archiveConfig.bloomDbName)));
-        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to the correct 2023-10-05 but set epoch values to null.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
@@ -356,6 +339,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
@@ -388,29 +372,12 @@ class StreamDBClientTest {
     }
 
     /**
-     * Testing timezone handling of epoch_hour and logtime near midnight, check ci.yaml for possible errors as ci tests
-     * use GMT+0 instead of GMT+3.
+     * Testing timezone handling of epoch_hour and logtime near midnight.
      */
     @Test
     public void epochHourTimezoneTest() {
-        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
-        Map<String, String> opts = new HashMap<>();
-        opts.put("S3endPoint", "mock");
-        opts.put("S3identity", "mock");
-        opts.put("S3credential", "mock");
-        opts.put("DBusername", streamDBUsername);
-        opts.put("DBpassword", streamDBPassword);
-        opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("DBstreamdbname", streamdbName);
-        opts.put("DBjournaldbname", journaldbName);
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        opts.put("archive.enabled", "true");
-        Config config = new Config(opts);
         // Add test data to logfile table in journaldb.
-        Settings settings = new Settings()
-                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(config.archiveConfig.dbStreamDbName), new MappedSchema().withInput("journaldb").withOutput(config.archiveConfig.dbJournalDbName), new MappedSchema().withInput("bloomdb").withOutput(config.archiveConfig.bloomDbName)));
-        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set epoch_hour to 2023-10-05 23:00 UTC, which will cause issues if timezones are affecting logtime and logdate.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
@@ -436,6 +403,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
