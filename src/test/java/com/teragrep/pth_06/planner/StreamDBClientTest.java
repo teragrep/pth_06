@@ -258,8 +258,8 @@ class StreamDBClientTest {
         // Set logdate to 2023-10-04 instead of the correct 2023-10-05 to emulate timezone issues, and test if epoch_hour takes priority or not.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
-                Date.valueOf(LocalDate.of(2023, 10, 4)),
-                Date.valueOf(LocalDate.of(2028, 8, 13)),
+                Date.valueOf("2023-10-4"),
+                Date.valueOf("2026-10-4"),
                 UShort.valueOf(1),
                 "2023/10-05/example.tg.dev.test/example/example.log-@1696471200-2023100423.log.gz",
                 null,
@@ -284,11 +284,10 @@ class StreamDBClientTest {
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
-        LocalDate date = LocalDate.of(2023, 10, 5);
         Long latestOffset = earliestEpoch;
 
         // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(date));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(1, rows);
 
         // Get the offset for the first non-empty hour of records from the slicetable.
@@ -300,10 +299,8 @@ class StreamDBClientTest {
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile metadata is as expected for logdate and logtime.
-        long logtime = hourRange.get(0).get(8, Long.class);
-        Assertions.assertEquals(1696471200L, logtime);
-        Date logdate = hourRange.get(0).get(5, Date.class);
-        Assertions.assertEquals(Date.valueOf(date), logdate);
+        Assertions.assertEquals(1696471200L, hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
     }
 
     /**
@@ -314,11 +311,11 @@ class StreamDBClientTest {
     public void epochHourNullTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to the correct 2023-10-05 but set epoch values to null.
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
-                Date.valueOf(LocalDate.of(2023, 10, 5)),
-                Date.valueOf(LocalDate.of(2028, 8, 13)),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
                 UShort.valueOf(1),
                 "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
                 null,
@@ -343,11 +340,10 @@ class StreamDBClientTest {
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
-        LocalDate date = LocalDate.of(2023, 10, 5);
         Long latestOffset = earliestEpoch;
 
         // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(date));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(1, rows);
 
         // Get the offset for the first non-empty hour of records from the slicetable.
@@ -362,13 +358,12 @@ class StreamDBClientTest {
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
-        // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null.
+        // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
         long logtime = hourRange.get(0).get(8, Long.class);
         Assertions.assertNotEquals(zonedDateTimeUTC.toEpochSecond(), logtime);
         Assertions.assertEquals(zonedDateTimeUSA.toEpochSecond(), logtime);
         // Assert that the resulting logfile metadata is as expected for logdate.
-        Date logdate = hourRange.get(0).get(5, Date.class);
-        Assertions.assertEquals(Date.valueOf(date), logdate);
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
     }
 
     /**
@@ -378,11 +373,11 @@ class StreamDBClientTest {
     public void epochHourTimezoneTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set epoch_hour to 2023-10-05 23:00 UTC, which will cause issues if timezones are affecting logtime and logdate.
+        // Set epoch_hour to 2023-10-05 23:00 UTC, which will cause issues if timezone (America/New_York) is affecting logtime and logdate result.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
-                Date.valueOf(LocalDate.of(2023, 10, 5)),
-                Date.valueOf(LocalDate.of(2028, 8, 13)),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
                 UShort.valueOf(1),
                 "2023/10-05/example.tg.dev.test/example/example.log-@1696546800-2023100523.log.gz",
                 null,
@@ -407,11 +402,10 @@ class StreamDBClientTest {
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         sdc.setIncludeBeforeEpoch(Long.MAX_VALUE);
         Long earliestEpoch = 1696377600L; // 2023-10-04
-        LocalDate date = LocalDate.of(2023, 10, 5);
         Long latestOffset = earliestEpoch;
 
         // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(date));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(1, rows);
 
         // Get the offset for the first non-empty hour of records from the slicetable.
@@ -423,9 +417,7 @@ class StreamDBClientTest {
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile metadata is as expected for logdate and logtime.
-        long logtime = hourRange.get(0).get(8, Long.class);
-        Assertions.assertEquals(1696546800L, logtime);
-        Date logdate = hourRange.get(0).get(5, Date.class);
-        Assertions.assertEquals(Date.valueOf(date), logdate);
+        Assertions.assertEquals(1696546800L, hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
     }
 }
