@@ -80,7 +80,7 @@ class StreamDBClientTest {
 
     @BeforeEach
     public void setup() {
-        // Start mariadb testcontainer with timezone set to America/New_York. Also creates a second streamdb database inside the container alongside the default journaldb.
+        // Start mariadb testcontainer with timezone set to America/New_York (UTC-4). Also creates a second streamdb database inside the container alongside the default journaldb.
         mariadb = Assertions
                 .assertDoesNotThrow(() -> new MariaDBContainer<>(DockerImageName.parse("mariadb:10.5")).withPrivilegedMode(false).withUsername(streamDBUsername).withPassword(streamDBPassword).withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=America/New_York").withDatabaseName(journaldbName).withCopyFileToContainer(MountableFile.forClasspathResource("CREATE_STREAMDB_DB.sql"), "/docker-entrypoint-initdb.d/"));
         mariadb.start();
@@ -89,125 +89,7 @@ class StreamDBClientTest {
                         () -> DriverManager
                                 .getConnection(mariadb.getJdbcUrl(), mariadb.getUsername(), mariadb.getPassword())
                 );
-
-        // Create table JOURNALDB.SOURCE_SYSTEM
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement(
-                                        "CREATE TABLE `source_system` (\n"
-                                                + "  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,\n"
-                                                + "  `name` varchar(175) NOT NULL COMMENT 'Source system''s name',\n"
-                                                + "  PRIMARY KEY (`id`),\n"
-                                                + "  UNIQUE KEY `uix_source_system_name` (`name`)\n"
-                                                + ") ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different applications.'"
-                                )
-                                .execute()
-                );
-        // Create table JOURNALDB.CATEGORY
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement(
-                                        "CREATE TABLE `category` (\n"
-                                                + "  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,\n"
-                                                + "  `name` varchar(175) DEFAULT NULL COMMENT 'Category''s name',\n"
-                                                + "  PRIMARY KEY (`id`),\n"
-                                                + "  UNIQUE KEY `uix_category_name` (`name`)\n"
-                                                + ") ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for different categories.';"
-                                )
-                                .execute()
-                );
-        // Create table JOURNALDB.BUCKET
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement(
-                                        "CREATE TABLE `bucket` (\n"
-                                                + "  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,\n"
-                                                + "  `name` varchar(64) NOT NULL COMMENT 'Name of the bucket',\n"
-                                                + "  PRIMARY KEY (`id`),\n"
-                                                + "  UNIQUE KEY `uix_bucket_name` (`name`)\n"
-                                                + ") ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Buckets in object storage';"
-                                )
-                                .execute()
-                );
-        // Create table JOURNALDB.HOST
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement(
-                                        "CREATE TABLE `host` (\n"
-                                                + "  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,\n"
-                                                + "  `name` varchar(175) NOT NULL COMMENT 'Name of the host',\n"
-                                                + "  PRIMARY KEY (`id`),\n" + "  UNIQUE KEY `uix_host_name` (`name`)\n"
-                                                + ") ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';"
-                                )
-                                .execute()
-                );
-        // Create table JOURNALDB.LOGFILE
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement(
-                                        "CREATE TABLE `logfile` (\n"
-                                                + "  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n"
-                                                + "  `logdate` date NOT NULL COMMENT 'Log file''s date',\n"
-                                                + "  `expiration` date NOT NULL COMMENT 'Log file''s expiration date',\n"
-                                                + "  `bucket_id` smallint(5) unsigned NOT NULL COMMENT 'Reference to bucket table',\n"
-                                                + "  `path` varchar(2048) NOT NULL COMMENT 'Log file''s path in object storage',\n"
-                                                + "  `object_key_hash` char(64) GENERATED ALWAYS AS (sha2(concat(`path`,`bucket_id`),256)) STORED COMMENT 'Hash of path and bucket_id for uniqueness checks. Known length: 64 characters (SHA-256)',\n"
-                                                + "  `host_id` smallint(5) unsigned NOT NULL COMMENT 'Reference to host table',\n"
-                                                + "  `original_filename` varchar(255) NOT NULL COMMENT 'Log file''s original file name',\n"
-                                                + "  `archived` datetime NOT NULL COMMENT 'Date and time when the log file was archived',\n"
-                                                + "  `file_size` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s size in bytes',\n"
-                                                + "  `sha256_checksum` char(44) NOT NULL COMMENT 'An SHA256 hash of the log file (Note: known to be 44 characters long)',\n"
-                                                + "  `archive_etag` varchar(64) NOT NULL COMMENT 'Object storage''s MD5 hash of the log file (Note: room left for possible implementation changes)',\n"
-                                                + "  `logtag` varchar(48) NOT NULL COMMENT 'A link back to CFEngine',\n"
-                                                + "  `source_system_id` smallint(5) unsigned NOT NULL COMMENT 'Log file''s source system (references source_system.id)',\n"
-                                                + "  `category_id` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s category (references category.id)',\n"
-                                                + "  `uncompressed_file_size` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  uncompressed file size',\n"
-                                                + "  `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',\n"
-                                                + "  `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',\n"
-                                                + "  `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',\n"
-                                                + "  PRIMARY KEY (`id`),\n"
-                                                + "  UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),\n"
-                                                + "  KEY `bucket_id` (`bucket_id`),\n"
-                                                + "  KEY `category_id` (`category_id`),\n"
-                                                + "  KEY `ix_logfile_expiration` (`expiration`),\n"
-                                                + "  KEY `ix_logfile__source_system_id` (`source_system_id`),\n"
-                                                + "  KEY `cix_logfile_logdate_host_id_logtag` (`logdate`,`host_id`,`logtag`),\n"
-                                                + "  KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),\n"
-                                                + "  KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),\n"
-                                                + "  KEY `ix_logfile_epoch_expires` (`epoch_expires`),\n"
-                                                + "  CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),\n"
-                                                + "  CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),\n"
-                                                + "  CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),\n"
-                                                + "  CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)\n"
-                                                + ") ENGINE=InnoDB AUTO_INCREMENT=135 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';"
-                                )
-                                .execute()
-                );
-
-        // Insert test data for all the tables inside journaldb except for logfile.
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection.prepareStatement("INSERT INTO host (id, name) VALUES (1, 'testHost1')").execute()
-                );
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection.prepareStatement("INSERT INTO bucket (id, name) VALUES (1, 'bucket1')").execute()
-                );
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection.prepareStatement("INSERT INTO category (id, name) VALUES (1, 'testCategory')").execute()
-                );
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection
-                                .prepareStatement("INSERT INTO source_system (id, name) VALUES (2, 'testSourceSystem2')").execute()
-                );
-        // streamdb is created and populated by test data during MariaDBContainer startup.
+        // streamdb and journaldb is populated with test data during MariaDBContainer startup using CREATE_STREAMDB_DB.sql. Logfile table of journaldb is left empty for tests to populate it.
     }
 
     @AfterEach
