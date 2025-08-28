@@ -373,16 +373,16 @@ class StreamDBClientTest {
     public void epochHourTimezoneTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set epoch_hour to 2023-10-05 23:00 UTC, which will cause issues if timezone (America/New_York) is affecting logtime and logdate result.
+        // Set epoch_hour to 2023-10-05 01:00 UTC, which will cause issues if session timezone (America/New_York, UTC-4) is affecting logtime and logdate result.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
                 Date.valueOf("2023-10-5"),
                 Date.valueOf("2026-10-5"),
                 UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-@1696546800-2023100523.log.gz",
+                "2023/10-05/example.tg.dev.test/example/example.log-@1696546800-2023100501.log.gz",
                 null,
                 UShort.valueOf(1),
-                "example.log-@1696546800-2023100523.log.gz",
+                "example.log-@1696546800-2023100501.log.gz",
                 new Timestamp(2025, 8, 13, 16, 18, 22, 0),
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
@@ -391,7 +391,7 @@ class StreamDBClientTest {
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
-                ULong.valueOf(1696546800L),
+                ULong.valueOf(1696467600L),
                 ULong.valueOf(4910716800L),
                 ULong.valueOf(1696464000L)
         );
@@ -412,12 +412,13 @@ class StreamDBClientTest {
         WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         latestOffset = nextHourAndSizeFromSliceTable.offset();
-        Assertions.assertEquals(1696546800L, latestOffset);
+        Assertions.assertEquals(1696467600L, latestOffset);
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
-        // Assert that the resulting logfile metadata is as expected for logdate and logtime.
-        Assertions.assertEquals(1696546800L, hourRange.get(0).get(8, Long.class));
+        // Assert that the resulting logfile metadata is as expected for logdate and logtime, they should not be affected by session timezone.
+        ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 1, 0, 0, 0, ZoneId.of("UTC"));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(8, Long.class));
         Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
     }
 }
