@@ -255,7 +255,7 @@ class StreamDBClientTest {
     public void epochHourTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 instead of the correct 2023-10-05 to emulate timezone issues, and test if epoch_hour takes priority or not.
+        // Set logdate and logtime to 2023-10-04 instead of the correct 2023-10-05 which epoch_hour is at, to test if epoch_hour takes priority or not.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
                 Date.valueOf("2023-10-4"),
@@ -305,7 +305,7 @@ class StreamDBClientTest {
 
     /**
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
-     * synthetic logtime fields instead as a fallback.
+     * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */
     @Test
     public void epochHourNullTest() {
