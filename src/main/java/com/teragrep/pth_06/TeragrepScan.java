@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06;
 
-import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator;
@@ -56,6 +55,7 @@ import com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator;
 import com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator;
 import com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.Scan;
@@ -64,6 +64,7 @@ import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class TeragrepScan implements Scan {
 
@@ -117,7 +118,10 @@ public final class TeragrepScan implements Scan {
         }
 
         if (offset.getKafkaOffset() != null) {
-            metrics.add(new TaskMetric("KafkaOffset", -1000L));
+            final Map<TopicPartition, Long> kafkaOffsets = offset.getKafkaOffset().getOffsetMap();
+            for (final Map.Entry<TopicPartition, Long> kafkaOffsetEntry : kafkaOffsets.entrySet()) {
+                metrics.add(new TaskMetric("KafkaOffset", kafkaOffsetEntry.getValue()));
+            }
         }
 
         return metrics.toArray(new CustomTaskMetric[0]);

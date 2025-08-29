@@ -188,7 +188,9 @@ public class MetricsTest {
         // we get double the offsets due to running two queries
         Assertions.assertEquals(64, metricsValues.get("ArchiveOffset").size());
         Assertions.assertEquals(64, metricsValues.get("KafkaOffset").size());
-
+        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
+        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
+        Assertions.assertEquals("14", metricsValues.get("KafkaOffset").get(0));
     }
 
     private boolean isArchiveDone(StreamingQuery outQ) {
