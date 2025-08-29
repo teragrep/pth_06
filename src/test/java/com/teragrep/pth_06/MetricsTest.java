@@ -1,86 +1,30 @@
-/*
- * Teragrep Archive Datasource (pth_06)
- * Copyright (C) 2021-2024 Suomen Kanuuna Oy
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- *
- * Additional permission under GNU Affero General Public License version 3
- * section 7
- *
- * If you modify this Program, or any covered work, by linking or combining it
- * with other code, such other code is not for that reason alone subject to any
- * of the requirements of the GNU Affero GPL version 3 as long as this Program
- * is the same Program as licensed from Suomen Kanuuna Oy without any additional
- * modifications.
- *
- * Supplemented terms under GNU Affero General Public License version 3
- * section 7
- *
- * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
- * versions must be marked as "Modified version of" The Program.
- *
- * Names of the licensors and authors may not be used for publicity purposes.
- *
- * No rights are granted for use of trade names, trademarks, or service marks
- * which are in The Program if any.
- *
- * Licensee must indemnify licensors and authors for any liability that these
- * contractual assumptions impose on licensors and authors.
- *
- * To the extent this program is licensed as part of the Commercial versions of
- * Teragrep, the applicable Commercial License may apply to this file if you as
- * a licensee so wish it.
- */
 package com.teragrep.pth_06;
 
-import com.amazonaws.services.costexplorer.model.MetricValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.SyslogMessage;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
-import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.execution.QueryExecution;
 import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
-import org.apache.spark.sql.execution.ui.SQLExecutionUIData;
 import org.apache.spark.sql.execution.ui.SQLPlanMetric;
 import org.apache.spark.sql.functions;
+import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
-import org.apache.spark.sql.util.QueryExecutionListener;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
-import scala.Function1;
-import scala.Option;
-import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
-import scala.collection.Seq;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -90,12 +34,11 @@ import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InstantiationTest {
-
-    private SparkSession spark = null;
+public class MetricsTest {
+    private SparkSession spark;
 
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
@@ -109,10 +52,6 @@ public class InstantiationTest {
 
     @BeforeAll
     public void prepareEnv() throws Exception {
-        //Logger.getRootLogger().setLevel(Level.ERROR);
-        //Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
-        //Logger.getLogger("org.spark-project").setLevel(Level.WARN);
-
         mockS3.start();
 
         spark = SparkSession
@@ -126,14 +65,19 @@ public class InstantiationTest {
                 .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
-        //spark.sparkContext().setLogLevel("ERROR");
-
         expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
     }
 
+    @AfterAll
+    public void decommissionEnv() throws Exception {
+        mockS3.stop();
+    }
+
     @Test
-    public void fullScanTest() throws StreamingQueryException, TimeoutException {
-        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
+    public void testMetrics() throws StreamingQueryException, TimeoutException {
+        final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
+        final int oldCount = statusStore.executionsList().size();
+
         Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
@@ -166,7 +110,7 @@ public class InstantiationTest {
 
         StreamingQuery streamingQuery = df2
                 .writeStream()
-                .outputMode("complete")
+                .outputMode(OutputMode.Complete())
                 .format("memory")
                 .trigger(Trigger.ProcessingTime(0))
                 .queryName("MockArchiveQuery")
@@ -190,8 +134,8 @@ public class InstantiationTest {
                 System.out.println(rowCount);
             }
             if (
-                streamingQuery.lastProgress() == null
-                        || streamingQuery.status().message().equals("Initializing sources")
+                    streamingQuery.lastProgress() == null
+                            || streamingQuery.status().message().equals("Initializing sources")
             ) {
                 // query has not started
             }
@@ -202,65 +146,49 @@ public class InstantiationTest {
             }
         }
         assertEquals(expectedRows, rowCount);
-    }
 
-    @Test
-    public void metadataTest() throws StreamingQueryException, TimeoutException {
-        Map<String, String> partitionToUncompressedMapping = new HashMap<>();
-        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
-        Dataset<Row> df = spark
-                .readStream()
-                .format("com.teragrep.pth_06.MockTeragrepDatasource")
-                .option("archive.enabled", "true")
-                .option("S3endPoint", s3endpoint)
-                .option("S3identity", s3identity)
-                .option("S3credential", s3credential)
-                .option("DBusername", "mock")
-                .option("DBpassword", "mock")
-                .option("DBurl", "mock")
-                .option("DBstreamdbname", "mock")
-                .option("DBjournaldbname", "mock")
-                .option("num_partitions", "1")
-                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
-                // audit information
-                .option("TeragrepAuditQuery", "index=f17")
-                .option("TeragrepAuditReason", "test run at fullScanTest()")
-                .option("TeragrepAuditUser", System.getProperty("user.name"))
-                // kafka options
-                .option("kafka.enabled", "false")
-                .option("kafka.bootstrap.servers", "")
-                .option("kafka.sasl.mechanism", "")
-                .option("kafka.security.protocol", "")
-                .option("kafka.sasl.jaas.config", "")
-                .option("kafka.useMockKafkaConsumer", "true")
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                // metadata options
-                .option("metadataQuery.enabled", "true")
-                .load();
+        // Metrics
+        final Map<String, List<Object>> metricsValues = new HashMap<>();
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds
-                    .select("partition", "_raw")
-                    .collectAsList()
-                    .forEach(r -> partitionToUncompressedMapping.put(r.getAs(0), r.getAs(1)));
-        }).start();
-        sq.processAllAvailable();
-        sq.stop();
-        sq.awaitTermination();
-
-        int loops = 0;
-        for (Map.Entry<String, String> entry : partitionToUncompressedMapping.entrySet()) {
-            assertFalse(entry.getValue().isEmpty());
-            JsonObject jo = new Gson().fromJson(entry.getValue(), JsonObject.class);
-            assertTrue(jo.has("compressed"));
-            assertTrue(jo.has("uncompressed"));
-            loops++;
+        while (statusStore.executionsCount() < oldCount) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
         }
-        Assertions.assertEquals(33, loops);
-        //partition=19181 has NULL for uncompressed size
-        assertEquals(
-                -1L, new Gson().fromJson(partitionToUncompressedMapping.get("19181"), JsonObject.class).get("uncompressed").getAsLong()
-        );
+
+        while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        statusStore.executionsList().foreach(v1 -> {
+            final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
+            for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
+                final long id = spm.accumulatorId();
+                final Object value = mv.get(id);
+                if (value != null) {
+                    final List<Object> preExistingValues = metricsValues.getOrDefault(spm.name(), new ArrayList<>());
+                    preExistingValues.add(value);
+                    metricsValues.put(spm.name(), preExistingValues);
+                }
+            }
+
+            return 0; // need to return something, expects scala Unit return value
+        });
+
+        Optional<Long> maxArchiveOffset = metricsValues.get("ArchiveOffset").stream().map(o->Long.valueOf(o.toString())).max(Long::compare);
+        Optional<Long> minArchiveOffset = metricsValues.get("ArchiveOffset").stream().map(o->Long.valueOf(o.toString())).min(Long::compare);
+        Assertions.assertTrue(maxArchiveOffset.isPresent());
+        Assertions.assertTrue(minArchiveOffset.isPresent());
+        Assertions.assertEquals(1263679200L, maxArchiveOffset.get().longValue());
+        // not the first offset due to spark updating metrics values after progressing latestOffset
+        Assertions.assertEquals(1262300400L,  minArchiveOffset.get().longValue());
+        Assertions.assertEquals(32, metricsValues.get("BytesProcessed").size());
+        Assertions.assertEquals(32, metricsValues.get("ObjectsProcessed").size());
+        Assertions.assertEquals(32, metricsValues.get("RecordsProcessed").size());
+        Assertions.assertEquals(32, metricsValues.get("RecordsPerSecond").size());
+        Assertions.assertEquals(32, metricsValues.get("BytesPerSecond").size());
+        // we get double the offsets due to running two queries
+        Assertions.assertEquals(64, metricsValues.get("ArchiveOffset").size());
+        Assertions.assertEquals(64, metricsValues.get("KafkaOffset").size());
+
     }
 
     private boolean isArchiveDone(StreamingQuery outQ) {
@@ -287,11 +215,6 @@ public class InstantiationTest {
         return archiveDone;
     }
 
-    @AfterAll
-    public void decommissionEnv() throws Exception {
-        mockS3.stop();
-    }
-
     private long preloadS3Data() throws IOException {
         long rows = 0L;
         AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
@@ -300,8 +223,8 @@ public class InstantiationTest {
                 .getVirtualDatabaseMap();
 
         for (
-            Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap
-                    .entrySet()
+                Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap
+                .entrySet()
         ) {
             Iterator<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> it = entry
                     .getValue()
