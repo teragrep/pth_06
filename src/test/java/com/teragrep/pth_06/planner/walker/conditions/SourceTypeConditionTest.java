@@ -96,6 +96,30 @@ public class SourceTypeConditionTest {
     }
 
     @Test
+    public void testPartialWildcard() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("value*", "EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("value*", "EQUALS", true);
+        String e = "\"getArchivedObjects_filter_table\".\"stream\" like 'value%'";
+        String eStream = "\"streamdb\".\"stream\".\"stream\" like 'value%'";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void testPartialWildcardNegation() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("value*", "NOT_EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("value*", "NOT_EQUALS", true);
+        String e = "not (\"getArchivedObjects_filter_table\".\"stream\" like 'value%')";
+        String eStream = "not (\"streamdb\".\"stream\".\"stream\" like 'value%')";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
     public void equalsTest() {
         SourceTypeCondition eq1 = new SourceTypeCondition("946677600", "EQUALS", false);
         eq1.condition();

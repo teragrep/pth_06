@@ -108,6 +108,30 @@ public class IndexConditionTest {
     }
 
     @Test
+    public void testPartialWildcard() {
+        IndexCondition elementCondition = new IndexCondition("value*", "EQUALS", false);
+        IndexCondition streamElementCondition = new IndexCondition("value*", "EQUALS", true);
+        String e = "\"getArchivedObjects_filter_table\".\"directory\" like 'value%'";
+        String eStream = "\"streamdb\".\"stream\".\"directory\" like 'value%'";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void testPartialWildcardNegation() {
+        IndexCondition elementCondition = new IndexCondition("value*", "NOT_EQUALS", false);
+        IndexCondition streamElementCondition = new IndexCondition("value*", "NOT_EQUALS", true);
+        String e = "not (\"getArchivedObjects_filter_table\".\"directory\" like 'value%')";
+        String eStream = "not (\"streamdb\".\"stream\".\"directory\" like 'value%')";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
     public void notEqualsTest() {
         IndexCondition eq1 = new IndexCondition("946677600", "EQUALS", false);
         IndexCondition notEq = new IndexCondition("1000", "EQUALS", false);
