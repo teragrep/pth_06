@@ -127,9 +127,8 @@ public class XmlToSqlTest {
         LOGGER.debug("Result=" + result);
         LOGGER.debug("---------------");
         q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like '%'\n" + "  or (\n"
-                + "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + "  )\n" + ")";
+        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
         result = parser.fromString(q, true).toString();
         assertEquals(e, result);
         LOGGER.debug("Query=" + q);
@@ -147,9 +146,8 @@ public class XmlToSqlTest {
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         e = "(\n" + "  (\n" + "    not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n"
                 + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n"
-                + "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" + "  )\n" + "  or (\n"
-                + "    \"streamdb\".\"stream\".\"directory\" like '%'\n"
-                + "    and \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" + "  )\n" + ")";
+                + "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" + "  )\n"
+                + "  or \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" + ")";
         result = parser.fromString(q, true).toString();
         LOGGER.debug("Query=" + q);
         LOGGER.debug("Expected=" + e);
@@ -170,8 +168,7 @@ public class XmlToSqlTest {
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n"
-                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
                 + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
@@ -195,8 +192,7 @@ public class XmlToSqlTest {
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n"
-                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + fromDate + "'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
                 + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
@@ -222,8 +218,7 @@ public class XmlToSqlTest {
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n"
-                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
                 + fromTime.getEpochSecond() + ")\n" + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + toDate
