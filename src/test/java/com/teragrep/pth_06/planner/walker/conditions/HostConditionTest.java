@@ -100,6 +100,30 @@ public class HostConditionTest {
     }
 
     @Test
+    public void testPartialWildcard() {
+        HostCondition elementCondition = new HostCondition("value*", "EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("value*", "EQUALS", true);
+        String e = "\"getArchivedObjects_filter_table\".\"host\" like 'value%'";
+        String eStream = "\"streamdb\".\"host\".\"name\" like 'value%'";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void testPartialWildcardNegation() {
+        HostCondition elementCondition = new HostCondition("value*", "NOT_EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("value*", "NOT_EQUALS", true);
+        String e = "not (\"getArchivedObjects_filter_table\".\"host\" like 'value%')";
+        String eStream = "not (\"streamdb\".\"host\".\"name\" like 'value%')";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
     public void equalsTest() {
         HostCondition eq1 = new HostCondition("946677600", "EQUALS", false);
         eq1.condition();
