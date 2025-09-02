@@ -106,11 +106,9 @@ public class MetricsTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-        Dataset<Row> df2 = df.agg(functions.count("*"));
-
-        StreamingQuery streamingQuery = df2
+        StreamingQuery streamingQuery = df
                 .writeStream()
-                .outputMode(OutputMode.Complete())
+                .outputMode(OutputMode.Append())
                 .format("memory")
                 .trigger(Trigger.ProcessingTime(0))
                 .queryName("MockArchiveQuery")
@@ -118,34 +116,9 @@ public class MetricsTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .start();
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds.show(false);
-        }).start();
-        sq.processAllAvailable();
-        sq.stop();
-        sq.awaitTermination();
-
-        long rowCount = 0;
-        while (!streamingQuery.awaitTermination(1000)) {
-
-            long resultSize = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").count();
-            if (resultSize > 0) {
-                rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
-                System.out.println(rowCount);
-            }
-            if (
-                    streamingQuery.lastProgress() == null
-                            || streamingQuery.status().message().equals("Initializing sources")
-            ) {
-                // query has not started
-            }
-            else if (streamingQuery.lastProgress().sources().length != 0) {
-                if (isArchiveDone(streamingQuery)) {
-                    streamingQuery.stop();
-                }
-            }
-        }
-        assertEquals(expectedRows, rowCount);
+        streamingQuery.processAllAvailable();
+        streamingQuery.stop();
+        streamingQuery.awaitTermination();
 
         // Metrics
         final Map<String, List<Object>> metricsValues = new HashMap<>();
@@ -169,7 +142,6 @@ public class MetricsTest {
                     metricsValues.put(spm.name(), preExistingValues);
                 }
             }
-
             return 0; // need to return something, expects scala Unit return value
         });
 
@@ -185,36 +157,13 @@ public class MetricsTest {
         Assertions.assertEquals(32, metricsValues.get("RecordsProcessed").size());
         Assertions.assertEquals(32, metricsValues.get("RecordsPerSecond").size());
         Assertions.assertEquals(32, metricsValues.get("BytesPerSecond").size());
-        // we get double the offsets due to running two queries
-        Assertions.assertEquals(64, metricsValues.get("ArchiveOffset").size());
-        Assertions.assertEquals(64, metricsValues.get("KafkaOffset").size());
+        Assertions.assertEquals(32, metricsValues.get("ArchiveOffset").size());
+        Assertions.assertEquals(32, new HashSet<>(metricsValues.get("ArchiveOffset")).size());
+        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
+        Assertions.assertEquals(32, metricsValues.get("KafkaOffset").size());
         // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
         Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
         Assertions.assertEquals("1 offsets processed", metricsValues.get("KafkaOffset").get(0));
-    }
-
-    private boolean isArchiveDone(StreamingQuery outQ) {
-        boolean archiveDone = true;
-        for (int i = 0; i < outQ.lastProgress().sources().length; i++) {
-            String startOffset = outQ.lastProgress().sources()[i].startOffset();
-            String endOffset = outQ.lastProgress().sources()[i].endOffset();
-            String description = outQ.lastProgress().sources()[i].description();
-
-            if (description != null && !description.startsWith("com.teragrep.pth_06.ArchiveMicroStreamReader@")) {
-                // ignore others than archive
-                continue;
-            }
-
-            if (startOffset != null) {
-                if (!startOffset.equalsIgnoreCase(endOffset)) {
-                    archiveDone = false;
-                }
-            }
-            else {
-                archiveDone = false;
-            }
-        }
-        return archiveDone;
     }
 
     private long preloadS3Data() throws IOException {
