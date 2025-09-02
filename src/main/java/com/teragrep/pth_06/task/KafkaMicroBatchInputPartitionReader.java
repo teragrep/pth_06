@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.task;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SettableGauge;
 import com.google.common.annotations.VisibleForTesting;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.task.kafka.KafkaRecordConverter;
@@ -200,10 +201,11 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             }
 
             ConsumerRecord<byte[], byte[]> consumerRecord = kafkaRecordsIterator.next();
-
             currentOffset = consumerRecord.offset(); // update current
             metricRegistry.counter("RecordsProcessed").inc();
             metricRegistry.meter("RecordsPerSecond").mark();
+            final SettableGauge<Long> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
+            kafkaTsGauge.setValue(consumerRecord.timestamp());
 
             try {
                 currentRow = convertToRow(consumerRecord);
@@ -265,10 +267,11 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
         metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
         final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
-
+        final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
         return new CustomTaskMetric[] {
                 new TaskMetric("RecordsProcessed", recordsProcessed),
-                new TaskMetric("RecordsPerSecond", (long)recordsPerSecond)
+                new TaskMetric("RecordsPerSecond", (long)recordsPerSecond),
+                new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue())
         };
     }
 

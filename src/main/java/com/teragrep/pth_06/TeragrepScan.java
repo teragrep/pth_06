@@ -52,6 +52,7 @@ import com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator;
+import com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator;
 import com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator;
 import com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
@@ -102,6 +103,7 @@ public final class TeragrepScan implements Scan {
                 new BytesPerSecondMetricAggregator(),
                 new RecordsProcessedMetricAggregator(),
                 new RecordsPerSecondMetricAggregator(),
+                new LatestKafkaTimestampMetricAggregator(),
                 new ObjectsProcessedMetricAggregator(),
                 new KafkaOffsetMetricAggregator(),
                 new ArchiveOffsetMetricAggregator(),
@@ -119,9 +121,7 @@ public final class TeragrepScan implements Scan {
 
         if (offset.getKafkaOffset() != null) {
             final Map<TopicPartition, Long> kafkaOffsets = offset.getKafkaOffset().getOffsetMap();
-            for (final Map.Entry<TopicPartition, Long> kafkaOffsetEntry : kafkaOffsets.entrySet()) {
-                metrics.add(new TaskMetric("KafkaOffset", kafkaOffsetEntry.getValue()));
-            }
+            metrics.add(new TaskMetric("KafkaOffset", kafkaOffsets.size()));
         }
 
         return metrics.toArray(new CustomTaskMetric[0]);

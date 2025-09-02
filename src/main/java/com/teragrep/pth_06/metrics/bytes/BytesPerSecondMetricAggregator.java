@@ -3,6 +3,11 @@ package com.teragrep.pth_06.metrics.bytes;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
 public final class BytesPerSecondMetricAggregator implements CustomMetric {
+
+    public BytesPerSecondMetricAggregator() {
+        // 0-arg ctor required by Spark
+    }
+
     @Override
     public String name() {
         return "BytesPerSecond";

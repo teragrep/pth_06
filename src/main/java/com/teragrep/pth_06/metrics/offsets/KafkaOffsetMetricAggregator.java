@@ -65,12 +65,10 @@ public final class KafkaOffsetMetricAggregator implements CustomMetric {
 
     @Override
     public String aggregateTaskMetrics(final long[] taskMetrics) {
-        long rv = -1;
+        long sum = 0;
         for (long taskMetric : taskMetrics) {
-            if (taskMetric > rv) {
-                rv = taskMetric;
-            }
+            sum += taskMetric;
         }
-        return String.valueOf(rv);
+        return sum + " offsets processed";
     }
 }

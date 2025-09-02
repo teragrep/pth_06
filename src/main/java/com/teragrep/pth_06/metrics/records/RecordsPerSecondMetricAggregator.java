@@ -3,6 +3,11 @@ package com.teragrep.pth_06.metrics.records;
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
 public final class RecordsPerSecondMetricAggregator implements CustomMetric {
+
+    public RecordsPerSecondMetricAggregator() {
+        // 0-arg ctor required by Spark
+    }
+
     @Override
     public String name() {
         return "RecordsPerSecond";
