@@ -79,7 +79,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MetricsTest {
+public class CustomMetricsTest {
 
     private SparkSession spark;
 
@@ -117,7 +117,7 @@ public class MetricsTest {
     }
 
     @Test
-    public void testMetrics() throws StreamingQueryException, TimeoutException {
+    public void testCustomMetrics() throws StreamingQueryException, TimeoutException {
         final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
         final int oldCount = statusStore.executionsList().size();
 
