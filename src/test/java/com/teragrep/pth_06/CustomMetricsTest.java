@@ -94,8 +94,8 @@ public class CustomMetricsTest {
     private long expectedRows = 0L;
 
     @BeforeAll
-    public void prepareEnv() throws Exception {
-        mockS3.start();
+    public void prepareEnv() {
+        Assertions.assertDoesNotThrow(mockS3::start);
 
         spark = SparkSession
                 .builder()
@@ -108,16 +108,16 @@ public class CustomMetricsTest {
                 .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
-        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
+        expectedRows = Assertions.assertDoesNotThrow(this::preloadS3Data) + MockKafkaConsumerFactory.getNumRecords();
     }
 
     @AfterAll
-    public void decommissionEnv() throws Exception {
-        mockS3.stop();
+    public void decommissionEnv() {
+        Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @Test
-    public void testCustomMetrics() throws StreamingQueryException, TimeoutException {
+    public void testCustomMetrics() {
         final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
         final int oldCount = statusStore.executionsList().size();
 
@@ -149,7 +149,8 @@ public class CustomMetricsTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-        StreamingQuery streamingQuery = df
+        StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() ->
+                df
                 .writeStream()
                 .outputMode(OutputMode.Append())
                 .format("memory")
@@ -157,11 +158,11 @@ public class CustomMetricsTest {
                 .queryName("MockArchiveQuery")
                 .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                .start();
+                .start());
 
         streamingQuery.processAllAvailable();
-        streamingQuery.stop();
-        streamingQuery.awaitTermination();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        Assertions.assertDoesNotThrow(()->streamingQuery.awaitTermination());
 
         // Metrics
         final Map<String, List<Object>> metricsValues = new HashMap<>();
