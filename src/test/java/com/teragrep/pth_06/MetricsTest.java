@@ -123,7 +123,7 @@ public class MetricsTest {
         // Metrics
         final Map<String, List<Object>> metricsValues = new HashMap<>();
 
-        while (statusStore.executionsCount() < oldCount) {
+        while (statusStore.executionsCount() <= oldCount) {
             Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
         }
 
@@ -131,7 +131,7 @@ public class MetricsTest {
             Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
         }
 
-        statusStore.executionsList().foreach(v1 -> {
+        statusStore.executionsList().slice(oldCount, (int) statusStore.executionsCount()).foreach(v1 -> {
             final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
             for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
                 final long id = spm.accumulatorId();
