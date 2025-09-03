@@ -121,7 +121,7 @@ public class CustomMetricsTest {
         final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
         final int oldCount = statusStore.executionsList().size();
 
-        Dataset<Row> df = spark
+        final Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
                 .option("archive.enabled", "true")
@@ -149,7 +149,7 @@ public class CustomMetricsTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-        StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() ->
+        final StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() ->
                 df
                 .writeStream()
                 .outputMode(OutputMode.Append())
@@ -202,12 +202,12 @@ public class CustomMetricsTest {
 
         // Get minimum and maximum archive offsets, and assert them
         Assertions.assertEquals(32, metricsValues.get("ArchiveOffset").size());
-        Optional<Long> maxArchiveOffset = metricsValues
+        final Optional<Long> maxArchiveOffset = metricsValues
                 .get("ArchiveOffset")
                 .stream()
                 .map(o -> Long.valueOf(o.toString()))
                 .max(Long::compare);
-        Optional<Long> minArchiveOffset = metricsValues
+        final Optional<Long> minArchiveOffset = metricsValues
                 .get("ArchiveOffset")
                 .stream()
                 .map(o -> Long.valueOf(o.toString()))
