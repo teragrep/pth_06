@@ -62,7 +62,6 @@ import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
 import org.apache.spark.sql.execution.ui.SQLPlanMetric;
 import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
-import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.Trigger;
 import org.jooq.Record11;
 import org.jooq.Result;
@@ -75,7 +74,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -149,20 +147,12 @@ public class CustomMetricsTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-        final StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() ->
-                df
-                .writeStream()
-                .outputMode(OutputMode.Append())
-                .format("memory")
-                .trigger(Trigger.ProcessingTime(0))
-                .queryName("MockArchiveQuery")
-                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                .start());
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
 
         streamingQuery.processAllAvailable();
         Assertions.assertDoesNotThrow(streamingQuery::stop);
-        Assertions.assertDoesNotThrow(()->streamingQuery.awaitTermination());
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
 
         // Metrics
         final Map<String, List<Object>> metricsValues = new HashMap<>();
