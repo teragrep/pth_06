@@ -174,7 +174,7 @@ public class CustomMetricsTest {
             Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
         }
 
-        statusStore.executionsList().slice(oldCount, (int) statusStore.executionsCount()).foreach(v1 -> {
+        statusStore.executionsList(oldCount, (int) (statusStore.executionsCount() - oldCount)).foreach(v1 -> {
             final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
             for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
                 final long id = spm.accumulatorId();
