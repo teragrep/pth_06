@@ -198,12 +198,12 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
         final long objectsProcessed = metricRegistry.counter("ObjectsProcessed").getCount();
         metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
-        final double bytesPerSecond =  metricRegistry.meter("BytesPerSecond").getMeanRate();
+        final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
 
         return new CustomTaskMetric[] {
-                new TaskMetric("BytesPerSecond", (long)bytesPerSecond),
-                new TaskMetric("BytesProcessed",bytesProcessed),
-                new TaskMetric("ObjectsProcessed",objectsProcessed),
+                new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
+                new TaskMetric("BytesProcessed", bytesProcessed),
+                new TaskMetric("ObjectsProcessed", objectsProcessed),
         };
     }
 

@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06;
 
-import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
 import org.apache.spark.sql.connector.catalog.SupportsRead;
 import org.apache.spark.sql.connector.catalog.Table;

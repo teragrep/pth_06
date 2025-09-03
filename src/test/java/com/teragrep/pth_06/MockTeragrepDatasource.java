@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06;
 
-import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.*;
 import org.apache.kafka.clients.consumer.Consumer;

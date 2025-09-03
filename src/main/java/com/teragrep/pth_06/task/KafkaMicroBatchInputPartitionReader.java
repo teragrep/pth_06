@@ -270,7 +270,7 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
         return new CustomTaskMetric[] {
                 new TaskMetric("RecordsProcessed", recordsProcessed),
-                new TaskMetric("RecordsPerSecond", (long)recordsPerSecond),
+                new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
                 new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue())
         };
     }

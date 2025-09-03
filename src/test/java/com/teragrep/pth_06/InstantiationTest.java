@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06;
 
-import com.amazonaws.services.costexplorer.model.MetricValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.cloudbees.syslog.Facility;
@@ -62,25 +61,14 @@ import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.execution.QueryExecution;
-import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
-import org.apache.spark.sql.execution.ui.SQLExecutionUIData;
-import org.apache.spark.sql.execution.ui.SQLPlanMetric;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
-import org.apache.spark.sql.streaming.StreamingQueryListener;
 import org.apache.spark.sql.streaming.Trigger;
-import org.apache.spark.sql.util.QueryExecutionListener;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
-import scala.Function1;
-import scala.Option;
-import scala.collection.JavaConversions;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
