@@ -145,6 +145,19 @@ public class MetricsTest {
             return 0; // need to return something, expects scala Unit return value
         });
 
+
+        // Check that all expected metrics are present
+        Assertions.assertTrue(metricsValues.containsKey("ArchiveOffset"), "ArchiveOffset metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("KafkaOffset"), "KafkaOffset metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("BytesProcessed"),  "BytesProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("BytesPerSecond"),   "BytesPerSecond metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("RecordsProcessed"),   "RecordsProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("RecordsPerSecond"),    "RecordsPerSecond metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("ObjectsProcessed"),    "ObjectsProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("LatestKafkaTimestamp"),   "LatestKafkaTimestamp metric not present!");
+
+        // Get minimum and maximum archive offsets, and assert them
+        Assertions.assertEquals(32, metricsValues.get("ArchiveOffset").size());
         Optional<Long> maxArchiveOffset = metricsValues.get("ArchiveOffset").stream().map(o->Long.valueOf(o.toString())).max(Long::compare);
         Optional<Long> minArchiveOffset = metricsValues.get("ArchiveOffset").stream().map(o->Long.valueOf(o.toString())).min(Long::compare);
         Assertions.assertTrue(maxArchiveOffset.isPresent());
@@ -152,18 +165,20 @@ public class MetricsTest {
         Assertions.assertEquals(1263679200L, maxArchiveOffset.get().longValue());
         // not the first offset due to spark updating metrics values after progressing latestOffset
         Assertions.assertEquals(1262300400L,  minArchiveOffset.get().longValue());
+
+        // kafka offsets
+        Assertions.assertEquals(32, new HashSet<>(metricsValues.get("ArchiveOffset")).size());
+        Assertions.assertEquals(32, metricsValues.get("KafkaOffset").size());
+        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
+        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
+        Assertions.assertEquals("1 offsets processed", metricsValues.get("KafkaOffset").get(0));
+
+        // other metrics
         Assertions.assertEquals(32, metricsValues.get("BytesProcessed").size());
         Assertions.assertEquals(32, metricsValues.get("ObjectsProcessed").size());
         Assertions.assertEquals(32, metricsValues.get("RecordsProcessed").size());
         Assertions.assertEquals(32, metricsValues.get("RecordsPerSecond").size());
         Assertions.assertEquals(32, metricsValues.get("BytesPerSecond").size());
-        Assertions.assertEquals(32, metricsValues.get("ArchiveOffset").size());
-        Assertions.assertEquals(32, new HashSet<>(metricsValues.get("ArchiveOffset")).size());
-        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
-        Assertions.assertEquals(32, metricsValues.get("KafkaOffset").size());
-        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
-        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
-        Assertions.assertEquals("1 offsets processed", metricsValues.get("KafkaOffset").get(0));
     }
 
     private long preloadS3Data() throws IOException {
