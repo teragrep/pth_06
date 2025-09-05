@@ -70,5 +70,5 @@ public interface ArchiveQuery {
 
     public abstract Long incrementAndGetLatestOffset();
 
-    public abstract Long latestOffset();
+    public abstract Long mostRecentOffset();
 }

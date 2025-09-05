@@ -112,7 +112,7 @@ public final class TeragrepScan implements Scan {
 
     @Override
     public CustomTaskMetric[] reportDriverMetrics() {
-        final DatasourceOffset offset = stream.lastUsedOffset();
+        final DatasourceOffset offset = stream.mostRecentOffset();
         final List<CustomTaskMetric> metrics = new ArrayList<>();
 
         if (offset.getArchiveOffset() != null) {

@@ -131,7 +131,7 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
     }
 
     @Override
-    public Long latestOffset() {
+    public Long mostRecentOffset() {
         return latestOffset;
     }
 
