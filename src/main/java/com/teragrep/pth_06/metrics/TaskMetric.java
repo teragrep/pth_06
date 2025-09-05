@@ -54,11 +54,11 @@ public final class TaskMetric implements CustomTaskMetric {
     private final long value;
 
     /**
-     * Defines a custom metric with a name and a value.
-     * The TaskMetric needs to have a matching CustomMetric with the same name
-     * defined in the {@link TeragrepScan#supportedCustomMetrics()}
-     * in order to work properly.
-     * @param name Name of the custom metric, needs to match the name in the corresponding {@link org.apache.spark.sql.connector.metric.CustomMetric}
+     * Defines a custom metric with a name and a value. The TaskMetric needs to have a matching CustomMetric with the
+     * same name defined in the {@link TeragrepScan#supportedCustomMetrics()} in order to work properly.
+     * 
+     * @param name  Name of the custom metric, needs to match the name in the corresponding
+     *              {@link org.apache.spark.sql.connector.metric.CustomMetric}
      * @param value Long-typed value of the metric
      */
     public TaskMetric(final String name, final long value) {
@@ -67,8 +67,8 @@ public final class TaskMetric implements CustomTaskMetric {
     }
 
     /**
-     * The name of this task metric.
-     * NOTE: This name needs to be the same as in the matching CustomMetric
+     * The name of this task metric. NOTE: This name needs to be the same as in the matching CustomMetric
+     * 
      * @return name of the task metric
      */
     @Override
@@ -78,6 +78,7 @@ public final class TaskMetric implements CustomTaskMetric {
 
     /**
      * The individual metric value
+     * 
      * @return value as long type
      */
     @Override
