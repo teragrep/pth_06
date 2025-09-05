@@ -49,8 +49,8 @@ import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator;
 import com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator;
-import com.teragrep.pth_06.metrics.bytes.CompressedBytesProcessedMetricAggregator;
-import com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator;
+import com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator;
+import com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator;
 import com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator;
@@ -100,13 +100,13 @@ public final class TeragrepScan implements Scan {
     @Override
     public CustomMetric[] supportedCustomMetrics() {
         return new CustomMetric[] {
-                new CompressedBytesProcessedMetricAggregator(),
+                new ArchiveCompressedBytesProcessedMetricAggregator(),
                 new BytesProcessedMetricAggregator(),
                 new BytesPerSecondMetricAggregator(),
                 new RecordsProcessedMetricAggregator(),
                 new RecordsPerSecondMetricAggregator(),
                 new LatestKafkaTimestampMetricAggregator(),
-                new ObjectsProcessedMetricAggregator(),
+                new ArchiveObjectsProcessedMetricAggregator(),
                 new KafkaOffsetMetricAggregator(),
                 new ArchiveOffsetMetricAggregator(),
         };

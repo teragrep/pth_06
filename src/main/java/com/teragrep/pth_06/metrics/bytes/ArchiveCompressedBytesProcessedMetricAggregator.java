@@ -47,20 +47,20 @@ package com.teragrep.pth_06.metrics.bytes;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
-public final class CompressedBytesProcessedMetricAggregator implements CustomMetric {
+public final class ArchiveCompressedBytesProcessedMetricAggregator implements CustomMetric {
 
-    public CompressedBytesProcessedMetricAggregator() {
+    public ArchiveCompressedBytesProcessedMetricAggregator() {
         // 0-arg ctor required by Spark
     }
 
     @Override
     public String name() {
-        return "CompressedBytesProcessed";
+        return "ArchiveCompressedBytesProcessed";
     }
 
     @Override
     public String description() {
-        return "CompressedBytesProcessed: total compressed bytes processed";
+        return "ArchiveCompressedBytesProcessed: total compressed bytes processed from archive";
     }
 
     @Override

@@ -47,20 +47,20 @@ package com.teragrep.pth_06.metrics.objects;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
-public final class ObjectsProcessedMetricAggregator implements CustomMetric {
+public final class ArchiveObjectsProcessedMetricAggregator implements CustomMetric {
 
-    public ObjectsProcessedMetricAggregator() {
+    public ArchiveObjectsProcessedMetricAggregator() {
         // 0-arg ctor required by Spark
     }
 
     @Override
     public String name() {
-        return "ObjectsProcessed";
+        return "ArchiveObjectsProcessed";
     }
 
     @Override
     public String description() {
-        return "ObjectsProcessed: total objects processed";
+        return "ArchiveObjectsProcessed: total objects processed from archive";
     }
 
     @Override

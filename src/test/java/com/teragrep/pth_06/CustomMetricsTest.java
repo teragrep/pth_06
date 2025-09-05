@@ -182,12 +182,12 @@ public class CustomMetricsTest {
         // Check that all expected metrics are present
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"), "ArchiveOffset metric not present!");
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator"), "KafkaOffset metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.CompressedBytesProcessedMetricAggregator"), "CompressedBytesProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"), "ArchiveCompressedBytesProcessed metric not present!");
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator"), "BytesProcessed metric not present!");
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator"), "BytesPerSecond metric not present!");
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator"), "RecordsProcessed metric not present!");
         Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator"), "RecordsPerSecond metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator"), "ObjectsProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"), "ArchiveObjectsProcessed metric not present!");
         Assertions
                 .assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator"), "LatestKafkaTimestamp metric not present!");
 
@@ -215,9 +215,9 @@ public class CustomMetricsTest {
         Assertions.assertEquals(1L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0));
 
         // other metrics
-        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.CompressedBytesProcessedMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator").size());
-        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").size());
         Assertions.assertEquals(47L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").stream().reduce(Long::sum).orElseGet(Assertions::fail));
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator").size());

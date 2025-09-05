@@ -149,9 +149,9 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         skipNonRFC5424Files
                 );
 
-                metricRegistry.counter("CompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                metricRegistry.counter("ArchiveCompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
                 metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
-                metricRegistry.counter("ObjectsProcessed").inc();
+                metricRegistry.counter("ArchiveObjectsProcessed").inc();
                 metricRegistry.meter("BytesPerSecond").mark();
                 metricRegistry.meter("RecordsPerSecond").mark();
                 rowConverter.open();
@@ -183,9 +183,9 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                             taskObjectList.getFirst().host,
                             skipNonRFC5424Files
                     );
-                    metricRegistry.counter("CompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                    metricRegistry.counter("ArchiveCompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
                     metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
-                    metricRegistry.counter("ObjectsProcessed").inc();
+                    metricRegistry.counter("ArchiveObjectsProcessed").inc();
                     rowConverter.open();
                 }
             }
@@ -203,8 +203,8 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     @Override
     public CustomTaskMetric[] currentMetricsValues() {
         final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
-        final long compressedBytesProcessed = metricRegistry.counter("CompressedBytesProcessed").getCount();
-        final long objectsProcessed = metricRegistry.counter("ObjectsProcessed").getCount();
+        final long compressedBytesProcessed = metricRegistry.counter("ArchiveCompressedBytesProcessed").getCount();
+        final long objectsProcessed = metricRegistry.counter("ArchiveObjectsProcessed").getCount();
         metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
         final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
         final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
@@ -215,8 +215,8 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                 new TaskMetric("RecordsProcessed", recordsProcessed),
                 new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
                 new TaskMetric("BytesProcessed", bytesProcessed),
-                new TaskMetric("CompressedBytesProcessed", compressedBytesProcessed),
-                new TaskMetric("ObjectsProcessed", objectsProcessed),
+                new TaskMetric("ArchiveCompressedBytesProcessed", compressedBytesProcessed),
+                new TaskMetric("ArchiveObjectsProcessed", objectsProcessed),
         };
     }
 
