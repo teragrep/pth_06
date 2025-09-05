@@ -148,9 +148,12 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         taskObjectList.getFirst().host,
                         skipNonRFC5424Files
                 );
-                metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                metricRegistry.counter("RecordsProcessed").inc();
+                metricRegistry.counter("CompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
                 metricRegistry.counter("ObjectsProcessed").inc();
                 metricRegistry.meter("BytesPerSecond").mark();
+                metricRegistry.meter("RecordsPerSecond").mark();
                 rowConverter.open();
             }
 
@@ -180,6 +183,9 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                             taskObjectList.getFirst().host,
                             skipNonRFC5424Files
                     );
+                    metricRegistry.counter("CompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                    metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
+                    metricRegistry.counter("ObjectsProcessed").inc();
                     rowConverter.open();
                 }
             }
@@ -190,19 +196,26 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     @Override
     public InternalRow get() {
+        metricRegistry.counter("RecordsProcessed").inc();
         return rowConverter.get();
     }
 
     @Override
     public CustomTaskMetric[] currentMetricsValues() {
         final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
+        final long compressedBytesProcessed = metricRegistry.counter("CompressedBytesProcessed").getCount();
         final long objectsProcessed = metricRegistry.counter("ObjectsProcessed").getCount();
         metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
         final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
-
+        final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
+        metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
+        final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
         return new CustomTaskMetric[] {
+                new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
+                new TaskMetric("RecordsProcessed", recordsProcessed),
                 new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
                 new TaskMetric("BytesProcessed", bytesProcessed),
+                new TaskMetric("CompressedBytesProcessed", compressedBytesProcessed),
                 new TaskMetric("ObjectsProcessed", objectsProcessed),
         };
     }

@@ -43,24 +43,24 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.metrics.records;
+package com.teragrep.pth_06.metrics.bytes;
 
 import org.apache.spark.sql.connector.metric.CustomMetric;
 
-public final class RecordsProcessedMetricAggregator implements CustomMetric {
+public final class CompressedBytesProcessedMetricAggregator implements CustomMetric {
 
-    public RecordsProcessedMetricAggregator() {
+    public CompressedBytesProcessedMetricAggregator() {
         // 0-arg ctor required by Spark
     }
 
     @Override
     public String name() {
-        return "RecordsProcessed";
+        return "CompressedBytesProcessed";
     }
 
     @Override
     public String description() {
-        return "RecordsProcessed: total processed records";
+        return "CompressedBytesProcessed: total compressed bytes processed";
     }
 
     @Override
@@ -69,7 +69,6 @@ public final class RecordsProcessedMetricAggregator implements CustomMetric {
         for (final long taskMetric : taskMetrics) {
             sum += taskMetric;
         }
-
         return String.valueOf(sum);
     }
 }
