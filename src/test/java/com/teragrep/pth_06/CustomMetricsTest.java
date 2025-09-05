@@ -171,34 +171,34 @@ public class CustomMetricsTest {
                 final long id = spm.accumulatorId();
                 final Object value = mv.get(id);
                 if (value != null) {
-                    final List<Object> preExistingValues = metricsValues.getOrDefault(spm.name(), new ArrayList<>());
+                    final List<Object> preExistingValues = metricsValues.getOrDefault(spm.metricType(), new ArrayList<>());
                     preExistingValues.add(value);
-                    metricsValues.put(spm.name(), preExistingValues);
+                    metricsValues.put(spm.metricType(), preExistingValues);
                 }
             }
             return 0; // need to return something, expects scala Unit return value
         });
 
         // Check that all expected metrics are present
-        Assertions.assertTrue(metricsValues.containsKey("ArchiveOffset"), "ArchiveOffset metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("KafkaOffset"), "KafkaOffset metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("BytesProcessed"), "BytesProcessed metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("BytesPerSecond"), "BytesPerSecond metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("RecordsProcessed"), "RecordsProcessed metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("RecordsPerSecond"), "RecordsPerSecond metric not present!");
-        Assertions.assertTrue(metricsValues.containsKey("ObjectsProcessed"), "ObjectsProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"), "ArchiveOffset metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator"), "KafkaOffset metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator"), "BytesProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator"), "BytesPerSecond metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator"), "RecordsProcessed metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator"), "RecordsPerSecond metric not present!");
+        Assertions.assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator"), "ObjectsProcessed metric not present!");
         Assertions
-                .assertTrue(metricsValues.containsKey("LatestKafkaTimestamp"), "LatestKafkaTimestamp metric not present!");
+                .assertTrue(metricsValues.containsKey("v2Custom_com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator"), "LatestKafkaTimestamp metric not present!");
 
         // Get minimum and maximum archive offsets, and assert them
-        Assertions.assertEquals(32, metricsValues.get("ArchiveOffset").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator").size());
         final Optional<Long> maxArchiveOffset = metricsValues
-                .get("ArchiveOffset")
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
                 .map(o -> Long.valueOf(o.toString()))
                 .max(Long::compare);
         final Optional<Long> minArchiveOffset = metricsValues
-                .get("ArchiveOffset")
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
                 .map(o -> Long.valueOf(o.toString()))
                 .min(Long::compare);
@@ -209,18 +209,18 @@ public class CustomMetricsTest {
         Assertions.assertEquals(1262300400L, minArchiveOffset.get().longValue());
 
         // kafka offsets
-        Assertions.assertEquals(32, new HashSet<>(metricsValues.get("ArchiveOffset")).size());
-        Assertions.assertEquals(32, metricsValues.get("KafkaOffset").size());
+        Assertions.assertEquals(32, new HashSet<>(metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")).size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size());
         // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
-        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("KafkaOffset")).size());
-        Assertions.assertEquals("1 offsets processed", metricsValues.get("KafkaOffset").get(0));
+        Assertions.assertEquals(1, new HashSet<>(metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")).size());
+        Assertions.assertEquals("1", metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0));
 
         // other metrics
-        Assertions.assertEquals(32, metricsValues.get("BytesProcessed").size());
-        Assertions.assertEquals(32, metricsValues.get("ObjectsProcessed").size());
-        Assertions.assertEquals(32, metricsValues.get("RecordsProcessed").size());
-        Assertions.assertEquals(32, metricsValues.get("RecordsPerSecond").size());
-        Assertions.assertEquals(32, metricsValues.get("BytesPerSecond").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator").size());
+        Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator").size());
     }
 
     private long preloadS3Data() throws IOException {

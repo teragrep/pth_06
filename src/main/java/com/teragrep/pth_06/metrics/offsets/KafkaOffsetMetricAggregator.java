@@ -60,7 +60,7 @@ public final class KafkaOffsetMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "KafkaOffset";
+        return "KafkaOffset: sum of processed kafka offsets";
     }
 
     @Override
@@ -69,6 +69,6 @@ public final class KafkaOffsetMetricAggregator implements CustomMetric {
         for (long taskMetric : taskMetrics) {
             sum += taskMetric;
         }
-        return sum + " offsets processed";
+        return String.valueOf(sum);
     }
 }

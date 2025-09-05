@@ -60,7 +60,7 @@ public final class BytesProcessedMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "BytesProcessed";
+        return "BytesProcessed: total bytes processed";
     }
 
     @Override
@@ -69,6 +69,6 @@ public final class BytesProcessedMetricAggregator implements CustomMetric {
         for (final long taskMetric : taskMetrics) {
             sum += taskMetric;
         }
-        return sum + " bytes";
+        return String.valueOf(sum);
     }
 }

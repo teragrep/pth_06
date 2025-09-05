@@ -60,18 +60,19 @@ public final class BytesPerSecondMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "BytesPerSecond";
+        return "BytesPerSecond: processed bytes per second";
     }
 
     @Override
     public String aggregateTaskMetrics(final long[] taskMetrics) {
+        long aggregatedValue = 0L;
         if (taskMetrics.length > 0) {
             long sum = 0;
             for (final long taskMetric : taskMetrics) {
                 sum += taskMetric;
             }
-            return (sum / taskMetrics.length) + " b/s";
+            aggregatedValue = sum / taskMetrics.length;
         }
-        return "0 b/s";
+        return String.valueOf(aggregatedValue);
     }
 }

@@ -60,18 +60,19 @@ public final class RecordsPerSecondMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "RecordsPerSecond";
+        return "RecordsPerSecond: processed records per second";
     }
 
     @Override
     public String aggregateTaskMetrics(final long[] taskMetrics) {
+        long aggregatedValue = 0L;
         if (taskMetrics.length > 0) {
             long sum = 0;
             for (final long taskMetric : taskMetrics) {
                 sum += taskMetric;
             }
-            return (sum / taskMetrics.length) + " records/s";
+            aggregatedValue = sum / taskMetrics.length;
         }
-        return "0 records/s";
+        return String.valueOf(aggregatedValue);
     }
 }

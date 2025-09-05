@@ -60,7 +60,7 @@ public final class ArchiveOffsetMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "ArchiveOffset";
+        return "ArchiveOffset: latest archive offset processed";
     }
 
     @Override

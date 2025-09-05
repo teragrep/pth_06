@@ -60,7 +60,7 @@ public final class LatestKafkaTimestampMetricAggregator implements CustomMetric 
 
     @Override
     public String description() {
-        return "LatestKafkaTimestamp";
+        return "LatestKafkaTimestamp: latest processed kafka records' timestamp";
     }
 
     @Override
@@ -71,7 +71,6 @@ public final class LatestKafkaTimestampMetricAggregator implements CustomMetric 
                 latestTimestamp = ts;
             }
         }
-
         return String.valueOf(latestTimestamp);
     }
 }

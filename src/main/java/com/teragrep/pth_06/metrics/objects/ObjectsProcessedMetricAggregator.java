@@ -60,7 +60,7 @@ public final class ObjectsProcessedMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "ObjectsProcessed";
+        return "ObjectsProcessed: total objects processed";
     }
 
     @Override
@@ -70,6 +70,6 @@ public final class ObjectsProcessedMetricAggregator implements CustomMetric {
             sum += taskMetric;
         }
 
-        return sum + " objects";
+        return String.valueOf(sum);
     }
 }

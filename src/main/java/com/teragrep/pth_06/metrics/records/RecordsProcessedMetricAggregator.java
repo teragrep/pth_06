@@ -60,7 +60,7 @@ public final class RecordsProcessedMetricAggregator implements CustomMetric {
 
     @Override
     public String description() {
-        return "RecordsProcessed";
+        return "RecordsProcessed: total processed kafka records";
     }
 
     @Override
@@ -70,6 +70,6 @@ public final class RecordsProcessedMetricAggregator implements CustomMetric {
             sum += taskMetric;
         }
 
-        return sum + " records";
+        return String.valueOf(sum);
     }
 }
