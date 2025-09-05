@@ -43,32 +43,34 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.metrics.records;
 
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.spark.sql.connector.metric.CustomMetric;
 
-import java.sql.Date;
+public final class LatestKafkaTimestampMetricAggregator implements CustomMetric {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery {
+    public LatestKafkaTimestampMetricAggregator() {
+        // 0-arg ctor required by Spark
+    }
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Override
+    public String name() {
+        return "LatestKafkaTimestamp";
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public String description() {
+        return "LatestKafkaTimestamp: latest processed kafka records' timestamp";
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
+    @Override
+    public String aggregateTaskMetrics(final long[] taskMetrics) {
+        long latestTimestamp = 0;
+        for (final long ts : taskMetrics) {
+            if (ts > latestTimestamp) {
+                latestTimestamp = ts;
+            }
+        }
+        return String.valueOf(latestTimestamp);
+    }
 }

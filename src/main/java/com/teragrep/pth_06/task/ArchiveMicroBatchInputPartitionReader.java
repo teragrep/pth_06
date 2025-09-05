@@ -46,12 +46,15 @@
 package com.teragrep.pth_06.task;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.codahale.metrics.MetricRegistry;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
 import com.teragrep.pth_06.task.s3.RowConverter;
 import com.teragrep.rad_01.AuditPlugin;
 import com.teragrep.rad_01.AuditPluginFactory;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.PartitionReader;
 
 import java.io.IOException;
@@ -85,8 +88,10 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     private final AmazonS3 s3client;
 
     private final boolean skipNonRFC5424Files;
+    private final MetricRegistry metricRegistry;
 
     public ArchiveMicroBatchInputPartitionReader(
+            MetricRegistry metricRegistry,
             String S3endPoint,
             String S3identity,
             String S3credential,
@@ -119,6 +124,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         }
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
+        this.metricRegistry = metricRegistry;
     }
 
     // read zip until it ends
@@ -142,6 +148,12 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         taskObjectList.getFirst().host,
                         skipNonRFC5424Files
                 );
+
+                metricRegistry.counter("ArchiveCompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
+                metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
+                metricRegistry.counter("ArchiveObjectsProcessed").inc();
+                metricRegistry.meter("BytesPerSecond").mark();
+                metricRegistry.meter("RecordsPerSecond").mark();
                 rowConverter.open();
             }
 
@@ -171,6 +183,11 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                             taskObjectList.getFirst().host,
                             skipNonRFC5424Files
                     );
+                    metricRegistry
+                            .counter("ArchiveCompressedBytesProcessed")
+                            .inc(taskObjectList.getFirst().compressedSize);
+                    metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
+                    metricRegistry.counter("ArchiveObjectsProcessed").inc();
                     rowConverter.open();
                 }
             }
@@ -181,7 +198,28 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
     @Override
     public InternalRow get() {
+        metricRegistry.counter("RecordsProcessed").inc();
         return rowConverter.get();
+    }
+
+    @Override
+    public CustomTaskMetric[] currentMetricsValues() {
+        final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
+        final long compressedBytesProcessed = metricRegistry.counter("ArchiveCompressedBytesProcessed").getCount();
+        final long objectsProcessed = metricRegistry.counter("ArchiveObjectsProcessed").getCount();
+        metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
+        final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
+        final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
+        metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
+        final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
+        return new CustomTaskMetric[] {
+                new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
+                new TaskMetric("RecordsProcessed", recordsProcessed),
+                new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
+                new TaskMetric("BytesProcessed", bytesProcessed),
+                new TaskMetric("ArchiveCompressedBytesProcessed", compressedBytesProcessed),
+                new TaskMetric("ArchiveObjectsProcessed", objectsProcessed),
+        };
     }
 
     @Override

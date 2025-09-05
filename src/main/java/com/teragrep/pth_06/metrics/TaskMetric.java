@@ -43,32 +43,46 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.metrics;
 
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.TeragrepScan;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
-import java.sql.Date;
+public final class TaskMetric implements CustomTaskMetric {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery {
+    private final String name;
+    private final long value;
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    /**
+     * Defines a custom metric with a name and a value. The TaskMetric needs to have a matching CustomMetric with the
+     * same name defined in the {@link TeragrepScan#supportedCustomMetrics()} in order to work properly.
+     * 
+     * @param name  Name of the custom metric, needs to match the name in the corresponding
+     *              {@link org.apache.spark.sql.connector.metric.CustomMetric}
+     * @param value Long-typed value of the metric
+     */
+    public TaskMetric(final String name, final long value) {
+        this.name = name;
+        this.value = value;
+    }
 
-    public abstract void commit(long offset);
+    /**
+     * The name of this task metric. NOTE: This name needs to be the same as in the matching CustomMetric
+     * 
+     * @return name of the task metric
+     */
+    @Override
+    public String name() {
+        return name;
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
+    /**
+     * The individual metric value
+     * 
+     * @return value as long type
+     */
+    @Override
+    public long value() {
+        return value;
+    }
 }

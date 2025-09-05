@@ -51,9 +51,7 @@ import org.apache.spark.sql.connector.catalog.Table;
 import org.apache.spark.sql.connector.catalog.TableCapability;
 import org.apache.spark.sql.connector.catalog.TableProvider;
 import org.apache.spark.sql.connector.expressions.Transform;
-import org.apache.spark.sql.connector.read.Scan;
 import org.apache.spark.sql.connector.read.ScanBuilder;
-import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.sources.DataSourceRegister;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.MetadataBuilder;
@@ -83,7 +81,6 @@ import java.util.stream.Stream;
 public final class TeragrepDatasource implements DataSourceRegister, TableProvider, Table, SupportsRead {
 
     private final Logger LOGGER = LoggerFactory.getLogger(TeragrepDatasource.class);
-
     private final String name = "teragrep";
 
     private final StructType schema = new StructType(new StructField[] {
@@ -105,18 +102,7 @@ public final class TeragrepDatasource implements DataSourceRegister, TableProvid
 
     @Override
     public ScanBuilder newScanBuilder(CaseInsensitiveStringMap options) {
-        return () -> new Scan() {
-
-            @Override
-            public StructType readSchema() {
-                return schema;
-            }
-
-            @Override
-            public MicroBatchStream toMicroBatchStream(String checkpointLocation) {
-                return new ArchiveMicroStreamReader(new Config(options));
-            }
-        };
+        return () -> new TeragrepScan(schema, new Config(options));
     }
 
     @Override

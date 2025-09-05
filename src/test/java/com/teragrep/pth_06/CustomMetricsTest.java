@@ -51,39 +51,35 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.SyslogMessage;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
-import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.functions;
+import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
+import org.apache.spark.sql.execution.ui.SQLPlanMetric;
+import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
-import org.apache.spark.sql.streaming.StreamingQueryException;
 import org.apache.spark.sql.streaming.Trigger;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.*;
+import scala.collection.JavaConverters;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 import java.util.zip.GZIPOutputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class InstantiationTest {
+public class CustomMetricsTest {
 
-    private SparkSession spark = null;
+    private SparkSession spark;
 
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
@@ -96,12 +92,8 @@ public class InstantiationTest {
     private long expectedRows = 0L;
 
     @BeforeAll
-    public void prepareEnv() throws Exception {
-        //Logger.getRootLogger().setLevel(Level.ERROR);
-        //Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
-        //Logger.getLogger("org.spark-project").setLevel(Level.WARN);
-
-        mockS3.start();
+    public void prepareEnv() {
+        Assertions.assertDoesNotThrow(mockS3::start);
 
         spark = SparkSession
                 .builder()
@@ -114,15 +106,20 @@ public class InstantiationTest {
                 .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
-        //spark.sparkContext().setLogLevel("ERROR");
+        expectedRows = Assertions.assertDoesNotThrow(this::preloadS3Data) + MockKafkaConsumerFactory.getNumRecords();
+    }
 
-        expectedRows = preloadS3Data() + MockKafkaConsumerFactory.getNumRecords();
+    @AfterAll
+    public void decommissionEnv() {
+        Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @Test
-    public void fullScanTest() throws StreamingQueryException, TimeoutException {
-        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
-        Dataset<Row> df = spark
+    public void testCustomMetrics() {
+        final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
+        final int oldCount = statusStore.executionsList().size();
+
+        final Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
                 .option("archive.enabled", "true")
@@ -150,134 +147,211 @@ public class InstantiationTest {
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
 
-        Dataset<Row> df2 = df.agg(functions.count("*"));
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
 
-        StreamingQuery streamingQuery = df2
-                .writeStream()
-                .outputMode("complete")
-                .format("memory")
-                .trigger(Trigger.ProcessingTime(0))
-                .queryName("MockArchiveQuery")
-                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                .start();
+        streamingQuery.processAllAvailable();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds.show(false);
-        }).start();
-        sq.processAllAvailable();
-        sq.stop();
-        sq.awaitTermination();
+        // Metrics
+        final Map<String, List<Long>> metricsValues = new HashMap<>();
 
-        long rowCount = 0;
-        while (!streamingQuery.awaitTermination(1000)) {
+        while (statusStore.executionsCount() <= oldCount) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
 
-            long resultSize = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").count();
-            if (resultSize > 0) {
-                rowCount = spark.sqlContext().sql("SELECT * FROM MockArchiveQuery").first().getAs(0);
-                System.out.println(rowCount);
-            }
-            if (
-                streamingQuery.lastProgress() == null
-                        || streamingQuery.status().message().equals("Initializing sources")
-            ) {
-                // query has not started
-            }
-            else if (streamingQuery.lastProgress().sources().length != 0) {
-                if (isArchiveDone(streamingQuery)) {
-                    streamingQuery.stop();
+        while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        statusStore.executionsList(oldCount, (int) (statusStore.executionsCount() - oldCount)).foreach(v1 -> {
+            final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
+            for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
+                final long id = spm.accumulatorId();
+                final Object value = mv.get(id);
+                if (spm.metricType().startsWith("v2Custom_") && value != null) {
+                    final List<Long> preExistingValues = metricsValues
+                            .getOrDefault(spm.metricType(), new ArrayList<>());
+                    preExistingValues.add(Long.parseLong(value.toString()));
+                    metricsValues.put(spm.metricType(), preExistingValues);
                 }
             }
-        }
-        assertEquals(expectedRows, rowCount);
-    }
+            return 0; // need to return something, expects scala Unit return value
+        });
 
-    @Test
-    public void metadataTest() throws StreamingQueryException, TimeoutException {
-        Map<String, String> partitionToUncompressedMapping = new HashMap<>();
-        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
-        Dataset<Row> df = spark
-                .readStream()
-                .format("com.teragrep.pth_06.MockTeragrepDatasource")
-                .option("archive.enabled", "true")
-                .option("S3endPoint", s3endpoint)
-                .option("S3identity", s3identity)
-                .option("S3credential", s3credential)
-                .option("DBusername", "mock")
-                .option("DBpassword", "mock")
-                .option("DBurl", "mock")
-                .option("DBstreamdbname", "mock")
-                .option("DBjournaldbname", "mock")
-                .option("num_partitions", "1")
-                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
-                // audit information
-                .option("TeragrepAuditQuery", "index=f17")
-                .option("TeragrepAuditReason", "test run at fullScanTest()")
-                .option("TeragrepAuditUser", System.getProperty("user.name"))
-                // kafka options
-                .option("kafka.enabled", "false")
-                .option("kafka.bootstrap.servers", "")
-                .option("kafka.sasl.mechanism", "")
-                .option("kafka.security.protocol", "")
-                .option("kafka.sasl.jaas.config", "")
-                .option("kafka.useMockKafkaConsumer", "true")
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
-                // metadata options
-                .option("metadataQuery.enabled", "true")
-                .load();
+        // Check that all expected metrics are present
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"
+                                ),
+                        "ArchiveOffset metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator"),
+                        "KafkaOffset metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"
+                                ),
+                        "ArchiveCompressedBytesProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator"),
+                        "BytesProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator"),
+                        "BytesPerSecond metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator"
+                                ),
+                        "RecordsProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator"
+                                ),
+                        "RecordsPerSecond metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"
+                                ),
+                        "ArchiveObjectsProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator"
+                                ),
+                        "LatestKafkaTimestamp metric not present!"
+                );
 
-        StreamingQuery sq = df.writeStream().foreachBatch((ds, i) -> {
-            ds
-                    .select("partition", "_raw")
-                    .collectAsList()
-                    .forEach(r -> partitionToUncompressedMapping.put(r.getAs(0), r.getAs(1)));
-        }).start();
-        sq.processAllAvailable();
-        sq.stop();
-        sq.awaitTermination();
+        // Get minimum and maximum archive offsets, and assert them
+        Assertions
+                .assertEquals(
+                        32, metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                                .size()
+                );
+        final long maxArchiveOffset = metricsValues
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                .stream()
+                .max(Long::compare)
+                .orElseGet(Assertions::fail);
+        final long minArchiveOffset = metricsValues
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                .stream()
+                .min(Long::compare)
+                .orElseGet(Assertions::fail);
+        Assertions.assertEquals(1263679200L, maxArchiveOffset);
+        // not the first offset due to spark updating metrics values after progressing latestOffset
+        Assertions.assertEquals(1262300400L, minArchiveOffset);
 
-        int loops = 0;
-        for (Map.Entry<String, String> entry : partitionToUncompressedMapping.entrySet()) {
-            assertFalse(entry.getValue().isEmpty());
-            JsonObject jo = new Gson().fromJson(entry.getValue(), JsonObject.class);
-            assertTrue(jo.has("compressed"));
-            assertTrue(jo.has("uncompressed"));
-            loops++;
-        }
-        Assertions.assertEquals(33, loops);
-        //partition=19181 has NULL for uncompressed size
-        assertEquals(
-                -1L, new Gson().fromJson(partitionToUncompressedMapping.get("19181"), JsonObject.class).get("uncompressed").getAsLong()
-        );
-    }
+        // kafka offsets
+        Assertions
+                .assertEquals(
+                        32,
+                        new HashSet<>(
+                                metricsValues
+                                        .get(
+                                                "v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"
+                                        )
+                        ).size()
+                );
+        Assertions
+                .assertEquals(
+                        32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size()
+                );
+        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
+        Assertions
+                .assertEquals(
+                        1,
+                        new HashSet<>(
+                                metricsValues
+                                        .get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")
+                        ).size()
+                );
+        Assertions
+                .assertEquals(
+                        1L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0)
+                );
 
-    private boolean isArchiveDone(StreamingQuery outQ) {
-        boolean archiveDone = true;
-        for (int i = 0; i < outQ.lastProgress().sources().length; i++) {
-            String startOffset = outQ.lastProgress().sources()[i].startOffset();
-            String endOffset = outQ.lastProgress().sources()[i].endOffset();
-            String description = outQ.lastProgress().sources()[i].description();
-
-            if (description != null && !description.startsWith("com.teragrep.pth_06.ArchiveMicroStreamReader@")) {
-                // ignore others than archive
-                continue;
-            }
-
-            if (startOffset != null) {
-                if (!startOffset.equalsIgnoreCase(endOffset)) {
-                    archiveDone = false;
-                }
-            }
-            else {
-                archiveDone = false;
-            }
-        }
-        return archiveDone;
-    }
-
-    @AfterAll
-    public void decommissionEnv() throws Exception {
-        mockS3.stop();
+        // other metrics
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32, metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator")
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        47L,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
+                                .stream()
+                                .reduce(Long::sum)
+                                .orElseGet(Assertions::fail)
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator")
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32, metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator")
+                                .size()
+                );
     }
 
     private long preloadS3Data() throws IOException {

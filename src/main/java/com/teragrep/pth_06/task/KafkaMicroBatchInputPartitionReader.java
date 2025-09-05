@@ -45,7 +45,10 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SettableGauge;
 import com.google.common.annotations.VisibleForTesting;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.task.kafka.KafkaRecordConverter;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.rlo_06.ParseException;
@@ -53,6 +56,7 @@ import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.spark.sql.catalyst.InternalRow;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.PartitionReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +97,10 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
     private Instant startTime;
     private long dataLength;
 
+    private final MetricRegistry metricRegistry;
+
     public KafkaMicroBatchInputPartitionReader(
+            MetricRegistry metricRegistry,
             Map<String, Object> executorKafkaProperties,
             TopicPartition topicPartition,
             long startOffset,
@@ -142,6 +149,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         // set cut-off time
         includeRowsAtAndAfterEpochMicros = Math
                 .multiplyExact(Long.parseLong(executorConfig.get("includeEpochAndAfter")), 1000L * 1000L);
+
+        this.metricRegistry = metricRegistry;
     }
 
     @VisibleForTesting
@@ -165,6 +174,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
         // set cut-off time
         includeRowsAtAndAfterEpochMicros = Math.multiplyExact(Long.MIN_VALUE / (1000 * 1000), 1000L * 1000L);
+
+        this.metricRegistry = new MetricRegistry();
     }
 
     @Override
@@ -190,8 +201,13 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             }
 
             ConsumerRecord<byte[], byte[]> consumerRecord = kafkaRecordsIterator.next();
-
             currentOffset = consumerRecord.offset(); // update current
+
+            metricRegistry.counter("BytesProcessed").inc(consumerRecord.serializedValueSize());
+            metricRegistry.meter("BytesPerSecond").mark();
+            metricRegistry.meter("RecordsPerSecond").mark();
+            final SettableGauge<Long> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
+            kafkaTsGauge.setValue(consumerRecord.timestamp());
 
             try {
                 currentRow = convertToRow(consumerRecord);
@@ -244,8 +260,28 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
     @Override
     public InternalRow get() {
+        metricRegistry.counter("RecordsProcessed").inc();
         LOGGER.debug("get(): " + currentOffset);
         return currentRow;
+    }
+
+    @Override
+    public CustomTaskMetric[] currentMetricsValues() {
+        final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
+        metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
+        final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
+        final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
+        final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
+        metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
+        final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
+
+        return new CustomTaskMetric[] {
+                new TaskMetric("RecordsProcessed", recordsProcessed),
+                new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
+                new TaskMetric("BytesProcessed", bytesProcessed),
+                new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
+                new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue())
+        };
     }
 
     @Override
