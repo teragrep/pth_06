@@ -202,8 +202,11 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
             ConsumerRecord<byte[], byte[]> consumerRecord = kafkaRecordsIterator.next();
             currentOffset = consumerRecord.offset(); // update current
+            metricRegistry.counter("BytesProcessed").inc(consumerRecord.serializedValueSize());
+            metricRegistry.meter("BytesPerSecond").mark();
             metricRegistry.counter("RecordsProcessed").inc();
             metricRegistry.meter("RecordsPerSecond").mark();
+
             final SettableGauge<Long> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
             kafkaTsGauge.setValue(consumerRecord.timestamp());
 
@@ -268,9 +271,15 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
         final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
         final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
+        final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
+        metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
+        final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
+
         return new CustomTaskMetric[] {
                 new TaskMetric("RecordsProcessed", recordsProcessed),
                 new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
+                new TaskMetric("BytesProcessed", bytesProcessed),
+                new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
                 new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue())
         };
     }
