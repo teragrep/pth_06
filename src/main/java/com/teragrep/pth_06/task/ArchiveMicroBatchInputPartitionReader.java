@@ -148,7 +148,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         taskObjectList.getFirst().host,
                         skipNonRFC5424Files
                 );
-                metricRegistry.counter("RecordsProcessed").inc();
+
                 metricRegistry.counter("CompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
                 metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
                 metricRegistry.counter("ObjectsProcessed").inc();

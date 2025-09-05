@@ -221,6 +221,7 @@ public class CustomMetricsTest {
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").size());
+        Assertions.assertEquals(47L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").stream().reduce((o, o2) -> Long.parseLong(o.toString()) + Long.parseLong(o2.toString())).orElseGet(Assertions::fail));
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator").size());
     }

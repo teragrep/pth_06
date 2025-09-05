@@ -202,11 +202,10 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
             ConsumerRecord<byte[], byte[]> consumerRecord = kafkaRecordsIterator.next();
             currentOffset = consumerRecord.offset(); // update current
+
             metricRegistry.counter("BytesProcessed").inc(consumerRecord.serializedValueSize());
             metricRegistry.meter("BytesPerSecond").mark();
-            metricRegistry.counter("RecordsProcessed").inc();
             metricRegistry.meter("RecordsPerSecond").mark();
-
             final SettableGauge<Long> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
             kafkaTsGauge.setValue(consumerRecord.timestamp());
 
@@ -261,6 +260,7 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
 
     @Override
     public InternalRow get() {
+        metricRegistry.counter("RecordsProcessed").inc();
         LOGGER.debug("get(): " + currentOffset);
         return currentRow;
     }
