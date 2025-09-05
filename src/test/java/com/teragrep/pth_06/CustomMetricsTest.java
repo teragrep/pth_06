@@ -193,19 +193,19 @@ public class CustomMetricsTest {
 
         // Get minimum and maximum archive offsets, and assert them
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator").size());
-        final Optional<Long> maxArchiveOffset = metricsValues
+        final long maxArchiveOffset = metricsValues
                 .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
-                .max(Long::compare);
-        final Optional<Long> minArchiveOffset = metricsValues
+                .max(Long::compare)
+                .orElseGet(Assertions::fail);
+        final long minArchiveOffset = metricsValues
                 .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
-                .min(Long::compare);
-        Assertions.assertTrue(maxArchiveOffset.isPresent());
-        Assertions.assertTrue(minArchiveOffset.isPresent());
-        Assertions.assertEquals(1263679200L, maxArchiveOffset.get().longValue());
+                .min(Long::compare)
+                .orElseGet(Assertions::fail);
+        Assertions.assertEquals(1263679200L, maxArchiveOffset);
         // not the first offset due to spark updating metrics values after progressing latestOffset
-        Assertions.assertEquals(1262300400L, minArchiveOffset.get().longValue());
+        Assertions.assertEquals(1262300400L, minArchiveOffset);
 
         // kafka offsets
         Assertions.assertEquals(32, new HashSet<>(metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")).size());
