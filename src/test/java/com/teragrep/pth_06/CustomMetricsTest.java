@@ -155,7 +155,7 @@ public class CustomMetricsTest {
         Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
 
         // Metrics
-        final Map<String, List<Object>> metricsValues = new HashMap<>();
+        final Map<String, List<Long>> metricsValues = new HashMap<>();
 
         while (statusStore.executionsCount() <= oldCount) {
             Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
@@ -170,9 +170,9 @@ public class CustomMetricsTest {
             for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
                 final long id = spm.accumulatorId();
                 final Object value = mv.get(id);
-                if (value != null) {
-                    final List<Object> preExistingValues = metricsValues.getOrDefault(spm.metricType(), new ArrayList<>());
-                    preExistingValues.add(value);
+                if (spm.metricType().startsWith("v2Custom_") && value != null) {
+                    final List<Long> preExistingValues = metricsValues.getOrDefault(spm.metricType(), new ArrayList<>());
+                    preExistingValues.add(Long.parseLong(value.toString()));
                     metricsValues.put(spm.metricType(), preExistingValues);
                 }
             }
@@ -196,12 +196,10 @@ public class CustomMetricsTest {
         final Optional<Long> maxArchiveOffset = metricsValues
                 .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
-                .map(o -> Long.valueOf(o.toString()))
                 .max(Long::compare);
         final Optional<Long> minArchiveOffset = metricsValues
                 .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                 .stream()
-                .map(o -> Long.valueOf(o.toString()))
                 .min(Long::compare);
         Assertions.assertTrue(maxArchiveOffset.isPresent());
         Assertions.assertTrue(minArchiveOffset.isPresent());
@@ -214,14 +212,14 @@ public class CustomMetricsTest {
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size());
         // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
         Assertions.assertEquals(1, new HashSet<>(metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")).size());
-        Assertions.assertEquals("1", metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0));
+        Assertions.assertEquals(1L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0));
 
         // other metrics
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.CompressedBytesProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.objects.ObjectsProcessedMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").size());
-        Assertions.assertEquals(47L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").stream().reduce((o, o2) -> Long.parseLong(o.toString()) + Long.parseLong(o2.toString())).orElseGet(Assertions::fail));
+        Assertions.assertEquals(47L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator").stream().reduce(Long::sum).orElseGet(Assertions::fail));
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator").size());
         Assertions.assertEquals(32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator").size());
     }
