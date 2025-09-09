@@ -45,20 +45,32 @@
  */
 package com.teragrep.pth_06.planner;
 
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.common.TopicPartition;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+/** Combines all the partitions of Topics */
+public final class CombinedTopicPartitions implements Topics<TopicPartition> {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Topics<String> origin;
+    private final Consumer<byte[], byte[]> consumer;
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    public CombinedTopicPartitions(final Topics<String> origin, final Consumer<byte[], byte[]> consumer) {
+        this.origin = origin;
+        this.consumer = consumer;
+    }
 
+    @Override
+    public List<TopicPartition> asList() {
+        final List<String> topics = origin.asList();
+        final List<TopicPartition> allTopicPartitions = new ArrayList<>();
+
+        for (final String topic : topics) {
+            final List<TopicPartition> topicPartitions = new TopicPartitions(topic, consumer).asList();
+            allTopicPartitions.addAll(topicPartitions);
+        }
+        return allTopicPartitions;
+    }
 }
