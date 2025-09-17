@@ -32,7 +32,7 @@ jobs:
         run: mkdir -p docs/${{steps.extract_branch.outputs.branch}}/
       # Run javadoc
       - name: Generate javadoc
-        run: mvn -B javadoc:aggregate
+        run: mvn -B -Djooq.regenerate.skip=true javadoc:aggregate
         env:
           MAVEN_OPTS: "-Dmaven.javadoc.failOnError=false"
       # Install dependencies
@@ -48,7 +48,7 @@ jobs:
         run: mkdir target/docs/ && mv target/doxygen/html target/docs/doxygen/ && mv target/site/apidocs target/docs/javadoc/
       # Generate war
       - name: Generate war from docs
-        run: mvn -B -Drevision="${{steps.extract_branch.outputs.branch}}-${{github.sha}}" -Dchangelist='' -Dsha1="" war:war
+        run: mvn -B -Djooq.regenerate.skip=true -Drevision="${{steps.extract_branch.outputs.branch}}-${{github.sha}}" -Dchangelist='' -Dsha1="" war:war
       # Prepare release
       - name: Move and extract war
         run: unzip target/*.war -x "META-INF/*" "WEB-INF/*" -d "docs/${{steps.extract_branch.outputs.branch}}/" && mv target/*.war "docs/${{steps.extract_branch.outputs.branch}}/"
