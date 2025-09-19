@@ -176,9 +176,9 @@ public class StreamDBClient {
                         (long) metricRegistry.timer("ArchiveDatabaseLatency").getMeanRate()
                 ),
                 new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
-                new TaskMetric("ArchiveDatabaseMaxLatency", latencySnapshot.getMax()),
-                new TaskMetric("ArchiveDatabaseAvgLatency", (long) latencySnapshot.getMean()),
-                new TaskMetric("ArchiveDatabaseMinLatency", latencySnapshot.getMin()),
+                new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
+                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseRowMinLatency", latencySnapshot.getMin()),
         };
     }
 
