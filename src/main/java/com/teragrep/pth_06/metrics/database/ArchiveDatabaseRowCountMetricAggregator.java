@@ -43,35 +43,32 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.metrics.database;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.spark.sql.connector.metric.CustomMetric;
 
-import java.sql.Date;
+public final class ArchiveDatabaseRowCountMetricAggregator implements CustomMetric {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery {
+    public ArchiveDatabaseRowCountMetricAggregator() {
+        // spark requires 0-arg ctor
+    }
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Override
+    public String name() {
+        return "ArchiveDatabaseRowCount";
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public String description() {
+        return "ArchiveDatabaseRowCount: number of processed archive database rows";
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public String aggregateTaskMetrics(final long[] rowCounts) {
+        long sum = 0L;
+        for (final long rowCount : rowCounts) {
+            sum += rowCount;
+        }
+        return String.valueOf(sum);
+    }
 }

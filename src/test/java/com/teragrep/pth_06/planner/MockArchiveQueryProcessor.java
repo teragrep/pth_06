@@ -45,6 +45,9 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.codahale.metrics.*;
+import com.teragrep.pth_06.metrics.TaskMetric;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -70,6 +73,8 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
 
     private Long latestOffset = null;
 
+    private final MetricRegistry metricRegistry;
+
     public MockArchiveQueryProcessor(String query) {
 
         if (!query.equals(expectedQuery)) {
@@ -80,6 +85,7 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
 
         this.virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
 
+        this.metricRegistry = new MetricRegistry();
     }
 
     @Override
@@ -94,12 +100,17 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
                 null, null, null, null, null, null, null, null, null, null, null
         );
 
+        final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime").time();
         for (long res : virtualDatabaseMap.keySet()) {
             if (res > startHour && res <= endHour) {
                 rv.addAll(virtualDatabaseMap.get(res));
             }
         }
+        final long latencyNs = timerCtx.stop();
 
+        metricRegistry.histogram("mockRowTime").update((latencyNs/1_000_000L)/rv.size());
+        SettableGauge<Long> count = metricRegistry.gauge("mockRowCount");
+        count.setValue((long) rv.size());
         LOGGER.info("MockArchiveQueryProcessor.range> " + rv.formatCSV());
         return rv;
     }
@@ -133,6 +144,17 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
     @Override
     public Long mostRecentOffset() {
         return latestOffset;
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        final Snapshot snapshot = metricRegistry.histogram("mockRowTime").getSnapshot();
+        return new CustomTaskMetric[] {
+                new TaskMetric("ArchiveDatabaseRowCount", (long)metricRegistry.gauge("mockRowCount").getValue()),
+                new TaskMetric("ArchiveDatabaseRowMaxLatency", snapshot.getMax()),
+                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long)snapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseRowMinLatency", snapshot.getMin()),
+        };
     }
 
     @Override

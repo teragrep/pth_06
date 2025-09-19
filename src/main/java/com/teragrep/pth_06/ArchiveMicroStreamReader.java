@@ -54,6 +54,7 @@ import com.teragrep.pth_06.scheduler.*;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.apache.spark.sql.connector.read.InputPartition;
 import org.apache.spark.sql.connector.read.PartitionReaderFactory;
 import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
@@ -296,5 +297,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             throw new IllegalStateException("No datasources enabled, can't get last used offset");
         }
         return rv;
+    }
+
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        final CustomTaskMetric[] metrics;
+        if (aq != null) {
+            metrics = aq.currentDatabaseMetrics();
+        } else {
+            metrics = new CustomTaskMetric[0];
+        }
+        return metrics;
     }
 }
