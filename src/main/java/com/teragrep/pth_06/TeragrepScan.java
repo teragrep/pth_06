@@ -50,6 +50,10 @@ import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator;
 import com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator;
+import com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowAvgLatencyMetricAggregator;
+import com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowCountMetricAggregator;
+import com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMaxLatencyMetricAggregator;
+import com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMinLatencyMetricAggregator;
 import com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator;
 import com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator;
@@ -65,6 +69,7 @@ import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +105,10 @@ public final class TeragrepScan implements Scan {
     @Override
     public CustomMetric[] supportedCustomMetrics() {
         return new CustomMetric[] {
+                new ArchiveDatabaseRowCountMetricAggregator(),
+                new ArchiveDatabaseRowAvgLatencyMetricAggregator(),
+                new ArchiveDatabaseRowMaxLatencyMetricAggregator(),
+                new ArchiveDatabaseRowMinLatencyMetricAggregator(),
                 new ArchiveCompressedBytesProcessedMetricAggregator(),
                 new BytesProcessedMetricAggregator(),
                 new BytesPerSecondMetricAggregator(),
@@ -125,6 +134,8 @@ public final class TeragrepScan implements Scan {
             final Map<TopicPartition, Long> kafkaOffsets = offset.getKafkaOffset().getOffsetMap();
             metrics.add(new TaskMetric("KafkaOffset", kafkaOffsets.size()));
         }
+
+        metrics.addAll(Arrays.asList(stream.currentDatabaseMetrics()));
 
         return metrics.toArray(new CustomTaskMetric[0]);
     }

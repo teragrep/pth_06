@@ -185,6 +185,38 @@ public class CustomMetricsTest {
                 .assertTrue(
                         metricsValues
                                 .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMaxLatencyMetricAggregator"
+                                ),
+                        "ArchiveDatabaseRowMaxLatency metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowAvgLatencyMetricAggregator"
+                                ),
+                        "ArchiveDatabaseRowAvgLatency metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMinLatencyMetricAggregator"
+                                ),
+                        "ArchiveDatabaseRowMinLatency metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowCountMetricAggregator"
+                                ),
+                        "ArchiveDatabaseRowCount metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
                                         "v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"
                                 ),
                         "ArchiveOffset metric not present!"
@@ -299,6 +331,42 @@ public class CustomMetricsTest {
                 );
 
         // other metrics
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMaxLatencyMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowAvgLatencyMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMinLatencyMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        32,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowCountMetricAggregator"
+                                )
+                                .size()
+                );
         Assertions
                 .assertEquals(
                         32,

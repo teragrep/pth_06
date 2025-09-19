@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.walker.EarliestWalker;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.*;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -229,5 +230,10 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
     @Override
     public Long mostRecentOffset() {
         return latestOffset;
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        return sdc.currentDatabaseMetrics();
     }
 }

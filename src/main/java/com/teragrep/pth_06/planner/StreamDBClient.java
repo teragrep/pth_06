@@ -47,14 +47,18 @@ package com.teragrep.pth_06.planner;
 
 import java.io.IOException;
 import java.sql.*;
-import java.time.Instant;
 import java.util.Set;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
 import com.teragrep.pth_06.planner.walker.FilterlessSearch;
 import com.teragrep.pth_06.planner.walker.FilterlessSearchImpl;
 import com.teragrep.pth_06.planner.walker.FilterlessSearchStub;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.*;
 import org.jooq.conf.MappedSchema;
 import org.jooq.conf.RenderMapping;
@@ -94,6 +98,7 @@ public class StreamDBClient {
 
     private final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
 
+    private final MetricRegistry metricRegistry;
     private final DSLContext ctx;
     private long includeBeforeEpoch;
     private final boolean bloomEnabled;
@@ -159,6 +164,22 @@ public class StreamDBClient {
 
         // by default no cutoff
         includeBeforeEpoch = Long.MAX_VALUE;
+
+        this.metricRegistry = new MetricRegistry();
+    }
+
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
+        return new CustomTaskMetric[] {
+                new TaskMetric(
+                        "ArchiveDatabaseLatency",
+                        (long) metricRegistry.timer("ArchiveDatabaseLatency").getMeanRate()
+                ),
+                new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
+                new TaskMetric("ArchiveDatabaseMaxLatency", latencySnapshot.getMax()),
+                new TaskMetric("ArchiveDatabaseAvgLatency", (long) latencySnapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseMinLatency", latencySnapshot.getMin()),
+        };
     }
 
     void setIncludeBeforeEpoch(long includeBeforeEpoch) {
@@ -183,18 +204,21 @@ public class StreamDBClient {
                 .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
 
         LOGGER.trace("StreamDBClient.pullToSliceTable select <{}>", select);
-        final Instant stopwatch = Instant.now();
+        final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
 
         try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
             rows = selectStep.execute();
         }
 
-        LOGGER
-                .info(
-                        "StreamDBClient.pullToSliceTable" + ": took ("
-                                + (Instant.now().toEpochMilli() - stopwatch.toEpochMilli()) + "ms)"
-                );
+        final long latencyNs = timerCtx.stop();
+
+        metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update((latencyNs / 1_000_000L) / rows);
+
+        LOGGER.info("StreamDBClient.pullToSliceTable" + ": took (" + "<{}> ms)", (latencyNs / 1_000_000L));
+
+        metricRegistry.counter("ArchiveDatabaseRowCount").inc(rows);
+
         return rows;
 
     }
