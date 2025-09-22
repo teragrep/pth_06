@@ -171,10 +171,6 @@ public class StreamDBClient {
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
         return new CustomTaskMetric[] {
-                new TaskMetric(
-                        "ArchiveDatabaseLatency",
-                        (long) metricRegistry.timer("ArchiveDatabaseLatency").getMeanRate()
-                ),
                 new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
                 new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
                 new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
