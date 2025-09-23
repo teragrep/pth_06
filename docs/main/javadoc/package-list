@@ -12,6 +12,7 @@ com.teragrep.pth_06.jooq.generated.streamdb.tables
 com.teragrep.pth_06.jooq.generated.streamdb.tables.records
 com.teragrep.pth_06.metrics
 com.teragrep.pth_06.metrics.bytes
+com.teragrep.pth_06.metrics.database
 com.teragrep.pth_06.metrics.objects
 com.teragrep.pth_06.metrics.offsets
 com.teragrep.pth_06.metrics.records
