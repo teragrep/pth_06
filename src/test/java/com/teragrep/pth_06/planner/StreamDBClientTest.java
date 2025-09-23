@@ -187,7 +187,7 @@ class StreamDBClientTest {
                 "2023/10-05/example.tg.dev.test/example/example.log-2023100605.log.gz",
                 null,
                 UShort.valueOf(1),
-                "example.log-2023100506.log.gz",
+                "example.log-2023100605.log.gz",
                 new Timestamp(2025, 8, 13, 16, 18, 22, 0),
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
@@ -332,6 +332,69 @@ class StreamDBClientTest {
         Assertions.assertEquals(zonedDateTimeUSA.toEpochSecond(), logtime);
         // Assert that the resulting logfile metadata is as expected for logdate.
         Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
+    }
+
+    @Test
+    public void getNextHourAndSizeFromSliceTableTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
+        LogfileRecord logfileRecord = new LogfileRecord(
+                ULong.valueOf(1),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100505.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100507, but set epoch values to null.
+        LogfileRecord logfileRecord2 = new LogfileRecord(
+                ULong.valueOf(2),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100507.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100507.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(2, rows);
+        ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 5, 0, 0, 0, ZoneId.of("America/New_York"));
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc
+                .getNextHourAndSizeFromSliceTable(zonedDateTimeUSA.toEpochSecond());
+        // Assert that the result for next hour from slice table after 2023-10-5 05:00 is 2023-10-5 07:00
+        Assertions.assertEquals(zonedDateTimeUSA.plusHours(2).toEpochSecond(), nextHourAndSizeFromSliceTable.offset());
     }
 
     /**
