@@ -115,7 +115,7 @@ public class CustomMetricsTest {
     }
 
     @Test
-    public void testCustomMetrics() {
+    public void testDriverCustomMetrics() {
         final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
         final int oldCount = statusStore.executionsList().size();
 
@@ -195,6 +195,126 @@ public class CustomMetricsTest {
                                 .containsKey("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator"),
                         "KafkaOffset metric not present!"
                 );
+
+        // Get minimum and maximum archive offsets, and assert them
+        Assertions
+                .assertEquals(
+                        32, metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                                .size()
+                );
+        final long maxArchiveOffset = metricsValues
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                .stream()
+                .max(Long::compare)
+                .orElseGet(Assertions::fail);
+        final long minArchiveOffset = metricsValues
+                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
+                .stream()
+                .min(Long::compare)
+                .orElseGet(Assertions::fail);
+        Assertions.assertEquals(1263679200L, maxArchiveOffset);
+        // not the first offset due to spark updating metrics values after progressing latestOffset
+        Assertions.assertEquals(1262300400L, minArchiveOffset);
+
+        Assertions
+                .assertEquals(
+                        32,
+                        new HashSet<>(
+                                metricsValues
+                                        .get(
+                                                "v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"
+                                        )
+                        ).size()
+                );
+
+        // kafka offsets
+        Assertions
+                .assertEquals(
+                        32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size()
+                );
+        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
+        Assertions
+                .assertEquals(
+                        1,
+                        new HashSet<>(
+                                metricsValues
+                                        .get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")
+                        ).size()
+                );
+        Assertions
+                .assertEquals(
+                        1L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0)
+                );
+    }
+
+    @Test
+    public void testPartitionReaderCustomMetrics() {
+        final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
+        final int oldCount = statusStore.executionsList().size();
+
+        final Dataset<Row> df = spark
+                .readStream()
+                .format("com.teragrep.pth_06.MockTeragrepDatasource")
+                .option("archive.enabled", "true")
+                .option("S3endPoint", s3endpoint)
+                .option("S3identity", s3identity)
+                .option("S3credential", s3credential)
+                .option("DBusername", "mock")
+                .option("DBpassword", "mock")
+                .option("DBurl", "mock")
+                .option("DBstreamdbname", "mock")
+                .option("DBjournaldbname", "mock")
+                .option("num_partitions", "1")
+                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
+                // audit information
+                .option("TeragrepAuditQuery", "index=f17")
+                .option("TeragrepAuditReason", "test run at fullScanTest()")
+                .option("TeragrepAuditUser", System.getProperty("user.name"))
+                // kafka options
+                .option("kafka.enabled", "true")
+                .option("kafka.bootstrap.servers", "")
+                .option("kafka.sasl.mechanism", "")
+                .option("kafka.security.protocol", "")
+                .option("kafka.sasl.jaas.config", "")
+                .option("kafka.useMockKafkaConsumer", "true")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                .load();
+
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
+
+        streamingQuery.processAllAvailable();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
+
+        // Metrics
+        final Map<String, List<Long>> metricsValues = new HashMap<>();
+
+        while (statusStore.executionsCount() <= oldCount) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        statusStore.executionsList(oldCount, (int) (statusStore.executionsCount() - oldCount)).foreach(v1 -> {
+            final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
+            for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
+                final long id = spm.accumulatorId();
+                final Object value = mv.get(id);
+                if (spm.metricType().startsWith("v2Custom_") && value != null) {
+                    final List<Long> preExistingValues = metricsValues
+                            .getOrDefault(spm.metricType(), new ArrayList<>());
+                    preExistingValues.add(Long.parseLong(value.toString()));
+                    metricsValues.put(spm.metricType(), preExistingValues);
+                }
+            }
+            return 0; // need to return something, expects scala Unit return value
+        });
+
+        // Check that all expected metrics are present
         Assertions
                 .assertTrue(
                         metricsValues
@@ -248,57 +368,7 @@ public class CustomMetricsTest {
                         "LatestKafkaTimestamp metric not present!"
                 );
 
-        // Get minimum and maximum archive offsets, and assert them
-        Assertions
-                .assertEquals(
-                        32, metricsValues
-                                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
-                                .size()
-                );
-        final long maxArchiveOffset = metricsValues
-                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
-                .stream()
-                .max(Long::compare)
-                .orElseGet(Assertions::fail);
-        final long minArchiveOffset = metricsValues
-                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
-                .stream()
-                .min(Long::compare)
-                .orElseGet(Assertions::fail);
-        Assertions.assertEquals(1263679200L, maxArchiveOffset);
-        // not the first offset due to spark updating metrics values after progressing latestOffset
-        Assertions.assertEquals(1262300400L, minArchiveOffset);
-
-        // kafka offsets
-        Assertions
-                .assertEquals(
-                        32,
-                        new HashSet<>(
-                                metricsValues
-                                        .get(
-                                                "v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator"
-                                        )
-                        ).size()
-                );
-        Assertions
-                .assertEquals(
-                        32, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size()
-                );
-        // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
-        Assertions
-                .assertEquals(
-                        1,
-                        new HashSet<>(
-                                metricsValues
-                                        .get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")
-                        ).size()
-                );
-        Assertions
-                .assertEquals(
-                        1L, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").get(0)
-                );
-
-        // other metrics
+        // 32 batches, 32 values for each metric
         Assertions
                 .assertEquals(
                         32,
