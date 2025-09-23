@@ -524,8 +524,6 @@ public class CustomMetricsTest {
                         "ArchiveDatabaseRowCount metric not present!"
                 );
 
-
-
         // database latency metrics
         Assertions
                 .assertEquals(
