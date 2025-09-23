@@ -108,7 +108,7 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
         }
         final long latencyNs = timerCtx.stop();
 
-        metricRegistry.histogram("mockRowTime").update((latencyNs/1_000_000L)/rv.size());
+        metricRegistry.histogram("mockRowTime").update((latencyNs / 1_000_000L) / rv.size());
         SettableGauge<Long> count = metricRegistry.gauge("mockRowCount");
         count.setValue((long) rv.size());
         LOGGER.info("MockArchiveQueryProcessor.range> " + rv.formatCSV());
@@ -150,9 +150,9 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final Snapshot snapshot = metricRegistry.histogram("mockRowTime").getSnapshot();
         return new CustomTaskMetric[] {
-                new TaskMetric("ArchiveDatabaseRowCount", (long)metricRegistry.gauge("mockRowCount").getValue()),
+                new TaskMetric("ArchiveDatabaseRowCount", (long) metricRegistry.gauge("mockRowCount").getValue()),
                 new TaskMetric("ArchiveDatabaseRowMaxLatency", snapshot.getMax()),
-                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long)snapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) snapshot.getMean()),
                 new TaskMetric("ArchiveDatabaseRowMinLatency", snapshot.getMin()),
         };
     }

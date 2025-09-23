@@ -303,7 +303,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         final CustomTaskMetric[] metrics;
         if (aq != null) {
             metrics = aq.currentDatabaseMetrics();
-        } else {
+        }
+        else {
             metrics = new CustomTaskMetric[0];
         }
         return metrics;
