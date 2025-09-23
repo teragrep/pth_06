@@ -131,23 +131,6 @@ class StreamDBClientTest {
         return new Config(opts);
     }
 
-    private Config testConfiguration(long includeBeforeEpoch) {
-        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
-        Map<String, String> opts = new HashMap<>();
-        opts.put("S3endPoint", "mock");
-        opts.put("S3identity", "mock");
-        opts.put("S3credential", "mock");
-        opts.put("DBusername", streamDBUsername);
-        opts.put("DBpassword", streamDBPassword);
-        opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("DBstreamdbname", streamdbName);
-        opts.put("DBjournaldbname", journaldbName);
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        opts.put("archive.enabled", "true");
-        opts.put("archive.includeBeforeEpoch", String.valueOf(includeBeforeEpoch));
-        return new Config(opts);
-    }
-
     /**
      * Testing that pullToSliceTable() pulls only a specific row from database according to the input parameter.
      */
@@ -435,12 +418,12 @@ class StreamDBClientTest {
         // Pull the records from a specific logdate to the slicetable for further processing.
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(1, rows);
-        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(1696377600L).isStub);
+        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
 
         // Delete rows from slicetable and assert that they are no longer present in the slicetable.
         ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 2, 0, 0, 0, ZoneId.of("America/New_York"));
-        sdc.deleteRangeFromSliceTable(1696377600L, zonedDateTimeUSA.toEpochSecond());
-        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(1696377600L).isStub);
+        sdc.deleteRangeFromSliceTable(zonedDateTimeUSA.minusHours(1).toEpochSecond(), zonedDateTimeUSA.toEpochSecond());
+        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
     }
 
     /**
@@ -478,15 +461,27 @@ class StreamDBClientTest {
 
         // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-05 02:00, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-05 02:00 or newer.
         ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 2, 0, 0, 0, ZoneId.of("America/New_York"));
-        final Config config = testConfiguration(zonedDateTimeUSA.toEpochSecond());
+        Map<String, String> opts = new HashMap<>();
+        opts.put("S3endPoint", "mock");
+        opts.put("S3identity", "mock");
+        opts.put("S3credential", "mock");
+        opts.put("DBusername", streamDBUsername);
+        opts.put("DBpassword", streamDBPassword);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts.put("DBstreamdbname", streamdbName);
+        opts.put("DBjournaldbname", journaldbName);
+        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
+        opts.put("archive.enabled", "true");
+        opts.put("archive.includeBeforeEpoch", String.valueOf(zonedDateTimeUSA.toEpochSecond()));
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
 
         // Pull the records from a specific logdate to the slicetable for further processing.
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(1, rows);
 
-        // Try to get the next hour from the slicetable, result should be a stub.
-        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(zonedDateTimeUSA.toEpochSecond() - 3600L).isStub);
+        // Try to get the next hour from the slicetable, result should be a stub with the includeBeforeEpoch value used.
+        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
     }
 
     @Test
