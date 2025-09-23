@@ -149,6 +149,130 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing that pullToSliceTable() pulls only a specific row from database according to the input parameter.
+     */
+    @Test
+    public void pullToSliceTableSingleTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
+        LogfileRecord logfileRecord = new LogfileRecord(
+                ULong.valueOf(1),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100505.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Set logdate to 2023-10-06 and set logtime-string in path to 2023100605, but set epoch values to null.
+        LogfileRecord logfileRecord2 = new LogfileRecord(
+                ULong.valueOf(2),
+                Date.valueOf("2023-10-6"),
+                Date.valueOf("2026-10-6"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100605.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100506.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // Only the row with logdate of "2023-10-6" should be pulled to slicetable.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-6"));
+        Assertions.assertEquals(1, rows);
+    }
+
+    /**
+     * Testing that pullToSliceTable() pulls all the rows from database according to the input parameter.
+     */
+    @Test
+    public void pullToSliceTableMultiTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
+        LogfileRecord logfileRecord = new LogfileRecord(
+                ULong.valueOf(1),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100505.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100506, but set epoch values to null.
+        LogfileRecord logfileRecord2 = new LogfileRecord(
+                ULong.valueOf(2),
+                Date.valueOf("2023-10-5"),
+                Date.valueOf("2026-10-5"),
+                UShort.valueOf(1),
+                "2023/10-05/example.tg.dev.test/example/example.log-2023100506.log.gz",
+                null,
+                UShort.valueOf(1),
+                "example.log-2023100506.log.gz",
+                new Timestamp(2025, 8, 13, 16, 18, 22, 0),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Config config = testConfiguration();
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // Both of the rows in the database for logdate of "2023-10-5" should be pulled to the slicetable.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(2, rows);
+    }
+
+    /**
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
      * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */
@@ -217,7 +341,7 @@ class StreamDBClientTest {
     public void deleteRangeFromSliceTableNullEpochTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        // Inserting logfile with logtime of 2023-10-05 02:00.
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(1),
                 Date.valueOf("2023-10-5"),
