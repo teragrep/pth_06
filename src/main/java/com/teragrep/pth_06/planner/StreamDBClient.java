@@ -209,7 +209,9 @@ public class StreamDBClient {
 
         final long latencyNs = timerCtx.stop();
 
-        metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
+        if (rows != 0) {
+            metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
+        }
 
         LOGGER.info("StreamDBClient.pullToSliceTable" + ": took (" + "<{}> ms)", (latencyNs / 1_000_000d));
 

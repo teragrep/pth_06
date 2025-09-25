@@ -108,7 +108,9 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
         }
         final long latencyNs = timerCtx.stop();
 
-        metricRegistry.histogram("mockRowTime").update(latencyNs / rv.size());
+        if (!rv.isEmpty()) {
+            metricRegistry.histogram("mockRowTime").update(latencyNs / rv.size());
+        }
         SettableGauge<Long> count = metricRegistry.gauge("mockRowCount");
         count.setValue((long) rv.size());
         LOGGER.info("MockArchiveQueryProcessor.range> " + rv.formatCSV());
