@@ -180,11 +180,11 @@ Here is the call graph for this function:</div>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html#a8c72e395833411910fda9bcc45ce6af4">com.teragrep.pth_06.planner.ArchiveQuery</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00119">119</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  119</span>                                    {</div>
-<div class="line"><span class="lineno">  120</span>        <span class="comment">// end offset is committed</span></div>
-<div class="line"><span class="lineno">  121</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a>.keySet().removeIf(hour -&gt; hour &lt;= offset);</div>
-<div class="line"><span class="lineno">  122</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00121">121</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  121</span>                                    {</div>
+<div class="line"><span class="lineno">  122</span>        <span class="comment">// end offset is committed</span></div>
+<div class="line"><span class="lineno">  123</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a>.keySet().removeIf(hour -&gt; hour &lt;= offset);</div>
+<div class="line"><span class="lineno">  124</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor_html_a0431e11a8503ac5fd889d42bca5c0943"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">com.teragrep.pth_06.planner.MockArchiveQueryProcessor.virtualDatabaseMap</a></div><div class="ttdeci">final TreeMap&lt; Long, Result&lt; Record11&lt; ULong, String, String, String, String, Date, String, String, Long, ULong, ULong &gt; &gt; &gt; virtualDatabaseMap</div><div class="ttdef"><b>Definition</b> <a href="MockArchiveQueryProcessor_8java_source.html#l00072">MockArchiveQueryProcessor.java:72</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -206,16 +206,16 @@ Here is the call graph for this function:</div>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html#a8c593bdde582de1e742233247f078ada">com.teragrep.pth_06.planner.ArchiveQuery</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00150">150</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  150</span>                                                       {</div>
-<div class="line"><span class="lineno">  151</span>        <span class="keyword">final</span> Snapshot snapshot = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).getSnapshot();</div>
-<div class="line"><span class="lineno">  152</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> CustomTaskMetric[] {</div>
-<div class="line"><span class="lineno">  153</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowCount&quot;</span>, (<span class="keywordtype">long</span>) <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.gauge(<span class="stringliteral">&quot;mockRowCount&quot;</span>).getValue()),</div>
-<div class="line"><span class="lineno">  154</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowMaxLatency&quot;</span>, snapshot.getMax()),</div>
-<div class="line"><span class="lineno">  155</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowAvgLatency&quot;</span>, (<span class="keywordtype">long</span>) snapshot.getMean()),</div>
-<div class="line"><span class="lineno">  156</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowMinLatency&quot;</span>, snapshot.getMin()),</div>
-<div class="line"><span class="lineno">  157</span>        };</div>
-<div class="line"><span class="lineno">  158</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00152">152</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  152</span>                                                       {</div>
+<div class="line"><span class="lineno">  153</span>        <span class="keyword">final</span> Snapshot snapshot = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).getSnapshot();</div>
+<div class="line"><span class="lineno">  154</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> CustomTaskMetric[] {</div>
+<div class="line"><span class="lineno">  155</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowCount&quot;</span>, (<span class="keywordtype">long</span>) <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.gauge(<span class="stringliteral">&quot;mockRowCount&quot;</span>).getValue()),</div>
+<div class="line"><span class="lineno">  156</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowMaxLatency&quot;</span>, snapshot.getMax()),</div>
+<div class="line"><span class="lineno">  157</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowAvgLatency&quot;</span>, (<span class="keywordtype">long</span>) snapshot.getMean()),</div>
+<div class="line"><span class="lineno">  158</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;ArchiveDatabaseRowMinLatency&quot;</span>, snapshot.getMin()),</div>
+<div class="line"><span class="lineno">  159</span>        };</div>
+<div class="line"><span class="lineno">  160</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor_html_afc5c8d7815de0e75c0294b1eba8180f3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">com.teragrep.pth_06.planner.MockArchiveQueryProcessor.metricRegistry</a></div><div class="ttdeci">final MetricRegistry metricRegistry</div><div class="ttdef"><b>Definition</b> <a href="MockArchiveQueryProcessor_8java_source.html#l00076">MockArchiveQueryProcessor.java:76</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -237,10 +237,10 @@ Here is the call graph for this function:</div>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html#aca68ea00a38bbcc0ed1875e3f62b1eff">com.teragrep.pth_06.planner.ArchiveQuery</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00161">161</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  161</span>                                   {</div>
-<div class="line"><span class="lineno">  162</span>        <span class="keywordflow">return</span> 1262296800L;</div>
-<div class="line"><span class="lineno">  163</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00163">163</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  163</span>                                   {</div>
+<div class="line"><span class="lineno">  164</span>        <span class="keywordflow">return</span> 1262296800L;</div>
+<div class="line"><span class="lineno">  165</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -266,26 +266,26 @@ Here is the caller graph for this function:</div>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html#a4d1ed89b87b3f6248fa231c0eb503737">com.teragrep.pth_06.planner.ArchiveQuery</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00125">125</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  125</span>                                              {</div>
-<div class="line"><span class="lineno">  126</span>        Optional&lt;Long&gt; offset;</div>
-<div class="line"><span class="lineno">  127</span>        <span class="keywordflow">if</span> (this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a> == <span class="keyword">null</span>) {</div>
-<div class="line"><span class="lineno">  128</span>            offset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a></div>
-<div class="line"><span class="lineno">  129</span>                    .keySet()</div>
-<div class="line"><span class="lineno">  130</span>                    .stream()</div>
-<div class="line"><span class="lineno">  131</span>                    .filter(x -&gt; !x.equals(<a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a12c256d6ac85464e14dc686b8f062262">getInitialOffset</a>()))</div>
-<div class="line"><span class="lineno">  132</span>                    .sorted()</div>
-<div class="line"><span class="lineno">  133</span>                    .findFirst();</div>
-<div class="line"><span class="lineno">  134</span>        }</div>
-<div class="line"><span class="lineno">  135</span>        <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">  136</span>            offset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a>.keySet().stream().filter(x -&gt; x &gt; this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>).sorted().findFirst();</div>
-<div class="line"><span class="lineno">  137</span>        }</div>
-<div class="line"><span class="lineno">  138</span> </div>
-<div class="line"><span class="lineno">  139</span>        <span class="comment">// always return the last offset if later offset could not be found</span></div>
-<div class="line"><span class="lineno">  140</span>        this.latestOffset = offset.orElseGet(() -&gt; this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>);</div>
-<div class="line"><span class="lineno">  141</span>        <span class="keywordflow">return</span> this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>;</div>
-<div class="line"><span class="lineno">  142</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor_html_a12c256d6ac85464e14dc686b8f062262"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a12c256d6ac85464e14dc686b8f062262">com.teragrep.pth_06.planner.MockArchiveQueryProcessor.getInitialOffset</a></div><div class="ttdeci">Long getInitialOffset()</div><div class="ttdef"><b>Definition</b> <a href="MockArchiveQueryProcessor_8java_source.html#l00161">MockArchiveQueryProcessor.java:161</a></div></div>
+<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00127">127</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  127</span>                                              {</div>
+<div class="line"><span class="lineno">  128</span>        Optional&lt;Long&gt; offset;</div>
+<div class="line"><span class="lineno">  129</span>        <span class="keywordflow">if</span> (this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a> == <span class="keyword">null</span>) {</div>
+<div class="line"><span class="lineno">  130</span>            offset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a></div>
+<div class="line"><span class="lineno">  131</span>                    .keySet()</div>
+<div class="line"><span class="lineno">  132</span>                    .stream()</div>
+<div class="line"><span class="lineno">  133</span>                    .filter(x -&gt; !x.equals(<a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a12c256d6ac85464e14dc686b8f062262">getInitialOffset</a>()))</div>
+<div class="line"><span class="lineno">  134</span>                    .sorted()</div>
+<div class="line"><span class="lineno">  135</span>                    .findFirst();</div>
+<div class="line"><span class="lineno">  136</span>        }</div>
+<div class="line"><span class="lineno">  137</span>        <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">  138</span>            offset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a0431e11a8503ac5fd889d42bca5c0943">virtualDatabaseMap</a>.keySet().stream().filter(x -&gt; x &gt; this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>).sorted().findFirst();</div>
+<div class="line"><span class="lineno">  139</span>        }</div>
+<div class="line"><span class="lineno">  140</span> </div>
+<div class="line"><span class="lineno">  141</span>        <span class="comment">// always return the last offset if later offset could not be found</span></div>
+<div class="line"><span class="lineno">  142</span>        this.latestOffset = offset.orElseGet(() -&gt; this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>);</div>
+<div class="line"><span class="lineno">  143</span>        <span class="keywordflow">return</span> this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>;</div>
+<div class="line"><span class="lineno">  144</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor_html_a12c256d6ac85464e14dc686b8f062262"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a12c256d6ac85464e14dc686b8f062262">com.teragrep.pth_06.planner.MockArchiveQueryProcessor.getInitialOffset</a></div><div class="ttdeci">Long getInitialOffset()</div><div class="ttdef"><b>Definition</b> <a href="MockArchiveQueryProcessor_8java_source.html#l00163">MockArchiveQueryProcessor.java:163</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor_html_a6d671e7d75e3f4aa91b5daadba3e8759"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">com.teragrep.pth_06.planner.MockArchiveQueryProcessor.latestOffset</a></div><div class="ttdeci">Long latestOffset</div><div class="ttdef"><b>Definition</b> <a href="MockArchiveQueryProcessor_8java_source.html#l00074">MockArchiveQueryProcessor.java:74</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -312,10 +312,10 @@ Here is the call graph for this function:</div>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html#a25243091cfeef3bab78b45770e38ba4b">com.teragrep.pth_06.planner.ArchiveQuery</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00145">145</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  145</span>                                   {</div>
-<div class="line"><span class="lineno">  146</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>;</div>
-<div class="line"><span class="lineno">  147</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="MockArchiveQueryProcessor_8java_source.html#l00147">147</a> of file <a class="el" href="MockArchiveQueryProcessor_8java_source.html">MockArchiveQueryProcessor.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  147</span>                                   {</div>
+<div class="line"><span class="lineno">  148</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#a6d671e7d75e3f4aa91b5daadba3e8759">latestOffset</a>;</div>
+<div class="line"><span class="lineno">  149</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -364,12 +364,14 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  108</span>        }</div>
 <div class="line"><span class="lineno">  109</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> latencyNs = timerCtx.stop();</div>
 <div class="line"><span class="lineno">  110</span> </div>
-<div class="line"><span class="lineno">  111</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).update(latencyNs / rv.size());</div>
-<div class="line"><span class="lineno">  112</span>        SettableGauge&lt;Long&gt; count = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.gauge(<span class="stringliteral">&quot;mockRowCount&quot;</span>);</div>
-<div class="line"><span class="lineno">  113</span>        count.setValue((<span class="keywordtype">long</span>) rv.size());</div>
-<div class="line"><span class="lineno">  114</span>        LOGGER.info(<span class="stringliteral">&quot;MockArchiveQueryProcessor.range&gt; &quot;</span> + rv.formatCSV());</div>
-<div class="line"><span class="lineno">  115</span>        <span class="keywordflow">return</span> rv;</div>
-<div class="line"><span class="lineno">  116</span>    }</div>
+<div class="line"><span class="lineno">  111</span>        <span class="keywordflow">if</span> (!rv.isEmpty()) {</div>
+<div class="line"><span class="lineno">  112</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).update(latencyNs / rv.size());</div>
+<div class="line"><span class="lineno">  113</span>        }</div>
+<div class="line"><span class="lineno">  114</span>        SettableGauge&lt;Long&gt; count = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.gauge(<span class="stringliteral">&quot;mockRowCount&quot;</span>);</div>
+<div class="line"><span class="lineno">  115</span>        count.setValue((<span class="keywordtype">long</span>) rv.size());</div>
+<div class="line"><span class="lineno">  116</span>        LOGGER.info(<span class="stringliteral">&quot;MockArchiveQueryProcessor.range&gt; &quot;</span> + rv.formatCSV());</div>
+<div class="line"><span class="lineno">  117</span>        <span class="keywordflow">return</span> rv;</div>
+<div class="line"><span class="lineno">  118</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>

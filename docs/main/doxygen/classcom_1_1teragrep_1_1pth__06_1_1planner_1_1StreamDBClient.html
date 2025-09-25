@@ -305,15 +305,17 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">  209</span> </div>
 <div class="line"><span class="lineno">  210</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> latencyNs = timerCtx.stop();</div>
 <div class="line"><span class="lineno">  211</span> </div>
-<div class="line"><span class="lineno">  212</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#af36d01726777ac6a8e5e443df215aaf6">metricRegistry</a>.histogram(<span class="stringliteral">&quot;ArchiveDatabaseLatencyPerRow&quot;</span>).update(latencyNs / rows);</div>
-<div class="line"><span class="lineno">  213</span> </div>
-<div class="line"><span class="lineno">  214</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a03a98378b7bf98db2317a5ce6c23bca8">LOGGER</a>.info(<span class="stringliteral">&quot;StreamDBClient.pullToSliceTable&quot;</span> + <span class="stringliteral">&quot;: took (&quot;</span> + <span class="stringliteral">&quot;&lt;{}&gt; ms)&quot;</span>, (latencyNs / 1_000_000d));</div>
+<div class="line"><span class="lineno">  212</span>        <span class="keywordflow">if</span> (rows != 0) {</div>
+<div class="line"><span class="lineno">  213</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#af36d01726777ac6a8e5e443df215aaf6">metricRegistry</a>.histogram(<span class="stringliteral">&quot;ArchiveDatabaseLatencyPerRow&quot;</span>).update(latencyNs / rows);</div>
+<div class="line"><span class="lineno">  214</span>        }</div>
 <div class="line"><span class="lineno">  215</span> </div>
-<div class="line"><span class="lineno">  216</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#af36d01726777ac6a8e5e443df215aaf6">metricRegistry</a>.counter(<span class="stringliteral">&quot;ArchiveDatabaseRowCount&quot;</span>).inc(rows);</div>
+<div class="line"><span class="lineno">  216</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a03a98378b7bf98db2317a5ce6c23bca8">LOGGER</a>.info(<span class="stringliteral">&quot;StreamDBClient.pullToSliceTable&quot;</span> + <span class="stringliteral">&quot;: took (&quot;</span> + <span class="stringliteral">&quot;&lt;{}&gt; ms)&quot;</span>, (latencyNs / 1_000_000d));</div>
 <div class="line"><span class="lineno">  217</span> </div>
-<div class="line"><span class="lineno">  218</span>        <span class="keywordflow">return</span> rows;</div>
+<div class="line"><span class="lineno">  218</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#af36d01726777ac6a8e5e443df215aaf6">metricRegistry</a>.counter(<span class="stringliteral">&quot;ArchiveDatabaseRowCount&quot;</span>).inc(rows);</div>
 <div class="line"><span class="lineno">  219</span> </div>
-<div class="line"><span class="lineno">  220</span>    }</div>
+<div class="line"><span class="lineno">  220</span>        <span class="keywordflow">return</span> rows;</div>
+<div class="line"><span class="lineno">  221</span> </div>
+<div class="line"><span class="lineno">  222</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient_html_a685aa280aac25db7b57738523a84da1b"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a685aa280aac25db7b57738523a84da1b">com.teragrep.pth_06.planner.StreamDBClient.journaldbCondition</a></div><div class="ttdeci">final Condition journaldbCondition</div><div class="ttdef"><b>Definition</b> <a href="StreamDBClient_8java_source.html#l00105">StreamDBClient.java:105</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
