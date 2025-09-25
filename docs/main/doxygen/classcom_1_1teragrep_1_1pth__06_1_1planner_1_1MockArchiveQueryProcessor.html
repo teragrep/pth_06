@@ -364,7 +364,7 @@ Here is the call graph for this function:</div>
 <div class="line"><span class="lineno">  108</span>        }</div>
 <div class="line"><span class="lineno">  109</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> latencyNs = timerCtx.stop();</div>
 <div class="line"><span class="lineno">  110</span> </div>
-<div class="line"><span class="lineno">  111</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).update((latencyNs / 1_000_000L) / rv.size());</div>
+<div class="line"><span class="lineno">  111</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.histogram(<span class="stringliteral">&quot;mockRowTime&quot;</span>).update(latencyNs / rv.size());</div>
 <div class="line"><span class="lineno">  112</span>        SettableGauge&lt;Long&gt; count = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html#afc5c8d7815de0e75c0294b1eba8180f3">metricRegistry</a>.gauge(<span class="stringliteral">&quot;mockRowCount&quot;</span>);</div>
 <div class="line"><span class="lineno">  113</span>        count.setValue((<span class="keywordtype">long</span>) rv.size());</div>
 <div class="line"><span class="lineno">  114</span>        LOGGER.info(<span class="stringliteral">&quot;MockArchiveQueryProcessor.range&gt; &quot;</span> + rv.formatCSV());</div>
