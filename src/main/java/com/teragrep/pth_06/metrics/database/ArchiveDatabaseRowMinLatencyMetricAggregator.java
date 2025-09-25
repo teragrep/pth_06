@@ -60,7 +60,7 @@ public final class ArchiveDatabaseRowMinLatencyMetricAggregator implements Custo
 
     @Override
     public String description() {
-        return "ArchiveDatabaseRowMinLatency: minimum time per row";
+        return "ArchiveDatabaseRowMinLatency: minimum time per row in nanoseconds";
     }
 
     @Override

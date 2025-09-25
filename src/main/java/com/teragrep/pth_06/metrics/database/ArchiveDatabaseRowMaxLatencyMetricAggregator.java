@@ -60,7 +60,7 @@ public final class ArchiveDatabaseRowMaxLatencyMetricAggregator implements Custo
 
     @Override
     public String description() {
-        return "ArchiveDatabaseRowMaxLatency: maximum time per row";
+        return "ArchiveDatabaseRowMaxLatency: maximum time per row in nanoseconds";
     }
 
     @Override

@@ -60,7 +60,7 @@ public final class ArchiveDatabaseRowAvgLatencyMetricAggregator implements Custo
 
     @Override
     public String description() {
-        return "ArchiveDatabaseRowAvgLatency: average time per row";
+        return "ArchiveDatabaseRowAvgLatency: average time per row in nanoseconds";
     }
 
     @Override
