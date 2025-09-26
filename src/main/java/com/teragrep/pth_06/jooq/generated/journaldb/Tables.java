@@ -52,6 +52,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
 
 import javax.annotation.Generated;
 
@@ -83,4 +84,9 @@ public class Tables {
      * Contains information for log files that have been run through Log Archiver
      */
     public static final Logfile LOGFILE = Logfile.LOGFILE;
+
+    /**
+     * Contains logtag values that are identified using the ID
+     */
+    public static final Logtag LOGTAG = Logtag.LOGTAG;
 }
