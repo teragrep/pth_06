@@ -102,8 +102,8 @@ public class StreamDBClient {
     private final boolean bloomEnabled;
     private final Condition journaldbCondition;
     private final ConditionWalker walker;
-    private final SlidingWindowReservoir histogramReservoir;
-    private final SlidingWindowReservoir timerReservoir;
+    private final Reservoir histogramReservoir;
+    private final Reservoir timerReservoir;
 
     public StreamDBClient(Config config) throws SQLException {
 

@@ -74,6 +74,8 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
     private Long latestOffset = null;
 
     private final MetricRegistry metricRegistry;
+    private final Reservoir histogramReservoir;
+    private final Reservoir timerReservoir;
 
     public MockArchiveQueryProcessor(String query) {
 
@@ -86,6 +88,8 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
         this.virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
 
         this.metricRegistry = new MetricRegistry();
+        this.histogramReservoir = new SlidingWindowReservoir(1000);
+        this.timerReservoir = new SlidingWindowReservoir(1000);
     }
 
     @Override
@@ -100,7 +104,7 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
                 null, null, null, null, null, null, null, null, null, null, null
         );
 
-        final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime").time();
+        final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime", () -> new Timer(timerReservoir)).time();
         for (long res : virtualDatabaseMap.keySet()) {
             if (res > startHour && res <= endHour) {
                 rv.addAll(virtualDatabaseMap.get(res));
@@ -109,7 +113,9 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
         final long latencyNs = timerCtx.stop();
 
         if (!rv.isEmpty()) {
-            metricRegistry.histogram("mockRowTime").update(latencyNs / rv.size());
+            metricRegistry
+                    .histogram("mockRowTime", () -> new Histogram(histogramReservoir))
+                    .update(latencyNs / rv.size());
         }
         SettableGauge<Long> count = metricRegistry.gauge("mockRowCount");
         count.setValue((long) rv.size());
@@ -150,7 +156,9 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
 
     @Override
     public CustomTaskMetric[] currentDatabaseMetrics() {
-        final Snapshot snapshot = metricRegistry.histogram("mockRowTime").getSnapshot();
+        final Snapshot snapshot = metricRegistry
+                .histogram("mockRowTime", () -> new Histogram(histogramReservoir))
+                .getSnapshot();
         return new CustomTaskMetric[] {
                 new TaskMetric("ArchiveDatabaseRowCount", (long) metricRegistry.gauge("mockRowCount").getValue()),
                 new TaskMetric("ArchiveDatabaseRowMaxLatency", snapshot.getMax()),
