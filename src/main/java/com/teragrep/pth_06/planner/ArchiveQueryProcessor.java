@@ -119,8 +119,6 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
         catch (SQLException e) {
             throw new RuntimeException("StreamDB not connected.");
         }
-
-        sdc.setIncludeBeforeEpoch(config.archiveConfig.archiveIncludeBeforeEpoch);
     }
 
     /**
