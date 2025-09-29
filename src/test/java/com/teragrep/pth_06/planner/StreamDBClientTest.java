@@ -108,23 +108,6 @@ class StreamDBClientTest {
 
     @AfterEach
     public void cleanup() {
-        // Drop tables from journaldb
-        Assertions
-                .assertDoesNotThrow(
-                        () -> connection.prepareStatement("DROP TABLE logfile, host, bucket, category, source_system").execute()
-                );
-        // Drop tables from streamdb
-        Connection streamdbConnection = Assertions
-                .assertDoesNotThrow(
-                        () -> DriverManager
-                                .getConnection(
-                                        "jdbc:mariadb://" + mariadb.getHost() + ":" + mariadb.getFirstMappedPort() + "/"
-                                                + streamdbName,
-                                        mariadb.getUsername(), mariadb.getPassword()
-                                )
-                );
-        Assertions
-                .assertDoesNotThrow(() -> streamdbConnection.prepareStatement("DROP TABLE stream, host, log_group").execute());
         mariadb.stop();
     }
 
