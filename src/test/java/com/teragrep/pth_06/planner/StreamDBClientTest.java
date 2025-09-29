@@ -77,7 +77,6 @@ class StreamDBClientTest {
 
     private final String streamdbName = "streamdb";
     private final String journaldbName = "journaldb";
-    private final String bloomdbName = "bloomdb";
 
     @BeforeEach
     public void setup() {
