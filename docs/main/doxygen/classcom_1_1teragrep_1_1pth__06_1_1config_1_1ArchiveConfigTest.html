@@ -95,6 +95,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3bf5c530b57009807fe8791b8e98b549"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c3290ddd8dccd1998129525126522ab" id="r_a0c3290ddd8dccd1998129525126522ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#a0c3290ddd8dccd1998129525126522ab">testWithoutFiltersDefaultBloomEnabled</a> ()</td></tr>
 <tr class="separator:a0c3290ddd8dccd1998129525126522ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92f75899193781c12bdf567bc99744f0" id="r_a92f75899193781c12bdf567bc99744f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#a92f75899193781c12bdf567bc99744f0">testWithIncludeBeforeEpoch</a> ()</td></tr>
+<tr class="separator:a92f75899193781c12bdf567bc99744f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e7f021984b819fa6c575a3149b3a7c3" id="r_a3e7f021984b819fa6c575a3149b3a7c3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#a3e7f021984b819fa6c575a3149b3a7c3">testDefaultIncludeBeforeEpoch</a> ()</td></tr>
+<tr class="separator:a3e7f021984b819fa6c575a3149b3a7c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -128,21 +132,21 @@ Private Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfigTest_8java_source.html#l00108">108</a> of file <a class="el" href="ArchiveConfigTest_8java_source.html">ArchiveConfigTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  108</span>                                          {</div>
-<div class="line"><span class="lineno">  109</span>        Map&lt;String, String&gt; opts = <span class="keyword">new</span> HashMap&lt;&gt;();</div>
-<div class="line"><span class="lineno">  110</span>        opts.put(<span class="stringliteral">&quot;S3endPoint&quot;</span>, <span class="stringliteral">&quot;S3endPoint&quot;</span>);</div>
-<div class="line"><span class="lineno">  111</span>        opts.put(<span class="stringliteral">&quot;S3identity&quot;</span>, <span class="stringliteral">&quot;S3identity&quot;</span>);</div>
-<div class="line"><span class="lineno">  112</span>        opts.put(<span class="stringliteral">&quot;S3credential&quot;</span>, <span class="stringliteral">&quot;S3credential&quot;</span>);</div>
-<div class="line"><span class="lineno">  113</span>        opts.put(<span class="stringliteral">&quot;DBusername&quot;</span>, <span class="stringliteral">&quot;DBusername&quot;</span>);</div>
-<div class="line"><span class="lineno">  114</span>        opts.put(<span class="stringliteral">&quot;DBpassword&quot;</span>, <span class="stringliteral">&quot;DBpassword&quot;</span>);</div>
-<div class="line"><span class="lineno">  115</span>        opts.put(<span class="stringliteral">&quot;DBurl&quot;</span>, <span class="stringliteral">&quot;DBurl&quot;</span>);</div>
-<div class="line"><span class="lineno">  116</span>        <span class="keywordflow">return</span> opts;</div>
-<div class="line"><span class="lineno">  117</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfigTest_8java_source.html#l00123">123</a> of file <a class="el" href="ArchiveConfigTest_8java_source.html">ArchiveConfigTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  123</span>                                          {</div>
+<div class="line"><span class="lineno">  124</span>        Map&lt;String, String&gt; opts = <span class="keyword">new</span> HashMap&lt;&gt;();</div>
+<div class="line"><span class="lineno">  125</span>        opts.put(<span class="stringliteral">&quot;S3endPoint&quot;</span>, <span class="stringliteral">&quot;S3endPoint&quot;</span>);</div>
+<div class="line"><span class="lineno">  126</span>        opts.put(<span class="stringliteral">&quot;S3identity&quot;</span>, <span class="stringliteral">&quot;S3identity&quot;</span>);</div>
+<div class="line"><span class="lineno">  127</span>        opts.put(<span class="stringliteral">&quot;S3credential&quot;</span>, <span class="stringliteral">&quot;S3credential&quot;</span>);</div>
+<div class="line"><span class="lineno">  128</span>        opts.put(<span class="stringliteral">&quot;DBusername&quot;</span>, <span class="stringliteral">&quot;DBusername&quot;</span>);</div>
+<div class="line"><span class="lineno">  129</span>        opts.put(<span class="stringliteral">&quot;DBpassword&quot;</span>, <span class="stringliteral">&quot;DBpassword&quot;</span>);</div>
+<div class="line"><span class="lineno">  130</span>        opts.put(<span class="stringliteral">&quot;DBurl&quot;</span>, <span class="stringliteral">&quot;DBurl&quot;</span>);</div>
+<div class="line"><span class="lineno">  131</span>        <span class="keywordflow">return</span> opts;</div>
+<div class="line"><span class="lineno">  132</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_ac93208b8fdd2d6c18c6604f4fff1885c_icgraph.svg" width="524" height="432"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_ac93208b8fdd2d6c18c6604f4fff1885c_icgraph.svg" width="526" height="590"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 
 </div>
@@ -169,7 +173,7 @@ Here is the caller graph for this function:</div>
 <div class="line"><span class="lineno">   75</span>        ArchiveConfig defaultConfig = <span class="keyword">new</span> ArchiveConfig(opts);</div>
 <div class="line"><span class="lineno">   76</span>        Assertions.assertTrue(defaultConfig.bloomEnabled);</div>
 <div class="line"><span class="lineno">   77</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_html_ac93208b8fdd2d6c18c6604f4fff1885c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#ac93208b8fdd2d6c18c6604f4fff1885c">com.teragrep.pth_06.config.ArchiveConfigTest.options</a></div><div class="ttdeci">Map&lt; String, String &gt; options()</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfigTest_8java_source.html#l00108">ArchiveConfigTest.java:108</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_html_ac93208b8fdd2d6c18c6604f4fff1885c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#ac93208b8fdd2d6c18c6604f4fff1885c">com.teragrep.pth_06.config.ArchiveConfigTest.options</a></div><div class="ttdeci">Map&lt; String, String &gt; options()</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfigTest_8java_source.html#l00123">ArchiveConfigTest.java:123</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -203,6 +207,65 @@ Here is the call graph for this function:</div>
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_aa8fe53254225e9dbab4f0528d5000100_cgraph.svg" width="524" height="66"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
+</div>
+</div>
+<a id="a3e7f021984b819fa6c575a3149b3a7c3" name="a3e7f021984b819fa6c575a3149b3a7c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e7f021984b819fa6c575a3149b3a7c3">&#9670;&#160;</a></span>testDefaultIncludeBeforeEpoch()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.config.ArchiveConfigTest.testDefaultIncludeBeforeEpoch </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ArchiveConfigTest_8java_source.html#l00116">116</a> of file <a class="el" href="ArchiveConfigTest_8java_source.html">ArchiveConfigTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  116</span>                                                {</div>
+<div class="line"><span class="lineno">  117</span>        Map&lt;String, String&gt; opts = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#ac93208b8fdd2d6c18c6604f4fff1885c">options</a>();</div>
+<div class="line"><span class="lineno">  118</span>        ArchiveConfig defaultConfig = <span class="keyword">new</span> ArchiveConfig(opts);</div>
+<div class="line"><span class="lineno">  119</span>        Assertions.assertEquals(Long.MAX_VALUE, defaultConfig.archiveIncludeBeforeEpoch);</div>
+<div class="line"><span class="lineno">  120</span>    }</div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_a3e7f021984b819fa6c575a3149b3a7c3_cgraph.svg" width="526" height="66"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
+</div>
+</div>
+<a id="a92f75899193781c12bdf567bc99744f0" name="a92f75899193781c12bdf567bc99744f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92f75899193781c12bdf567bc99744f0">&#9670;&#160;</a></span>testWithIncludeBeforeEpoch()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.config.ArchiveConfigTest.testWithIncludeBeforeEpoch </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ArchiveConfigTest_8java_source.html#l00108">108</a> of file <a class="el" href="ArchiveConfigTest_8java_source.html">ArchiveConfigTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  108</span>                                             {</div>
+<div class="line"><span class="lineno">  109</span>        Map&lt;String, String&gt; opts = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest.html#ac93208b8fdd2d6c18c6604f4fff1885c">options</a>();</div>
+<div class="line"><span class="lineno">  110</span>        opts.put(<span class="stringliteral">&quot;archive.includeBeforeEpoch&quot;</span>, <span class="stringliteral">&quot;1234&quot;</span>);</div>
+<div class="line"><span class="lineno">  111</span>        ArchiveConfig defaultConfig = <span class="keyword">new</span> ArchiveConfig(opts);</div>
+<div class="line"><span class="lineno">  112</span>        Assertions.assertEquals(1234L, defaultConfig.archiveIncludeBeforeEpoch);</div>
+<div class="line"><span class="lineno">  113</span>    }</div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfigTest_a92f75899193781c12bdf567bc99744f0_cgraph.svg" width="507" height="66"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 
 </div>

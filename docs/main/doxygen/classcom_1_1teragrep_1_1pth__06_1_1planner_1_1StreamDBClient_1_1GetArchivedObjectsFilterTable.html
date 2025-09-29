@@ -111,7 +111,7 @@ Static Private Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00305">305</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00302">302</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="aa1ea1f27011d36559846a764ff484ee5" name="aa1ea1f27011d36559846a764ff484ee5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa1ea1f27011d36559846a764ff484ee5">&#9670;&#160;</a></span>create()</h2>
@@ -147,47 +147,47 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00319">319</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  319</span>                                                                                {</div>
-<div class="line"><span class="lineno">  320</span>            DropTableStep dropQuery = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a>.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);</div>
-<div class="line"><span class="lineno">  321</span>            dropQuery.execute();</div>
-<div class="line"><span class="lineno">  322</span> </div>
-<div class="line"><span class="lineno">  323</span>            CreateTableWithDataStep query = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a></div>
-<div class="line"><span class="lineno">  324</span>                    .createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)</div>
-<div class="line"><span class="lineno">  325</span>                    .as(</div>
-<div class="line"><span class="lineno">  326</span>                            select(</div>
-<div class="line"><span class="lineno">  327</span>                                    <span class="comment">// these are hardcoded for the procedure execution</span></div>
-<div class="line"><span class="lineno">  328</span>                                    STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)</div>
-<div class="line"><span class="lineno">  329</span>                            )</div>
-<div class="line"><span class="lineno">  330</span>                                    .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))</div>
-<div class="line"><span class="lineno">  331</span>                                    .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))</div>
-<div class="line"><span class="lineno">  332</span>                                    .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))</div>
-<div class="line"><span class="lineno">  333</span>                                    .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))</div>
-<div class="line"><span class="lineno">  334</span>                                    .from(STREAMDB.STREAM)</div>
-<div class="line"><span class="lineno">  335</span>                                    .innerJoin(STREAMDB.LOG_GROUP)</div>
-<div class="line"><span class="lineno">  336</span>                                    .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))</div>
-<div class="line"><span class="lineno">  337</span>                                    .innerJoin(STREAMDB.HOST)</div>
-<div class="line"><span class="lineno">  338</span>                                    .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))</div>
-<div class="line"><span class="lineno">  339</span>                                    .innerJoin(JOURNALDB.HOST)</div>
-<div class="line"><span class="lineno">  340</span>                                    .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))</div>
-<div class="line"><span class="lineno">  341</span>                                    <span class="comment">// following change</span></div>
-<div class="line"><span class="lineno">  342</span>                                    .where(streamdbCondition)</div>
-<div class="line"><span class="lineno">  343</span>                    );</div>
-<div class="line"><span class="lineno">  344</span>            query.execute();</div>
-<div class="line"><span class="lineno">  345</span> </div>
-<div class="line"><span class="lineno">  346</span>            <span class="comment">// this could be within tmpTableCreateSql but JOOQ can&#39;t (yet) https://github.com/jOOQ/jOOQ/issues/11752</span></div>
-<div class="line"><span class="lineno">  347</span>            <span class="keywordflow">try</span> (</div>
-<div class="line"><span class="lineno">  348</span>                    <span class="keyword">final</span> CreateIndexIncludeStep indexStep = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a>.createIndex(GetArchivedObjectsFilterTable.hostIndex)</div>
-<div class="line"><span class="lineno">  349</span>                            <span class="comment">//.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.</span></div>
-<div class="line"><span class="lineno">  350</span>                            .on(</div>
-<div class="line"><span class="lineno">  351</span>                                    GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,</div>
-<div class="line"><span class="lineno">  352</span>                                    GetArchivedObjectsFilterTable.tag</div>
-<div class="line"><span class="lineno">  353</span>                            )</div>
-<div class="line"><span class="lineno">  354</span>            ) {</div>
-<div class="line"><span class="lineno">  355</span>                indexStep.execute();</div>
-<div class="line"><span class="lineno">  356</span>            }</div>
-<div class="line"><span class="lineno">  357</span>        }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient_html_a3386373482cb1885a93ed7bed49432b8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">com.teragrep.pth_06.planner.StreamDBClient.ctx</a></div><div class="ttdeci">final DSLContext ctx</div><div class="ttdef"><b>Definition</b> <a href="StreamDBClient_8java_source.html#l00102">StreamDBClient.java:102</a></div></div>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00316">316</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  316</span>                                                                                {</div>
+<div class="line"><span class="lineno">  317</span>            DropTableStep dropQuery = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a>.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);</div>
+<div class="line"><span class="lineno">  318</span>            dropQuery.execute();</div>
+<div class="line"><span class="lineno">  319</span> </div>
+<div class="line"><span class="lineno">  320</span>            CreateTableWithDataStep query = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a></div>
+<div class="line"><span class="lineno">  321</span>                    .createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)</div>
+<div class="line"><span class="lineno">  322</span>                    .as(</div>
+<div class="line"><span class="lineno">  323</span>                            select(</div>
+<div class="line"><span class="lineno">  324</span>                                    <span class="comment">// these are hardcoded for the procedure execution</span></div>
+<div class="line"><span class="lineno">  325</span>                                    STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)</div>
+<div class="line"><span class="lineno">  326</span>                            )</div>
+<div class="line"><span class="lineno">  327</span>                                    .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))</div>
+<div class="line"><span class="lineno">  328</span>                                    .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))</div>
+<div class="line"><span class="lineno">  329</span>                                    .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))</div>
+<div class="line"><span class="lineno">  330</span>                                    .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))</div>
+<div class="line"><span class="lineno">  331</span>                                    .from(STREAMDB.STREAM)</div>
+<div class="line"><span class="lineno">  332</span>                                    .innerJoin(STREAMDB.LOG_GROUP)</div>
+<div class="line"><span class="lineno">  333</span>                                    .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))</div>
+<div class="line"><span class="lineno">  334</span>                                    .innerJoin(STREAMDB.HOST)</div>
+<div class="line"><span class="lineno">  335</span>                                    .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))</div>
+<div class="line"><span class="lineno">  336</span>                                    .innerJoin(JOURNALDB.HOST)</div>
+<div class="line"><span class="lineno">  337</span>                                    .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))</div>
+<div class="line"><span class="lineno">  338</span>                                    <span class="comment">// following change</span></div>
+<div class="line"><span class="lineno">  339</span>                                    .where(streamdbCondition)</div>
+<div class="line"><span class="lineno">  340</span>                    );</div>
+<div class="line"><span class="lineno">  341</span>            query.execute();</div>
+<div class="line"><span class="lineno">  342</span> </div>
+<div class="line"><span class="lineno">  343</span>            <span class="comment">// this could be within tmpTableCreateSql but JOOQ can&#39;t (yet) https://github.com/jOOQ/jOOQ/issues/11752</span></div>
+<div class="line"><span class="lineno">  344</span>            <span class="keywordflow">try</span> (</div>
+<div class="line"><span class="lineno">  345</span>                    <span class="keyword">final</span> CreateIndexIncludeStep indexStep = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">ctx</a>.createIndex(GetArchivedObjectsFilterTable.hostIndex)</div>
+<div class="line"><span class="lineno">  346</span>                            <span class="comment">//.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.</span></div>
+<div class="line"><span class="lineno">  347</span>                            .on(</div>
+<div class="line"><span class="lineno">  348</span>                                    GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,</div>
+<div class="line"><span class="lineno">  349</span>                                    GetArchivedObjectsFilterTable.tag</div>
+<div class="line"><span class="lineno">  350</span>                            )</div>
+<div class="line"><span class="lineno">  351</span>            ) {</div>
+<div class="line"><span class="lineno">  352</span>                indexStep.execute();</div>
+<div class="line"><span class="lineno">  353</span>            }</div>
+<div class="line"><span class="lineno">  354</span>        }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient_html_a3386373482cb1885a93ed7bed49432b8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a3386373482cb1885a93ed7bed49432b8">com.teragrep.pth_06.planner.StreamDBClient.ctx</a></div><div class="ttdeci">final DSLContext ctx</div><div class="ttdef"><b>Definition</b> <a href="StreamDBClient_8java_source.html#l00103">StreamDBClient.java:103</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -217,7 +217,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00314">314</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00311">311</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -241,7 +241,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00310">310</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00307">307</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -265,7 +265,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00312">312</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00309">309</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -289,7 +289,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00311">311</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00308">308</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -313,7 +313,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00317">317</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00314">314</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -337,7 +337,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00315">315</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00312">312</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -361,7 +361,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00313">313</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00310">310</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
@@ -385,7 +385,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00308">308</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StreamDBClient_8java_source.html#l00305">305</a> of file <a class="el" href="StreamDBClient_8java_source.html">StreamDBClient.java</a>.</p>
 
 </div>
 </div>
