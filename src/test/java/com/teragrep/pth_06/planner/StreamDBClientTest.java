@@ -77,6 +77,20 @@ class StreamDBClientTest {
 
     private final String streamdbName = "streamdb";
     private final String journaldbName = "journaldb";
+    private final Map<String, String> opts = new HashMap<String, String>() {
+
+        {
+            put("S3endPoint", "mock");
+            put("S3identity", "mock");
+            put("S3credential", "mock");
+            put("DBusername", streamDBUsername);
+            put("DBpassword", streamDBPassword);
+            put("DBstreamdbname", streamdbName);
+            put("DBjournaldbname", journaldbName);
+            put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
+            put("archive.enabled", "true");
+        }
+    };
 
     @BeforeEach
     public void setup() {
@@ -112,22 +126,6 @@ class StreamDBClientTest {
         Assertions
                 .assertDoesNotThrow(() -> streamdbConnection.prepareStatement("DROP TABLE stream, host, log_group").execute());
         mariadb.stop();
-    }
-
-    private Config testConfiguration() {
-        // Init mandatory Config object with the minimum options required for testing StreamDBClient.
-        Map<String, String> opts = new HashMap<>();
-        opts.put("S3endPoint", "mock");
-        opts.put("S3identity", "mock");
-        opts.put("S3credential", "mock");
-        opts.put("DBusername", streamDBUsername);
-        opts.put("DBpassword", streamDBPassword);
-        opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("DBstreamdbname", streamdbName);
-        opts.put("DBjournaldbname", journaldbName);
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        opts.put("archive.enabled", "true");
-        return new Config(opts);
     }
 
     /**
@@ -185,7 +183,9 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Config config = testConfiguration();
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         // Only the row with logdate of "2023-10-6" should be pulled to slicetable.
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-6"));
@@ -247,7 +247,9 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Config config = testConfiguration();
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         // Both of the rows in the database for logdate of "2023-10-5" should be pulled to the slicetable.
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
@@ -287,7 +289,9 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Config config = testConfiguration();
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         Long earliestEpoch = 1696377600L; // 2023-10-04
         Long latestOffset = earliestEpoch;
@@ -368,7 +372,9 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Config config = testConfiguration();
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         Assertions.assertEquals(2, rows);
@@ -411,7 +417,9 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Config config = testConfiguration();
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
 
         // Pull the records from a specific logdate to the slicetable for further processing.
@@ -460,17 +468,8 @@ class StreamDBClientTest {
 
         // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-05 02:00, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-05 02:00 or newer.
         ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 2, 0, 0, 0, ZoneId.of("America/New_York"));
-        Map<String, String> opts = new HashMap<>();
-        opts.put("S3endPoint", "mock");
-        opts.put("S3identity", "mock");
-        opts.put("S3credential", "mock");
-        opts.put("DBusername", streamDBUsername);
-        opts.put("DBpassword", streamDBPassword);
+        final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("DBstreamdbname", streamdbName);
-        opts.put("DBjournaldbname", journaldbName);
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
-        opts.put("archive.enabled", "true");
         opts.put("archive.includeBeforeEpoch", String.valueOf(zonedDateTimeUSA.toEpochSecond()));
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
