@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.Objects;
 import java.util.Set;
 
 import com.codahale.metrics.MetricRegistry;
@@ -94,13 +95,13 @@ import static org.jooq.impl.DSL.select;
  * @author Motoko Kusanagi
  * @author Ville Manninen
  */
-public class StreamDBClient {
+public final class StreamDBClient {
 
     private final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
 
     private final MetricRegistry metricRegistry;
     private final DSLContext ctx;
-    private long includeBeforeEpoch;
+    private final long includeBeforeEpoch;
     private final boolean bloomEnabled;
     private final Condition journaldbCondition;
     private final ConditionWalker walker;
@@ -163,7 +164,7 @@ public class StreamDBClient {
         SliceTable.create(ctx);
 
         // by default no cutoff
-        includeBeforeEpoch = Long.MAX_VALUE;
+        includeBeforeEpoch = config.archiveConfig.archiveIncludeBeforeEpoch;
 
         this.metricRegistry = new MetricRegistry();
     }
@@ -176,10 +177,6 @@ public class StreamDBClient {
                 new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
                 new TaskMetric("ArchiveDatabaseRowMinLatency", latencySnapshot.getMin()),
         };
-    }
-
-    void setIncludeBeforeEpoch(long includeBeforeEpoch) {
-        this.includeBeforeEpoch = includeBeforeEpoch;
     }
 
     public int pullToSliceTable(Date day) {
@@ -410,5 +407,24 @@ public class StreamDBClient {
                     .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                     .asTable(innerTable);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        StreamDBClient that = (StreamDBClient) o;
+        return includeBeforeEpoch == that.includeBeforeEpoch && bloomEnabled == that.bloomEnabled && Objects
+                .equals(metricRegistry, that.metricRegistry) && Objects.equals(ctx, that.ctx)
+                && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(metricRegistry, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition, walker);
     }
 }

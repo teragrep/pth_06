@@ -104,6 +104,21 @@ public class ArchiveConfigTest {
         Assertions.assertTrue(defaultConfig.bloomEnabled);
     }
 
+    @Test
+    public void testWithIncludeBeforeEpoch() {
+        Map<String, String> opts = options();
+        opts.put("archive.includeBeforeEpoch", "1234");
+        ArchiveConfig defaultConfig = new ArchiveConfig(opts);
+        Assertions.assertEquals(1234L, defaultConfig.archiveIncludeBeforeEpoch);
+    }
+
+    @Test
+    public void testDefaultIncludeBeforeEpoch() {
+        Map<String, String> opts = options();
+        ArchiveConfig defaultConfig = new ArchiveConfig(opts);
+        Assertions.assertEquals(Long.MAX_VALUE, defaultConfig.archiveIncludeBeforeEpoch);
+    }
+
     // provides minimal options needed to avoid exceptions
     private Map<String, String> options() {
         Map<String, String> opts = new HashMap<>();
