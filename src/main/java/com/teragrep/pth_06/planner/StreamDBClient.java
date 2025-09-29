@@ -411,7 +411,10 @@ public final class StreamDBClient {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
             return false;
         }
         StreamDBClient that = (StreamDBClient) o;
