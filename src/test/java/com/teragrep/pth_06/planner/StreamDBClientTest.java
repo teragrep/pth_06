@@ -288,16 +288,13 @@ class StreamDBClientTest {
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         latestOffset = nextHourAndSizeFromSliceTable.offset();
         // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
-        ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 5, 0, 0, 0, ZoneId.of("UTC"));
         ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 5, 0, 0, 0, ZoneId.of("America/New_York"));
-        Assertions.assertNotEquals(zonedDateTimeUTC.toEpochSecond(), latestOffset);
         Assertions.assertEquals(zonedDateTimeUSA.toEpochSecond(), latestOffset);
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
         long logtime = hourRange.get(0).get(8, Long.class);
-        Assertions.assertNotEquals(zonedDateTimeUTC.toEpochSecond(), logtime);
         Assertions.assertEquals(zonedDateTimeUSA.toEpochSecond(), logtime);
         // Assert that the resulting logfile metadata is as expected for logdate.
         Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
