@@ -71,7 +71,7 @@ class StreamDBClientTest {
 
     private MariaDBContainer<?> mariadb;
     private Connection connection;
-
+    private ZoneId zoneId = ZoneId.of("America/New_York");
     private final String streamDBUsername = "streamdb";
     private final String streamDBPassword = "streamdb_pass";
 
@@ -111,6 +111,68 @@ class StreamDBClientTest {
         mariadb.stop();
     }
 
+    private LogfileRecord logfileRecordForEpoch(long epoch, boolean hasNullEpochColumns) {
+        Instant instant = Instant.ofEpochSecond(epoch);
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("America/New_York")); // expects path dates to be in same timezone as mariadb system timezone
+        int year = zonedDateTime.getYear();
+        // format 0 in front of string if 1-9
+        String month = String.format("%02d", zonedDateTime.getMonthValue());
+        String day = String.format("%02d", zonedDateTime.getDayOfMonth());
+        String hour = String.format("%02d", zonedDateTime.getHour());
+
+        String filename = "example.log-@" + epoch + "-" + year + month + day + hour + ".log.gz";
+        String path = year + "/" + month + "-" + day + "/example.tg.dev.test/example/" + filename;
+        System.out.println("path: " + path);
+        LogfileRecord logfileRecord = new LogfileRecord(
+                ULong.valueOf(epoch),
+                Date.valueOf(zonedDateTime.toLocalDate()),
+                Date.valueOf(zonedDateTime.plusYears(1).toLocalDate()),
+                UShort.valueOf(1),
+                path,
+                null,
+                UShort.valueOf(1),
+                filename,
+                new Timestamp(epoch),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                ULong.valueOf(epoch),
+                ULong.valueOf(epoch + (365 * 24 * 3600)),
+                ULong.valueOf(epoch)
+        );
+
+        LogfileRecord nullEpochRecord = new LogfileRecord(
+                ULong.valueOf(epoch),
+                Date.valueOf(zonedDateTime.toLocalDate()),
+                Date.valueOf(zonedDateTime.plusYears(1).toLocalDate()),
+                UShort.valueOf(1),
+                path,
+                null,
+                UShort.valueOf(1),
+                filename,
+                new Timestamp(epoch),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "example",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null
+        );
+
+        if (hasNullEpochColumns) {
+            return nullEpochRecord;
+        }
+        return logfileRecord;
+    }
+
     /**
      * Testing that pullToSliceTable() pulls only a specific row from database according to the input parameter.
      */
@@ -118,51 +180,14 @@ class StreamDBClientTest {
     public void pullToSliceTableSingleTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        ZonedDateTime instantPlusDay = instantZonedDateTime.plusDays(1);
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100505.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
         // Set logdate to 2023-10-06 and set logtime-string in path to 2023100605, but set epoch values to null.
-        LogfileRecord logfileRecord2 = new LogfileRecord(
-                ULong.valueOf(2),
-                Date.valueOf("2023-10-6"),
-                Date.valueOf("2026-10-6"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100605.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100605.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusDay.toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -171,7 +196,7 @@ class StreamDBClientTest {
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         // Only the row with logdate of "2023-10-6" should be pulled to slicetable.
-        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-6"));
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
         Assertions.assertEquals(1, rows);
     }
 
@@ -183,50 +208,10 @@ class StreamDBClientTest {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100505.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100506, but set epoch values to null.
-        LogfileRecord logfileRecord2 = new LogfileRecord(
-                ULong.valueOf(2),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100506.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100506.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696474800L, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -248,27 +233,7 @@ class StreamDBClientTest {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100505.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -284,7 +249,7 @@ class StreamDBClientTest {
         Assertions.assertEquals(1, rows);
 
         // Get the offset for the first non-empty hour of records from the slicetable.
-        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         latestOffset = nextHourAndSizeFromSliceTable.offset();
         // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
@@ -305,50 +270,10 @@ class StreamDBClientTest {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100505, but set epoch values to null.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100505.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100505.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
         // Set logdate to 2023-10-05 and set logtime-string in path to 2023100507, but set epoch values to null.
-        LogfileRecord logfileRecord2 = new LogfileRecord(
-                ULong.valueOf(2),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-2023100507.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-2023100507.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696478400, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -373,27 +298,7 @@ class StreamDBClientTest {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Inserting logfile with logtime of 2023-10-05 02:00.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-@1696471200-2023100502.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-@1696471200-2023100502.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696460400, true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -418,48 +323,43 @@ class StreamDBClientTest {
      */
     @Test
     public void setIncludeBeforeEpochNullEpochTest() {
+
+        ZonedDateTime includeBeforeEpochTime = ZonedDateTime.of(2023, 10, 5, 12, 0, 0, 0, ZoneId.of("UTC"));
+
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00.
-        LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(1),
-                Date.valueOf("2023-10-5"),
-                Date.valueOf("2026-10-5"),
-                UShort.valueOf(1),
-                "2023/10-05/example.tg.dev.test/example/example.log-@1696471200-2023100502.log.gz",
-                null,
-                UShort.valueOf(1),
-                "example.log-@1696471200-2023100502.log.gz",
-                new Timestamp(1755101902),
-                ULong.valueOf(120L),
-                "sha256 checksum 1",
-                "archive tag 1",
-                "example",
-                UShort.valueOf(2),
-                UShort.valueOf(1),
-                ULong.valueOf(390L),
-                null,
-                null,
-                null
-        );
+
+        LogfileRecord logfileRecord = logfileRecordForEpoch(includeBeforeEpochTime.minusHours(1).toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(includeBeforeEpochTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
 
         // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-05 02:00, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-05 02:00 or newer.
-        ZonedDateTime zonedDateTimeUSA = ZonedDateTime.of(2023, 10, 5, 2, 0, 0, 0, ZoneId.of("America/New_York"));
+
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
-        opts.put("archive.includeBeforeEpoch", String.valueOf(zonedDateTimeUSA.toEpochSecond()));
+        includeBeforeEpochTime.withZoneSameLocal(ZoneId.of("America/New_York"));
+        opts.put("archive.includeBeforeEpoch", String.valueOf(includeBeforeEpochTime.withZoneSameLocal(ZoneId.of("America/New_York")).toEpochSecond()));
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
 
         // Pull the records from a specific logdate to the slicetable for further processing.
         int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
-        Assertions.assertEquals(1, rows);
+        Assertions.assertEquals(2, rows);
 
-        // Try to get the next hour from the slicetable, result should be a stub with the includeBeforeEpoch value used.
-        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+
+        // find 1 row before
+        Assertions
+                .assertFalse(sdc.getNextHourAndSizeFromSliceTable(0).isStub);
+        Assertions
+                .assertEquals(1696528800L, sdc.getNextHourAndSizeFromSliceTable(0L).offset());
+        // find second row stub on include before epoch
+        Assertions
+                .assertTrue(sdc.getNextHourAndSizeFromSliceTable(1696528800L).isStub);
+
     }
 
     @Test
