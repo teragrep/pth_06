@@ -45,34 +45,39 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 
 import java.sql.Date;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class StubArchiveQuery implements ArchiveQuery {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    @Override
+    public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,
             long endHour
-    );
+    ) {
+        throw new UnsupportedOperationException("processBetweenUnixEpochHours() is not supported for StubArchiveQuery");
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public void commit(long offset) {
+        throw new UnsupportedOperationException("commit() is not supported for StubArchiveQuery");
+    }
 
-    public abstract Long getInitialOffset();
+    @Override
+    public Long getInitialOffset() {
+        throw new UnsupportedOperationException("getInitialOffset() is not supported for StubArchiveQuery");
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public Long incrementAndGetLatestOffset() {
+        throw new UnsupportedOperationException("incrementAndGetLatestOffset() is not supported for StubArchiveQuery");
+    }
 
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 }

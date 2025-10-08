@@ -43,36 +43,29 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.factory;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.KafkaQuery;
+import com.teragrep.pth_06.planner.KafkaQueryProcessor;
+import com.teragrep.pth_06.planner.StubKafkaQuery;
 
-import java.sql.Date;
+public final class KafkaQueryFactory implements Factory<KafkaQuery> {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    private final Config config;
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    public KafkaQueryFactory(final Config config) {
+        this.config = config;
+    }
 
-    public abstract void commit(long offset);
-
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public KafkaQuery object() {
+        final KafkaQuery kafkaQuery;
+        if (config.isKafkaEnabled) {
+            kafkaQuery = new KafkaQueryProcessor(config);
+        }
+        else {
+            kafkaQuery = new StubKafkaQuery();
+        }
+        return kafkaQuery;
+    }
 }

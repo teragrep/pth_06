@@ -45,34 +45,35 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.planner.offset.KafkaOffset;
+import org.apache.kafka.common.TopicPartition;
 
-import java.sql.Date;
+import java.util.Map;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class StubKafkaQuery implements KafkaQuery {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Override
+    public Map<TopicPartition, Long> getInitialEndOffsets() {
+        throw new UnsupportedOperationException("getInitialEndOffsets() is not supported for StubKafkaQuery");
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset) {
+        throw new UnsupportedOperationException("getEndOffsets() is not supported for StubKafkaQuery");
+    }
 
-    public abstract Long getInitialOffset();
+    @Override
+    public Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset) {
+        throw new UnsupportedOperationException("getBeginningOffsets() is not supported for StubKafkaQuery");
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public void commit(KafkaOffset offset) {
+        throw new UnsupportedOperationException("commit() is not supported for StubKafkaQuery");
+    }
 
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 }

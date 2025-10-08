@@ -45,34 +45,18 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.analyze.ScanRangeView;
 
-import java.sql.Date;
+import java.util.List;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public interface HBaseQuery extends Stubbable {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    public abstract long earliest();
 
-    public abstract void commit(long offset);
+    public abstract long latest();
 
-    public abstract Long getInitialOffset();
+    public abstract void updateLatest(long latest);
 
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public abstract List<ScanRangeView> openViews();
 }

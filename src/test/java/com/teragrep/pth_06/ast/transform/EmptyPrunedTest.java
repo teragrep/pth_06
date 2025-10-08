@@ -43,36 +43,42 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.EmptyExpression;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
+import java.util.Collections;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class EmptyPrunedTest {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Test
+    public void testEmptyChildrenPruned() {
+        Expression left = new XMLValueExpressionImpl("TEST", "EQUALS", Expression.Tag.INDEX);
+        Expression right = new EmptyExpression();
+        AndExpression andExpression = new AndExpression(left, right);
+        Expression transformed = new EmptyPruned(andExpression).transformed();
+        Assertions.assertEquals(new AndExpression(left), transformed);
+    }
 
-    public abstract void commit(long offset);
+    @Test
+    public void testNoEmptyChildren() {
+        Expression left = new XMLValueExpressionImpl("TEST", "EQUALS", Expression.Tag.INDEX);
+        Expression right = new XMLValueExpressionImpl("TEST_2", "EQUALS", Expression.Tag.INDEX);
+        AndExpression andExpression = new AndExpression(left, right);
+        Expression transformed = new EmptyPruned(andExpression).transformed();
+        Assertions.assertEquals(andExpression, transformed);
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Test
+    public void testOnlyEmptyChildren() {
+        Expression empty = new EmptyExpression();
+        AndExpression andExpression = new AndExpression(empty, empty);
+        Expression transformed = new EmptyPruned(andExpression).transformed();
+        Assertions.assertEquals(new AndExpression(Collections.emptyList()), transformed);
+    }
 }

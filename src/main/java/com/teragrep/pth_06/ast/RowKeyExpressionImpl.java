@@ -43,36 +43,74 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.hadoop.hbase.util.Bytes;
 
-import java.sql.Date;
+import java.nio.ByteBuffer;
+import java.util.Objects;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class RowKeyExpressionImpl implements LeafExpression<byte[]> {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    public final Long streamId;
+    public final Long earliest;
+    public final Long latest;
 
-    public abstract void commit(long offset);
+    public RowKeyExpressionImpl(Long streamId, Long earliest, Long latest) {
+        this.streamId = streamId;
+        this.earliest = earliest;
+        this.latest = latest;
+    }
 
-    public abstract Long getInitialOffset();
+    @Override
+    public byte[] value() {
+        ByteBuffer buffer = ByteBuffer.allocate(3 * 8);
+        buffer.put(Bytes.toBytes(streamId));
+        buffer.put(Bytes.toBytes(earliest));
+        buffer.put(Bytes.toBytes(latest));
+        return buffer.array();
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public Tag tag() {
+        throw new UnsupportedOperationException("tag() not supported for RowKeyExpressionImpl");
+    }
 
-    public abstract Long mostRecentOffset();
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public LeafExpression<byte[]> asLeaf() {
+        return this;
+    }
+
+    @Override
+    public boolean isLogical() {
+        return false;
+    }
+
+    @Override
+    public LogicalExpression asLogical() {
+        throw new UnsupportedOperationException("asLogical() not supported for RowKeyExpressionImpl");
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        final RowKeyExpressionImpl other = (RowKeyExpressionImpl) object;
+        return Objects.equals(streamId, other.streamId) && Objects.equals(earliest, other.earliest)
+                && Objects.equals(latest, other.latest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(streamId, earliest, latest);
+    }
 }

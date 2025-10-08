@@ -43,36 +43,33 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.planner.factory;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.ArchiveQueryProcessor;
+import com.teragrep.pth_06.planner.StubArchiveQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
+public final class ArchiveQueryFactory implements Factory<ArchiveQuery> {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveQueryFactory.class);
+    private final Config config;
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    public ArchiveQueryFactory(final Config config) {
+        this.config = config;
+    }
 
-    public abstract void commit(long offset);
-
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public ArchiveQuery object() {
+        final ArchiveQuery archiveQuery;
+        if (config.isArchiveEnabled && !config.isHbaseEnabled) {
+            archiveQuery = new ArchiveQueryProcessor(config);
+        }
+        else {
+            LOGGER.info("Build archive query using MariaDB datasource");
+            archiveQuery = new StubArchiveQuery();
+        }
+        return archiveQuery;
+    }
 }

@@ -43,36 +43,54 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import java.util.Objects;
 
-import java.sql.Date;
+public final class EmptyExpression implements Expression {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    public EmptyExpression() {
+    }
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Override
+    public Tag tag() {
+        return Tag.EMPTY;
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public boolean isLeaf() {
+        return false;
+    }
 
-    public abstract Long getInitialOffset();
+    @Override
+    public LeafExpression<String> asLeaf() {
+        throw new UnsupportedOperationException("asLeaf() not supported for EmptyExpression");
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public boolean isLogical() {
+        return false;
+    }
 
-    public abstract Long mostRecentOffset();
+    @Override
+    public LogicalExpression asLogical() {
+        throw new UnsupportedOperationException("asLogical() not supported for EmptyExpression");
+    }
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final EmptyExpression other = (EmptyExpression) o;
+        return tag().equals(other.tag());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(tag());
+    }
 }

@@ -43,36 +43,52 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.OrExpression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 
-import java.sql.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class PrunedInvalidTimeQualifier implements ExpressionTransformation<Expression> {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final Expression origin;
 
-    public abstract void commit(long offset);
+    public PrunedInvalidTimeQualifier(Expression origin) {
+        this.origin = origin;
+    }
 
-    public abstract Long getInitialOffset();
+    public Expression transformed() {
+        final Expression optimizedExpression;
+        final Expression.Tag originTag = origin.tag();
+        if (origin.isLogical()) {
+            final List<Expression> children = origin.asLogical().children();
+            final List<Expression> prunedChildren = children.stream().filter(expression -> {
+                if (
+                    expression.isLeaf() || expression.tag().equals(Expression.Tag.EARLIEST)
+                            || expression.tag().equals(Expression.Tag.LATEST)
+                ) {
+                    final XMLValueExpression valueExpression = (XMLValueExpression) expression.asLeaf();
+                    return "EQUALS".equalsIgnoreCase(valueExpression.operation());
+                }
+                else {
+                    return true;
+                }
+            }).collect(Collectors.toList());
+            if (originTag.equals(Expression.Tag.AND)) {
+                optimizedExpression = new AndExpression(prunedChildren);
+            }
+            else {
+                optimizedExpression = new OrExpression(prunedChildren);
+            }
 
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+        }
+        else {
+            optimizedExpression = origin;
+        }
+        return optimizedExpression;
+    }
 }

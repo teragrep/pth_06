@@ -43,36 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.analyze.ScanRange;
 
-import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class MergeIntersectingRanges {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final List<ScanRange> scanRanges;
 
-    public abstract void commit(long offset);
+    public MergeIntersectingRanges(final List<ScanRange> scanRanges) {
+        this.scanRanges = scanRanges;
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public List<ScanRange> mergedRanges() {
+        final List<ScanRange> result;
+        if (!scanRanges.isEmpty()) {
+            final List<ScanRange> sorted = new ArrayList<>(scanRanges);
+            sorted.sort(Comparator.comparing(ScanRange::earliest));
+            result = new ArrayList<>();
+            ScanRange current = sorted.get(0);
+            // interval merging
+            for (int i = 1; i < sorted.size(); i++) {
+                ScanRange next = sorted.get(i);
+                if (current.intersects(next)) {
+                    current = current.merge(next);
+                }
+                else {
+                    result.add(current);
+                }
+            }
+            result.add(current);
+        }
+        else {
+            result = scanRanges;
+        }
+        return result;
+    }
 }

@@ -43,36 +43,46 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
+import java.util.Arrays;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class UniqueChildrenTest {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Test
+    public void testEqualValues() {
+        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression andExpression = new AndExpression(value, value);
+        Expression optimized = new UniqueChildren(andExpression).transformed();
+        Assertions.assertEquals(new AndExpression(value), optimized);
+    }
 
-    public abstract void commit(long offset);
+    @Test
+    public void testUnoptimizableExpression() {
+        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression value2 = new XMLValueExpressionImpl("test_2", "equals", Expression.Tag.INDEX);
+        Expression andExpression = new AndExpression(value, value2);
+        Expression optimized = new UniqueChildren(andExpression).transformed();
+        Assertions.assertEquals(andExpression, optimized);
+    }
 
-    public abstract Long getInitialOffset();
+    @Test
+    public void testListOfValues() {
+        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        AndExpression andExpression = new AndExpression(Arrays.asList(value, value, value));
+        Expression optimized = new UniqueChildren(andExpression).transformed();
+        Assertions.assertEquals(new AndExpression(value), optimized);
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(UniqueChildren.class).verify();
+    }
 }

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.Stubbable;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import org.apache.kafka.common.TopicPartition;
 
@@ -56,7 +57,7 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public interface KafkaQuery {
+public interface KafkaQuery extends Stubbable {
 
     public abstract Map<TopicPartition, Long> getInitialEndOffsets();
 

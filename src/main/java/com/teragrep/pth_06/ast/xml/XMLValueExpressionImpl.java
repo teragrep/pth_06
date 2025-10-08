@@ -43,36 +43,84 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.xml;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.LogicalExpression;
 
-import java.sql.Date;
+import java.util.List;
+import java.util.Objects;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class XMLValueExpressionImpl implements XMLValueExpression {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final String value;
+    private final String operation;
+    private final Tag tag;
 
-    public abstract void commit(long offset);
+    public XMLValueExpressionImpl(final String value, final String operation, final Tag tag) {
+        this.value = value;
+        this.operation = operation;
+        this.tag = tag;
+    }
 
-    public abstract Long getInitialOffset();
+    @Override
+    public String value() {
+        return value;
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public String operation() {
+        return operation;
+    }
 
-    public abstract Long mostRecentOffset();
+    @Override
+    public Tag tag() {
+        return tag;
+    }
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
+
+    @Override
+    public XMLValueExpression asLeaf() {
+        return this;
+    }
+
+    @Override
+    public boolean isLogical() {
+        return false;
+    }
+
+    @Override
+    public LogicalExpression asLogical() {
+        throw new UnsupportedOperationException("asLogical() not supported for XMLValueExpressionImpl");
+    }
+
+    public List<Expression> children() {
+        throw new UnsupportedOperationException("children() not supported for XMLValueExpressionImpl");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%s val=%s op=%s)", tag, value, operation);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final XMLValueExpressionImpl other = (XMLValueExpressionImpl) o;
+        return Objects.equals(value, other.value) && Objects.equals(operation, other.operation) && tag == other.tag;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, operation, tag);
+    }
 }

@@ -43,36 +43,63 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.OrExpression;
 
-import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
+ * Prunes duplicate children from a AND/OR expression
  */
-public interface ArchiveQuery extends Stubbable {
+public final class UniqueChildren implements ExpressionTransformation<Expression> {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final Expression origin;
 
-    public abstract void commit(long offset);
+    public UniqueChildren(final Expression origin) {
+        this.origin = origin;
+    }
 
-    public abstract Long getInitialOffset();
+    public Expression transformed() {
+        System.out.println();
+        final Expression optimizedExpression;
+        if (origin.isLogical()) {
+            System.out.println("CHILDREN: " + origin.asLogical().children());
+            final Set<Expression> unique = new HashSet<>(origin.asLogical().children());
+            System.out.println("UNIQUE: " + unique);
+            final Expression.Tag tag = origin.tag();
+            if (tag.equals(Expression.Tag.AND)) {
+                optimizedExpression = new AndExpression(new ArrayList<>(unique));
+            }
+            else {
+                optimizedExpression = new OrExpression(new ArrayList<>(unique));
+            }
+        }
+        else {
+            optimizedExpression = origin;
+        }
+        return optimizedExpression;
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        UniqueChildren that = (UniqueChildren) o;
+        return Objects.equals(origin, that.origin);
+    }
 
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(origin);
+    }
 }

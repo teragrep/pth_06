@@ -43,36 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
 
-import java.sql.Date;
+/** Logical plan for a row key range scan of HBase */
+public interface ScanRange extends Stubbable {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    /** Prepares the logical plan to a HBase Scan object */
+    public abstract Scan toScan();
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    /** new ScanRange with new earliest value if inside the scope, otherwise no changes */
+    public abstract ScanRange rangeFromEarliest(long earliest);
 
-    public abstract void commit(long offset);
+    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
+    public abstract ScanRange rangeUntilLatest(long latest);
 
-    public abstract Long getInitialOffset();
+    /** Returns stub when new range is outside the original range */
+    public abstract ScanRange toRangeBetween(long earliest, long latest);
 
-    public abstract Long incrementAndGetLatestOffset();
+    public abstract long streamId();
 
-    public abstract Long mostRecentOffset();
+    public abstract long earliest();
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public abstract long latest();
+
+    public abstract FilterList filterList();
+
+    /**
+     * Returns true if the ranges overlap or touch
+     * <p>
+     * e.g. [10, 20] overlaps with [19, 20] and also with [20,30]
+     * </p>
+     */
+    public abstract boolean intersects(ScanRange scanRange);
+
+    /** Merge two ScanRanges with the smaller earliest and larger latest values */
+    public abstract ScanRange merge(ScanRange scanRange);
+
 }

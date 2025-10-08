@@ -45,34 +45,70 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.analyze.ScanRange;
+import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.ast.analyze.ScanRanges;
+import com.teragrep.pth_06.config.Config;
 
-import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class HBaseQueryImpl implements HBaseQuery {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final Config config;
+    private final ScanRanges scanRanges;
+    private final LogfileTable table;
+    private long latest = Long.MIN_VALUE;
 
-    public abstract void commit(long offset);
+    public HBaseQueryImpl(final Config config) {
+        this(config, new ScanRanges(config), new LogfileTable(config));
+    }
 
-    public abstract Long getInitialOffset();
+    public HBaseQueryImpl(Config config, ScanRanges scanRanges, LogfileTable table) {
+        this.config = config;
+        this.scanRanges = scanRanges;
+        this.table = table;
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    @Override
+    public long earliest() {
+        long earliest = Long.MAX_VALUE;
+        for (ScanRange range : scanRanges.rangeList()) {
+            if (range.earliest() < earliest) {
+                earliest = range.earliest();
+            }
+        }
+        return earliest;
+    }
 
-    public abstract Long mostRecentOffset();
+    @Override
+    public long latest() {
+        long earliest = earliest();
+        if (latest < earliest) {
+            latest = earliest;
+        }
+        if (latest < config.archiveConfig.archiveIncludeBeforeEpoch) {
+            latest = config.archiveConfig.archiveIncludeBeforeEpoch;
+        }
+        return latest;
+    }
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public void updateLatest(final long latest) {
+        this.latest = latest;
+    }
+
+    @Override
+    public List<ScanRangeView> openViews() {
+        final List<ScanRangeView> views = new ArrayList<>();
+        for (ScanRange range : scanRanges.rangeList()) {
+            views.add(new ScanRangeView(range, table));
+        }
+        return views;
+    }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }

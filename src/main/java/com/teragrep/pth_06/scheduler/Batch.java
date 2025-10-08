@@ -47,6 +47,7 @@ package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.KafkaQuery;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ import java.util.LinkedList;
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
  * Each batch is constructed from a {@link BatchSliceCollection}, which in turn consists of multiple
  * {@link BatchSlice}s. Each of the slices contain the actual data.
- * 
+ *
  * @author Eemeli Hukka
  */
 public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
@@ -69,8 +70,9 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     private final Config config;
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
+    private final HBaseQuery hbaseQuery;
 
-    public Batch(Config config, ArchiveQuery aq, KafkaQuery kq) {
+    public Batch(Config config, ArchiveQuery archiveQuery, KafkaQuery kafkaQuery, HBaseQuery hbaseQuery) {
         this.config = config;
         this.runQueueArray = new LinkedList<>();
 
@@ -78,27 +80,43 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
             this.runQueueArray.add(new BatchTaskQueue());
         }
 
-        this.archiveQuery = aq;
-        this.kafkaQuery = kq;
+        this.archiveQuery = archiveQuery;
+        this.kafkaQuery = kafkaQuery;
+        this.hbaseQuery = hbaseQuery;
     }
 
     public Batch processRange(Offset start, Offset end) {
-        LOGGER.debug("processRange");
+        LOGGER.debug("processRange start <{}>, end <{}>", start, end);
+        final boolean archiverEnabled = !hbaseQuery.isStub() || !archiveQuery.isStub();
+        final boolean kafkaEnabled = !kafkaQuery.isStub();
+        final boolean bothEnabled = archiverEnabled && kafkaEnabled;
 
-        BatchSliceCollection slice = null;
-        if (config.isArchiveEnabled) {
-            slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
-        }
-
-        if (config.isKafkaEnabled) {
-            if (slice == null) {
-                slice = new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end);
+        final BatchSliceCollection slice;
+        if (bothEnabled) {
+            if (!hbaseQuery.isStub()) {
+                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
             }
             else {
-                slice.addAll(new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end));
+                slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
+            }
+            slice.addAll(new KafkaBatchSliceCollection(kafkaQuery).processRange(start, end));
+        }
+        else if (archiverEnabled) {
+            if (!hbaseQuery.isStub()) {
+                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
+            }
+            else {
+                slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
             }
         }
-        if (slice != null && !slice.isEmpty()) {
+        else if (kafkaEnabled) {
+            slice = new KafkaBatchSliceCollection(kafkaQuery).processRange(start, end);
+        }
+        else {
+            throw new IllegalStateException("No datasource enabled for batch");
+        }
+
+        if (!slice.isEmpty()) {
             this.addSlice(slice);
         }
 

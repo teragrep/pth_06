@@ -43,36 +43,47 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.EmptyExpression;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.OrExpression;
 
-import java.sql.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
+ * Optimizes AND/OR expressions with empty values into value expressions
  */
-public interface ArchiveQuery extends Stubbable {
+public final class EmptyPruned implements ExpressionTransformation<Expression> {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    private final Expression origin;
 
-    public abstract void commit(long offset);
+    public EmptyPruned(final Expression origin) {
+        this.origin = origin;
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public Expression transformed() {
+        final Expression optimizedExpression;
+        if (origin.isLogical()) {
+            final Expression.Tag originTag = origin.tag();
+            final List<Expression> children = origin.asLogical().children();
+            final EmptyExpression emptyExpression = new EmptyExpression();
+            final List<Expression> nonEmptyChildren = children
+                    .stream()
+                    .filter(e -> !e.equals(emptyExpression))
+                    .collect(Collectors.toList());
+            if (originTag.equals(Expression.Tag.AND)) {
+                optimizedExpression = new AndExpression(nonEmptyChildren);
+            }
+            else {
+                optimizedExpression = new OrExpression(nonEmptyChildren);
+            }
+        }
+        else {
+            optimizedExpression = origin;
+        }
+        return optimizedExpression;
+    }
 }

@@ -43,36 +43,69 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
 
-import java.sql.Date;
+public final class StubScanRange implements ScanRange, Stubbable {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Override
+    public Scan toScan() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
 
-    public abstract void commit(long offset);
+    @Override
+    public ScanRange rangeFromEarliest(long earliest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
 
-    public abstract Long getInitialOffset();
+    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
+    @Override
+    public ScanRange rangeUntilLatest(long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    /** Returns stub when new range is outside the original range */
+    @Override
+    public ScanRange toRangeBetween(long earliest, long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
 
-    public abstract Long mostRecentOffset();
+    @Override
+    public long streamId() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public long earliest() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public long latest() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public FilterList filterList() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public boolean intersects(ScanRange scanRange) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public ScanRange merge(ScanRange scanRange) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
 }

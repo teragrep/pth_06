@@ -43,36 +43,29 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.xml;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.PrintAST;
+import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
+public final class XMLQueryTest {
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+    @Test
+    public void testXMLASTrootFromString() {
+        String query = "<AND><OR><index value=\"index_1\" operation=\"EQUALS\"/><sourcetype value=\"index_2\" operation=\"EQUALS\"/></OR><earliest value=\"1000\" operation=\"EQUALS\"/></AND>";
+        XMLQuery xmlQuery = new XMLQuery(query);
+        Expression root = xmlQuery.asAST();
+        PrintAST printAST = new PrintAST(root);
+        printAST.print();
+    }
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
-
-    public abstract void commit(long offset);
-
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Test
+    public void testAST() {
+        Expression root = new AndExpression(
+                new OrExpression(new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_2", "equals", Expression.Tag.INDEX)), new XMLValueExpressionImpl("10000", "not_equals", Expression.Tag.EARLIEST)
+        );
+        PrintAST printAST = new PrintAST(root);
+        printAST.print();
+    }
 }

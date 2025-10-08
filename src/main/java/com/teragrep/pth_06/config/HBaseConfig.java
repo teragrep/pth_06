@@ -43,36 +43,49 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.config;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import org.apache.hadoop.conf.Configuration;
 
-import java.sql.Date;
+import java.util.Map;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class HBaseConfig {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    public final String tableName;
+    public final String hostname;
+    public final String regionServerHostname;
+    public final String zookeeperQuorum;
+    public final String zookeeperClientPort;
+    public final long scanCachingSize;
 
-    public abstract void commit(long offset);
+    public final boolean isStub;
 
-    public abstract Long getInitialOffset();
+    public HBaseConfig(final Map<String, String> opts) {
+        tableName = opts.getOrDefault("hbase.tablename", "logfile");
+        hostname = opts.getOrDefault("hbase.master.hostname", "localhost");
+        regionServerHostname = opts.getOrDefault("hbase.regionserver.hostname", "localhost");
+        zookeeperQuorum = opts.getOrDefault("hbase.zookeeper.quorum", "localhost");
+        zookeeperClientPort = opts.getOrDefault("hbase.zookeeper.property.clientPort", "2181");
+        scanCachingSize = Long.parseLong(opts.getOrDefault("hbase.scanCacheSize", "100"));
+        isStub = false;
+    }
 
-    public abstract Long incrementAndGetLatestOffset();
+    public Configuration asHadoopConfig() {
+        Configuration config = new Configuration(false);
+        config.set("hbase.master.hostname", hostname);
+        config.set("hbase.regionserver.hostname", regionServerHostname);
+        config.set("hbase.zookeeper.quorum", zookeeperQuorum);
+        config.set("hbase.zookeeper.property.clientPort", zookeeperClientPort);
+        return config;
+    }
 
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public HBaseConfig() {
+        tableName = "";
+        hostname = "";
+        regionServerHostname = "";
+        zookeeperQuorum = "";
+        zookeeperClientPort = "";
+        scanCachingSize = 0L;
+        isStub = true;
+    }
 }

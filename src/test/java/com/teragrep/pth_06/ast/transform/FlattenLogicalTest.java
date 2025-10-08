@@ -43,36 +43,41 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.transform;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import com.teragrep.pth_06.Stubbable;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.OrExpression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
+import java.util.Arrays;
 
-/**
- * <h1>Archive Query</h1> Interface for an archive query.
- *
- * @since 26/01/2022
- * @author Mikko Kortelainen
- */
-public interface ArchiveQuery extends Stubbable {
+public final class FlattenLogicalTest {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    );
+    @Test
+    public void testAndFlattening() {
+        Expression value = new XMLValueExpressionImpl("test", "EQUAL", Expression.Tag.INDEX);
+        Expression andExpression = new AndExpression(value, new AndExpression(value, value));
+        Expression flattened = new FlattenLogical(andExpression).transformed();
+        Expression expected = new AndExpression(Arrays.asList(value, value, value));
+        Assertions.assertEquals(expected, flattened);
+    }
 
-    public abstract void commit(long offset);
+    @Test
+    public void testOrFlattening() {
+        Expression value = new XMLValueExpressionImpl("test", "EQUAL", Expression.Tag.INDEX);
+        Expression orExpression = new OrExpression(value, new OrExpression(value, value));
+        Expression flattened = new FlattenLogical(orExpression).transformed();
+        Expression expected = new OrExpression(Arrays.asList(value, value, value));
+        Assertions.assertEquals(expected, flattened);
+    }
 
-    public abstract Long getInitialOffset();
-
-    public abstract Long incrementAndGetLatestOffset();
-
-    public abstract Long mostRecentOffset();
-
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Test
+    public void testNonLogicalIgnored() {
+        Expression value = new XMLValueExpressionImpl("test", "EQUAL", Expression.Tag.INDEX);
+        Expression flattened = new FlattenLogical(value).transformed();
+        Assertions.assertEquals(value, flattened);
+    }
 }
