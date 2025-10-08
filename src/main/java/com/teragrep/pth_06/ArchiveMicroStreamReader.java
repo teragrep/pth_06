@@ -47,14 +47,17 @@ package com.teragrep.pth_06;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.planner.*;
+import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.HBaseQuery;
+import com.teragrep.pth_06.planner.KafkaQuery;
 import com.teragrep.pth_06.planner.factory.ArchiveQueryFactory;
 import com.teragrep.pth_06.planner.factory.Factory;
 import com.teragrep.pth_06.planner.factory.HBaseQueryFactory;
 import com.teragrep.pth_06.planner.factory.KafkaQueryFactory;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import com.teragrep.pth_06.scheduler.*;
+import com.teragrep.pth_06.scheduler.Batch;
+import com.teragrep.pth_06.scheduler.BatchSlice;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
@@ -224,9 +227,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             if (!hBaseQuery.isStub()) {
                 rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
             }
-            else
+            else {
                 rv = new DatasourceOffset(new LongOffset(archiveQuery.incrementAndGetLatestOffset()));
-
+            }
         }
         else if (useKafka) {
             rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
@@ -309,15 +312,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         DatasourceOffset rv;
         if (config.isArchiveEnabled && config.isKafkaEnabled) {
             rv = new DatasourceOffset(
-                    new LongOffset(this.aq.mostRecentOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
+                    new LongOffset(archiveQuery.mostRecentOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
             );
         }
         else if (config.isArchiveEnabled) {
-            rv = new DatasourceOffset(new LongOffset(this.aq.mostRecentOffset()));
+            rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
         }
         else if (config.isKafkaEnabled) {
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+            rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
         }
         else {
             throw new IllegalStateException("No datasources enabled, can't get last used offset");
@@ -327,8 +330,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final CustomTaskMetric[] metrics;
-        if (aq != null) {
-            metrics = aq.currentDatabaseMetrics();
+        if (!archiveQuery.isStub()) {
+            metrics = archiveQuery.currentDatabaseMetrics();
         }
         else {
             metrics = new CustomTaskMetric[0];

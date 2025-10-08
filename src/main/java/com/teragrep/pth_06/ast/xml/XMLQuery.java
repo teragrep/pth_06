@@ -78,14 +78,14 @@ public final class XMLQuery {
         try {
             builder = factory.newDocumentBuilder();
         }
-        catch (ParserConfigurationException e) {
+        catch (final ParserConfigurationException e) {
             throw new RuntimeException("Error creating document builder: " + e.getMessage());
         }
         final Document document;
         try {
             document = builder.parse(new InputSource(new StringReader(xmlString)));
         }
-        catch (IOException | SAXException e) {
+        catch (final IOException | SAXException e) {
             throw new RuntimeException("Error parsing XML to elements: " + e.getMessage());
         }
         final Element root = document.getDocumentElement();
@@ -95,51 +95,61 @@ public final class XMLQuery {
     private Expression elementToNode(final Element element) {
         final String tagName = element.getTagName();
         LOGGER.info("Incoming element <{}>", tagName);
+        final Expression result;
         switch (tagName.toLowerCase()) {
             case "and":
-                List<Expression> andExpMembers = visitLogical(element);
-                Expression andLeft = andExpMembers.get(0);
-                Expression andRight = andExpMembers.get(1);
-                return new AndExpression(andLeft, andRight);
+                final List<Expression> andExpMembers = visitLogical(element);
+                final Expression andLeft = andExpMembers.get(0);
+                final Expression andRight = andExpMembers.get(1);
+                result = new AndExpression(andLeft, andRight);
+                break;
             case "or":
-                List<Expression> expressions = visitLogical(element);
-                Expression left = expressions.get(0);
-                Expression right = expressions.get(1);
-                return new OrExpression(left, right);
+                final List<Expression> expressions = visitLogical(element);
+                final Expression left = expressions.get(0);
+                final Expression right = expressions.get(1);
+                result = new OrExpression(left, right);
+                break;
             case "index":
-                return visitLeaf(element, Expression.Tag.INDEX);
+                result = visitLeaf(element, Expression.Tag.INDEX);
+                break;
             case "host":
-                return visitLeaf(element, Expression.Tag.HOST);
+                result = visitLeaf(element, Expression.Tag.HOST);
+                break;
             case "sourcetype":
-                return visitLeaf(element, Expression.Tag.SOURCETYPE);
+                result = visitLeaf(element, Expression.Tag.SOURCETYPE);
+                break;
             case "earliest":
             case "index_earliest":
-                return visitLeaf(element, Expression.Tag.EARLIEST);
+                result = visitLeaf(element, Expression.Tag.EARLIEST);
+                break;
             case "latest":
             case "index_latest":
-                return visitLeaf(element, Expression.Tag.LATEST);
+                result = visitLeaf(element, Expression.Tag.LATEST);
+                break;
             case "indexstatement":
-                return visitLeaf(element, Expression.Tag.INDEXSTATEMENT);
+                result = visitLeaf(element, Expression.Tag.INDEXSTATEMENT);
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported element <" + tagName + ">");
         }
+        return result;
     }
 
-    private Expression visitLeaf(Element element, Expression.Tag tag) {
-        String value = element.getAttribute("value");
-        String operation = element.getAttribute("operation");
+    private Expression visitLeaf(final Element element, final Expression.Tag tag) {
+        final String value = element.getAttribute("value");
+        final String operation = element.getAttribute("operation");
         return new XMLValueExpressionImpl(value, operation, tag);
     }
 
-    private List<Expression> visitLogical(Element element) {
+    private List<Expression> visitLogical(final Element element) {
         final List<Expression> expressions = new ArrayList<>();
         final NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             final Node node = childNodes.item(i);
             if (node instanceof Element) {
-                Element nodeElement = (Element) node;
+                final Element nodeElement = (Element) node;
                 // recursive call
-                Expression exp = elementToNode(nodeElement);
+                final Expression exp = elementToNode(nodeElement);
                 expressions.add(exp);
             }
             else {

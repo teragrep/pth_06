@@ -112,7 +112,7 @@ public final class ScanRangeView {
      * @return ScanRangeView with same values as original but with updated start point
      * @throws IllegalArgumentException if offset is outside the scan range view
      */
-    public ScanRangeView viewFromOffset(long fromOffset) {
+    public ScanRangeView viewFromOffset(final long fromOffset) {
         if (fromOffset > scanRange.latest()) {
             throw new IllegalArgumentException("fromOffset was later than the scan range latest");
         }
@@ -143,7 +143,7 @@ public final class ScanRangeView {
         final long windowEnd = currentEpoch + duration;
         final List<Result> results = new ArrayList<>();
         while (true) {
-            Result next;
+            final Result next;
             // check if buffer has a stored result
             if (bufferedResult != null) {
                 final long bufferedResultRowKeyEpoch = new EpochFromRowKey(bufferedResult.getRow()).epoch();

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -74,6 +75,16 @@ public final class StubArchiveQuery implements ArchiveQuery {
     @Override
     public Long incrementAndGetLatestOffset() {
         throw new UnsupportedOperationException("incrementAndGetLatestOffset() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public Long mostRecentOffset() {
+        throw new UnsupportedOperationException("mostRecentOffset() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        throw new UnsupportedOperationException("currentDatabaseMetrics() is not supported for StubArchiveQuery");
     }
 
     @Override

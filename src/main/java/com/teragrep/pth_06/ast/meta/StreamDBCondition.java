@@ -137,10 +137,14 @@ public final class StreamDBCondition implements QueryCondition {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass())
+    public boolean equals(final Object o) {
+        if (o == null) {
             return false;
-        StreamDBCondition that = (StreamDBCondition) o;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final StreamDBCondition that = (StreamDBCondition) o;
         return Objects.equals(index, that.index) && Objects.equals(hosts, that.hosts)
                 && Objects.equals(sourcetypes, that.sourcetypes);
     }

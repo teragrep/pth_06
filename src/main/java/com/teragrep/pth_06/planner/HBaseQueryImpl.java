@@ -94,8 +94,8 @@ public final class HBaseQueryImpl implements HBaseQuery {
     }
 
     @Override
-    public void updateLatest(final long latest) {
-        this.latest = latest;
+    public void updateLatest(final long updatedLatest) {
+        this.latest = updatedLatest;
     }
 
     @Override

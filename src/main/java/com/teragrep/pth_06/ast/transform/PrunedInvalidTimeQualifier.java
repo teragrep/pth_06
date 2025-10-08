@@ -57,7 +57,7 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
 
     private final Expression origin;
 
-    public PrunedInvalidTimeQualifier(Expression origin) {
+    public PrunedInvalidTimeQualifier(final Expression origin) {
         this.origin = origin;
     }
 
@@ -67,16 +67,18 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
         if (origin.isLogical()) {
             final List<Expression> children = origin.asLogical().children();
             final List<Expression> prunedChildren = children.stream().filter(expression -> {
+                final boolean result;
                 if (
                     expression.isLeaf() || expression.tag().equals(Expression.Tag.EARLIEST)
                             || expression.tag().equals(Expression.Tag.LATEST)
                 ) {
                     final XMLValueExpression valueExpression = (XMLValueExpression) expression.asLeaf();
-                    return "EQUALS".equalsIgnoreCase(valueExpression.operation());
+                    result = "EQUALS".equalsIgnoreCase(valueExpression.operation());
                 }
                 else {
-                    return true;
+                    result = true;
                 }
+                return result;
             }).collect(Collectors.toList());
             if (originTag.equals(Expression.Tag.AND)) {
                 optimizedExpression = new AndExpression(prunedChildren);

@@ -73,8 +73,6 @@ public final class SynchronizedHourlyResults {
         return !views.stream().allMatch(ScanRangeView::isFinished);
     }
 
-
-
     public List<Result> nextHour() {
         final List<Result> hourlyResults = new ArrayList<>();
         LOGGER.debug("next hour between <{}>-<{}>", currentEpoch, currentEpoch + 3600L);

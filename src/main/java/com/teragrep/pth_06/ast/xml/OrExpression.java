@@ -106,7 +106,7 @@ public final class OrExpression implements LogicalExpression {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("OR(");
         for (Expression child : children) {
             sb.append(child);

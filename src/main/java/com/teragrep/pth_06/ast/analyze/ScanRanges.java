@@ -99,8 +99,6 @@ public final class ScanRanges {
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
         final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
-        Settings settings = new Settings()
-                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
         final Connection connection;
         try {
             connection = DriverManager.getConnection(url, userName, password);
@@ -108,10 +106,18 @@ public final class ScanRanges {
         catch (final SQLException e) {
             throw new RuntimeException("Error getting connection: " + e.getMessage());
         }
+
+        final Settings settings;
         if (hideDatabaseExceptions) {
-            settings = settings.withThrowExceptions(ThrowExceptions.THROW_NONE);
+            settings = new Settings()
+                    .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName))).withThrowExceptions(ThrowExceptions.THROW_NONE);
             LOGGER.warn("SQL Exceptions set to THROW_NONE");
         }
+        else {
+            settings = new Settings()
+                    .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
+        }
+
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         if (scanRanges.isEmpty()) {
             findScanRanges(ctx, root);
@@ -127,16 +133,20 @@ public final class ScanRanges {
                     findScanRanges(ctx, child);
                 }
             }
-            ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, expression.asLogical());
+            final ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, expression.asLogical());
             scanRanges.addAll(scanGroupExpression.value());
         }
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass())
+    public boolean equals(final Object o) {
+        if (o == null) {
             return false;
-        ScanRanges that = (ScanRanges) o;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final ScanRanges that = (ScanRanges) o;
         return Objects.equals(config, that.config) && Objects.equals(root, that.root)
                 && Objects.equals(scanRanges, that.scanRanges);
     }

@@ -47,8 +47,6 @@ package com.teragrep.pth_06.ast.analyze;
 
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -81,7 +79,7 @@ public final class ScanRangeImpl implements ScanRange {
     }
 
     @Override
-    public ScanRange rangeFromEarliest(long earliestLimit) {
+    public ScanRange rangeFromEarliest(final long earliestLimit) {
         if (earliest < earliestLimit && earliestLimit < latest) {
             return new ScanRangeImpl(streamId, earliestLimit, latest, filterList);
         }
@@ -91,7 +89,7 @@ public final class ScanRangeImpl implements ScanRange {
     }
 
     @Override
-    public ScanRange rangeUntilLatest(long latestLimit) {
+    public ScanRange rangeUntilLatest(final long latestLimit) {
         if (earliest < latestLimit && latestLimit < latest) {
             return new ScanRangeImpl(streamId, earliest, latestLimit, filterList);
         }
@@ -102,9 +100,9 @@ public final class ScanRangeImpl implements ScanRange {
 
     @Override
     public ScanRange toRangeBetween(long earliestLimit, long latestLimit) {
-        boolean rangeIntersects = new ScanRangeImpl(streamId, earliestLimit - 1, latestLimit + 1, filterList)
+        final boolean rangeIntersects = new ScanRangeImpl(streamId, earliestLimit - 1, latestLimit + 1, filterList)
                 .intersects(this);
-        ScanRange result;
+        final ScanRange result;
         if (rangeIntersects) {
             long updatedEarliest = earliest;
             long updatedLatest = latest;
@@ -117,9 +115,10 @@ public final class ScanRangeImpl implements ScanRange {
             if (updatedEarliest == updatedLatest) {
                 result = new StubScanRange();
             }
-             else if (updatedEarliest > updatedLatest) {
+            else if (updatedEarliest > updatedLatest) {
                 result = new StubScanRange();
-            } else {
+            }
+            else {
                 result = new ScanRangeImpl(streamId, updatedEarliest, updatedLatest, filterList);
             }
         }
@@ -138,8 +137,8 @@ public final class ScanRangeImpl implements ScanRange {
 
     public ScanRangeImpl merge(final ScanRange other) {
         if (intersects(other)) {
-            final Long minEarliest = Math.min(earliest, other.earliest());
-            final Long maxLatest = Math.max(latest, other.latest());
+            final long minEarliest = Math.min(earliest, other.earliest());
+            final long maxLatest = Math.max(latest, other.latest());
             return new ScanRangeImpl(streamId, minEarliest, maxLatest, filterList);
         }
         else {

@@ -62,19 +62,19 @@ public final class StubScanRange implements ScanRange, Stubbable {
     }
 
     @Override
-    public ScanRange rangeFromEarliest(long earliest) {
+    public ScanRange rangeFromEarliest(final long earliest) {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     /** new ScanRange with new latest value if inside the scope, otherwise no changes */
     @Override
-    public ScanRange rangeUntilLatest(long latest) {
+    public ScanRange rangeUntilLatest(final long latest) {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     /** Returns stub when new range is outside the original range */
     @Override
-    public ScanRange toRangeBetween(long earliest, long latest) {
+    public ScanRange toRangeBetween(final long earliest, final long latest) {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
@@ -99,12 +99,12 @@ public final class StubScanRange implements ScanRange, Stubbable {
     }
 
     @Override
-    public boolean intersects(ScanRange scanRange) {
+    public boolean intersects(final ScanRange scanRange) {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public ScanRange merge(ScanRange scanRange) {
+    public ScanRange merge(final ScanRange scanRange) {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 

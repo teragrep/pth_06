@@ -69,9 +69,7 @@ public final class UniqueChildren implements ExpressionTransformation<Expression
         System.out.println();
         final Expression optimizedExpression;
         if (origin.isLogical()) {
-            System.out.println("CHILDREN: " + origin.asLogical().children());
             final Set<Expression> unique = new HashSet<>(origin.asLogical().children());
-            System.out.println("UNIQUE: " + unique);
             final Expression.Tag tag = origin.tag();
             if (tag.equals(Expression.Tag.AND)) {
                 optimizedExpression = new AndExpression(new ArrayList<>(unique));
@@ -87,14 +85,14 @@ public final class UniqueChildren implements ExpressionTransformation<Expression
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null) {
             return false;
         }
         if (getClass() != o.getClass()) {
             return false;
         }
-        UniqueChildren that = (UniqueChildren) o;
+        final UniqueChildren that = (UniqueChildren) o;
         return Objects.equals(origin, that.origin);
     }
 

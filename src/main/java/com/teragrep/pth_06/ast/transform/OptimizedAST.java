@@ -72,7 +72,7 @@ public final class OptimizedAST implements ExpressionTransformation<Expression> 
     }
 
     /** Applies all optimization transformations to a AST until no changes are possible */
-    public OptimizedAST(Expression root) {
+    public OptimizedAST(final Expression root) {
         this.root = root;
     }
 

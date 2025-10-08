@@ -74,7 +74,7 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
     private final Logger LOGGER = LoggerFactory.getLogger(ScanGroupExpression.class);
 
     private final DSLContext ctx;
-    final List<Expression> expressions;
+    private final List<Expression> expressions;
 
     public ScanGroupExpression(final DSLContext ctx, final WithDefaultValues withDefaultValues) {
         this(ctx, withDefaultValues.transformed().asLogical());
@@ -125,7 +125,7 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
                         // for SQL condition
                         sourceTypeList.add(xmlValueExpression);
                         // HBase filter
-                        Filter sourceTypeFilter = new SingleColumnValueFilter(
+                        final Filter sourceTypeFilter = new SingleColumnValueFilter(
                                 Bytes.toBytes("meta"), // column family
                                 Bytes.toBytes("s"), // stream
                                 operator,
@@ -137,7 +137,7 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
                         // for SQL condition
                         hostList.add(xmlValueExpression);
                         // HBase filter
-                        Filter hostFilter = new SingleColumnValueFilter(
+                        final Filter hostFilter = new SingleColumnValueFilter(
                                 Bytes.toBytes("meta"), // column family
                                 Bytes.toBytes("h"), // host
                                 operator,

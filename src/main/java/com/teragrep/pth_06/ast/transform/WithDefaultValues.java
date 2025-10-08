@@ -88,21 +88,20 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
     }
 
     private Expression recursiveWithDefaultsExpression(final Expression expression) {
+        final Expression result;
         if (!expression.isLogical()) {
-            return expression;
+            result = expression;
         }
-        final Expression withDefaults;
-        final Expression.Tag tag = expression.tag();
-        if (tag.equals(Expression.Tag.AND)) {
-            withDefaults = andWithDefaults(expression);
+        else if (expression.tag().equals(Expression.Tag.AND)) {
+            result = andWithDefaults(expression);
         }
         else {
-            withDefaults = orWithDefaults(expression);
+            result = orWithDefaults(expression);
         }
-        return withDefaults;
+        return result;
     }
 
-    private Expression andWithDefaults(Expression expression) {
+    private Expression andWithDefaults(final Expression expression) {
         final List<Expression> andChildren = new ArrayList<>();
         for (final Expression child : expression.asLogical().children()) {
             andChildren.add(recursiveWithDefaultsExpression(child));
@@ -122,15 +121,14 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
         return new AndExpression(andChildren);
     }
 
-    private Expression orWithDefaults(Expression expression) {
-        List<Expression> orChildrenWithDefaults = new ArrayList<>();
-        for (Expression child : expression.asLogical().children()) {
-            Expression childWithDefaults = recursiveWithDefaultsExpression(child);
+    private Expression orWithDefaults(final Expression expression) {
+        final List<Expression> orChildrenWithDefaults = new ArrayList<>();
+        for (final Expression child : expression.asLogical().children()) {
+            final Expression childWithDefaults = recursiveWithDefaultsExpression(child);
 
             // Add defaults to the child if missing
-            Set<Expression.Tag> tags = expressionTags(childWithDefaults); // your helper or similar
-
-            List<Expression> childExpressions = new ArrayList<>();
+            final Set<Expression.Tag> tags = expressionTags(childWithDefaults); // your helper or similar
+            final List<Expression> childExpressions = new ArrayList<>();
             if (childWithDefaults.isLogical() && childWithDefaults.tag().equals(Expression.Tag.AND)) {
                 childExpressions.addAll(childWithDefaults.asLogical().children());
             }
@@ -151,7 +149,7 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
             }
 
             // Wrap child expressions into an AND (or single expression if only one)
-            Expression newChild = (childExpressions.size() == 1) ? childExpressions
+            final Expression newChild = (childExpressions.size() == 1) ? childExpressions
                     .get(0) : new AndExpression(childExpressions);
             orChildrenWithDefaults.add(newChild);
         }
@@ -159,7 +157,7 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
     }
 
     private Set<Expression.Tag> expressionTags(final Expression expr) {
-        Set<Expression.Tag> tags = new HashSet<>();
+        final Set<Expression.Tag> tags = new HashSet<>();
         if (expr.isLogical()) {
             for (Expression child : expr.asLogical().children()) {
                 tags.addAll(expressionTags(child));

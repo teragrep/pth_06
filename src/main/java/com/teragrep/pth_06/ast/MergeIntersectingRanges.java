@@ -68,7 +68,7 @@ public final class MergeIntersectingRanges {
             ScanRange current = sorted.get(0);
             // interval merging
             for (int i = 1; i < sorted.size(); i++) {
-                ScanRange next = sorted.get(i);
+                final ScanRange next = sorted.get(i);
                 if (current.intersects(next)) {
                     current = current.merge(next);
                 }

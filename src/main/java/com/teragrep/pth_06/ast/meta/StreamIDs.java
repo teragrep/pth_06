@@ -99,10 +99,14 @@ public final class StreamIDs {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass())
+    public boolean equals(final Object o) {
+        if (o == null) {
             return false;
-        StreamIDs streamIDs = (StreamIDs) o;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final StreamIDs streamIDs = (StreamIDs) o;
         return Objects.equals(ctx, streamIDs.ctx) && Objects.equals(condition, streamIDs.condition);
     }
 

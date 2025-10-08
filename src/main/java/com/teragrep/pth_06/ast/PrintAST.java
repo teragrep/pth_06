@@ -55,26 +55,26 @@ import java.util.List;
  */
 public final class PrintAST {
 
-    private final Expression expression;
+    private final Expression root;
 
-    public PrintAST(final Expression expression) {
-        this.expression = expression;
+    public PrintAST(final Expression root) {
+        this.root = root;
     }
 
     public void print() {
-        String result = printWithIndent(expression, "");
+        String result = printWithIndent(root, "");
         System.out.println(result);
     }
 
     public String format() {
-        return printWithIndent(expression, "");
+        return printWithIndent(root, "");
     }
 
     private String printWithIndent(final Expression expression, final String indent) {
-        Expression.Tag tag = expression.tag();
-        String identIncrease = "  ";
-        String result;
-        List<Expression> children;
+        final Expression.Tag tag = expression.tag();
+        final String identIncrease = "  ";
+        final String result;
+        final List<Expression> children;
         if (expression.isLogical()) {
             children = expression.asLogical().children();
         }
@@ -83,7 +83,7 @@ public final class PrintAST {
         }
         switch (tag) {
             case AND:
-                StringBuilder andPrint = new StringBuilder(indent + "AND\n");
+                final StringBuilder andPrint = new StringBuilder(indent + "AND\n");
                 for (Expression child : children) {
                     andPrint.append(printWithIndent(child, indent + identIncrease)).append("\n");
                 }
@@ -94,7 +94,7 @@ public final class PrintAST {
                 result = andPrint.toString();
                 break;
             case OR:
-                StringBuilder orPrint = new StringBuilder(indent + "OR\n");
+                final StringBuilder orPrint = new StringBuilder(indent + "OR\n");
                 for (Expression child : children) {
                     orPrint.append(printWithIndent(child, indent + identIncrease)).append("\n");
                 }
@@ -110,7 +110,7 @@ public final class PrintAST {
             case LATEST:
             case EARLIEST:
             case INDEXSTATEMENT:
-                XMLValueExpressionImpl value = (XMLValueExpressionImpl) expression;
+                final XMLValueExpressionImpl value = (XMLValueExpressionImpl) expression;
                 result = String.format("%sVALUE%s", indent, value);
                 break;
             case EMPTY:
