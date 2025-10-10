@@ -47,7 +47,7 @@ package com.teragrep.pth_06.ast;
 
 public interface Expression {
 
-    public enum Tag {
+    public static enum Tag {
         EMPTY, INDEX, SOURCETYPE, HOST, EARLIEST, LATEST, INDEXSTATEMENT, AND, OR
     }
 
