@@ -44,6 +44,39 @@
  * a licensee so wish it.
  */
 package com.teragrep.pth_06.scheduler;
+/**
+ * @class HBaseBatchSliceCollection
+ * @brief extends BatchSliceCollection
+ *
+ * @responsibilities
+ * - creates a collection of batch slices from a hbase query results
+ * - ensures a batch limit is observed in batches
+ * - ensures that hourly results are synchronized across multiple indexes
+ *
+ * @collaborators
+ * - HBaseQuery
+ * - SynchronizedHourlyResults
+ * - BatchSizeLimit
+ * - Config
+ *
+ * @startuml
+ * class HBaseBatchSliceCollection {
+ *     + processRange(Offset start, Offset end)
+ * }
+ *
+ * HBaseBatchSliceCollection --> HBaseQuery : results source
+ * HBaseBatchSliceCollection --> SynchronizedHourlyResults : syncs results for hour
+ * HBaseBatchSliceCollection --> BatchSizeLimit : limits the results per hour
+ * HBaseBatchSliceCollection --> Config : options for used objects
+ *
+ * Collaborators:
+ * - HBaseQuery
+ * - SynchronizedHourlyResults
+ * - BatchSizeLimit
+ * - Config
+ *
+ * @enduml
+ */
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
@@ -62,6 +95,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Creates batches results from a HBase query for a desired offset range
+ */
 public final class HBaseBatchSliceCollection extends BatchSliceCollection {
 
     private final Logger LOGGER = LoggerFactory.getLogger(HBaseBatchSliceCollection.class);
@@ -84,6 +120,9 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
         this.processingSpeed = config.batchConfig.processingSpeed;
     }
 
+    /**
+     * Creates batches from query results for the provided offset range
+     */
     public HBaseBatchSliceCollection processRange(final Offset start, final Offset end) {
         this.clear(); // clear internal list
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
