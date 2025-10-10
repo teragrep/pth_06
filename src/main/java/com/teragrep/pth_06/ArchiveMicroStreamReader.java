@@ -309,15 +309,24 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     }
 
     public DatasourceOffset mostRecentOffset() {
-        DatasourceOffset rv;
+        final DatasourceOffset rv;
         if (config.isArchiveEnabled && config.isKafkaEnabled) {
-            rv = new DatasourceOffset(
-                    new LongOffset(archiveQuery.mostRecentOffset()),
-                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
-            );
+            LongOffset archiveOffset;
+            if (!hBaseQuery.isStub()) {
+                archiveOffset = new LongOffset(hBaseQuery.latest());
+            }
+            else {
+                archiveOffset = new LongOffset(archiveQuery.mostRecentOffset());
+            }
+            rv = new DatasourceOffset(archiveOffset, new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
         }
         else if (config.isArchiveEnabled) {
-            rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
+            if (!hBaseQuery.isStub()) {
+                rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
+            }
+            else {
+                rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
+            }
         }
         else if (config.isKafkaEnabled) {
             rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));

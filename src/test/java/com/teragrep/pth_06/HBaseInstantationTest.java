@@ -43,7 +43,7 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.walker;
+package com.teragrep.pth_06;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -51,7 +51,6 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.SyslogMessage;
-import com.teragrep.pth_06.TeragrepDatasource;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.LogfileTable;
 import com.teragrep.pth_06.planner.MockDBData;
@@ -68,6 +67,8 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.functions;
 import org.apache.spark.sql.streaming.DataStreamWriter;
 import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryListener;
+import org.apache.spark.sql.streaming.StreamingQueryProgress;
 import org.apache.spark.sql.streaming.Trigger;
 import org.jooq.Record11;
 import org.jooq.Result;
@@ -85,7 +86,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -261,8 +264,76 @@ public class HBaseInstantationTest {
         Assertions.assertEquals(totalRows - 1, rows);
     }
 
+    @Test
+    public void testBatchInHours() {
+
+        final List<StreamingQueryProgress> progresses = new ArrayList<>();
+
+        spark.streams().addListener(new StreamingQueryListener() {
+
+            @Override
+            public void onQueryProgress(QueryProgressEvent event) {
+                progresses.add(event.progress());
+            }
+
+            @Override
+            public void onQueryTerminated(QueryTerminatedEvent event) {
+
+            }
+
+            @Override
+            public void onQueryStarted(QueryStartedEvent event) {
+
+            }
+        });
+        final String query = "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1262296800\"/><latest operation=\"EQUALS\" value=\"1263679201\"/></AND></AND>";
+
+        final Dataset<Row> df = spark
+                .readStream()
+                .format(TeragrepDatasource.class.getName())
+                .option("archive.enabled", "true")
+                .option("hbase.enabled", "true")
+                .option("S3endPoint", s3endpoint)
+                .option("S3identity", s3identity)
+                .option("S3credential", s3credential)
+                .option("DBusername", userName)
+                .option("DBpassword", password)
+                .option("DBurl", url)
+                .option("DBstreamdbname", "streamdb")
+                .option("DBjournaldbname", "journaldb")
+                .option("num_partitions", "1")
+                .option("queryXML", query)
+                // audit information
+                .option("TeragrepAuditQuery", "index=f17_v2")
+                .option("TeragrepAuditReason", "test run at hbaseScanTest()")
+                .option("TeragrepAuditUser", System.getProperty("user.name"))
+                // kafka options
+                .option("kafka.enabled", "false")
+                .option("kafka.bootstrap.servers", "")
+                .option("kafka.sasl.mechanism", "")
+                .option("kafka.security.protocol", "")
+                .option("kafka.sasl.jaas.config", "")
+                .option("kafka.useMockKafkaConsumer", "false")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                .load();
+
+        Dataset<Row> df2 = df.agg(functions.count("*"));
+
+        DataStreamWriter<Row> dfWriter = df2
+                .writeStream()
+                .outputMode("complete")
+                .format("memory")
+                .trigger(Trigger.AvailableNow())
+                .queryName("HourlyTestQuery")
+                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true");
+
+        StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() -> dfWriter.start());
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
+        System.out.println("PROGRESSES: " + progresses);
+    }
+
     private long resultRowsFromQuery(final String queryString) {
-        // please notice that JAVA_HOME=/usr/lib/jvm/java-1.8.0 mvn clean test -Pdev is required
         Dataset<Row> df = spark
                 .readStream()
                 .format(TeragrepDatasource.class.getName())
@@ -305,7 +376,7 @@ public class HBaseInstantationTest {
 
         StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() -> dfWriter.start());
 
-        DataStreamWriter<Row> rowDataStreamWriter = df.writeStream().foreachBatch((ds, i) -> {
+        DataStreamWriter<Row> rowDataStreamWriter = df.writeStream().foreachBatch((ds, id) -> {
             ds.show(false);
         });
         StreamingQuery sq = Assertions.assertDoesNotThrow(() -> rowDataStreamWriter.start());
@@ -319,7 +390,7 @@ public class HBaseInstantationTest {
 
             long resultSize = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").count();
             if (resultSize > 0) {
-                rowCount = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
+                rowCount = (long) spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
             }
             if (
                 streamingQuery.lastProgress() == null

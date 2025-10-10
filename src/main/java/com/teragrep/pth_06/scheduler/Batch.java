@@ -94,7 +94,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         final BatchSliceCollection slice;
         if (bothEnabled) {
             if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
+                slice = new HBaseBatchSliceCollection(hbaseQuery, config).processRange(start, end);
             }
             else {
                 slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
@@ -103,7 +103,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         }
         else if (archiverEnabled) {
             if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
+                slice = new HBaseBatchSliceCollection(hbaseQuery, config).processRange(start, end);
             }
             else {
                 slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);

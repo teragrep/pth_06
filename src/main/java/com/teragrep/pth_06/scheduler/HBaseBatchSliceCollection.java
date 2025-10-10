@@ -47,6 +47,8 @@ package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.BatchSizeLimit;
 import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.SynchronizedHourlyResults;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
@@ -64,31 +66,62 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
 
     private final Logger LOGGER = LoggerFactory.getLogger(HBaseBatchSliceCollection.class);
     private final HBaseQuery hBaseQuery;
+    private final byte[] meta; // column family
+    private final int quantumLength;
+    private final int numPartitions;
+    private final long totalObjectCountLimit;
+    private final float fileCompressionRatio;
+    private final float processingSpeed;
 
-    public HBaseBatchSliceCollection(final HBaseQuery hBaseQuery) {
+    public HBaseBatchSliceCollection(final HBaseQuery hBaseQuery, final Config config) {
         super();
         this.hBaseQuery = hBaseQuery;
+        this.meta = Bytes.toBytes("meta");
+        this.quantumLength = config.batchConfig.quantumLength;
+        this.numPartitions = config.batchConfig.numPartitions;
+        this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
+        this.fileCompressionRatio = config.batchConfig.fileCompressionRatio;
+        this.processingSpeed = config.batchConfig.processingSpeed;
     }
 
     public HBaseBatchSliceCollection processRange(final Offset start, final Offset end) {
         this.clear(); // clear internal list
-
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
         final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
-        LOGGER.info("processRange() start <{}> end <{}>", startOffsetLong, endOffsetLong);
+        LOGGER.debug("processRange() start <{}> end <{}>", startOffsetLong, endOffsetLong);
         final List<ScanRangeView> scanRangeViews = hBaseQuery.openViews();
         final SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(
                 scanRangeViews,
                 startOffsetLong
         );
         final List<Result> results = new ArrayList<>();
+        final long maxWeight = (long) quantumLength * numPartitions;
         while (synchronizedHourlyResults.hasNext()) {
-            final List<Result> hourlyResult = synchronizedHourlyResults.nextHour();
-            results.addAll(hourlyResult);
-            hBaseQuery.updateLatest(synchronizedHourlyResults.currentEpoch());
+            final List<Result> hourlyResults = synchronizedHourlyResults.nextHour();
+            final long currentEpoch = synchronizedHourlyResults.currentEpoch();
+            if (!hourlyResults.isEmpty()) {
+                final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
+                for (final Result hourlyResult : hourlyResults) {
+                    final long fileSize = Bytes.toLong(hourlyResult.getValue(meta, Bytes.toBytes("fs")));
+                    final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
+                            / processingSpeed;
+                    batchSizeLimit.add(hourlyResultEstimatedFileSize);
+                    if (!batchSizeLimit.isOverLimit()) {
+                        results.add(hourlyResult);
+                    }
+                    else {
+                        LOGGER
+                                .info(
+                                        "Hourly results were over batch size limit with <{}> logfiles, ignoring rest of the results",
+                                        hourlyResult.size()
+                                );
+                        break;
+                    }
+                }
+            }
+            hBaseQuery.updateLatest(currentEpoch);
         }
 
-        final byte[] meta = Bytes.toBytes("meta"); // column family
         for (final Result result : results) {
             final String id = Bytes.toString(result.getValue(meta, Bytes.toBytes("i")));
             final String directory = Bytes.toString(result.getValue(meta, Bytes.toBytes("d")));
