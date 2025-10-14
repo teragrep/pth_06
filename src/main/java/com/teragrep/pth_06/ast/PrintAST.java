@@ -61,12 +61,7 @@ public final class PrintAST {
         this.root = root;
     }
 
-    public void print() {
-        String result = printWithIndent(root, "");
-        System.out.println(result);
-    }
-
-    public String format() {
+    public String asString() {
         return printWithIndent(root, "");
     }
 

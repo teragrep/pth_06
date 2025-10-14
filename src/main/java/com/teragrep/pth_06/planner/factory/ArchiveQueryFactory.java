@@ -64,10 +64,10 @@ public final class ArchiveQueryFactory implements Factory<ArchiveQuery> {
     public ArchiveQuery object() {
         final ArchiveQuery archiveQuery;
         if (config.isArchiveEnabled && !config.isHbaseEnabled) {
+            LOGGER.info("Build archive query using MariaDB datasource");
             archiveQuery = new ArchiveQueryProcessor(config);
         }
         else {
-            LOGGER.info("Build archive query using MariaDB datasource");
             archiveQuery = new StubArchiveQuery();
         }
         return archiveQuery;

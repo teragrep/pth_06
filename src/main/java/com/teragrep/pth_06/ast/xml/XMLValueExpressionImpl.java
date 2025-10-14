@@ -45,10 +45,8 @@
  */
 package com.teragrep.pth_06.ast.xml;
 
-import com.teragrep.pth_06.ast.Expression;
 import com.teragrep.pth_06.ast.LogicalExpression;
 
-import java.util.List;
 import java.util.Objects;
 
 public final class XMLValueExpressionImpl implements XMLValueExpression {
@@ -65,41 +63,44 @@ public final class XMLValueExpressionImpl implements XMLValueExpression {
 
     @Override
     public String value() {
+        validateTag();
         return value;
     }
 
     @Override
     public String operation() {
+        validateTag();
         return operation;
     }
 
     @Override
     public Tag tag() {
+        validateTag();
         return tag;
     }
 
     @Override
     public boolean isLeaf() {
+        validateTag();
         return true;
     }
 
     @Override
     public XMLValueExpression asLeaf() {
+        validateTag();
         return this;
     }
 
     @Override
     public boolean isLogical() {
+        validateTag();
         return false;
     }
 
     @Override
     public LogicalExpression asLogical() {
+        validateTag();
         throw new UnsupportedOperationException("asLogical() not supported for XMLValueExpressionImpl");
-    }
-
-    public List<Expression> children() {
-        throw new UnsupportedOperationException("children() not supported for XMLValueExpressionImpl");
     }
 
     @Override
@@ -122,5 +123,11 @@ public final class XMLValueExpressionImpl implements XMLValueExpression {
     @Override
     public int hashCode() {
         return Objects.hash(value, operation, tag);
+    }
+
+    private void validateTag() {
+        if (tag.equals(Tag.AND) || tag.equals(Tag.OR)) {
+            throw new IllegalArgumentException("AND and OR tags are not supported for XMLValueExpression");
+        }
     }
 }

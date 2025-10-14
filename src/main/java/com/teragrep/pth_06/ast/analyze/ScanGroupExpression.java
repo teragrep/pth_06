@@ -51,8 +51,6 @@ import com.teragrep.pth_06.ast.LogicalExpression;
 import com.teragrep.pth_06.ast.MergeIntersectingRanges;
 import com.teragrep.pth_06.ast.meta.StreamDBCondition;
 import com.teragrep.pth_06.ast.meta.StreamIDs;
-import com.teragrep.pth_06.ast.transform.WithDefaultValues;
-import com.teragrep.pth_06.ast.xml.AndExpression;
 import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.filter.Filter;
@@ -76,16 +74,8 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
     private final DSLContext ctx;
     private final List<Expression> expressions;
 
-    public ScanGroupExpression(final DSLContext ctx, final WithDefaultValues withDefaultValues) {
-        this(ctx, withDefaultValues.transformed().asLogical());
-    }
-
     public ScanGroupExpression(final DSLContext ctx, final LogicalExpression origin) {
         this(ctx, origin.children());
-    }
-
-    public ScanGroupExpression(final DSLContext ctx, final LeafExpression origin) {
-        this(ctx, new AndExpression(origin).children());
     }
 
     public ScanGroupExpression(final DSLContext ctx, final List<Expression> expressions) {
@@ -146,10 +136,12 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
                         filterList.addFilter(hostFilter);
                         break;
                     case EARLIEST:
-                        earliestList.add(Long.valueOf(xmlValueExpression.value()));
+                        final long earliestValue = new CalculatedTimeQualifierValue(xmlValueExpression).value();
+                        earliestList.add(earliestValue);
                         break;
                     case LATEST:
-                        latestList.add(Long.valueOf(xmlValueExpression.value()));
+                        final long latestValue = new CalculatedTimeQualifierValue(xmlValueExpression).value();
+                        latestList.add(latestValue);
                         break;
                     default:
                         throw new IllegalArgumentException("Unsupported leaf tag <" + tag + ">");

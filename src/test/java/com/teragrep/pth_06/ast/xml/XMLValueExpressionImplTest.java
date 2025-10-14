@@ -45,7 +45,54 @@
  */
 package com.teragrep.pth_06.ast.xml;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.teragrep.pth_06.ast.Expression;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 public final class XMLValueExpressionImplTest {
+
+    @Test
+    public void testExpression() {
+        XMLValueExpression indexExpression = new XMLValueExpressionImpl("value", "operation", Expression.Tag.INDEX);
+        Assertions.assertEquals("value", indexExpression.value());
+        Assertions.assertEquals("operation", indexExpression.operation());
+        Assertions.assertEquals(Expression.Tag.INDEX, indexExpression.tag());
+        Assertions.assertFalse(indexExpression.isLogical());
+        Assertions.assertTrue(indexExpression.isLeaf());
+    }
+
+    @Test
+    public void testValueTags() {
+        List<Expression.Tag> valueTags = Arrays
+                .asList(
+                        Expression.Tag.INDEX, Expression.Tag.HOST, Expression.Tag.SOURCETYPE, Expression.Tag.EARLIEST,
+                        Expression.Tag.LATEST, Expression.Tag.EMPTY, Expression.Tag.INDEXSTATEMENT
+                );
+        for (Expression.Tag tag : valueTags) {
+            XMLValueExpression expression = new XMLValueExpressionImpl("value", "operation", tag);
+            Assertions.assertEquals(tag, expression.tag());
+            Assertions.assertTrue(expression.isLeaf());
+            Assertions.assertFalse(expression.isLogical());
+        }
+    }
+
+    @Test
+    public void testLogicalTagsInvalid() {
+        List<Expression.Tag> logicalTags = Arrays.asList(Expression.Tag.AND, Expression.Tag.OR);
+        for (Expression.Tag tag : logicalTags) {
+            XMLValueExpression expression = new XMLValueExpressionImpl("value", "operation", tag);
+            IllegalArgumentException exception = Assertions
+                    .assertThrows(IllegalArgumentException.class, expression::operation);
+            Assertions.assertEquals("AND and OR tags are not supported for XMLValueExpression", exception.getMessage());
+            Assertions.assertThrows(IllegalArgumentException.class, expression::value);
+            Assertions.assertThrows(IllegalArgumentException.class, expression::tag);
+            Assertions.assertThrows(IllegalArgumentException.class, expression::isLogical);
+            Assertions.assertThrows(IllegalArgumentException.class, expression::isLeaf);
+            Assertions.assertThrows(IllegalArgumentException.class, expression::asLogical);
+            Assertions.assertThrows(IllegalArgumentException.class, expression::asLeaf);
+        }
+    }
 }

@@ -188,9 +188,13 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * {@inheritDoc}
      */
     @Override
-    public void commit(Offset offset) {
-        if (!archiveQuery.isStub()) {
-            this.archiveQuery.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
+    public void commit(final Offset offset) {
+        final long offsetLongValue = ((DatasourceOffset) offset).getArchiveOffset().offset();
+        if (!hBaseQuery.isStub()) {
+            hBaseQuery.commit(offsetLongValue);
+        }
+        else if (!archiveQuery.isStub()) {
+            archiveQuery.commit(offsetLongValue);
         }
     }
 
@@ -313,7 +317,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (config.isArchiveEnabled && config.isKafkaEnabled) {
             LongOffset archiveOffset;
             if (!hBaseQuery.isStub()) {
-                archiveOffset = new LongOffset(hBaseQuery.latest());
+                archiveOffset = new LongOffset(hBaseQuery.mostRecentOffset());
             }
             else {
                 archiveOffset = new LongOffset(archiveQuery.mostRecentOffset());
@@ -322,7 +326,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (config.isArchiveEnabled) {
             if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
+                rv = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
             }
             else {
                 rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));

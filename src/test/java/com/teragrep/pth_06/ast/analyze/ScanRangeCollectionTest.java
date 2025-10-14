@@ -66,7 +66,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final class ScanRangesTest {
+public final class ScanRangeCollectionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -136,7 +136,7 @@ public final class ScanRangesTest {
     @Test
     public void testContract() {
         EqualsVerifier
-                .forClass(ScanRanges.class)
+                .forClass(ScanRangeCollection.class)
                 .withNonnullFields("config", "root", "scanRanges")
                 .withIgnoredFields("LOGGER")
                 .verify();

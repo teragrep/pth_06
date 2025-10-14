@@ -47,61 +47,78 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ast.analyze.ScanRange;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
-import com.teragrep.pth_06.ast.analyze.ScanRanges;
+import com.teragrep.pth_06.ast.analyze.ScanRangeCollection;
+import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class HBaseQueryImpl implements HBaseQuery {
 
-    private final Config config;
-    private final ScanRanges scanRanges;
+    private final ScanRangeCollection scanRangeCollection;
     private final LogfileTable table;
-    private long latest = Long.MIN_VALUE;
+    private long latestCommited = Long.MIN_VALUE;
+    private long mostRecent = Long.MIN_VALUE;
 
     public HBaseQueryImpl(final Config config) {
-        this(config, new ScanRanges(config), new LogfileTable(config));
+        this(new ScanRangeCollection(config), new LogfileTable(config));
     }
 
-    public HBaseQueryImpl(Config config, ScanRanges scanRanges, LogfileTable table) {
-        this.config = config;
-        this.scanRanges = scanRanges;
+    public HBaseQueryImpl(final ScanRangeCollection scanRangeCollection, final LogfileTable table) {
+        this.scanRangeCollection = scanRangeCollection;
         this.table = table;
     }
 
     @Override
     public long earliest() {
-        long earliest = Long.MAX_VALUE;
-        for (ScanRange range : scanRanges.rangeList()) {
-            if (range.earliest() < earliest) {
-                earliest = range.earliest();
+        final List<ScanRange> rangeList = scanRangeCollection.asList();
+        final long earliest;
+        if (rangeList.isEmpty()) {
+            earliest = ZonedDateTime.now().minusHours(24).toEpochSecond();
+        }
+        else {
+            long min = Long.MAX_VALUE;
+            for (final ScanRange range : rangeList) {
+                min = Math.min(min, range.earliest());
             }
+            earliest = min;
         }
         return earliest;
     }
 
     @Override
     public long latest() {
-        long earliest = earliest();
-        if (latest < earliest) {
-            latest = earliest;
+        final long latest;
+        if (latestCommited == Long.MIN_VALUE) {
+            latest = earliest();
         }
-        if (latest < config.archiveConfig.archiveIncludeBeforeEpoch) {
-            latest = config.archiveConfig.archiveIncludeBeforeEpoch;
+        else {
+            latest = latestCommited + 3600L;
         }
         return latest;
     }
 
     @Override
-    public void updateLatest(final long updatedLatest) {
-        this.latest = updatedLatest;
+    public long mostRecentOffset() {
+        return mostRecent;
     }
 
     @Override
-    public List<ScanRangeView> openViews() {
-        final List<ScanRangeView> views = new ArrayList<>();
-        for (ScanRange range : scanRanges.rangeList()) {
+    public void updateMostRecent(final long offset) {
+        this.mostRecent = offset;
+    }
+
+    @Override
+    public void commit(final long offset) {
+        this.latestCommited = offset;
+    }
+
+    @Override
+    public List<View> openViews() {
+        final List<View> views = new ArrayList<>();
+        for (final ScanRange range : scanRangeCollection.asList()) {
             views.add(new ScanRangeView(range, table));
         }
         return views;

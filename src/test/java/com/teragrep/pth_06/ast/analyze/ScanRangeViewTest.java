@@ -128,6 +128,8 @@ public class ScanRangeViewTest {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
         Assertions.assertDoesNotThrow(conn::close);
+        Assertions.assertDoesNotThrow(logfileTable::close);
+        Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @BeforeEach
@@ -193,7 +195,6 @@ public class ScanRangeViewTest {
             byte[] rowKeyBytes = result.getRow();
             ByteBuffer buffer = ByteBuffer.wrap(rowKeyBytes);
             String m = "Result with row key values stream_id <" + buffer.getLong() + ">-<" + buffer.getLong();
-            System.out.println(m);
             Assertions.assertFalse(result.isEmpty());
             resultCount++;
         }

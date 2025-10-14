@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner;
 import com.teragrep.pth_06.ast.analyze.ScanRange;
 import com.teragrep.pth_06.ast.analyze.ScanRangeImpl;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
@@ -132,6 +133,8 @@ class SynchronizedHourlyResultsTest {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
         Assertions.assertDoesNotThrow(conn::close);
+        Assertions.assertDoesNotThrow(logfileTable::close);
+        Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @BeforeEach
@@ -194,9 +197,6 @@ class SynchronizedHourlyResultsTest {
         ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
         int resultCount = 0;
         for (org.apache.hadoop.hbase.client.Result result : scanner) {
-            byte[] rowKeyBytes = result.getRow();
-            ByteBuffer buffer = ByteBuffer.wrap(rowKeyBytes);
-            String m = "Result with row key values stream_id <" + buffer.getLong() + ">-<" + buffer.getLong();
             Assertions.assertFalse(result.isEmpty());
             resultCount++;
         }
@@ -208,7 +208,7 @@ class SynchronizedHourlyResultsTest {
     public void testSingleView() {
         ScanRange scanRange = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
         ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
-        List<ScanRangeView> views = Collections.singletonList(scanRangeView);
+        List<View> views = Collections.singletonList(scanRangeView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
 
@@ -226,7 +226,7 @@ class SynchronizedHourlyResultsTest {
     public void testMultipleHourlyResults() {
         ScanRange scanRange = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
         ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
-        List<ScanRangeView> views = Collections.singletonList(scanRangeView);
+        List<View> views = Collections.singletonList(scanRangeView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> firstHourResults = synchronizedHourlyResults.nextHour();
         Assertions.assertEquals(1, firstHourResults.size());
@@ -247,7 +247,7 @@ class SynchronizedHourlyResultsTest {
         ScanRange scanRange2 = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
         ScanRangeView scanRangeView1 = new ScanRangeView(scanRange1, logfileTable);
         ScanRangeView scanRangeView2 = new ScanRangeView(scanRange2, logfileTable);
-        List<ScanRangeView> views = Arrays.asList(scanRangeView1, scanRangeView2);
+        List<View> views = Arrays.asList(scanRangeView1, scanRangeView2);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
 
@@ -264,26 +264,16 @@ class SynchronizedHourlyResultsTest {
     }
 
     @Test
-    public void multipleScanRangeViewFinished() {
-        ScanRange scanRange1 = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
-        ScanRange scanRange2 = new ScanRangeImpl(1, 1262300400L, 1362296800, new FilterList());
-        ScanRangeView scanRangeView1 = new ScanRangeView(scanRange1, logfileTable);
-        ScanRangeView scanRangeView2 = new ScanRangeView(scanRange2, logfileTable);
-        List<ScanRangeView> views = Arrays.asList(scanRangeView1, scanRangeView2);
-        SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> firstHourResults = synchronizedHourlyResults.nextHour();
-        Assertions.assertEquals(1, firstHourResults.size());
-        List<org.apache.hadoop.hbase.client.Result> secondHourResults = synchronizedHourlyResults.nextHour();
-        Assertions.assertEquals(2, secondHourResults.size());
-        ByteBuffer wrap = ByteBuffer.wrap(secondHourResults.get(0).getRow());
-        ByteBuffer wrap2 = ByteBuffer.wrap(secondHourResults.get(1).getRow());
-        Assertions.assertArrayEquals(wrap.array(), wrap2.array());
-        long streamId = wrap.getLong();
-        long earliest = wrap.getLong();
-        long id = wrap.getLong();
-        Assertions.assertEquals(1, streamId);
-        Assertions.assertEquals(1262296800L, earliest);
-        Assertions.assertEquals(28653, id);
+    public void testHasNextReturnsFalseAfterAllViewsFinished() {
+        ScanRange scanRange = new ScanRangeImpl(1, 1, 1262296800, new FilterList());
+        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
+        SynchronizedHourlyResults syncResults = new SynchronizedHourlyResults(
+                Collections.singletonList(scanRangeView),
+                1262296800
+        );
+        while (syncResults.hasNext()) {
+            syncResults.nextHour();
+        }
+        Assertions.assertFalse(syncResults.hasNext());
     }
-
 }

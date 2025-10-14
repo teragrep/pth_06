@@ -65,33 +65,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class ScanRanges {
+public final class ScanRangeCollection {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ScanRanges.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(ScanRangeCollection.class);
 
     private final Config config;
     private final Expression root;
     private final List<ScanRange> scanRanges;
 
-    public ScanRanges(final Config config) {
+    public ScanRangeCollection(final Config config) {
         this(config, new WithDefaultValues(config));
     }
 
-    public ScanRanges(Config config, final WithDefaultValues withDefaultValues) {
+    public ScanRangeCollection(Config config, final WithDefaultValues withDefaultValues) {
         this(config, withDefaultValues.transformed());
     }
 
-    public ScanRanges(Config config, final Expression root) {
+    public ScanRangeCollection(Config config, final Expression root) {
         this(config, root, new ArrayList<>());
     }
 
-    private ScanRanges(Config config, final Expression root, final List<ScanRange> scanRanges) {
+    private ScanRangeCollection(Config config, final Expression root, final List<ScanRange> scanRanges) {
         this.config = config;
         this.root = root;
         this.scanRanges = scanRanges;
     }
 
-    public List<ScanRange> rangeList() {
+    public List<ScanRange> asList() {
         final String userName = config.archiveConfig.dbUsername;
         final String password = config.archiveConfig.dbPassword;
         final String url = config.archiveConfig.dbUrl;
@@ -146,7 +146,7 @@ public final class ScanRanges {
         if (getClass() != o.getClass()) {
             return false;
         }
-        final ScanRanges that = (ScanRanges) o;
+        final ScanRangeCollection that = (ScanRangeCollection) o;
         return Objects.equals(config, that.config) && Objects.equals(root, that.root)
                 && Objects.equals(scanRanges, that.scanRanges);
     }

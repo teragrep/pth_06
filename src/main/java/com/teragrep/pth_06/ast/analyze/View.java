@@ -43,46 +43,28 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.analyze.View;
+import org.apache.hadoop.hbase.client.Result;
 
+import java.io.IOException;
 import java.util.List;
 
-public final class StubHBaseQuery implements HBaseQuery {
+public interface View {
 
-    @Override
-    public boolean isStub() {
-        return true;
-    }
+    public abstract boolean isOpen();
 
-    @Override
-    public long earliest() {
-        throw new UnsupportedOperationException("earliest() not supported for StubHBaseQuery");
-    }
+    public abstract boolean isFinished();
 
-    @Override
-    public long latest() {
-        throw new UnsupportedOperationException("latest() not supported for StubHBaseQuery");
-    }
+    public abstract void open();
 
-    @Override
-    public long mostRecentOffset() {
-        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
-    }
+    public abstract void close();
 
-    @Override
-    public void updateMostRecent(long offset) {
-        throw new UnsupportedOperationException("updateMostRecent() not supported for StubHBaseQuery");
-    }
+    public abstract boolean isEndOffsetWithinRange(final long offset);
 
-    @Override
-    public void commit(long latest) {
-        throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
-    }
+    public abstract View viewFromOffset(final long fromOffset);
 
-    @Override
-    public List<View> openViews() {
-        throw new UnsupportedOperationException("openViews() not supported for StubHBaseQuery");
-    }
+    public abstract List<Result> nextWindow(final long duration) throws IOException;
+
+    public abstract long latestEpochProcessed();
 }

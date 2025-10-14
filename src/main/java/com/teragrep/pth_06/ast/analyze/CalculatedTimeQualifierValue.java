@@ -43,46 +43,36 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.analyze.View;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 
-import java.util.List;
+final class CalculatedTimeQualifierValue {
 
-public final class StubHBaseQuery implements HBaseQuery {
+    private final XMLValueExpression expression;
 
-    @Override
-    public boolean isStub() {
-        return true;
+    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
+        this.expression = expression;
     }
 
-    @Override
-    public long earliest() {
-        throw new UnsupportedOperationException("earliest() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public long latest() {
-        throw new UnsupportedOperationException("latest() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public long mostRecentOffset() {
-        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public void updateMostRecent(long offset) {
-        throw new UnsupportedOperationException("updateMostRecent() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public void commit(long latest) {
-        throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public List<View> openViews() {
-        throw new UnsupportedOperationException("openViews() not supported for StubHBaseQuery");
+    long value() {
+        final long value;
+        final Expression.Tag tag = expression.tag();
+        final String operation = expression.operation();
+        final long parsedValue = Long.parseLong(expression.value());
+        if ("MORE_THAN".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
+            value = parsedValue + 1; // exclude earliest epoch
+        }
+        else if ("LESS_THAN".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
+            value = parsedValue - 1; // exclude latest epoch
+        }
+        else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
+            value = parsedValue;
+        }
+        else {
+            throw new IllegalArgumentException("expression was not a time qualifier");
+        }
+        return value;
     }
 }

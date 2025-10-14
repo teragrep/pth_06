@@ -45,11 +45,10 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.Stubbable;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 
-public final class StubScanRange implements ScanRange, Stubbable {
+public final class StubScanRange implements ScanRange {
 
     @Override
     public boolean isStub() {

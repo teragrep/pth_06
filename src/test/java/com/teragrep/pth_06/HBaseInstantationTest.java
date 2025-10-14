@@ -155,6 +155,8 @@ public class HBaseInstantationTest {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
         Assertions.assertDoesNotThrow(conn::close);
+        Assertions.assertDoesNotThrow(mockS3::stop);
+        Assertions.assertDoesNotThrow(logfileTable::close);
     }
 
     @BeforeEach
@@ -243,7 +245,7 @@ public class HBaseInstantationTest {
     @Test
     public void NoResultRowsTest() {
         // range outside of test rows
-        final String query = "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1\"/><latest operation=\"EQUALS\" value=\"1000000\"/></AND></AND>";
+        final String query = "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1\"/><latest operation=\"EQUALS\" value=\"100000\"/></AND></AND>";
         final long rows = resultRowsFromQuery(query);
         Assertions.assertEquals(0, rows);
     }
@@ -330,7 +332,7 @@ public class HBaseInstantationTest {
 
         StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() -> dfWriter.start());
         Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
-        System.out.println("PROGRESSES: " + progresses);
+        System.out.println("PROGRESSES: " + progresses.size());
     }
 
     private long resultRowsFromQuery(final String queryString) {
@@ -390,7 +392,7 @@ public class HBaseInstantationTest {
 
             long resultSize = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").count();
             if (resultSize > 0) {
-                rowCount = (long) spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
+                rowCount = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
             }
             if (
                 streamingQuery.lastProgress() == null

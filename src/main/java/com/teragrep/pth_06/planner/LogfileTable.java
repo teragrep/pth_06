@@ -103,7 +103,7 @@ public final class LogfileTable {
             try {
                 connection.close();
             }
-            catch (IOException e) {
+            catch (final IOException e) {
                 throw new RuntimeException("Error closing hbase connection: " + e.getMessage());
             }
         }

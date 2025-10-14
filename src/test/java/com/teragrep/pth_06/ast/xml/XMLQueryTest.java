@@ -47,25 +47,29 @@ package com.teragrep.pth_06.ast.xml;
 
 import com.teragrep.pth_06.ast.Expression;
 import com.teragrep.pth_06.ast.PrintAST;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public final class XMLQueryTest {
 
     @Test
-    public void testXMLASTrootFromString() {
+    public void testXMLFromQuery() {
         String query = "<AND><OR><index value=\"index_1\" operation=\"EQUALS\"/><sourcetype value=\"index_2\" operation=\"EQUALS\"/></OR><earliest value=\"1000\" operation=\"EQUALS\"/></AND>";
         XMLQuery xmlQuery = new XMLQuery(query);
         Expression root = xmlQuery.asAST();
-        PrintAST printAST = new PrintAST(root);
-        printAST.print();
+        String result = new PrintAST(root).asString();
+        String expected = "AND\n" + "  OR\n" + "    VALUE(INDEX val=index_1 op=EQUALS)\n"
+                + "    VALUE(SOURCETYPE val=index_2 op=EQUALS)\n" + "  VALUE(EARLIEST val=1000 op=EQUALS)";
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    public void testAST() {
-        Expression root = new AndExpression(
-                new OrExpression(new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_2", "equals", Expression.Tag.INDEX)), new XMLValueExpressionImpl("10000", "not_equals", Expression.Tag.EARLIEST)
-        );
-        PrintAST printAST = new PrintAST(root);
-        printAST.print();
+    public void testSingleElementQuery() {
+        String query = "<index value=\"index_1\" operation=\"EQUALS\"/>";
+        XMLQuery xmlQuery = new XMLQuery(query);
+        Expression root = xmlQuery.asAST();
+        String result = new PrintAST(root).asString();
+        String expected = "VALUE(INDEX val=index_1 op=EQUALS)";
+        Assertions.assertEquals(expected, result);
     }
 }

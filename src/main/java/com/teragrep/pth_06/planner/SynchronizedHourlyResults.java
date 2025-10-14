@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.ast.analyze.View;
 import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,10 +57,14 @@ import java.util.List;
 public final class SynchronizedHourlyResults {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SynchronizedHourlyResults.class);
-    private final List<ScanRangeView> views;
+    private final List<View> views;
     private long currentEpoch;
 
-    public SynchronizedHourlyResults(final List<ScanRangeView> views, final long startEpoch) {
+    public SynchronizedHourlyResults(final HBaseQuery hBaseQuery, final long startEpoch) {
+        this(hBaseQuery.openViews(), startEpoch);
+    }
+
+    public SynchronizedHourlyResults(final List<View> views, final long startEpoch) {
         this.views = views;
         this.currentEpoch = startEpoch;
     }
@@ -70,23 +74,28 @@ public final class SynchronizedHourlyResults {
     }
 
     public boolean hasNext() {
-        return !views.stream().allMatch(ScanRangeView::isFinished);
+        return !views.stream().allMatch(View::isFinished);
     }
 
     public List<Result> nextHour() {
         final List<Result> hourlyResults = new ArrayList<>();
         LOGGER.debug("next hour between <{}>-<{}>", currentEpoch, currentEpoch + 3600L);
-        for (ScanRangeView view : views) {
+        for (final View view : views) {
             if (view.isFinished()) {
-                LOGGER.info("View <{}> finished, closing", view);
+                LOGGER.debug("View <{}> finished, closing", view);
                 view.close();
                 continue;
             }
 
-            final ScanRangeView viewWithingStart;
-            long viewEpoch = view.latestEpochProcessed();
+            final View viewWithingStart;
+            final long viewEpoch = view.latestEpochProcessed();
             LOGGER.debug("Latest epoch from view <{}>", viewEpoch);
-            if (viewEpoch < currentEpoch) {
+            if (!view.isEndOffsetWithinRange(currentEpoch)) {
+                LOGGER.info("View offset <{}> is after current epoch <{}>, closing", viewEpoch, currentEpoch);
+                view.close();
+                continue;
+            }
+            else if (viewEpoch < currentEpoch) {
                 LOGGER.info("Moving view offset <{}> forward to <{}>", viewEpoch, currentEpoch);
                 viewWithingStart = view.viewFromOffset(currentEpoch);
             }
@@ -100,8 +109,8 @@ public final class SynchronizedHourlyResults {
                 }
                 results = viewWithingStart.nextWindow(3600L);
             }
-            catch (IOException e) {
-                throw new RuntimeException("Error getting results");
+            catch (final IOException e) {
+                throw new RuntimeException("Error getting results: " + e.getMessage());
             }
             hourlyResults.addAll(results);
         }

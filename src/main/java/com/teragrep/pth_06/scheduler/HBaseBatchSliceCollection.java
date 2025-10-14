@@ -79,7 +79,6 @@ package com.teragrep.pth_06.scheduler;
  */
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-import com.teragrep.pth_06.ast.analyze.ScanRangeView;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.BatchSizeLimit;
 import com.teragrep.pth_06.planner.HBaseQuery;
@@ -127,17 +126,21 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
         this.clear(); // clear internal list
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
         final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
-        LOGGER.debug("processRange() start <{}> end <{}>", startOffsetLong, endOffsetLong);
-        final List<ScanRangeView> scanRangeViews = hBaseQuery.openViews();
+        final long lastCommited = hBaseQuery.latest();
+        final long selectedStartOffset = Math.max(startOffsetLong, lastCommited);
+        LOGGER.debug("processRange() start <{}> end <{}>", selectedStartOffset, endOffsetLong);
         final SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(
-                scanRangeViews,
-                startOffsetLong
+                hBaseQuery,
+                selectedStartOffset
         );
         final List<Result> results = new ArrayList<>();
         final long maxWeight = (long) quantumLength * numPartitions;
+
         while (synchronizedHourlyResults.hasNext()) {
+
             final List<Result> hourlyResults = synchronizedHourlyResults.nextHour();
             final long currentEpoch = synchronizedHourlyResults.currentEpoch();
+
             if (!hourlyResults.isEmpty()) {
                 final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
                 for (final Result hourlyResult : hourlyResults) {
@@ -158,7 +161,7 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
                     }
                 }
             }
-            hBaseQuery.updateLatest(currentEpoch);
+            hBaseQuery.updateMostRecent(currentEpoch);
         }
 
         for (final Result result : results) {

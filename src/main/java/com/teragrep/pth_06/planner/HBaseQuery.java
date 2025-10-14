@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.Stubbable;
-import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.ast.analyze.View;
 
 import java.util.List;
 
@@ -56,7 +56,11 @@ public interface HBaseQuery extends Stubbable {
 
     public abstract long latest();
 
-    public abstract void updateLatest(long latest);
+    public abstract long mostRecentOffset();
 
-    public abstract List<ScanRangeView> openViews();
+    public abstract void updateMostRecent(long offset);
+
+    public abstract void commit(long offset);
+
+    public abstract List<View> openViews();
 }

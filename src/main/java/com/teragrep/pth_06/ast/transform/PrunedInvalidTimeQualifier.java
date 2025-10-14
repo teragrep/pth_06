@@ -50,15 +50,22 @@ import com.teragrep.pth_06.ast.xml.AndExpression;
 import com.teragrep.pth_06.ast.xml.OrExpression;
 import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class PrunedInvalidTimeQualifier implements ExpressionTransformation<Expression> {
 
     private final Expression origin;
+    private final List<String> acceptedOperations;
 
     public PrunedInvalidTimeQualifier(final Expression origin) {
+        this(origin, Arrays.asList("EQUALS", "LEQ", "GEQ", "MORE_THAN", "LESS_THAN"));
+    }
+
+    private PrunedInvalidTimeQualifier(final Expression origin, List<String> acceptedOperations) {
         this.origin = origin;
+        this.acceptedOperations = acceptedOperations;
     }
 
     public Expression transformed() {
@@ -73,7 +80,9 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
                             || expression.tag().equals(Expression.Tag.LATEST)
                 ) {
                     final XMLValueExpression valueExpression = (XMLValueExpression) expression.asLeaf();
-                    result = "EQUALS".equalsIgnoreCase(valueExpression.operation());
+                    result = acceptedOperations
+                            .stream()
+                            .anyMatch(op -> op.equalsIgnoreCase(valueExpression.operation()));
                 }
                 else {
                     result = true;
@@ -86,7 +95,6 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
             else {
                 optimizedExpression = new OrExpression(prunedChildren);
             }
-
         }
         else {
             optimizedExpression = origin;

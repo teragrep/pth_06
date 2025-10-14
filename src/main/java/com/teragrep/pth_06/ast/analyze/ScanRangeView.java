@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ScanRangeView {
+public final class ScanRangeView implements View {
 
     private final ScanRange scanRange;
     private final LogfileTable logfileTable;
@@ -73,15 +73,21 @@ public final class ScanRangeView {
         this.isFinished = false;
     }
 
+    @Override
     public boolean isOpen() {
         return isOpen;
     }
 
+    @Override
     public boolean isFinished() {
         return isFinished;
     }
 
+    @Override
     public void open() {
+        if (scanRange.isStub()) {
+            throw new IllegalStateException("ScanRange was stub");
+        }
         if (isOpen) {
             throw new IllegalStateException("called open() when ScanRangeView was already open");
         }
@@ -98,11 +104,18 @@ public final class ScanRangeView {
         }
     }
 
+    @Override
     public void close() {
         if (isOpen) {
             resultScanner.close();
             isOpen = false;
         }
+        isFinished = true;
+    }
+
+    @Override
+    public boolean isEndOffsetWithinRange(final long offset) {
+        return offset <= scanRange.latest();
     }
 
     /**
@@ -112,13 +125,18 @@ public final class ScanRangeView {
      * @return ScanRangeView with same values as original but with updated start point
      * @throws IllegalArgumentException if offset is outside the scan range view
      */
-    public ScanRangeView viewFromOffset(final long fromOffset) {
+    @Override
+    public View viewFromOffset(final long fromOffset) {
+        if (scanRange.isStub()) {
+            throw new IllegalStateException("ScanRange was stub");
+        }
         if (fromOffset > scanRange.latest()) {
             throw new IllegalArgumentException("fromOffset was later than the scan range latest");
         }
         return new ScanRangeView(scanRange.rangeFromEarliest(fromOffset), logfileTable);
     }
 
+    @Override
     public long latestEpochProcessed() {
         return currentEpoch;
     }
@@ -132,7 +150,11 @@ public final class ScanRangeView {
      * @throws IllegalStateException    If the view is not open.
      * @throws IllegalArgumentException If duration is not positive.
      */
+    @Override
     public List<Result> nextWindow(final long duration) throws IOException {
+        if (scanRange.isStub()) {
+            throw new IllegalStateException("ScanRange was stub");
+        }
         if (!isOpen) {
             throw new IllegalStateException("RangeView was closed");
         }
