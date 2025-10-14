@@ -43,36 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.analyze;
+package com.teragrep.pth_06.ast;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.analyze.ScanPlan;
 
-final class CalculatedTimeQualifierValue {
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
-    private final XMLValueExpression expression;
+public final class MergeIntersectingPlans {
 
-    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
-        this.expression = expression;
+    private final List<ScanPlan> scanPlans;
+
+    public MergeIntersectingPlans(final List<ScanPlan> scanPlans) {
+        this.scanPlans = scanPlans;
     }
 
-    long value() {
-        final long value;
-        final Expression.Tag tag = expression.tag();
-        final String operation = expression.operation();
-        final long parsedValue = Long.parseLong(expression.value());
-        if ("GE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
-            value = parsedValue + 1; // exclude earliest epoch
-        }
-        else if ("LE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue - 1; // exclude latest epoch
-        }
-        else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue;
+    public List<ScanPlan> mergedRanges() {
+        final List<ScanPlan> result;
+        if (!scanPlans.isEmpty()) {
+            final List<ScanPlan> sorted = new ArrayList<>(scanPlans);
+            sorted.sort(Comparator.comparing(ScanPlan::earliest));
+            result = new ArrayList<>();
+            ScanPlan current = sorted.get(0);
+            // interval merging
+            for (int i = 1; i < sorted.size(); i++) {
+                final ScanPlan next = sorted.get(i);
+                if (current.mergeable(next)) {
+                    current = current.merge(next);
+                }
+                else {
+                    result.add(current);
+                }
+            }
+            result.add(current);
         }
         else {
-            throw new IllegalArgumentException("expression was not a time qualifier");
+            result = scanPlans;
         }
-        return value;
+        return result;
     }
 }

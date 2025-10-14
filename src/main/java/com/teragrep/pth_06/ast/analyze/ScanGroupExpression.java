@@ -48,28 +48,12 @@ package com.teragrep.pth_06.ast.analyze;
 import com.teragrep.pth_06.ast.Expression;
 import com.teragrep.pth_06.ast.LeafExpression;
 import com.teragrep.pth_06.ast.LogicalExpression;
-import com.teragrep.pth_06.ast.MergeIntersectingRanges;
-import com.teragrep.pth_06.ast.meta.StreamDBCondition;
-import com.teragrep.pth_06.ast.meta.StreamIDs;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import org.apache.hadoop.hbase.CompareOperator;
-import org.apache.hadoop.hbase.filter.Filter;
-import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.filter.RegexStringComparator;
-import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
-import org.apache.hadoop.hbase.util.Bytes;
+import com.teragrep.pth_06.ast.MergeIntersectingPlans;
 import org.jooq.DSLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public final class ScanGroupExpression implements LeafExpression<List<ScanRange>> {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(ScanGroupExpression.class);
+public final class ScanGroupExpression implements LeafExpression<List<ScanPlan>> {
 
     private final DSLContext ctx;
     private final List<Expression> expressions;
@@ -83,111 +67,16 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
         this.expressions = expressions;
     }
 
-    public List<ScanRange> value() {
-        final List<XMLValueExpression> indexList = new ArrayList<>();
-        final List<XMLValueExpression> hostList = new ArrayList<>();
-        final List<XMLValueExpression> sourceTypeList = new ArrayList<>();
-        final List<Long> earliestList = new ArrayList<>();
-        final List<Long> latestList = new ArrayList<>();
-        final FilterList filterList = new FilterList();
-
-        for (final Expression child : expressions) {
-            if (child.isLeaf()) {
-                final Expression.Tag tag = child.tag();
-                final XMLValueExpression xmlValueExpression = (XMLValueExpression) child.asLeaf();
-                final String value = xmlValueExpression.value().replace("*", ".*"); // regex wildcard
-                final CompareOperator operator;
-                final String operation = xmlValueExpression.operation();
-                if ("EQUALS".equalsIgnoreCase(operation)) {
-                    operator = CompareOperator.EQUAL;
-                }
-                else if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
-                    operator = CompareOperator.NOT_EQUAL;
-                }
-                else {
-                    throw new IllegalArgumentException("Unsupported operation <" + operation + ">");
-                }
-                switch (tag) {
-                    case INDEX:
-                        indexList.add(xmlValueExpression);
-                        break;
-                    case SOURCETYPE:
-                        // for SQL condition
-                        sourceTypeList.add(xmlValueExpression);
-                        // HBase filter
-                        final Filter sourceTypeFilter = new SingleColumnValueFilter(
-                                Bytes.toBytes("meta"), // column family
-                                Bytes.toBytes("s"), // stream
-                                operator,
-                                new RegexStringComparator(value)
-                        );
-                        filterList.addFilter(sourceTypeFilter);
-                        break;
-                    case HOST:
-                        // for SQL condition
-                        hostList.add(xmlValueExpression);
-                        // HBase filter
-                        final Filter hostFilter = new SingleColumnValueFilter(
-                                Bytes.toBytes("meta"), // column family
-                                Bytes.toBytes("h"), // host
-                                operator,
-                                new RegexStringComparator(value)
-                        );
-                        filterList.addFilter(hostFilter);
-                        break;
-                    case EARLIEST:
-                        final long earliestValue = new CalculatedTimeQualifierValue(xmlValueExpression).value();
-                        earliestList.add(earliestValue);
-                        break;
-                    case LATEST:
-                        final long latestValue = new CalculatedTimeQualifierValue(xmlValueExpression).value();
-                        latestList.add(latestValue);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported leaf tag <" + tag + ">");
-                }
-            }
-        }
-        if (earliestList.isEmpty() || latestList.isEmpty()) {
-            throw new IllegalStateException("Scan group did not have required time qualifiers");
-        }
-        else if ((earliestList.size() > 1 || latestList.size() > 1) && LOGGER.isWarnEnabled()) {
-            LOGGER
-                    .warn(
-                            "Multiple time qualifiers found. earliest size: <{}> latest size: <{}>",
-                            earliestList.size(), latestList.size()
-                    );
-        }
-        final Long earliest = Collections.min(earliestList);
-        final Long latest = Collections.max(latestList);
-
-        final List<List<Long>> streamIDs = indexList
-                .stream()
-                // maps index expressions to StreamIDs objects
-                .map(xmlExpression -> new StreamIDs(ctx, new StreamDBCondition(xmlExpression, hostList, sourceTypeList).condition())).map(StreamIDs::streamIdList).collect(Collectors.toList());
-        LOGGER.info("Stream ID list <{}>", streamIDs);
-
-        final List<ScanRange> scanRangeImpls = streamIDs
-                .stream()
-                // map stream ids to a list of ScanRanges
-                .map(
-                        streamIDList -> streamIDList
-                                .stream()
-                                .map(streamId -> new ScanRangeImpl(streamId, earliest, latest, filterList))
-                                .collect(Collectors.toList())
-                )
-                // flatten resulting scan range lists into a single list
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER
-                    .info(
-                            "Created <{}> scan ranges with earliest <{}> to latest <{}>", scanRangeImpls.size(),
-                            earliest, latest
-                    );
-        }
-        final MergeIntersectingRanges mergeIntersectingRanges = new MergeIntersectingRanges(scanRangeImpls);
-        return mergeIntersectingRanges.mergedRanges();
+    @Override
+    public List<ScanPlan> value() {
+        final ClassifiedExpressions classifiedExpressions = new ClassifiedExpressions(expressions);
+        final ScanTimeQualifiers scanTimeQualifiers = new ScanTimeQualifiers(classifiedExpressions);
+        final FilterGroup filterGroup = new FilterGroup(classifiedExpressions);
+        final PlannedScans plannedScans = new PlannedScans(scanTimeQualifiers, filterGroup);
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(ctx, classifiedExpressions);
+        final List<ScanPlan> rangeList = plannedScans.planListForGroup(streamIDGroup);
+        final MergeIntersectingPlans mergeIntersectingPlans = new MergeIntersectingPlans(rangeList);
+        return mergeIntersectingPlans.mergedRanges();
     }
 
     @Override
@@ -201,7 +90,7 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanRange>
     }
 
     @Override
-    public LeafExpression<List<ScanRange>> asLeaf() {
+    public LeafExpression<List<ScanPlan>> asLeaf() {
         return this;
     }
 

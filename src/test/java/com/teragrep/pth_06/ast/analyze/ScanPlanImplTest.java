@@ -50,65 +50,65 @@ import org.apache.hadoop.hbase.filter.FilterList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public final class ScanRangeImplTest {
+public final class ScanPlanImplTest {
 
     @Test
-    public void testIntersectsEnd() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 18L, 30L, new FilterList());
-        Assertions.assertTrue(scanRange.intersects(intersectingScanRange));
+    public void testMergeableEnd() {
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterList());
+        Assertions.assertTrue(scanPlan.mergeable(intersectingScanPlan));
     }
 
     @Test
-    public void testIntersectsStart() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 18L, 30L, new FilterList());
-        Assertions.assertTrue(intersectingScanRange.intersects(scanRange));
+    public void testMergeableStart() {
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterList());
+        Assertions.assertTrue(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testDifferentStreamIDDoesNotIntersect() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(2L, 18L, 30L, new FilterList());
-        Assertions.assertFalse(intersectingScanRange.intersects(scanRange));
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(2L, 18L, 30L, new FilterList());
+        Assertions.assertFalse(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testDifferentFilterListDoesNotIntersect() {
         FilterList mustPassAll = new FilterList(FilterList.Operator.MUST_PASS_ALL);
         FilterList mustPassOne = new FilterList(FilterList.Operator.MUST_PASS_ONE);
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, mustPassAll);
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 18L, 30L, mustPassOne);
-        Assertions.assertFalse(scanRange.intersects(intersectingScanRange));
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, mustPassAll);
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, mustPassOne);
+        Assertions.assertFalse(scanPlan.mergeable(intersectingScanPlan));
     }
 
     @Test
     public void testTouchingEdgesIntersect() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 20L, 30L, new FilterList());
-        Assertions.assertTrue(intersectingScanRange.intersects(scanRange));
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterList());
+        Assertions.assertTrue(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testIntersectingMerge() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 20L, 30L, new FilterList());
-        ScanRange merged = scanRange.merge(intersectingScanRange);
-        Assertions.assertEquals(new ScanRangeImpl(1L, 10L, 30L, new FilterList()), merged);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterList());
+        ScanPlan merged = scanPlan.merge(intersectingScanPlan);
+        Assertions.assertEquals(new ScanPlanImpl(1L, 10L, 30L, new FilterList()), merged);
     }
 
     @Test
     public void testEncompassingMerge() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange intersectingScanRange = new ScanRangeImpl(1L, 1L, 30L, new FilterList());
-        ScanRange merged = scanRange.merge(intersectingScanRange);
-        Assertions.assertEquals(new ScanRangeImpl(1L, 1L, 30L, new FilterList()), merged);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 1L, 30L, new FilterList());
+        ScanPlan merged = scanPlan.merge(intersectingScanPlan);
+        Assertions.assertEquals(new ScanPlanImpl(1L, 1L, 30L, new FilterList()), merged);
     }
 
     @Test
     public void testRangeBetweenUpdatedEarliestUpdated() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBetween = scanRange.toRangeBetween(15L, 20L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBetween = scanPlan.toRangeBetween(15L, 20L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(15L, rangeBetween.earliest());
         Assertions.assertEquals(20L, rangeBetween.latest());
@@ -116,8 +116,8 @@ public final class ScanRangeImplTest {
 
     @Test
     public void testRangeBetweenUpdatedLatestUpdated() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBetween = scanRange.toRangeBetween(10L, 15L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 15L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
         Assertions.assertEquals(15L, rangeBetween.latest());
@@ -125,8 +125,8 @@ public final class ScanRangeImplTest {
 
     @Test
     public void testRangeBetweenUpdatedEarliestWithinBounds() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBetween = scanRange.toRangeBetween(1L, 20L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBetween = scanPlan.toRangeBetween(1L, 20L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
         Assertions.assertEquals(20L, rangeBetween.latest());
@@ -134,15 +134,15 @@ public final class ScanRangeImplTest {
 
     @Test
     public void testRangeBetweenUpdatedLatestToEarliest() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBetween = scanRange.toRangeBetween(10L, 10L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 10L);
         Assertions.assertTrue(rangeBetween.isStub());
     }
 
     @Test
     public void testRangeBetweenUpdatedLatestWithinBounds() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBetween = scanRange.toRangeBetween(10L, 30L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 30L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
         Assertions.assertEquals(20L, rangeBetween.latest());
@@ -150,25 +150,25 @@ public final class ScanRangeImplTest {
 
     @Test
     public void testToRangeOutsideBoundsStub() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange rangeBehind = scanRange.toRangeBetween(1L, 9L);
-        ScanRange rangeAfter = scanRange.toRangeBetween(21L, 50L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan rangeBehind = scanPlan.toRangeBetween(1L, 9L);
+        ScanPlan rangeAfter = scanPlan.toRangeBetween(21L, 50L);
         Assertions.assertTrue(rangeBehind.isStub());
         Assertions.assertTrue(rangeAfter.isStub());
     }
 
     @Test
     public void testFromEarliest() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange fromEarliest = scanRange.rangeFromEarliest(15L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan fromEarliest = scanPlan.rangeFromEarliest(15L);
         Assertions.assertEquals(15L, fromEarliest.earliest());
         Assertions.assertEquals(20L, fromEarliest.latest());
     }
 
     @Test
     public void testFromLatest() {
-        ScanRange scanRange = new ScanRangeImpl(1L, 10L, 20L, new FilterList());
-        ScanRange fromEarliest = scanRange.rangeUntilLatest(15L);
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan fromEarliest = scanPlan.rangeUntilLatest(15L);
         Assertions.assertEquals(10L, fromEarliest.earliest());
         Assertions.assertEquals(15L, fromEarliest.latest());
     }
@@ -176,7 +176,7 @@ public final class ScanRangeImplTest {
     @Test
     public void testContract() {
         EqualsVerifier
-                .forClass(ScanRangeImpl.class)
+                .forClass(ScanPlanImpl.class)
                 .withNonnullFields("streamId", "earliest", "latest", "filterList")
                 .verify();
     }

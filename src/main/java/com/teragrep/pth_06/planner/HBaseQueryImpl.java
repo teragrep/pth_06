@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.ScanRange;
+import com.teragrep.pth_06.ast.analyze.ScanPlan;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
 import com.teragrep.pth_06.ast.analyze.ScanRangeCollection;
 import com.teragrep.pth_06.ast.analyze.View;
@@ -73,14 +73,14 @@ public final class HBaseQueryImpl implements HBaseQuery {
 
     @Override
     public long earliest() {
-        final List<ScanRange> rangeList = scanRangeCollection.asList();
+        final List<ScanPlan> rangeList = scanRangeCollection.asList();
         final long earliest;
         if (rangeList.isEmpty()) {
             earliest = ZonedDateTime.now().minusHours(24).toEpochSecond();
         }
         else {
             long min = Long.MAX_VALUE;
-            for (final ScanRange range : rangeList) {
+            for (final ScanPlan range : rangeList) {
                 min = Math.min(min, range.earliest());
             }
             earliest = min;
@@ -118,7 +118,7 @@ public final class HBaseQueryImpl implements HBaseQuery {
     @Override
     public List<View> openViews() {
         final List<View> views = new ArrayList<>();
-        for (final ScanRange range : scanRangeCollection.asList()) {
+        for (final ScanPlan range : scanRangeCollection.asList()) {
             views.add(new ScanRangeView(range, table));
         }
         return views;

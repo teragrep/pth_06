@@ -45,34 +45,42 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.Stubbable;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
 
-final class CalculatedTimeQualifierValue {
+/** Logical plan for a row key range scan of HBase */
+public interface ScanPlan extends Stubbable {
 
-    private final XMLValueExpression expression;
+    /** Prepares the logical plan to a HBase Scan object */
+    public abstract Scan toScan();
 
-    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
-        this.expression = expression;
-    }
+    /** new ScanRange with new earliest value if inside the scope, otherwise no changes */
+    public abstract ScanPlan rangeFromEarliest(long earliest);
 
-    long value() {
-        final long value;
-        final Expression.Tag tag = expression.tag();
-        final String operation = expression.operation();
-        final long parsedValue = Long.parseLong(expression.value());
-        if ("GE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
-            value = parsedValue + 1; // exclude earliest epoch
-        }
-        else if ("LE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue - 1; // exclude latest epoch
-        }
-        else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue;
-        }
-        else {
-            throw new IllegalArgumentException("expression was not a time qualifier");
-        }
-        return value;
-    }
+    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
+    public abstract ScanPlan rangeUntilLatest(long latest);
+
+    /** Returns stub when new range is outside the original range */
+    public abstract ScanPlan toRangeBetween(long earliest, long latest);
+
+    public abstract long streamId();
+
+    public abstract long earliest();
+
+    public abstract long latest();
+
+    public abstract FilterList filterList();
+
+    /**
+     * Returns true if the ranges overlap or touch
+     * <p>
+     * e.g. [10, 20] overlaps with [19, 20] and also with [20,30]
+     * </p>
+     */
+    public abstract boolean mergeable(ScanPlan scanPlan);
+
+    /** Merge two ScanRanges with the smaller earliest and larger latest values */
+    public abstract ScanPlan merge(ScanPlan scanPlan);
+
 }

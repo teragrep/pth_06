@@ -45,8 +45,8 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.ScanRange;
-import com.teragrep.pth_06.ast.analyze.ScanRangeImpl;
+import com.teragrep.pth_06.ast.analyze.ScanPlan;
+import com.teragrep.pth_06.ast.analyze.ScanPlanImpl;
 import com.teragrep.pth_06.ast.analyze.ScanRangeView;
 import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
@@ -206,8 +206,8 @@ class SynchronizedHourlyResultsTest {
 
     @Test
     public void testSingleView() {
-        ScanRange scanRange = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanRangeView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
@@ -224,8 +224,8 @@ class SynchronizedHourlyResultsTest {
 
     @Test
     public void testMultipleHourlyResults() {
-        ScanRange scanRange = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanRangeView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> firstHourResults = synchronizedHourlyResults.nextHour();
@@ -243,10 +243,10 @@ class SynchronizedHourlyResultsTest {
 
     @Test
     public void multipleScanRangeViewTest() {
-        ScanRange scanRange1 = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
-        ScanRange scanRange2 = new ScanRangeImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView1 = new ScanRangeView(scanRange1, logfileTable);
-        ScanRangeView scanRangeView2 = new ScanRangeView(scanRange2, logfileTable);
+        ScanPlan scanPlan1 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanPlan scanPlan2 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanRangeView scanRangeView1 = new ScanRangeView(scanPlan1, logfileTable);
+        ScanRangeView scanRangeView2 = new ScanRangeView(scanPlan2, logfileTable);
         List<View> views = Arrays.asList(scanRangeView1, scanRangeView2);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
@@ -265,8 +265,8 @@ class SynchronizedHourlyResultsTest {
 
     @Test
     public void testHasNextReturnsFalseAfterAllViewsFinished() {
-        ScanRange scanRange = new ScanRangeImpl(1, 1, 1262296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterList());
+        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
         SynchronizedHourlyResults syncResults = new SynchronizedHourlyResults(
                 Collections.singletonList(scanRangeView),
                 1262296800

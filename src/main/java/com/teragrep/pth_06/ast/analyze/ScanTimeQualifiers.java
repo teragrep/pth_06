@@ -45,34 +45,54 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
 import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-final class CalculatedTimeQualifierValue {
+import java.util.List;
 
-    private final XMLValueExpression expression;
+public final class ScanTimeQualifiers {
 
-    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
-        this.expression = expression;
+    private final Logger LOGGER = LoggerFactory.getLogger(ScanTimeQualifiers.class);
+    private final List<XMLValueExpression> earliestList;
+    private final List<XMLValueExpression> latestList;
+
+    public ScanTimeQualifiers(final ClassifiedExpressions classifiedExpressions) {
+        this(classifiedExpressions.earliestList(), classifiedExpressions.latestList());
     }
 
-    long value() {
-        final long value;
-        final Expression.Tag tag = expression.tag();
-        final String operation = expression.operation();
-        final long parsedValue = Long.parseLong(expression.value());
-        if ("GE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
-            value = parsedValue + 1; // exclude earliest epoch
+    public ScanTimeQualifiers(final List<XMLValueExpression> earliestList, final List<XMLValueExpression> latestList) {
+        this.earliestList = earliestList;
+        this.latestList = latestList;
+    }
+
+    public long earliest() {
+        if (earliestList.isEmpty()) {
+            throw new IllegalStateException("Scan group did not have required time qualifiers");
         }
-        else if ("LE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue - 1; // exclude latest epoch
+        else if (earliestList.size() > 1 && LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Multiple time qualifiers found. earliest size: <{}>", earliestList.size());
         }
-        else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue;
+        long earliest = Long.MAX_VALUE;
+        for (final XMLValueExpression expression : earliestList) {
+            final long expressionCalculatedValue = new CalculatedTimeQualifierValue(expression).value();
+            earliest = Math.min(earliest, expressionCalculatedValue);
         }
-        else {
-            throw new IllegalArgumentException("expression was not a time qualifier");
+        return earliest;
+    }
+
+    public long latest() {
+        if (latestList.isEmpty()) {
+            throw new IllegalStateException("Scan group did not have required time qualifiers");
         }
-        return value;
+        else if (latestList.size() > 1 && LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Multiple time qualifiers found. latest size: <{}>", latestList.size());
+        }
+        long latest = Long.MIN_VALUE;
+        for (final XMLValueExpression expression : latestList) {
+            final long expressionValue = Long.parseLong(expression.value());
+            latest = Math.max(latest, expressionValue);
+        }
+        return latest;
     }
 }

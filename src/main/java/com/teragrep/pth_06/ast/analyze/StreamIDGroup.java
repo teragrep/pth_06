@@ -45,42 +45,51 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.Stubbable;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
+import com.teragrep.pth_06.ast.meta.StreamDBCondition;
+import com.teragrep.pth_06.ast.meta.StreamIDs;
+import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import org.jooq.DSLContext;
 
-/** Logical plan for a row key range scan of HBase */
-public interface ScanRange extends Stubbable {
+import java.util.ArrayList;
+import java.util.List;
 
-    /** Prepares the logical plan to a HBase Scan object */
-    public abstract Scan toScan();
+public final class StreamIDGroup {
 
-    /** new ScanRange with new earliest value if inside the scope, otherwise no changes */
-    public abstract ScanRange rangeFromEarliest(long earliest);
+    private final DSLContext ctx;
+    private final List<XMLValueExpression> indexList;
+    private final List<XMLValueExpression> hostList;
+    private final List<XMLValueExpression> sourceTypeList;
 
-    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
-    public abstract ScanRange rangeUntilLatest(long latest);
+    public StreamIDGroup(DSLContext ctx, ClassifiedExpressions classifiedExpressions) {
+        this(
+                ctx,
+                classifiedExpressions.indexList(),
+                classifiedExpressions.hostList(),
+                classifiedExpressions.sourceTypeList()
+        );
+    }
 
-    /** Returns stub when new range is outside the original range */
-    public abstract ScanRange toRangeBetween(long earliest, long latest);
+    public StreamIDGroup(
+            final DSLContext ctx,
+            final List<XMLValueExpression> indexList,
+            final List<XMLValueExpression> hostList,
+            final List<XMLValueExpression> sourceTypeList
+    ) {
+        this.ctx = ctx;
+        this.indexList = indexList;
+        this.hostList = hostList;
+        this.sourceTypeList = sourceTypeList;
+    }
 
-    public abstract long streamId();
-
-    public abstract long earliest();
-
-    public abstract long latest();
-
-    public abstract FilterList filterList();
-
-    /**
-     * Returns true if the ranges overlap or touch
-     * <p>
-     * e.g. [10, 20] overlaps with [19, 20] and also with [20,30]
-     * </p>
-     */
-    public abstract boolean intersects(ScanRange scanRange);
-
-    /** Merge two ScanRanges with the smaller earliest and larger latest values */
-    public abstract ScanRange merge(ScanRange scanRange);
-
+    public List<Long> combinedStreamIds() {
+        final List<Long> streamIdList = new ArrayList<>();
+        for (final XMLValueExpression indexExpression : indexList) {
+            StreamIDs streamIDs = new StreamIDs(
+                    ctx,
+                    new StreamDBCondition(indexExpression, hostList, sourceTypeList).condition()
+            );
+            streamIdList.addAll(streamIDs.streamIdList());
+        }
+        return streamIdList;
+    }
 }

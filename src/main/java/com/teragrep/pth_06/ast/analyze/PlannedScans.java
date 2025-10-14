@@ -43,44 +43,32 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast;
-
-import com.teragrep.pth_06.ast.analyze.ScanRange;
+package com.teragrep.pth_06.ast.analyze;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-public final class MergeIntersectingRanges {
+public final class PlannedScans {
 
-    private final List<ScanRange> scanRanges;
+    private final ScanTimeQualifiers window;
+    private final FilterGroup filterGroup;
 
-    public MergeIntersectingRanges(final List<ScanRange> scanRanges) {
-        this.scanRanges = scanRanges;
+    public PlannedScans(final ScanTimeQualifiers window, final FilterGroup filterGroup) {
+        this.window = window;
+        this.filterGroup = filterGroup;
     }
 
-    public List<ScanRange> mergedRanges() {
-        final List<ScanRange> result;
-        if (!scanRanges.isEmpty()) {
-            final List<ScanRange> sorted = new ArrayList<>(scanRanges);
-            sorted.sort(Comparator.comparing(ScanRange::earliest));
-            result = new ArrayList<>();
-            ScanRange current = sorted.get(0);
-            // interval merging
-            for (int i = 1; i < sorted.size(); i++) {
-                final ScanRange next = sorted.get(i);
-                if (current.intersects(next)) {
-                    current = current.merge(next);
-                }
-                else {
-                    result.add(current);
-                }
-            }
-            result.add(current);
+    public List<ScanPlan> planListForGroup(final StreamIDGroup streamIDGroup) {
+        final List<ScanPlan> plannedScans = new ArrayList<>();
+        for (final long streamId : streamIDGroup.combinedStreamIds()) {
+            final ScanPlan scanPlan = new ScanPlanImpl(
+                    streamId,
+                    window.earliest(),
+                    window.latest(),
+                    filterGroup.filterList()
+            );
+            plannedScans.add(scanPlan);
         }
-        else {
-            result = scanRanges;
-        }
-        return result;
+        return plannedScans;
     }
 }

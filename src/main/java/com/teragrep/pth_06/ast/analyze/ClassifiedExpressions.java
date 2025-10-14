@@ -45,66 +45,47 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 
-public final class StubScanRange implements ScanRange {
+import java.util.ArrayList;
+import java.util.List;
 
-    @Override
-    public boolean isStub() {
-        return true;
+public final class ClassifiedExpressions {
+
+    private final List<Expression> expressions;
+
+    public ClassifiedExpressions(final List<Expression> expressions) {
+        this.expressions = expressions;
     }
 
-    @Override
-    public Scan toScan() {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    public List<XMLValueExpression> indexList() {
+        return expressionListFilteredByTag(Expression.Tag.INDEX);
     }
 
-    @Override
-    public ScanRange rangeFromEarliest(final long earliest) {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    public List<XMLValueExpression> sourceTypeList() {
+        return expressionListFilteredByTag(Expression.Tag.SOURCETYPE);
     }
 
-    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
-    @Override
-    public ScanRange rangeUntilLatest(final long latest) {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    public List<XMLValueExpression> hostList() {
+        return expressionListFilteredByTag(Expression.Tag.HOST);
     }
 
-    /** Returns stub when new range is outside the original range */
-    @Override
-    public ScanRange toRangeBetween(final long earliest, final long latest) {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    public List<XMLValueExpression> earliestList() {
+        return expressionListFilteredByTag(Expression.Tag.EARLIEST);
     }
 
-    @Override
-    public long streamId() {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    public List<XMLValueExpression> latestList() {
+        return expressionListFilteredByTag(Expression.Tag.LATEST);
     }
 
-    @Override
-    public long earliest() {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    private List<XMLValueExpression> expressionListFilteredByTag(final Expression.Tag tag) {
+        final List<XMLValueExpression> list = new ArrayList<>();
+        for (Expression expression : expressions) {
+            if (expression.tag().equals(tag) && expression.isLeaf()) {
+                list.add((XMLValueExpression) expression);
+            }
+        }
+        return list;
     }
-
-    @Override
-    public long latest() {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
-    }
-
-    @Override
-    public FilterList filterList() {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
-    }
-
-    @Override
-    public boolean intersects(final ScanRange scanRange) {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
-    }
-
-    @Override
-    public ScanRange merge(final ScanRange scanRange) {
-        throw new UnsupportedOperationException("Method not supported for StubScanRange");
-    }
-
 }

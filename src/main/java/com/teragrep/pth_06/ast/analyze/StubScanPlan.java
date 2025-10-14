@@ -45,34 +45,66 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
 
-final class CalculatedTimeQualifierValue {
+public final class StubScanPlan implements ScanPlan {
 
-    private final XMLValueExpression expression;
-
-    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
-        this.expression = expression;
+    @Override
+    public boolean isStub() {
+        return true;
     }
 
-    long value() {
-        final long value;
-        final Expression.Tag tag = expression.tag();
-        final String operation = expression.operation();
-        final long parsedValue = Long.parseLong(expression.value());
-        if ("GE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
-            value = parsedValue + 1; // exclude earliest epoch
-        }
-        else if ("LE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue - 1; // exclude latest epoch
-        }
-        else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue;
-        }
-        else {
-            throw new IllegalArgumentException("expression was not a time qualifier");
-        }
-        return value;
+    @Override
+    public Scan toScan() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
+
+    @Override
+    public ScanPlan rangeFromEarliest(final long earliest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
+    @Override
+    public ScanPlan rangeUntilLatest(final long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    /** Returns stub when new range is outside the original range */
+    @Override
+    public ScanPlan toRangeBetween(final long earliest, final long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public long streamId() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public long earliest() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public long latest() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public FilterList filterList() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public boolean mergeable(final ScanPlan scanPlan) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    @Override
+    public ScanPlan merge(final ScanPlan scanPlan) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
 }

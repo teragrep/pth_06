@@ -74,7 +74,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ScanRangeViewTest {
+public class ScanPlanViewTest {
 
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
@@ -204,14 +204,14 @@ public class ScanRangeViewTest {
 
     @Test
     public void testRangeInitiallyNotOpen() {
-        ScanRangeImpl scanRange = new ScanRangeImpl(1, 1, 10000, new FilterList());
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
         ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
         Assertions.assertFalse(scanRangeView.isOpen());
     }
 
     @Test
     public void testRangeInitiallyNotFinished() {
-        ScanRangeImpl scanRange = new ScanRangeImpl(1, 1, 10000, new FilterList());
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
         ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
         Assertions.assertFalse(scanRangeView.isFinished());
     }

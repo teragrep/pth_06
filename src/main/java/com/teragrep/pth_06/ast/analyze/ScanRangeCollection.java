@@ -71,7 +71,7 @@ public final class ScanRangeCollection {
 
     private final Config config;
     private final Expression root;
-    private final List<ScanRange> scanRanges;
+    private final List<ScanPlan> scanPlans;
 
     public ScanRangeCollection(final Config config) {
         this(config, new WithDefaultValues(config));
@@ -85,13 +85,13 @@ public final class ScanRangeCollection {
         this(config, root, new ArrayList<>());
     }
 
-    private ScanRangeCollection(Config config, final Expression root, final List<ScanRange> scanRanges) {
+    private ScanRangeCollection(Config config, final Expression root, final List<ScanPlan> scanPlans) {
         this.config = config;
         this.root = root;
-        this.scanRanges = scanRanges;
+        this.scanPlans = scanPlans;
     }
 
-    public List<ScanRange> asList() {
+    public List<ScanPlan> asList() {
         final String userName = config.archiveConfig.dbUsername;
         final String password = config.archiveConfig.dbPassword;
         final String url = config.archiveConfig.dbUrl;
@@ -119,10 +119,10 @@ public final class ScanRangeCollection {
         }
 
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        if (scanRanges.isEmpty()) {
+        if (scanPlans.isEmpty()) {
             findScanRanges(ctx, root);
         }
-        return scanRanges;
+        return scanPlans;
     }
 
     private void findScanRanges(final DSLContext ctx, final Expression expression) {
@@ -134,7 +134,7 @@ public final class ScanRangeCollection {
                 }
             }
             final ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, expression.asLogical());
-            scanRanges.addAll(scanGroupExpression.value());
+            scanPlans.addAll(scanGroupExpression.value());
         }
     }
 
@@ -148,11 +148,11 @@ public final class ScanRangeCollection {
         }
         final ScanRangeCollection that = (ScanRangeCollection) o;
         return Objects.equals(config, that.config) && Objects.equals(root, that.root)
-                && Objects.equals(scanRanges, that.scanRanges);
+                && Objects.equals(scanPlans, that.scanPlans);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(config, root, scanRanges);
+        return Objects.hash(config, root, scanPlans);
     }
 }

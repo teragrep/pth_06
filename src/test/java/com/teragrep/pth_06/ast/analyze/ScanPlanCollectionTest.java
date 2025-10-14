@@ -66,7 +66,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final class ScanRangeCollectionTest {
+public final class ScanPlanCollectionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
@@ -117,8 +117,8 @@ public final class ScanRangeCollectionTest {
                 .asList(new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
         AndExpression andExpression = new AndExpression(list);
         ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanRange> scanRanges = scanGroupExpression.value();
-        Assertions.assertTrue(scanRanges.isEmpty());
+        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        Assertions.assertTrue(scanPlans.isEmpty());
     }
 
     @Test
@@ -129,8 +129,8 @@ public final class ScanRangeCollectionTest {
                 .asList(new XMLValueExpressionImpl("test_host", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
         Expression andExpression = new WithDefaultValues(24, new AndExpression(list)).transformed();
         ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression.asLogical());
-        List<ScanRange> scanRanges = scanGroupExpression.value();
-        Assertions.assertFalse(scanRanges.isEmpty());
+        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        Assertions.assertFalse(scanPlans.isEmpty());
     }
 
     @Test

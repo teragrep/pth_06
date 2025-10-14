@@ -51,14 +51,14 @@ import org.apache.hadoop.hbase.filter.FilterList;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-public final class ScanRangeImpl implements ScanRange {
+public final class ScanPlanImpl implements ScanPlan {
 
     private final long streamId;
     private final long earliest;
     private final long latest;
     private final FilterList filterList;
 
-    public ScanRangeImpl(final long streamId, final long earliest, final long latest, final FilterList filterList) {
+    public ScanPlanImpl(final long streamId, final long earliest, final long latest, final FilterList filterList) {
         this.streamId = streamId;
         this.earliest = earliest;
         this.latest = latest;
@@ -79,31 +79,35 @@ public final class ScanRangeImpl implements ScanRange {
     }
 
     @Override
-    public ScanRange rangeFromEarliest(final long earliestLimit) {
+    public ScanPlan rangeFromEarliest(final long earliestLimit) {
+        final long updatedEarliest;
         if (earliest < earliestLimit && earliestLimit < latest) {
-            return new ScanRangeImpl(streamId, earliestLimit, latest, filterList);
+            updatedEarliest = earliestLimit;
         }
         else {
-            return this;
+            updatedEarliest = earliestLimit;
         }
+        return new ScanPlanImpl(streamId, updatedEarliest, latest, filterList);
     }
 
     @Override
-    public ScanRange rangeUntilLatest(final long latestLimit) {
+    public ScanPlan rangeUntilLatest(final long latestLimit) {
+        final long updatedLatest;
         if (earliest < latestLimit && latestLimit < latest) {
-            return new ScanRangeImpl(streamId, earliest, latestLimit, filterList);
+            updatedLatest = latestLimit;
         }
         else {
-            return this;
+            updatedLatest = latest;
         }
+        return new ScanPlanImpl(streamId, earliest, updatedLatest, filterList);
     }
 
     @Override
-    public ScanRange toRangeBetween(long earliestLimit, long latestLimit) {
-        final boolean rangeIntersects = new ScanRangeImpl(streamId, earliestLimit - 1, latestLimit + 1, filterList)
-                .intersects(this);
-        final ScanRange result;
-        if (rangeIntersects) {
+    public ScanPlan toRangeBetween(final long earliestLimit, final long latestLimit) {
+        final boolean limitsIntersect = new ScanPlanImpl(streamId, earliestLimit - 1, latestLimit + 1, filterList)
+                .mergeable(this);
+        final ScanPlan result;
+        if (limitsIntersect) {
             long updatedEarliest = earliest;
             long updatedLatest = latest;
             if (earliestLimit > earliest) {
@@ -113,33 +117,37 @@ public final class ScanRangeImpl implements ScanRange {
                 updatedLatest = latestLimit;
             }
             if (updatedEarliest == updatedLatest) {
-                result = new StubScanRange();
+                result = new StubScanPlan();
             }
             else if (updatedEarliest > updatedLatest) {
-                result = new StubScanRange();
+                result = new StubScanPlan();
             }
             else {
-                result = new ScanRangeImpl(streamId, updatedEarliest, updatedLatest, filterList);
+                result = new ScanPlanImpl(streamId, updatedEarliest, updatedLatest, filterList);
             }
         }
         else {
-            result = new StubScanRange();
+            result = new StubScanPlan();
         }
         return result;
     }
 
-    public boolean intersects(final ScanRange other) {
+    public boolean mergeable(final ScanPlan other) {
+        final boolean intersects;
         if (!Objects.equals(this.streamId, other.streamId()) || !filterList.equals(other.filterList())) {
-            return false;
+            intersects = false;
         }
-        return this.earliest <= other.latest() && other.earliest() <= this.latest;
+        else {
+            intersects = this.earliest <= other.latest() && other.earliest() <= this.latest;
+        }
+        return intersects;
     }
 
-    public ScanRangeImpl merge(final ScanRange other) {
-        if (intersects(other)) {
+    public ScanPlanImpl merge(final ScanPlan other) {
+        if (mergeable(other)) {
             final long minEarliest = Math.min(earliest, other.earliest());
             final long maxLatest = Math.max(latest, other.latest());
-            return new ScanRangeImpl(streamId, minEarliest, maxLatest, filterList);
+            return new ScanPlanImpl(streamId, minEarliest, maxLatest, filterList);
         }
         else {
             throw new IllegalArgumentException("Unable to merge ranges did not intersect");
@@ -157,7 +165,7 @@ public final class ScanRangeImpl implements ScanRange {
         if (getClass() != object.getClass()) {
             return false;
         }
-        final ScanRangeImpl scanRangeImpl = (ScanRangeImpl) object;
+        final ScanPlanImpl scanRangeImpl = (ScanPlanImpl) object;
         return Objects.equals(streamId, scanRangeImpl.streamId) && Objects.equals(earliest, scanRangeImpl.earliest)
                 && Objects.equals(latest, scanRangeImpl.latest) && Objects.equals(filterList, scanRangeImpl.filterList);
     }

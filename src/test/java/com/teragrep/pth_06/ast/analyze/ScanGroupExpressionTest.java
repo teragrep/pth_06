@@ -115,8 +115,8 @@ public class ScanGroupExpressionTest {
                 .asList(new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
         AndExpression andExpression = new AndExpression(list);
         ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanRange> scanRanges = scanGroupExpression.value();
-        Assertions.assertTrue(scanRanges.isEmpty());
+        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        Assertions.assertTrue(scanPlans.isEmpty());
     }
 
     @Test
@@ -127,8 +127,8 @@ public class ScanGroupExpressionTest {
                 .asList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_host", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
         AndExpression andExpression = new AndExpression(list);
         ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanRange> scanRanges = scanGroupExpression.value();
-        Assertions.assertFalse(scanRanges.isEmpty());
+        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        Assertions.assertFalse(scanPlans.isEmpty());
     }
 
     private void insertTestValues() throws SQLException {

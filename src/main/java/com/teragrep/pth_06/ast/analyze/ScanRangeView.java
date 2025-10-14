@@ -56,7 +56,7 @@ import java.util.List;
 
 public final class ScanRangeView implements View {
 
-    private final ScanRange scanRange;
+    private final ScanPlan scanPlan;
     private final LogfileTable logfileTable;
     private long currentEpoch;
     private ResultScanner resultScanner;
@@ -64,11 +64,11 @@ public final class ScanRangeView implements View {
     private boolean isOpen;
     private boolean isFinished;
 
-    public ScanRangeView(final ScanRange scanRange, final LogfileTable logfileTable) {
-        this.scanRange = scanRange;
+    public ScanRangeView(final ScanPlan scanPlan, final LogfileTable logfileTable) {
+        this.scanPlan = scanPlan;
         this.logfileTable = logfileTable;
         this.resultScanner = null;
-        this.currentEpoch = scanRange.earliest();
+        this.currentEpoch = scanPlan.earliest();
         this.isOpen = false;
         this.isFinished = false;
     }
@@ -85,7 +85,7 @@ public final class ScanRangeView implements View {
 
     @Override
     public void open() {
-        if (scanRange.isStub()) {
+        if (scanPlan.isStub()) {
             throw new IllegalStateException("ScanRange was stub");
         }
         if (isOpen) {
@@ -93,7 +93,7 @@ public final class ScanRangeView implements View {
         }
         else {
             try {
-                resultScanner = logfileTable.table().getScanner(scanRange.toScan());
+                resultScanner = logfileTable.table().getScanner(scanPlan.toScan());
                 isOpen = true;
                 isFinished = false;
                 bufferedResult = null;
@@ -115,7 +115,7 @@ public final class ScanRangeView implements View {
 
     @Override
     public boolean isEndOffsetWithinRange(final long offset) {
-        return offset <= scanRange.latest();
+        return offset <= scanPlan.latest();
     }
 
     /**
@@ -127,13 +127,13 @@ public final class ScanRangeView implements View {
      */
     @Override
     public View viewFromOffset(final long fromOffset) {
-        if (scanRange.isStub()) {
+        if (scanPlan.isStub()) {
             throw new IllegalStateException("ScanRange was stub");
         }
-        if (fromOffset > scanRange.latest()) {
+        if (fromOffset > scanPlan.latest()) {
             throw new IllegalArgumentException("fromOffset was later than the scan range latest");
         }
-        return new ScanRangeView(scanRange.rangeFromEarliest(fromOffset), logfileTable);
+        return new ScanRangeView(scanPlan.rangeFromEarliest(fromOffset), logfileTable);
     }
 
     @Override
@@ -152,7 +152,7 @@ public final class ScanRangeView implements View {
      */
     @Override
     public List<Result> nextWindow(final long duration) throws IOException {
-        if (scanRange.isStub()) {
+        if (scanPlan.isStub()) {
             throw new IllegalStateException("ScanRange was stub");
         }
         if (!isOpen) {
