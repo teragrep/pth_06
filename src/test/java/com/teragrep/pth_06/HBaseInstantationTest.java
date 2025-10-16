@@ -99,7 +99,7 @@ public final class HBaseInstantationTest {
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
     private final String s3credential = "s3credential";
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+    String url;
     final String userName = "sa";
     final String password = "";
     final Map<String, String> opts = new HashMap<>();
@@ -122,7 +122,6 @@ public final class HBaseInstantationTest {
         opts.put("S3credential", "S3credential");
         opts.put("DBusername", userName);
         opts.put("DBpassword", password);
-        opts.put("DBurl", url);
 
         spark = SparkSession
                 .builder()
@@ -157,6 +156,9 @@ public final class HBaseInstantationTest {
 
     @BeforeEach
     public void beforeEach() {
+        url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        opts.put("DBurl", url);
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();

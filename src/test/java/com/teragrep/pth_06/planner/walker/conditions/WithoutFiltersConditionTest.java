@@ -63,6 +63,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
@@ -72,7 +73,6 @@ import java.util.Set;
  */
 public final class WithoutFiltersConditionTest {
 
-    private final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     private final String userName = "sa";
     private final String password = "";
     // matches IPv4
@@ -81,10 +81,15 @@ public final class WithoutFiltersConditionTest {
 
     @BeforeEach
     public void setup() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
             final String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"

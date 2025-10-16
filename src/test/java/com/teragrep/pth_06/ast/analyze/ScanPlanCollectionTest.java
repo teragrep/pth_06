@@ -64,17 +64,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ScanPlanCollectionTest {
 
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
     Connection conn;
 
     @BeforeEach
     public void beforeEach() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         // create streamdb tables
         Assertions.assertDoesNotThrow(() -> {

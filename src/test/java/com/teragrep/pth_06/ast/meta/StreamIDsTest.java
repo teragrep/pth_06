@@ -63,10 +63,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class StreamIDsTest {
 
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
     Connection conn;
@@ -74,6 +74,8 @@ public final class StreamIDsTest {
 
     @BeforeEach
     public void setup() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
         opts.put("queryXML", "query");
         opts.put("archive.enabled", "true");
         opts.put("S3endPoint", "S3endPoint");

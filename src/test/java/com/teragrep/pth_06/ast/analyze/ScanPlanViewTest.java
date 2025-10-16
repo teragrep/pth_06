@@ -73,6 +73,7 @@ import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ScanPlanViewTest {
@@ -80,7 +81,6 @@ public class ScanPlanViewTest {
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
     private final String s3credential = "s3credential";
-    private final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     private final String userName = "sa";
     private final String password = "";
     private Connection conn;
@@ -104,7 +104,6 @@ public class ScanPlanViewTest {
         opts.put("S3credential", "S3credential");
         opts.put("DBusername", userName);
         opts.put("DBpassword", password);
-        opts.put("DBurl", url);
         opts.put("quantumLength", "15");
 
         final TestingHBaseClusterOption clusterOption = TestingHBaseClusterOption
@@ -131,6 +130,9 @@ public class ScanPlanViewTest {
 
     @BeforeEach
     public void beforeEach() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        opts.put("DBurl", url);
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
