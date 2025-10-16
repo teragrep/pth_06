@@ -73,6 +73,7 @@ import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,8 +102,8 @@ public final class HBaseInstantationTest {
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
     final Map<String, String> opts = new HashMap<>();
+    Connection conn;
     TestingHBaseCluster testCluster;
     LogfileTable logfileTable;
     private final MockS3 mockS3 = new MockS3(s3endpoint, s3identity, s3credential);
@@ -150,13 +151,13 @@ public final class HBaseInstantationTest {
         if (testCluster.isClusterRunning()) {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
-        Assertions.assertDoesNotThrow(conn::close);
         Assertions.assertDoesNotThrow(mockS3::stop);
         Assertions.assertDoesNotThrow(logfileTable::close);
     }
 
     @BeforeEach
     public void beforeEach() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
             conn.prepareStatement("USE STREAMDB").execute();
@@ -226,6 +227,11 @@ public final class HBaseInstantationTest {
                         virtualDatabaseMap.size(), resultCount, "Scanner result count should match the test data size"
                 );
         scanner.close();
+    }
+
+    @AfterEach
+    public void close() {
+        Assertions.assertDoesNotThrow(conn::close);
     }
 
     @Test

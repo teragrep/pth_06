@@ -52,11 +52,10 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
@@ -71,7 +70,6 @@ import java.util.Set;
  *
  * @see org.jooq.QueryPart
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class WithoutFiltersConditionTest {
 
     private final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
@@ -79,17 +77,14 @@ public final class WithoutFiltersConditionTest {
     private final String password = "";
     // matches IPv4
     private final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    private final Connection conn = Assertions
-            .assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    private Connection conn;
 
     @BeforeEach
     public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_2").execute();
             final String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -124,7 +119,7 @@ public final class WithoutFiltersConditionTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

@@ -70,7 +70,6 @@ import java.util.List;
  * 
  * @see org.jooq.QueryPart
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IndexStatementConditionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
@@ -86,16 +85,14 @@ public class IndexStatementConditionTest {
             false,
             true
     );
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -131,7 +128,7 @@ public class IndexStatementConditionTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

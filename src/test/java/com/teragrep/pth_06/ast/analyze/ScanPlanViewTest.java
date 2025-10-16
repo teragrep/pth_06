@@ -60,13 +60,13 @@ import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -83,8 +83,7 @@ public class ScanPlanViewTest {
     private final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     private final String userName = "sa";
     private final String password = "";
-    private final Connection conn = Assertions
-            .assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    private Connection conn;
     private final Map<String, String> opts = new HashMap<>();
     private TestingHBaseCluster testCluster;
     private LogfileTable logfileTable;
@@ -93,7 +92,6 @@ public class ScanPlanViewTest {
     @BeforeAll
     public void setup() {
         Assertions.assertDoesNotThrow(mockS3::start);
-
         opts
                 .put(
                         "queryXML",
@@ -127,13 +125,13 @@ public class ScanPlanViewTest {
         if (testCluster.isClusterRunning()) {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
-        Assertions.assertDoesNotThrow(conn::close);
         Assertions.assertDoesNotThrow(logfileTable::close);
         Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @BeforeEach
     public void beforeEach() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
             conn.prepareStatement("USE STREAMDB").execute();
@@ -194,13 +192,16 @@ public class ScanPlanViewTest {
         int resultCount = 0;
         for (org.apache.hadoop.hbase.client.Result result : scanner) {
             byte[] rowKeyBytes = result.getRow();
-            ByteBuffer buffer = ByteBuffer.wrap(rowKeyBytes);
-            String m = "Result with row key values stream_id <" + buffer.getLong() + ">-<" + buffer.getLong();
             Assertions.assertFalse(result.isEmpty());
             resultCount++;
         }
         Assertions.assertEquals(virtualDatabaseMap.size(), resultCount);
         scanner.close();
+    }
+
+    @AfterEach
+    public void close() {
+        Assertions.assertDoesNotThrow(conn::close);
     }
 
     @Test

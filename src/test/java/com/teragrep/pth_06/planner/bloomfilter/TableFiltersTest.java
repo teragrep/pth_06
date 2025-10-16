@@ -63,7 +63,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TableFiltersTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
@@ -74,14 +73,14 @@ public class TableFiltersTest {
     // matches with values surrounded by parentheses
     final String parenthesesPattern = "\\((.*?)\\)";
     final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, parenthesesPattern));
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -101,17 +100,7 @@ public class TableFiltersTest {
                 id++;
             }
         });
-    }
-
-    @BeforeEach
-    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
-            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
-            conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS target").execute();
-            // drop temp tables created by tests
-            conn.prepareStatement("DROP TABLE IF EXISTS term_0_target").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS term_1_target").execute();
             String targetTable = "CREATE TABLE `target`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
@@ -121,7 +110,7 @@ public class TableFiltersTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

@@ -74,10 +74,11 @@ public class ConditionMatchBloomDBTablesTest {
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     final String parenthesesPattern = "\\((.*?)\\)";
     final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, parenthesesPattern));
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -127,7 +128,7 @@ public class ConditionMatchBloomDBTablesTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

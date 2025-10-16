@@ -63,10 +63,9 @@ import java.util.List;
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * Inherited from the QueryPart
- * 
+ *
  * @see org.jooq.QueryPart
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CategoryTableConditionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
@@ -77,14 +76,14 @@ public class CategoryTableConditionTest {
     // matches IPv4 starting with 255.
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -104,14 +103,9 @@ public class CategoryTableConditionTest {
                 id++;
             }
         });
-    }
-
-    @BeforeEach
-    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS target").execute();
             String targetTable = "CREATE TABLE `target`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
@@ -121,7 +115,7 @@ public class CategoryTableConditionTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

@@ -51,11 +51,10 @@ import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -63,23 +62,20 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ScanGroupExpressionTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
     @BeforeEach
     public void beforeEach() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         // create streamdb tables
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
             conn.prepareStatement("USE STREAMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS host").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS stream").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS log_group").execute();
             final String createHost = "CREATE TABLE `host` (" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,"
                     + "  `name` varchar(175) COLLATE utf8mb4_unicode_ci NOT NULL,"
                     + "  `gid` int(10) unsigned NOT NULL," + "  PRIMARY KEY (`id`)," + "  KEY `host_gid` (`gid`),"
@@ -103,7 +99,7 @@ public class ScanGroupExpressionTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void stop() {
         Assertions.assertDoesNotThrow(conn::close);
     }

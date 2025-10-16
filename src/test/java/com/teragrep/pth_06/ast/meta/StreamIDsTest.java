@@ -50,12 +50,10 @@ import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -66,17 +64,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class StreamIDsTest {
 
     final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
-    Map<String, String> opts = new HashMap<>();
+    Connection conn;
+    final Map<String, String> opts = new HashMap<>();
 
-    @BeforeAll
-    public void setupDefaultOpts() {
+    @BeforeEach
+    public void setup() {
         opts.put("queryXML", "query");
         opts.put("archive.enabled", "true");
         opts.put("S3endPoint", "S3endPoint");
@@ -85,16 +82,10 @@ public final class StreamIDsTest {
         opts.put("DBusername", userName);
         opts.put("DBpassword", password);
         opts.put("DBurl", url);
-    }
-
-    @BeforeEach
-    public void setup() {
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
             conn.prepareStatement("USE STREAMDB").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS host").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS stream").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS log_group").execute();
             conn
                     .prepareStatement(
                             "CREATE TABLE `log_group` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
@@ -127,7 +118,7 @@ public final class StreamIDsTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void stop() {
         Assertions.assertDoesNotThrow(conn::close);
     }
