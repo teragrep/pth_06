@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.Stubbable;
 import com.teragrep.pth_06.ast.analyze.View;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
 import java.util.List;
 
@@ -56,11 +57,13 @@ public interface HBaseQuery extends Stubbable {
 
     public abstract long latest();
 
-    public abstract long mostRecentOffset();
-
     public abstract void updateMostRecent(long offset);
 
     public abstract void commit(long offset);
 
     public abstract List<View> openViews();
+
+    public abstract long mostRecentOffset();
+
+    public abstract CustomTaskMetric[] currentDatabaseMetrics();
 }

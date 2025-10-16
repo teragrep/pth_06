@@ -43,32 +43,59 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.factory;
+package com.teragrep.pth_06.planner.source;
 
-import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.planner.HBaseQuery;
-import com.teragrep.pth_06.planner.HBaseQueryImpl;
-import com.teragrep.pth_06.planner.source.LazySource;
-import com.teragrep.pth_06.planner.StubHBaseQuery;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public final class HBaseQueryFactory implements Factory<HBaseQuery> {
+import java.util.concurrent.atomic.AtomicReference;
 
-    private final Config config;
+public final class LazySource implements HBaseSource {
 
-    public HBaseQueryFactory(final Config config) {
-        this.config = config;
+    private final Logger LOGGER = LoggerFactory.getLogger(LazySource.class);
+
+    private final HBaseSource origin;
+    private final AtomicReference<HBaseSource> reference;
+
+    public LazySource(final Configuration configuration) {
+        this(new SourceFromConfig(configuration));
     }
 
-    public HBaseQuery object() {
-        final HBaseQuery hbaseQuery;
-        if (config.isArchiveEnabled && config.isHbaseEnabled) {
-            final Configuration hadoopConfig = config.hBaseConfig.asHadoopConfig();
-            hbaseQuery = new HBaseQueryImpl(config, new LazySource(hadoopConfig));
-        }
-        else {
-            hbaseQuery = new StubHBaseQuery();
-        }
-        return hbaseQuery;
+    public LazySource(final HBaseSource origin) {
+        this(origin, new AtomicReference<>(new DisconnectedSource()));
+    }
+
+    private LazySource(final HBaseSource origin, final AtomicReference<HBaseSource> reference) {
+        this.origin = origin;
+        this.reference = reference;
+    }
+
+    @Override
+    public Connection connection() {
+        return reference.updateAndGet(source -> {
+            if (!source.isOpen()) {
+                LOGGER.info("Opened new HBase connection");
+                return new CachedSource(origin.connection());
+            }
+            return source;
+        }).connection();
+    }
+
+    @Override
+    public boolean isOpen() {
+        return reference.get().isOpen();
+    }
+
+    @Override
+    public void close() {
+        reference.getAndUpdate(source -> {
+            if (source.isOpen()) {
+                LOGGER.info("Closing HBase source");
+                source.close();
+            }
+            return new DisconnectedSource();
+        });
     }
 }

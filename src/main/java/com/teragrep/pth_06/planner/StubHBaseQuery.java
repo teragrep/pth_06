@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ast.analyze.View;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
 import java.util.List;
 
@@ -84,5 +85,10 @@ public final class StubHBaseQuery implements HBaseQuery {
     @Override
     public List<View> openViews() {
         throw new UnsupportedOperationException("openViews() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        throw new UnsupportedOperationException("currentDatabaseMetrics() not supported for StubHBaseQuery");
     }
 }

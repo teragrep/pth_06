@@ -47,9 +47,10 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ast.analyze.ScanPlan;
 import com.teragrep.pth_06.ast.analyze.ScanPlanImpl;
-import com.teragrep.pth_06.ast.analyze.ScanRangeView;
+import com.teragrep.pth_06.ast.analyze.ScanPlanView;
 import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.source.LazySource;
 import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -79,7 +80,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SynchronizedHourlyResultsTest {
+public class SynchronizedHourlyResultsTest {
 
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
@@ -190,7 +191,8 @@ class SynchronizedHourlyResultsTest {
         });
 
         Assertions.assertTrue(testCluster.isClusterRunning());
-        logfileTable = Assertions.assertDoesNotThrow(() -> new LogfileTable(testCluster.getConf(), new Config(opts)));
+        logfileTable = Assertions
+                .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
         TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
                 .getVirtualDatabaseMap();
         Assertions.assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()));
@@ -207,8 +209,8 @@ class SynchronizedHourlyResultsTest {
     @Test
     public void testSingleView() {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
-        List<View> views = Collections.singletonList(scanRangeView);
+        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
+        List<View> views = Collections.singletonList(scanPlanView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
 
@@ -225,8 +227,8 @@ class SynchronizedHourlyResultsTest {
     @Test
     public void testMultipleHourlyResults() {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
-        List<View> views = Collections.singletonList(scanRangeView);
+        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
+        List<View> views = Collections.singletonList(scanPlanView);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> firstHourResults = synchronizedHourlyResults.nextHour();
         Assertions.assertEquals(1, firstHourResults.size());
@@ -245,9 +247,9 @@ class SynchronizedHourlyResultsTest {
     public void multipleScanRangeViewTest() {
         ScanPlan scanPlan1 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
         ScanPlan scanPlan2 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanRangeView scanRangeView1 = new ScanRangeView(scanPlan1, logfileTable);
-        ScanRangeView scanRangeView2 = new ScanRangeView(scanPlan2, logfileTable);
-        List<View> views = Arrays.asList(scanRangeView1, scanRangeView2);
+        ScanPlanView scanPlanView1 = new ScanPlanView(scanPlan1, logfileTable);
+        ScanPlanView scanPlanView2 = new ScanPlanView(scanPlan2, logfileTable);
+        List<View> views = Arrays.asList(scanPlanView1, scanPlanView2);
         SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
         List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
 
@@ -266,9 +268,9 @@ class SynchronizedHourlyResultsTest {
     @Test
     public void testHasNextReturnsFalseAfterAllViewsFinished() {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanPlan, logfileTable);
+        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         SynchronizedHourlyResults syncResults = new SynchronizedHourlyResults(
-                Collections.singletonList(scanRangeView),
+                Collections.singletonList(scanPlanView),
                 1262296800
         );
         while (syncResults.hasNext()) {

@@ -65,27 +65,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class ScanRangeCollection {
+public final class ScanPlanCollection {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ScanRangeCollection.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(ScanPlanCollection.class);
 
     private final Config config;
     private final Expression root;
     private final List<ScanPlan> scanPlans;
 
-    public ScanRangeCollection(final Config config) {
+    public ScanPlanCollection(final Config config) {
         this(config, new WithDefaultValues(config));
     }
 
-    public ScanRangeCollection(Config config, final WithDefaultValues withDefaultValues) {
+    public ScanPlanCollection(final Config config, final WithDefaultValues withDefaultValues) {
         this(config, withDefaultValues.transformed());
     }
 
-    public ScanRangeCollection(Config config, final Expression root) {
+    public ScanPlanCollection(final Config config, final Expression root) {
         this(config, root, new ArrayList<>());
     }
 
-    private ScanRangeCollection(Config config, final Expression root, final List<ScanPlan> scanPlans) {
+    private ScanPlanCollection(final Config config, final Expression root, final List<ScanPlan> scanPlans) {
         this.config = config;
         this.root = root;
         this.scanPlans = scanPlans;
@@ -146,7 +146,7 @@ public final class ScanRangeCollection {
         if (getClass() != o.getClass()) {
             return false;
         }
-        final ScanRangeCollection that = (ScanRangeCollection) o;
+        final ScanPlanCollection that = (ScanPlanCollection) o;
         return Objects.equals(config, that.config) && Objects.equals(root, that.root)
                 && Objects.equals(scanPlans, that.scanPlans);
     }

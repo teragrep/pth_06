@@ -43,32 +43,39 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.factory;
+package com.teragrep.pth_06.planner.source;
 
-import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.planner.HBaseQuery;
-import com.teragrep.pth_06.planner.HBaseQueryImpl;
-import com.teragrep.pth_06.planner.source.LazySource;
-import com.teragrep.pth_06.planner.StubHBaseQuery;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.Connection;
 
-public final class HBaseQueryFactory implements Factory<HBaseQuery> {
+import java.io.IOException;
 
-    private final Config config;
+final class CachedSource implements HBaseSource {
 
-    public HBaseQueryFactory(final Config config) {
-        this.config = config;
+    private final Connection connection;
+
+    CachedSource(final Connection connection) {
+        this.connection = connection;
     }
 
-    public HBaseQuery object() {
-        final HBaseQuery hbaseQuery;
-        if (config.isArchiveEnabled && config.isHbaseEnabled) {
-            final Configuration hadoopConfig = config.hBaseConfig.asHadoopConfig();
-            hbaseQuery = new HBaseQueryImpl(config, new LazySource(hadoopConfig));
+    @Override
+    public Connection connection() {
+        return connection;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return !connection().isClosed();
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (isOpen()) {
+                connection.close();
+            }
         }
-        else {
-            hbaseQuery = new StubHBaseQuery();
+        catch (IOException e) {
+            throw new RuntimeException("Error closing cached connection: " + e.getMessage());
         }
-        return hbaseQuery;
     }
 }

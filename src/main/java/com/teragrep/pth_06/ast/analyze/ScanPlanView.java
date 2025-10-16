@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class ScanRangeView implements View {
+public final class ScanPlanView implements View {
 
     private final ScanPlan scanPlan;
     private final LogfileTable logfileTable;
@@ -64,7 +64,7 @@ public final class ScanRangeView implements View {
     private boolean isOpen;
     private boolean isFinished;
 
-    public ScanRangeView(final ScanPlan scanPlan, final LogfileTable logfileTable) {
+    public ScanPlanView(final ScanPlan scanPlan, final LogfileTable logfileTable) {
         this.scanPlan = scanPlan;
         this.logfileTable = logfileTable;
         this.resultScanner = null;
@@ -98,8 +98,8 @@ public final class ScanRangeView implements View {
                 isFinished = false;
                 bufferedResult = null;
             }
-            catch (IOException e) {
-                throw new RuntimeException(e);
+            catch (final IOException e) {
+                throw new RuntimeException("Error getting table: " + e.getMessage());
             }
         }
     }
@@ -133,7 +133,7 @@ public final class ScanRangeView implements View {
         if (fromOffset > scanPlan.latest()) {
             throw new IllegalArgumentException("fromOffset was later than the scan range latest");
         }
-        return new ScanRangeView(scanPlan.rangeFromEarliest(fromOffset), logfileTable);
+        return new ScanPlanView(scanPlan.rangeFromEarliest(fromOffset), logfileTable);
     }
 
     @Override
@@ -169,7 +169,7 @@ public final class ScanRangeView implements View {
             // check if buffer has a stored result
             if (bufferedResult != null) {
                 final long bufferedResultRowKeyEpoch = new EpochFromRowKey(bufferedResult.getRow()).epoch();
-                boolean bufferedIsWithinWindow = bufferedResultRowKeyEpoch >= currentEpoch
+                final boolean bufferedIsWithinWindow = bufferedResultRowKeyEpoch >= currentEpoch
                         && bufferedResultRowKeyEpoch < currentEpoch + duration;
                 if (bufferedIsWithinWindow) {
                     next = bufferedResult;

@@ -60,7 +60,7 @@ public final class StreamIDGroup {
     private final List<XMLValueExpression> hostList;
     private final List<XMLValueExpression> sourceTypeList;
 
-    public StreamIDGroup(DSLContext ctx, ClassifiedExpressions classifiedExpressions) {
+    public StreamIDGroup(final DSLContext ctx, final ClassifiedExpressions classifiedExpressions) {
         this(
                 ctx,
                 classifiedExpressions.indexList(),
@@ -84,7 +84,7 @@ public final class StreamIDGroup {
     public List<Long> combinedStreamIds() {
         final List<Long> streamIdList = new ArrayList<>();
         for (final XMLValueExpression indexExpression : indexList) {
-            StreamIDs streamIDs = new StreamIDs(
+            final StreamIDs streamIDs = new StreamIDs(
                     ctx,
                     new StreamDBCondition(indexExpression, hostList, sourceTypeList).condition()
             );

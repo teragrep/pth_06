@@ -45,11 +45,16 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Snapshot;
 import com.teragrep.pth_06.ast.analyze.ScanPlan;
-import com.teragrep.pth_06.ast.analyze.ScanRangeView;
-import com.teragrep.pth_06.ast.analyze.ScanRangeCollection;
+import com.teragrep.pth_06.ast.analyze.ScanPlanView;
+import com.teragrep.pth_06.ast.analyze.ScanPlanCollection;
 import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.metrics.TaskMetric;
+import com.teragrep.pth_06.planner.source.HBaseSource;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -57,23 +62,33 @@ import java.util.List;
 
 public final class HBaseQueryImpl implements HBaseQuery {
 
-    private final ScanRangeCollection scanRangeCollection;
+    private final ScanPlanCollection scanPlanCollection;
     private final LogfileTable table;
+    private final MetricRegistry metricRegistry;
     private long latestCommited = Long.MIN_VALUE;
     private long mostRecent = Long.MIN_VALUE;
 
-    public HBaseQueryImpl(final Config config) {
-        this(new ScanRangeCollection(config), new LogfileTable(config));
+    public HBaseQueryImpl(final Config config, final HBaseSource source) {
+        this(new ScanPlanCollection(config), new LogfileTable(config, source));
     }
 
-    public HBaseQueryImpl(final ScanRangeCollection scanRangeCollection, final LogfileTable table) {
-        this.scanRangeCollection = scanRangeCollection;
+    public HBaseQueryImpl(final ScanPlanCollection scanPlanCollection, final LogfileTable table) {
+        this(scanPlanCollection, table, new MetricRegistry());
+    }
+
+    private HBaseQueryImpl(
+            final ScanPlanCollection scanPlanCollection,
+            final LogfileTable table,
+            final MetricRegistry metricRegistry
+    ) {
+        this.scanPlanCollection = scanPlanCollection;
         this.table = table;
+        this.metricRegistry = metricRegistry;
     }
 
     @Override
     public long earliest() {
-        final List<ScanPlan> rangeList = scanRangeCollection.asList();
+        final List<ScanPlan> rangeList = scanPlanCollection.asList();
         final long earliest;
         if (rangeList.isEmpty()) {
             earliest = ZonedDateTime.now().minusHours(24).toEpochSecond();
@@ -106,6 +121,18 @@ public final class HBaseQueryImpl implements HBaseQuery {
     }
 
     @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        // TODO update values
+        final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
+        return new CustomTaskMetric[] {
+                new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
+                new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
+                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseRowMinLatency", latencySnapshot.getMin()),
+        };
+    }
+
+    @Override
     public void updateMostRecent(final long offset) {
         this.mostRecent = offset;
     }
@@ -118,8 +145,8 @@ public final class HBaseQueryImpl implements HBaseQuery {
     @Override
     public List<View> openViews() {
         final List<View> views = new ArrayList<>();
-        for (final ScanPlan range : scanRangeCollection.asList()) {
-            views.add(new ScanRangeView(range, table));
+        for (final ScanPlan range : scanPlanCollection.asList()) {
+            views.add(new ScanPlanView(range, table));
         }
         return views;
     }

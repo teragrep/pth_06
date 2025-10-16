@@ -136,8 +136,8 @@ public final class ScanPlanCollectionTest {
     @Test
     public void testContract() {
         EqualsVerifier
-                .forClass(ScanRangeCollection.class)
-                .withNonnullFields("config", "root", "scanRanges")
+                .forClass(ScanPlanCollection.class)
+                .withNonnullFields("config", "root", "scanPlans")
                 .withIgnoredFields("LOGGER")
                 .verify();
     }

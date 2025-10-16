@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.config;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import java.util.Map;
 
@@ -71,7 +72,7 @@ public final class HBaseConfig {
     }
 
     public Configuration asHadoopConfig() {
-        Configuration config = new Configuration(false);
+        Configuration config = new Configuration(HBaseConfiguration.create());
         config.set("hbase.master.hostname", hostname);
         config.set("hbase.regionserver.hostname", regionServerHostname);
         config.set("hbase.zookeeper.quorum", zookeeperQuorum);

@@ -48,6 +48,7 @@ package com.teragrep.pth_06.ast.analyze;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.LogfileTable;
 import com.teragrep.pth_06.planner.MockDBData;
+import com.teragrep.pth_06.planner.source.LazySource;
 import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -118,7 +119,6 @@ public class ScanPlanViewTest {
         conf.set("hbase.master.hostname", "localhost");
         conf.set("hbase.regionserver.hostname", "localhost");
         conf.set("hbase.zookeeper.quorum", "localhost");
-        conf.set("hbase.zookeeper.property.clientPort", "2181");
         Assertions.assertDoesNotThrow(testCluster::start);
     }
 
@@ -185,7 +185,8 @@ public class ScanPlanViewTest {
         });
 
         Assertions.assertTrue(testCluster.isClusterRunning());
-        logfileTable = Assertions.assertDoesNotThrow(() -> new LogfileTable(testCluster.getConf(), new Config(opts)));
+        logfileTable = Assertions
+                .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
         TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
                 .getVirtualDatabaseMap();
         Assertions.assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()));
@@ -205,15 +206,15 @@ public class ScanPlanViewTest {
     @Test
     public void testRangeInitiallyNotOpen() {
         ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
-        Assertions.assertFalse(scanRangeView.isOpen());
+        ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
+        Assertions.assertFalse(scanPlanView.isOpen());
     }
 
     @Test
     public void testRangeInitiallyNotFinished() {
         ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
-        ScanRangeView scanRangeView = new ScanRangeView(scanRange, logfileTable);
-        Assertions.assertFalse(scanRangeView.isFinished());
+        ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
+        Assertions.assertFalse(scanPlanView.isFinished());
     }
 
     // open

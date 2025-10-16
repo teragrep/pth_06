@@ -46,13 +46,13 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.source.HBaseSource;
+import com.teragrep.pth_06.planner.source.LazySource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
 import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.TableDescriptor;
@@ -61,6 +61,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -72,47 +74,27 @@ import java.util.Collection;
  */
 public final class LogfileTable {
 
-    // TODO find more elegant way to store a shared connection
-    private final Configuration configuration;
+    private final Logger LOGGER = LoggerFactory.getLogger(LogfileTable.class);
     private final Config config;
-    private static Connection connection = null;
+    private final HBaseSource source;
 
-    public LogfileTable(final Config config) {
-        this(config.hBaseConfig.asHadoopConfig(), config);
+    public LogfileTable(final Config config, final Configuration configuration) {
+        this(config, new LazySource(configuration));
     }
 
-    public LogfileTable(final Configuration configuration, final Config config) {
-        this.configuration = configuration;
+    public LogfileTable(final Config config, final HBaseSource source) {
         this.config = config;
-    }
-
-    public Connection connection() {
-        if (connection == null) {
-            try {
-                connection = ConnectionFactory.createConnection(configuration);
-            }
-            catch (IOException e) {
-                throw new RuntimeException("Error getting hbase connection: " + e.getMessage());
-            }
-        }
-        return connection;
+        this.source = source;
     }
 
     public void close() {
-        if (connection != null && !connection.isClosed()) {
-            try {
-                connection.close();
-            }
-            catch (final IOException e) {
-                throw new RuntimeException("Error closing hbase connection: " + e.getMessage());
-            }
-        }
-        connection = null;
+        source.close();
     }
 
     public Table table() {
         final TableName tableName = TableName.valueOf(config.hBaseConfig.tableName);
-        try (Admin admin = connection().getAdmin()) {
+        LOGGER.debug("Trying to get logfile table with name <{}>", tableName);
+        try (final Admin admin = source.connection().getAdmin()) {
             // create logfile table if missing
             if (!admin.tableExists(tableName)) {
                 final ColumnFamilyDescriptor metaColumnFamilyDescriptor = ColumnFamilyDescriptorBuilder
@@ -130,6 +112,7 @@ public final class LogfileTable {
                         .build();
 
                 admin.createTable(tableDescriptor);
+                LOGGER.debug("Table did not exists yet, creating with descriptor <{}>", tableDescriptor);
             }
         }
         catch (IOException e) {
@@ -137,25 +120,27 @@ public final class LogfileTable {
         }
 
         try {
-            return connection().getTable(tableName);
+            LOGGER.debug("Table already existed");
+            return source.connection().getTable(tableName);
         }
-        catch (IOException e) {
-            throw new RuntimeException("Error getting logfile table: " + e.getMessage());
+        catch (final IOException e) {
+            throw new RuntimeException("Error getting logfile table by name: " + e.getMessage());
         }
     }
 
+    // used in testing
     public void insertResults(
-            Collection<Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> dataMap
+            final Collection<Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> dataMap
     ) throws IOException {
-
-        Table table = table();
+        LOGGER.info("Inserting <{}> row(s) to logfile table", dataMap.size());
+        final Table table = table();
 
         for (
-            Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result : dataMap
+            final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result : dataMap
         ) {
 
             for (
-                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record : result
+                final Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record : result
             ) {
                 long id = record.get(0, ULong.class).longValue();
                 String directory = record.get(1, String.class);
