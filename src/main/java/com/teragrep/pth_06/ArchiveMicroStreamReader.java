@@ -319,7 +319,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (useArchive && useKafka) {
             final LongOffset archiveOffset;
             if (!hBaseQuery.isStub()) {
-                archiveOffset = new LongOffset(hBaseQuery.mostRecentOffset());
+                archiveOffset = new LongOffset(hBaseQuery.latest());
             }
             else {
                 archiveOffset = new LongOffset(archiveQuery.mostRecentOffset());
@@ -328,7 +328,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (useArchive) {
             if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
+                rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
             }
             else {
                 rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
@@ -345,10 +345,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final CustomTaskMetric[] metrics;
-        if (!hBaseQuery.isStub()) {
-            metrics = hBaseQuery.currentDatabaseMetrics();
-        }
-        else if (!archiveQuery.isStub()) {
+        if (!archiveQuery.isStub() && hBaseQuery.isStub()) {
             metrics = archiveQuery.currentDatabaseMetrics();
         }
         else {

@@ -48,6 +48,7 @@ package com.teragrep.pth_06.ast.analyze;
 import com.teragrep.pth_06.ast.Expression;
 import com.teragrep.pth_06.ast.transform.WithDefaultValues;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.LogfileTable;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.conf.MappedSchema;
@@ -89,6 +90,15 @@ public final class ScanPlanCollection {
         this.config = config;
         this.root = root;
         this.scanPlans = scanPlans;
+    }
+
+    public List<View> asViews(final LogfileTable targetTable) {
+        final List<ScanPlan> plans = asList();
+        final List<View> views = new ArrayList<>(plans.size());
+        for (ScanPlan plan: plans) {
+            views.add(new ScanPlanView(plan,targetTable));
+        }
+        return views;
     }
 
     public List<ScanPlan> asList() {

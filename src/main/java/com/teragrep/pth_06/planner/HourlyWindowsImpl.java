@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.ast.analyze.ScanPlanView;
 import com.teragrep.pth_06.ast.analyze.View;
 import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
@@ -54,23 +55,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SynchronizedHourlyResults {
+public final class HourlyWindowsImpl implements HourlyWindows {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(SynchronizedHourlyResults.class);
+    private final long EPOCH_HOUR = 3600L;
+    private final Logger LOGGER = LoggerFactory.getLogger(HourlyWindowsImpl.class);
     private final List<View> views;
     private long currentEpoch;
 
-    public SynchronizedHourlyResults(final HBaseQuery hBaseQuery, final long startEpoch) {
-        this(hBaseQuery.openViews(), startEpoch);
-    }
-
-    public SynchronizedHourlyResults(final List<View> views, final long startEpoch) {
+    public HourlyWindowsImpl(final List<View> views, final long startEpoch) {
         this.views = views;
         this.currentEpoch = startEpoch;
-    }
-
-    public long currentEpoch() {
-        return currentEpoch;
     }
 
     public boolean hasNext() {
@@ -79,7 +73,7 @@ public final class SynchronizedHourlyResults {
 
     public List<Result> nextHour() {
         final List<Result> hourlyResults = new ArrayList<>();
-        LOGGER.debug("next hour between <{}>-<{}>", currentEpoch, currentEpoch + 3600L);
+        LOGGER.debug("next hour between <{}>-<{}>", currentEpoch, currentEpoch + EPOCH_HOUR);
         for (final View view : views) {
             if (view.isFinished()) {
                 LOGGER.debug("View <{}> finished, closing", view);
@@ -107,7 +101,7 @@ public final class SynchronizedHourlyResults {
                 if (!viewWithingStart.isOpen()) {
                     viewWithingStart.open();
                 }
-                results = viewWithingStart.nextWindow(3600L);
+                results = viewWithingStart.nextWindow(EPOCH_HOUR);
             }
             catch (final IOException e) {
                 throw new RuntimeException("Error getting results: " + e.getMessage());
@@ -115,7 +109,21 @@ public final class SynchronizedHourlyResults {
             hourlyResults.addAll(results);
         }
 
-        currentEpoch = currentEpoch + 3600L;
+        currentEpoch = currentEpoch + EPOCH_HOUR;
         return hourlyResults;
+    }
+
+    @Override
+    public void close() {
+        for (final View view: views) {
+            if (view.isOpen()) {
+                view.close();
+            }
+        }
+    }
+
+    @Override
+    public boolean isStub() {
+        return false;
     }
 }

@@ -45,8 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.View;
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
@@ -55,6 +54,31 @@ public final class StubHBaseQuery implements HBaseQuery {
     @Override
     public boolean isStub() {
         return true;
+    }
+
+    @Override
+    public void open(long startOffset) {
+        throw new UnsupportedOperationException("open() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public void close() {
+        throw new UnsupportedOperationException("close() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public boolean isOpen() {
+        throw new UnsupportedOperationException("isOpen() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public boolean hasNext() {
+        throw new UnsupportedOperationException("hasNext() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public List<Result> nextBatch() {
+        throw new UnsupportedOperationException("nextBatch() not supported for StubHBaseQuery");
     }
 
     @Override
@@ -68,27 +92,7 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public long mostRecentOffset() {
-        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public void updateMostRecent(long offset) {
-        throw new UnsupportedOperationException("updateMostRecent() not supported for StubHBaseQuery");
-    }
-
-    @Override
     public void commit(long latest) {
         throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public List<View> openViews() {
-        throw new UnsupportedOperationException("openViews() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public CustomTaskMetric[] currentDatabaseMetrics() {
-        throw new UnsupportedOperationException("currentDatabaseMetrics() not supported for StubHBaseQuery");
     }
 }

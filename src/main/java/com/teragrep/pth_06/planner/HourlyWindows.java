@@ -50,21 +50,12 @@ import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HBaseQuery extends Stubbable, AutoCloseable {
-
-    public abstract void open(final long startOffset);
-
-    public abstract void close();
-
-    public abstract boolean isOpen();
+public interface HourlyWindows extends Stubbable {
 
     public abstract boolean hasNext();
 
-    public abstract List<Result> nextBatch();
+    public abstract List<Result> nextHour();
 
-    public abstract long earliest();
+    public abstract void close();
 
-    public abstract long latest();
-
-    public abstract void commit(final long offset);
 }

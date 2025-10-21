@@ -45,26 +45,24 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubbable;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HBaseQuery extends Stubbable, AutoCloseable {
+public class StubHourlyWindows implements HourlyWindows {
 
-    public abstract void open(final long startOffset);
+    @Override
+    public boolean hasNext() {
+        throw new UnsupportedOperationException("hasNext() not supported for hasNext");
+    }
 
-    public abstract void close();
+    @Override
+    public List<Result> nextHour() {
+        throw new UnsupportedOperationException("nextHour() not supported for hasNext");
+    }
 
-    public abstract boolean isOpen();
-
-    public abstract boolean hasNext();
-
-    public abstract List<Result> nextBatch();
-
-    public abstract long earliest();
-
-    public abstract long latest();
-
-    public abstract void commit(final long offset);
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 }

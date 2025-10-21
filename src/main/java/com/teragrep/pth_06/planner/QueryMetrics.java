@@ -45,26 +45,11 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubbable;
-import org.apache.hadoop.hbase.client.Result;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
-import java.util.List;
+public interface QueryMetrics {
 
-public interface HBaseQuery extends Stubbable, AutoCloseable {
+    public abstract long mostRecentOffset();
 
-    public abstract void open(final long startOffset);
-
-    public abstract void close();
-
-    public abstract boolean isOpen();
-
-    public abstract boolean hasNext();
-
-    public abstract List<Result> nextBatch();
-
-    public abstract long earliest();
-
-    public abstract long latest();
-
-    public abstract void commit(final long offset);
+    public abstract CustomTaskMetric[] currentDatabaseMetrics();
 }

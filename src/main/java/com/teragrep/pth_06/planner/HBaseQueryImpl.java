@@ -45,16 +45,16 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Snapshot;
 import com.teragrep.pth_06.ast.analyze.ScanPlan;
-import com.teragrep.pth_06.ast.analyze.ScanPlanView;
 import com.teragrep.pth_06.ast.analyze.ScanPlanCollection;
+import com.teragrep.pth_06.ast.analyze.ScanPlanView;
 import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.planner.source.HBaseSource;
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -62,28 +62,90 @@ import java.util.List;
 
 public final class HBaseQueryImpl implements HBaseQuery {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(HBaseQueryImpl.class);
+
+    private final Config config;
     private final ScanPlanCollection scanPlanCollection;
     private final LogfileTable table;
-    private final MetricRegistry metricRegistry;
     private long latestCommited = Long.MIN_VALUE;
-    private long mostRecent = Long.MIN_VALUE;
+    private HourlyWindows hourlyWindows;
 
     public HBaseQueryImpl(final Config config, final HBaseSource source) {
-        this(new ScanPlanCollection(config), new LogfileTable(config, source));
-    }
-
-    public HBaseQueryImpl(final ScanPlanCollection scanPlanCollection, final LogfileTable table) {
-        this(scanPlanCollection, table, new MetricRegistry());
+        this(config, new ScanPlanCollection(config), new LogfileTable(config, source), new StubHourlyWindows());
     }
 
     private HBaseQueryImpl(
+            final Config config,
             final ScanPlanCollection scanPlanCollection,
             final LogfileTable table,
-            final MetricRegistry metricRegistry
+            final HourlyWindows hourlyWindows
     ) {
+        this.config = config;
         this.scanPlanCollection = scanPlanCollection;
         this.table = table;
-        this.metricRegistry = metricRegistry;
+        this.hourlyWindows = hourlyWindows;
+    }
+
+    @Override
+    public void open(final long startOffset) {
+        if (isOpen()) {
+            return;
+        }
+        final List<View> views = scanPlanCollection.asViews(table);
+        this.hourlyWindows = new HourlyWindowsImpl(views, startOffset);
+    }
+
+    @Override
+    public void close() {
+        if (isOpen()) {
+            hourlyWindows.close();
+            this.hourlyWindows = new StubHourlyWindows();
+        }
+    }
+
+    @Override
+    public boolean isOpen() {
+        return !hourlyWindows.isStub();
+    }
+
+    @Override
+    public boolean hasNext() {
+        return !hourlyWindows.isStub() && hourlyWindows.hasNext();
+    }
+
+    @Override
+    public List<Result> nextBatch() {
+        if (!isOpen()) {
+            throw new IllegalStateException("nextBatch() called before HBaseQuery was open");
+        }
+        final byte[] columnFamilyBytes = Bytes.toBytes("meta");
+        final List<Result> nextBatchResults = hourlyWindows.nextHour();
+
+        final long quantumLength = config.batchConfig.quantumLength;
+        final long numPartitions = config.batchConfig.numPartitions;
+        final long maxWeight = quantumLength * numPartitions;
+        final long totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
+        final float fileCompressionRatio = config.batchConfig.fileCompressionRatio;
+        final float processingSpeed = config.batchConfig.processingSpeed;
+
+        final List<Result> batchSizeLimitedResults = new ArrayList<>();
+        if (!nextBatchResults.isEmpty()) {
+            final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
+            for (final Result hourlyResult : nextBatchResults) {
+                final long fileSize = Bytes.toLong(hourlyResult.getValue(columnFamilyBytes, Bytes.toBytes("fs")));
+                final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
+                        / processingSpeed;
+                batchSizeLimit.add(hourlyResultEstimatedFileSize);
+                if (!batchSizeLimit.isOverLimit()) {
+                    batchSizeLimitedResults.add(hourlyResult);
+                }
+                else {
+                    LOGGER.info("Hourly results were over batch size limit, ignoring rest of the results");
+                    break;
+                }
+            }
+        }
+        return batchSizeLimitedResults;
     }
 
     @Override
@@ -105,50 +167,12 @@ public final class HBaseQueryImpl implements HBaseQuery {
 
     @Override
     public long latest() {
-        final long latest;
-        if (latestCommited == Long.MIN_VALUE) {
-            latest = earliest();
-        }
-        else {
-            latest = latestCommited + 3600L;
-        }
-        return latest;
-    }
-
-    @Override
-    public long mostRecentOffset() {
-        return mostRecent;
-    }
-
-    @Override
-    public CustomTaskMetric[] currentDatabaseMetrics() {
-        // TODO update values
-        final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
-        return new CustomTaskMetric[] {
-                new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
-                new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
-                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
-                new TaskMetric("ArchiveDatabaseRowMinLatency", latencySnapshot.getMin()),
-        };
-    }
-
-    @Override
-    public void updateMostRecent(final long offset) {
-        this.mostRecent = offset;
+        return Math.max(latestCommited, earliest());
     }
 
     @Override
     public void commit(final long offset) {
         this.latestCommited = offset;
-    }
-
-    @Override
-    public List<View> openViews() {
-        final List<View> views = new ArrayList<>();
-        for (final ScanPlan range : scanPlanCollection.asList()) {
-            views.add(new ScanPlanView(range, table));
-        }
-        return views;
     }
 
     @Override

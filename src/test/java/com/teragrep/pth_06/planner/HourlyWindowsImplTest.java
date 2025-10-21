@@ -82,7 +82,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SynchronizedHourlyResultsTest {
+public class HourlyWindowsImplTest {
 
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
@@ -218,8 +218,8 @@ public class SynchronizedHourlyResultsTest {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanPlanView);
-        SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
+        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
+        List<org.apache.hadoop.hbase.client.Result> results = hourlyWindowsImpl.nextHour();
 
         Assertions.assertEquals(1, results.size());
         ByteBuffer wrap = ByteBuffer.wrap(results.get(0).getRow());
@@ -236,10 +236,10 @@ public class SynchronizedHourlyResultsTest {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanPlanView);
-        SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> firstHourResults = synchronizedHourlyResults.nextHour();
+        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
+        List<org.apache.hadoop.hbase.client.Result> firstHourResults = hourlyWindowsImpl.nextHour();
         Assertions.assertEquals(1, firstHourResults.size());
-        List<org.apache.hadoop.hbase.client.Result> secondHourResults = synchronizedHourlyResults.nextHour();
+        List<org.apache.hadoop.hbase.client.Result> secondHourResults = hourlyWindowsImpl.nextHour();
         Assertions.assertEquals(1, secondHourResults.size());
         ByteBuffer wrap = ByteBuffer.wrap(secondHourResults.get(0).getRow());
         long streamId = wrap.getLong();
@@ -257,8 +257,8 @@ public class SynchronizedHourlyResultsTest {
         ScanPlanView scanPlanView1 = new ScanPlanView(scanPlan1, logfileTable);
         ScanPlanView scanPlanView2 = new ScanPlanView(scanPlan2, logfileTable);
         List<View> views = Arrays.asList(scanPlanView1, scanPlanView2);
-        SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> results = synchronizedHourlyResults.nextHour();
+        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
+        List<org.apache.hadoop.hbase.client.Result> results = hourlyWindowsImpl.nextHour();
 
         Assertions.assertEquals(2, results.size());
         ByteBuffer wrap = ByteBuffer.wrap(results.get(0).getRow());
@@ -276,10 +276,7 @@ public class SynchronizedHourlyResultsTest {
     public void testHasNextReturnsFalseAfterAllViewsFinished() {
         ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterList());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
-        SynchronizedHourlyResults syncResults = new SynchronizedHourlyResults(
-                Collections.singletonList(scanPlanView),
-                1262296800
-        );
+        HourlyWindowsImpl syncResults = new HourlyWindowsImpl(Collections.singletonList(scanPlanView), 1262296800);
         while (syncResults.hasNext()) {
             syncResults.nextHour();
         }

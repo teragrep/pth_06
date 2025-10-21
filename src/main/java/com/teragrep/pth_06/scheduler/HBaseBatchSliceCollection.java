@@ -80,9 +80,7 @@ package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.planner.BatchSizeLimit;
 import com.teragrep.pth_06.planner.HBaseQuery;
-import com.teragrep.pth_06.planner.SynchronizedHourlyResults;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -126,43 +124,53 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
         this.clear(); // clear internal list
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
         final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
+
+        if (!hBaseQuery.isOpen()) {
+            hBaseQuery.open(startOffsetLong);
+        }
+
         final long lastCommited = hBaseQuery.latest();
         final long selectedStartOffset = Math.max(startOffsetLong, lastCommited);
         LOGGER.debug("processRange() start <{}> end <{}>", selectedStartOffset, endOffsetLong);
-        final SynchronizedHourlyResults synchronizedHourlyResults = new SynchronizedHourlyResults(
-                hBaseQuery,
-                selectedStartOffset
-        );
         final List<Result> results = new ArrayList<>();
+
+        long currentOffset = selectedStartOffset;
+        while(hBaseQuery.hasNext()) {
+            if (currentOffset >= endOffsetLong) {
+                break;
+            }
+            results.addAll(hBaseQuery.nextBatch());
+            currentOffset += 3600L;
+        }
         final long maxWeight = (long) quantumLength * numPartitions;
 
-        while (synchronizedHourlyResults.hasNext()) {
-
-            final List<Result> hourlyResults = synchronizedHourlyResults.nextHour();
-            final long currentEpoch = synchronizedHourlyResults.currentEpoch();
-
-            if (!hourlyResults.isEmpty()) {
-                final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
-                for (final Result hourlyResult : hourlyResults) {
-                    final long fileSize = Bytes.toLong(hourlyResult.getValue(meta, Bytes.toBytes("fs")));
-                    final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
-                            / processingSpeed;
-                    batchSizeLimit.add(hourlyResultEstimatedFileSize);
-                    if (!batchSizeLimit.isOverLimit()) {
-                        results.add(hourlyResult);
-                    }
-                    else {
-                        LOGGER
-                                .info(
-                                        "Hourly results were over batch size limit with <{}> logfiles, ignoring rest of the results",
-                                        hourlyResult.size()
-                                );
-                        break;
-                    }
-                }
-            }
-            hBaseQuery.updateMostRecent(currentEpoch);
-        }
+        //        while (hourlyWindowsImpl.hasNext()) {
+        //
+        //            final List<Result> hourlyResults = hourlyWindowsImpl.nextHour();
+        //            final long currentEpoch = hourlyWindowsImpl.currentEpoch();
+        //
+        //            if (!hourlyResults.isEmpty()) {
+        //                final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
+        //                for (final Result hourlyResult : hourlyResults) {
+        //                    final long fileSize = Bytes.toLong(hourlyResult.getValue(meta, Bytes.toBytes("fs")));
+        //                    final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
+        //                            / processingSpeed;
+        //                    batchSizeLimit.add(hourlyResultEstimatedFileSize);
+        //                    if (!batchSizeLimit.isOverLimit()) {
+        //                        results.add(hourlyResult);
+        //                    }
+        //                    else {
+        //                        LOGGER
+        //                                .info(
+        //                                        "Hourly results were over batch size limit with <{}> logfiles, ignoring rest of the results",
+        //                                        hourlyResult.size()
+        //                                );
+        //                        break;
+        //                    }
+        //                }
+        //            }
+        //            hBaseQuery.updateMostRecent(currentEpoch);
+        //        }
 
         for (final Result result : results) {
             final String id = Bytes.toString(result.getValue(meta, Bytes.toBytes("i")));
