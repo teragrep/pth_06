@@ -68,7 +68,7 @@ public final class PlannedScansTest {
 
     final List<Expression> timeQualifiers = Arrays
             .asList(new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("2000", "EQUALS", Expression.Tag.LATEST));
-    final ScanTimeQualifiers window = new ScanTimeQualifiers(new ClassifiedExpressions(timeQualifiers));
+    final ScanTimeQualifiers window = new ScanTimeQualifiers(new ClassifiedXMLValueExpressions(timeQualifiers));
     final String userName = "sa";
     final String password = "";
     Connection conn;
@@ -123,7 +123,7 @@ public final class PlannedScansTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         PlannedScans plannedScans = new PlannedScans(
                 window,
-                new FilterGroup(new ClassifiedExpressions(timeQualifiers))
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
         List<XMLValueExpression> indexList = Collections
                 .singletonList(new XMLValueExpressionImpl("test_directory", "EQUALS", Expression.Tag.INDEX));
@@ -143,7 +143,7 @@ public final class PlannedScansTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         PlannedScans plannedScans = new PlannedScans(
                 window,
-                new FilterGroup(new ClassifiedExpressions(timeQualifiers))
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
         List<XMLValueExpression> indexList = Arrays
                 .asList(new XMLValueExpressionImpl("test_directory", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_directory_2", "EQUALS", Expression.Tag.INDEX));
@@ -164,7 +164,7 @@ public final class PlannedScansTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         PlannedScans plannedScans = new PlannedScans(
                 window,
-                new FilterGroup(new ClassifiedExpressions(timeQualifiers))
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
         List<XMLValueExpression> indexList = Collections
                 .singletonList(new XMLValueExpressionImpl("noMatch", "EQUALS", Expression.Tag.INDEX));
@@ -183,7 +183,7 @@ public final class PlannedScansTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         PlannedScans plannedScans = new PlannedScans(
                 window,
-                new FilterGroup(new ClassifiedExpressions(timeQualifiers))
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
         List<XMLValueExpression> indexList = Collections
                 .singletonList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));
@@ -199,7 +199,7 @@ public final class PlannedScansTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         PlannedScans plannedScans = new PlannedScans(
                 window,
-                new FilterGroup(new ClassifiedExpressions(timeQualifiers))
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
         List<XMLValueExpression> indexList = Collections
                 .singletonList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));

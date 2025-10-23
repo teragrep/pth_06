@@ -49,7 +49,5 @@ import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
 public interface QueryMetrics {
 
-    public abstract long mostRecentOffset();
-
     public abstract CustomTaskMetric[] currentDatabaseMetrics();
 }

@@ -69,13 +69,15 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanPlan>>
 
     @Override
     public List<ScanPlan> value() {
-        final ClassifiedExpressions classifiedExpressions = new ClassifiedExpressions(expressions);
-        final ScanTimeQualifiers scanTimeQualifiers = new ScanTimeQualifiers(classifiedExpressions);
-        final FilterGroup filterGroup = new FilterGroup(classifiedExpressions);
+        final ClassifiedXMLValueExpressions classifiedXMLValueExpressions = new ClassifiedXMLValueExpressions(
+                expressions
+        );
+        final ScanTimeQualifiers scanTimeQualifiers = new ScanTimeQualifiers(classifiedXMLValueExpressions);
+        final FilterGroup filterGroup = new FilterGroup(classifiedXMLValueExpressions);
         final PlannedScans plannedScans = new PlannedScans(scanTimeQualifiers, filterGroup);
-        final StreamIDGroup streamIDGroup = new StreamIDGroup(ctx, classifiedExpressions);
-        final List<ScanPlan> rangeList = plannedScans.planListForGroup(streamIDGroup);
-        final MergeIntersectingPlans mergeIntersectingPlans = new MergeIntersectingPlans(rangeList);
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(ctx, classifiedXMLValueExpressions);
+        final List<ScanPlan> scanPlanList = plannedScans.planListForGroup(streamIDGroup);
+        final MergeIntersectingPlans mergeIntersectingPlans = new MergeIntersectingPlans(scanPlanList);
         return mergeIntersectingPlans.mergedRanges();
     }
 

@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.scheduler;
 
-import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.ArchiveQuery;
 import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.KafkaQuery;
@@ -67,16 +66,14 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
     private final Logger LOGGER = LoggerFactory.getLogger(Batch.class);
     private long numberOfBatches = 0;
     private final LinkedList<BatchTaskQueue> runQueueArray;
-    private final Config config;
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
     private final HBaseQuery hbaseQuery;
 
-    public Batch(Config config, ArchiveQuery archiveQuery, KafkaQuery kafkaQuery, HBaseQuery hbaseQuery) {
-        this.config = config;
+    public Batch(long numOfPartitions, ArchiveQuery archiveQuery, KafkaQuery kafkaQuery, HBaseQuery hbaseQuery) {
         this.runQueueArray = new LinkedList<>();
 
-        for (int i = 0; i < config.batchConfig.numPartitions; i++) {
+        for (int i = 0; i < numOfPartitions; i++) {
             this.runQueueArray.add(new BatchTaskQueue());
         }
 
@@ -94,7 +91,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         final BatchSliceCollection slice;
         if (bothEnabled) {
             if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery, config).processRange(start, end);
+                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
             }
             else {
                 slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
@@ -103,7 +100,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         }
         else if (archiverEnabled) {
             if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery, config).processRange(start, end);
+                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
             }
             else {
                 slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);

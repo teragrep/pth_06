@@ -45,19 +45,14 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.ScanPlan;
-import com.teragrep.pth_06.ast.analyze.ScanPlanImpl;
-import com.teragrep.pth_06.ast.analyze.ScanPlanView;
-import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.source.LazySource;
-import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
+import org.apache.spark.sql.SparkSession;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -69,49 +64,50 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class HourlyWindowsImplTest {
+public class HBaseQueryImplTest {
 
+    private SparkSession spark;
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
     private final String s3credential = "s3credential";
-    private final String userName = "sa";
-    private final String password = "";
-    private Connection conn;
-    private final Map<String, String> opts = new HashMap<>();
-    private TestingHBaseCluster testCluster;
-    private LogfileTable logfileTable;
-    private final MockS3 mockS3 = new MockS3(s3endpoint, s3identity, s3credential);
+    String url;
+    final String userName = "sa";
+    final String password = "";
+    final Map<String, String> opts = new HashMap<>();
+    Connection conn;
+    TestingHBaseCluster testCluster;
+    LogfileTable logfileTable;
 
     @BeforeAll
     public void setup() {
-        Assertions.assertDoesNotThrow(mockS3::start);
-
-        opts
-                .put(
-                        "queryXML",
-                        "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1262296800\"/><latest operation=\"EQUALS\" value=\"1263679200\"/></AND></AND>"
-                );
+        final String query = "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1262296800\"/><latest operation=\"EQUALS\" value=\"1263679201\"/></AND></AND>";
         opts.put("archive.enabled", "true");
         opts.put("hbase.enabled", "true");
+        opts.put("kafka.enabled", "false");
+        opts.put("queryXML", query);
         opts.put("S3endPoint", "S3endPoint");
         opts.put("S3identity", "S3identity");
         opts.put("S3credential", "S3credential");
         opts.put("DBusername", userName);
         opts.put("DBpassword", password);
-        opts.put("quantumLength", "15");
+
+        spark = SparkSession
+                .builder()
+                .appName("Java Spark SQL basic example")
+                .master("local[2]")
+                .config("spark.driver.extraJavaOptions", "-Duser.timezone=UCT")
+                .config("spark.executor.extraJavaOptions", "-Duser.timezone=UCT")
+                .config("spark.sql.session.timeZone", "UTC")
+                .getOrCreate();
 
         final TestingHBaseClusterOption clusterOption = TestingHBaseClusterOption
                 .builder()
@@ -123,7 +119,6 @@ public class HourlyWindowsImplTest {
         conf.set("hbase.master.hostname", "localhost");
         conf.set("hbase.regionserver.hostname", "localhost");
         conf.set("hbase.zookeeper.quorum", "localhost");
-        conf.set("hbase.zookeeper.property.clientPort", "2181");
         Assertions.assertDoesNotThrow(testCluster::start);
     }
 
@@ -133,12 +128,11 @@ public class HourlyWindowsImplTest {
             Assertions.assertDoesNotThrow(testCluster::stop);
         }
         Assertions.assertDoesNotThrow(logfileTable::close);
-        Assertions.assertDoesNotThrow(mockS3::stop);
     }
 
     @BeforeEach
     public void beforeEach() {
-        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+        url = "jdbc:h2:mem:" + UUID.randomUUID()
                 + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
         opts.put("DBurl", url);
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
@@ -190,21 +184,26 @@ public class HourlyWindowsImplTest {
                             "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (1, 'f17', 'log:f17', 'test_tag');"
                     )
                     .execute();
-        });
+        }, "SQL test database initialization and population should not fail");
 
-        Assertions.assertTrue(testCluster.isClusterRunning());
+        Assertions.assertTrue(testCluster.isClusterRunning(), "Hbase test cluster should be running");
         logfileTable = Assertions
-                .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
+                .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())), "LogfileTable object should be created");
         TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
                 .getVirtualDatabaseMap();
-        Assertions.assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()));
-        ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
+        Assertions
+                .assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()), "Test data should be correctly inserted to LogfileTable");
+        ResultScanner scanner = Assertions
+                .assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()), "Scanner should be opened to LogfileTable to inspect test data insertion");
         int resultCount = 0;
         for (org.apache.hadoop.hbase.client.Result result : scanner) {
-            Assertions.assertFalse(result.isEmpty());
+            Assertions.assertFalse(result.isEmpty(), "Scanner should not get an empty result");
             resultCount++;
         }
-        Assertions.assertEquals(virtualDatabaseMap.size(), resultCount);
+        Assertions
+                .assertEquals(
+                        virtualDatabaseMap.size(), resultCount, "Scanner result count should match the test data size"
+                );
         scanner.close();
     }
 
@@ -214,72 +213,50 @@ public class HourlyWindowsImplTest {
     }
 
     @Test
-    public void testSingleView() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
-        List<View> views = Collections.singletonList(scanPlanView);
-        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> results = hourlyWindowsImpl.nextHour();
-
-        Assertions.assertEquals(1, results.size());
-        ByteBuffer wrap = ByteBuffer.wrap(results.get(0).getRow());
-        long streamId = wrap.getLong();
-        long earliest = wrap.getLong();
-        long id = wrap.getLong();
-        Assertions.assertEquals(1, streamId);
-        Assertions.assertEquals(1262296800L, earliest);
-        Assertions.assertEquals(28653, id);
-    }
-
-    @Test
-    public void testMultipleHourlyResults() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
-        List<View> views = Collections.singletonList(scanPlanView);
-        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> firstHourResults = hourlyWindowsImpl.nextHour();
-        Assertions.assertEquals(1, firstHourResults.size());
-        List<org.apache.hadoop.hbase.client.Result> secondHourResults = hourlyWindowsImpl.nextHour();
-        Assertions.assertEquals(1, secondHourResults.size());
-        ByteBuffer wrap = ByteBuffer.wrap(secondHourResults.get(0).getRow());
-        long streamId = wrap.getLong();
-        long earliest = wrap.getLong();
-        long id = wrap.getLong();
-        Assertions.assertEquals(1, streamId);
-        Assertions.assertEquals(1262300400L, earliest);
-        Assertions.assertEquals(28703, id);
-    }
-
-    @Test
-    public void multipleScanRangeViewTest() {
-        ScanPlan scanPlan1 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanPlan scanPlan2 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanPlanView scanPlanView1 = new ScanPlanView(scanPlan1, logfileTable);
-        ScanPlanView scanPlanView2 = new ScanPlanView(scanPlan2, logfileTable);
-        List<View> views = Arrays.asList(scanPlanView1, scanPlanView2);
-        HourlyWindowsImpl hourlyWindowsImpl = new HourlyWindowsImpl(views, 1262296800);
-        List<org.apache.hadoop.hbase.client.Result> results = hourlyWindowsImpl.nextHour();
-
-        Assertions.assertEquals(2, results.size());
-        ByteBuffer wrap = ByteBuffer.wrap(results.get(0).getRow());
-        ByteBuffer wrap2 = ByteBuffer.wrap(results.get(1).getRow());
-        Assertions.assertArrayEquals(wrap.array(), wrap2.array());
-        long streamId = wrap.getLong();
-        long earliest = wrap.getLong();
-        long id = wrap.getLong();
-        Assertions.assertEquals(1, streamId);
-        Assertions.assertEquals(1262296800L, earliest);
-        Assertions.assertEquals(28653, id);
-    }
-
-    @Test
-    public void testHasNextReturnsFalseAfterAllViewsFinished() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterList());
-        ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
-        HourlyWindowsImpl syncResults = new HourlyWindowsImpl(Collections.singletonList(scanPlanView), 1262296800);
-        while (syncResults.hasNext()) {
-            syncResults.nextHour();
+    public void testOpen() {
+        Config config = new Config(opts);
+        try (HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
+            Assertions.assertFalse(hBaseQuery.hasNext());
+            Assertions.assertDoesNotThrow(() -> hBaseQuery.open(0));
+            Assertions.assertTrue(hBaseQuery.hasNext());
         }
-        Assertions.assertFalse(syncResults.hasNext());
+    }
+
+    @Test
+    public void testEarliest() {
+        final Config config = new Config(opts);
+        try (final HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
+            Assertions.assertEquals(1262296800, hBaseQuery.earliest());
+        }
+    }
+
+    @Test
+    public void testLatest() {
+        final Config config = new Config(opts);
+        try (final HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
+            Assertions.assertEquals(1262469600, hBaseQuery.latest());
+        }
+    }
+
+    @Test
+    public void testMostRecentOffsetAtStart() {
+        final Config config = new Config(opts);
+        try (final HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
+            Assertions.assertEquals(1262296800, hBaseQuery.mostRecentOffset());
+        }
+    }
+
+    @Test
+    public void testMostRecentAfterBatch() {
+        final Config config = new Config(opts);
+        try (final HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
+            final long earliest = hBaseQuery.earliest();
+            hBaseQuery.latest(); // increment first batch
+            hBaseQuery.open(earliest);
+            final int size = hBaseQuery.currentBatch().size();
+            Assertions.assertEquals(5, size);
+            Assertions.assertEquals(1262296800, hBaseQuery.mostRecentOffset());
+            Assertions.assertTrue(hBaseQuery.hasNext());
+        }
     }
 }

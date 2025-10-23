@@ -50,23 +50,24 @@ import java.util.List;
 
 public final class PlannedScans {
 
-    private final ScanTimeQualifiers window;
+    private final long earliest;
+    private final long latest;
     private final FilterGroup filterGroup;
 
-    public PlannedScans(final ScanTimeQualifiers window, final FilterGroup filterGroup) {
-        this.window = window;
+    public PlannedScans(final ScanTimeQualifiers timeQualifiers, final FilterGroup filterGroup) {
+        this(timeQualifiers.earliest(), timeQualifiers.latest(), filterGroup);
+    }
+
+    public PlannedScans(long earliest, long latest, final FilterGroup filterGroup) {
+        this.earliest = earliest;
+        this.latest = latest;
         this.filterGroup = filterGroup;
     }
 
     public List<ScanPlan> planListForGroup(final StreamIDGroup streamIDGroup) {
         final List<ScanPlan> plannedScans = new ArrayList<>();
         for (final long streamId : streamIDGroup.combinedStreamIds()) {
-            final ScanPlan scanPlan = new ScanPlanImpl(
-                    streamId,
-                    window.earliest(),
-                    window.latest(),
-                    filterGroup.filterList()
-            );
+            final ScanPlan scanPlan = new ScanPlanImpl(streamId, earliest, latest, filterGroup.filterList());
             plannedScans.add(scanPlan);
         }
         return plannedScans;

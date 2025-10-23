@@ -79,7 +79,6 @@ package com.teragrep.pth_06.scheduler;
  */
 
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.hadoop.hbase.client.Result;
@@ -89,7 +88,6 @@ import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -100,21 +98,11 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
     private final Logger LOGGER = LoggerFactory.getLogger(HBaseBatchSliceCollection.class);
     private final HBaseQuery hBaseQuery;
     private final byte[] meta; // column family
-    private final int quantumLength;
-    private final int numPartitions;
-    private final long totalObjectCountLimit;
-    private final float fileCompressionRatio;
-    private final float processingSpeed;
 
-    public HBaseBatchSliceCollection(final HBaseQuery hBaseQuery, final Config config) {
+    public HBaseBatchSliceCollection(final HBaseQuery hBaseQuery) {
         super();
         this.hBaseQuery = hBaseQuery;
         this.meta = Bytes.toBytes("meta");
-        this.quantumLength = config.batchConfig.quantumLength;
-        this.numPartitions = config.batchConfig.numPartitions;
-        this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
-        this.fileCompressionRatio = config.batchConfig.fileCompressionRatio;
-        this.processingSpeed = config.batchConfig.processingSpeed;
     }
 
     /**
@@ -124,53 +112,12 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
         this.clear(); // clear internal list
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
         final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
-
+        LOGGER.info("HBaseQuery process range <{}>-<{}>", startOffsetLong, endOffsetLong);
         if (!hBaseQuery.isOpen()) {
             hBaseQuery.open(startOffsetLong);
         }
 
-        final long lastCommited = hBaseQuery.latest();
-        final long selectedStartOffset = Math.max(startOffsetLong, lastCommited);
-        LOGGER.debug("processRange() start <{}> end <{}>", selectedStartOffset, endOffsetLong);
-        final List<Result> results = new ArrayList<>();
-
-        long currentOffset = selectedStartOffset;
-        while(hBaseQuery.hasNext()) {
-            if (currentOffset >= endOffsetLong) {
-                break;
-            }
-            results.addAll(hBaseQuery.nextBatch());
-            currentOffset += 3600L;
-        }
-        final long maxWeight = (long) quantumLength * numPartitions;
-
-        //        while (hourlyWindowsImpl.hasNext()) {
-        //
-        //            final List<Result> hourlyResults = hourlyWindowsImpl.nextHour();
-        //            final long currentEpoch = hourlyWindowsImpl.currentEpoch();
-        //
-        //            if (!hourlyResults.isEmpty()) {
-        //                final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
-        //                for (final Result hourlyResult : hourlyResults) {
-        //                    final long fileSize = Bytes.toLong(hourlyResult.getValue(meta, Bytes.toBytes("fs")));
-        //                    final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
-        //                            / processingSpeed;
-        //                    batchSizeLimit.add(hourlyResultEstimatedFileSize);
-        //                    if (!batchSizeLimit.isOverLimit()) {
-        //                        results.add(hourlyResult);
-        //                    }
-        //                    else {
-        //                        LOGGER
-        //                                .info(
-        //                                        "Hourly results were over batch size limit with <{}> logfiles, ignoring rest of the results",
-        //                                        hourlyResult.size()
-        //                                );
-        //                        break;
-        //                    }
-        //                }
-        //            }
-        //            hBaseQuery.updateMostRecent(currentEpoch);
-        //        }
+        final List<Result> results = hBaseQuery.currentBatch();
 
         for (final Result result : results) {
             final String id = Bytes.toString(result.getValue(meta, Bytes.toBytes("i")));

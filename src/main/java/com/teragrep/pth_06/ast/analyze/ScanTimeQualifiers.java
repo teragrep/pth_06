@@ -57,8 +57,8 @@ public final class ScanTimeQualifiers {
     private final List<XMLValueExpression> earliestList;
     private final List<XMLValueExpression> latestList;
 
-    public ScanTimeQualifiers(final ClassifiedExpressions classifiedExpressions) {
-        this(classifiedExpressions.earliestList(), classifiedExpressions.latestList());
+    public ScanTimeQualifiers(final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
+        this(classifiedXMLValueExpressions.earliestList(), classifiedXMLValueExpressions.latestList());
     }
 
     public ScanTimeQualifiers(final List<XMLValueExpression> earliestList, final List<XMLValueExpression> latestList) {

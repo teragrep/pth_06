@@ -60,11 +60,13 @@ public interface HBaseQuery extends Stubbable, AutoCloseable {
 
     public abstract boolean hasNext();
 
-    public abstract List<Result> nextBatch();
+    public abstract List<Result> currentBatch();
 
     public abstract long earliest();
 
     public abstract long latest();
 
     public abstract void commit(final long offset);
+
+    public abstract long mostRecentOffset();
 }

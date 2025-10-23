@@ -43,49 +43,31 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.analyze;
+package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import org.apache.hadoop.hbase.client.Result;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public final class ClassifiedExpressions {
+public class StubHourlySlices implements HourlySlices {
 
-    private final List<Expression> expressions;
-
-    public ClassifiedExpressions(final List<Expression> expressions) {
-        this.expressions = expressions;
+    @Override
+    public boolean hasNext() {
+        throw new UnsupportedOperationException("hasNext() not supported for StubHourlySlices");
     }
 
-    public List<XMLValueExpression> indexList() {
-        return expressionListFilteredByTag(Expression.Tag.INDEX);
+    @Override
+    public List<Result> nextHour() {
+        throw new UnsupportedOperationException("nextHour() not supported for StubHourlySlices");
     }
 
-    public List<XMLValueExpression> sourceTypeList() {
-        return expressionListFilteredByTag(Expression.Tag.SOURCETYPE);
+    @Override
+    public void close() {
+        throw new UnsupportedOperationException("close() not supported for StubHourlySlices");
     }
 
-    public List<XMLValueExpression> hostList() {
-        return expressionListFilteredByTag(Expression.Tag.HOST);
-    }
-
-    public List<XMLValueExpression> earliestList() {
-        return expressionListFilteredByTag(Expression.Tag.EARLIEST);
-    }
-
-    public List<XMLValueExpression> latestList() {
-        return expressionListFilteredByTag(Expression.Tag.LATEST);
-    }
-
-    private List<XMLValueExpression> expressionListFilteredByTag(final Expression.Tag tag) {
-        final List<XMLValueExpression> list = new ArrayList<>();
-        for (Expression expression : expressions) {
-            if (expression.tag().equals(tag) && expression.isLeaf()) {
-                list.add((XMLValueExpression) expression);
-            }
-        }
-        return list;
+    @Override
+    public boolean isStub() {
+        return true;
     }
 }

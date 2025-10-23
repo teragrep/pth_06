@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.ast.analyze.ScanPlanView;
 import com.teragrep.pth_06.ast.analyze.View;
 import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
@@ -55,14 +54,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class HourlyWindowsImpl implements HourlyWindows {
+public final class HourlyViewsSlices implements HourlySlices {
 
     private final long EPOCH_HOUR = 3600L;
-    private final Logger LOGGER = LoggerFactory.getLogger(HourlyWindowsImpl.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(HourlyViewsSlices.class);
     private final List<View> views;
     private long currentEpoch;
 
-    public HourlyWindowsImpl(final List<View> views, final long startEpoch) {
+    public HourlyViewsSlices(final List<View> views, final long startEpoch) {
         this.views = views;
         this.currentEpoch = startEpoch;
     }
@@ -115,7 +114,7 @@ public final class HourlyWindowsImpl implements HourlyWindows {
 
     @Override
     public void close() {
-        for (final View view: views) {
+        for (final View view : views) {
             if (view.isOpen()) {
                 view.close();
             }

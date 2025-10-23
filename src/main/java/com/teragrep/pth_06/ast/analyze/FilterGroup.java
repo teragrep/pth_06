@@ -60,8 +60,8 @@ public final class FilterGroup {
     private final List<XMLValueExpression> hostList;
     private final List<XMLValueExpression> sourceTypeList;
 
-    public FilterGroup(ClassifiedExpressions classifiedExpressions) {
-        this(classifiedExpressions.hostList(), classifiedExpressions.sourceTypeList());
+    public FilterGroup(final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
+        this(classifiedXMLValueExpressions.hostList(), classifiedXMLValueExpressions.sourceTypeList());
     }
 
     public FilterGroup(final List<XMLValueExpression> hostList, final List<XMLValueExpression> sourceTypeList) {

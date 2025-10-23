@@ -95,8 +95,8 @@ public final class ScanPlanCollection {
     public List<View> asViews(final LogfileTable targetTable) {
         final List<ScanPlan> plans = asList();
         final List<View> views = new ArrayList<>(plans.size());
-        for (ScanPlan plan: plans) {
-            views.add(new ScanPlanView(plan,targetTable));
+        for (final ScanPlan plan : plans) {
+            views.add(new ScanPlanView(plan, targetTable));
         }
         return views;
     }
@@ -130,17 +130,17 @@ public final class ScanPlanCollection {
 
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         if (scanPlans.isEmpty()) {
-            findScanRanges(ctx, root);
+            collectScanPlans(ctx, root);
         }
         return scanPlans;
     }
 
-    private void findScanRanges(final DSLContext ctx, final Expression expression) {
+    private void collectScanPlans(final DSLContext ctx, final Expression expression) {
         if (expression.isLogical()) {
             final List<Expression> children = expression.asLogical().children();
             for (final Expression child : children) {
                 if (child.isLogical()) {
-                    findScanRanges(ctx, child);
+                    collectScanPlans(ctx, child);
                 }
             }
             final ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, expression.asLogical());

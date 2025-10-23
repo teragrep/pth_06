@@ -143,29 +143,28 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public Offset initialOffset() {
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
         final DatasourceOffset rv;
-        final boolean archiverEnabled = !hBaseQuery.isStub() || !archiveQuery.isStub();
-        final boolean kafkaEnabled = !kafkaQuery.isStub();
-        final boolean bothEnabled = archiverEnabled && kafkaEnabled;
+        final boolean useArchive = !hBaseQuery.isStub() || !archiveQuery.isStub();
+        final boolean useKafka = !kafkaQuery.isStub();
 
-        if (bothEnabled) {
+        if (useArchive && useKafka) {
             final LongOffset archiveInitialOffset;
             if (!hBaseQuery.isStub()) {
                 archiveInitialOffset = new LongOffset(hBaseQuery.earliest());
             }
-            else { // use hbase if enabled
+            else {
                 archiveInitialOffset = new LongOffset(archiveQuery.getInitialOffset() - 3600L);
             }
             rv = new DatasourceOffset(archiveInitialOffset, new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
         }
-        else if (archiverEnabled) {
-            if (hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(archiveQuery.getInitialOffset() - 3600L));
-            }
-            else { // use hbase if enabled
+        else if (useArchive) {
+            if (!hBaseQuery.isStub()) {
                 rv = new DatasourceOffset(new LongOffset(hBaseQuery.earliest()));
             }
+            else {
+                rv = new DatasourceOffset(new LongOffset(archiveQuery.getInitialOffset() - 3600L));
+            }
         }
-        else if (kafkaEnabled) {
+        else if (useKafka) {
             rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
         }
         else {
@@ -257,7 +256,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public InputPartition[] planInputPartitions(final Offset start, final Offset end) {
         final List<InputPartition> inputPartitions = new LinkedList<>();
 
-        final Batch currentBatch = new Batch(config, archiveQuery, kafkaQuery, hBaseQuery).processRange(start, end);
+        final int numPartitions = config.batchConfig.numPartitions;
+        final Batch currentBatch = new Batch(numPartitions, archiveQuery, kafkaQuery, hBaseQuery)
+                .processRange(start, end);
 
         for (final LinkedList<BatchSlice> taskObjectList : currentBatch) {
 
@@ -319,7 +320,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         if (useArchive && useKafka) {
             final LongOffset archiveOffset;
             if (!hBaseQuery.isStub()) {
-                archiveOffset = new LongOffset(hBaseQuery.latest());
+                archiveOffset = new LongOffset(hBaseQuery.mostRecentOffset());
             }
             else {
                 archiveOffset = new LongOffset(archiveQuery.mostRecentOffset());
@@ -328,7 +329,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         }
         else if (useArchive) {
             if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
+                rv = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
             }
             else {
                 rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));

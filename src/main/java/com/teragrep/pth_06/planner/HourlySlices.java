@@ -50,7 +50,7 @@ import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HourlyWindows extends Stubbable {
+public interface HourlySlices extends Stubbable {
 
     public abstract boolean hasNext();
 

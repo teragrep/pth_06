@@ -60,12 +60,12 @@ public final class StreamIDGroup {
     private final List<XMLValueExpression> hostList;
     private final List<XMLValueExpression> sourceTypeList;
 
-    public StreamIDGroup(final DSLContext ctx, final ClassifiedExpressions classifiedExpressions) {
+    public StreamIDGroup(final DSLContext ctx, final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
         this(
                 ctx,
-                classifiedExpressions.indexList(),
-                classifiedExpressions.hostList(),
-                classifiedExpressions.sourceTypeList()
+                classifiedXMLValueExpressions.indexList(),
+                classifiedXMLValueExpressions.hostList(),
+                classifiedXMLValueExpressions.sourceTypeList()
         );
     }
 

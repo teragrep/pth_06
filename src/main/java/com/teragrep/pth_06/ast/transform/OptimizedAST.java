@@ -71,7 +71,7 @@ public final class OptimizedAST implements ExpressionTransformation<Expression> 
         this(query.asAST());
     }
 
-    /** Applies all optimization transformations to a AST until no changes are possible */
+    /** Applies all optimization transformations to an AST until no changes are possible */
     public OptimizedAST(final Expression root) {
         this.root = root;
     }
@@ -79,16 +79,16 @@ public final class OptimizedAST implements ExpressionTransformation<Expression> 
     public Expression transformed() {
         Expression current = root;
         Expression last;
-        LOGGER.info("Start AST:\n {}", new PrintAST(root).asString());
+        LOGGER.debug("Start AST:\n {}", new PrintAST(root).asString());
         int i = 0;
         do { // apply until no optimization changes occur
             last = current;
             current = walkAndApply(current);
             i++;
-            LOGGER.info("Optimize run <{}> AST:\n {}", i, new PrintAST(current).asString());
+            LOGGER.debug("Optimize run <{}> AST:\n {}", i, new PrintAST(current).asString());
         }
         while (!current.equals(last));
-        LOGGER.info("Final AST:\n {}", new PrintAST(current).asString());
+        LOGGER.info("Optimized final AST:\n {}", new PrintAST(current).asString());
         return current;
     }
 
@@ -135,19 +135,13 @@ public final class OptimizedAST implements ExpressionTransformation<Expression> 
         return transformedSingleExpression(result);
     }
 
-    // apply optimizations once for a single expression
+    // apply all optimizations once for a single expression
     private Expression transformedSingleExpression(final Expression expression) {
-        LOGGER.info("incoming Expression:\n {}", new PrintAST(expression).asString());
         Expression result = new UniqueChildren(expression).transformed();
-        LOGGER.info("Unique children:\n {}", new PrintAST(result).asString());
         result = new IdentitySimplification(result).transformed();
-        LOGGER.info("Identity simplification:\n {}", new PrintAST(result).asString());
         result = new PrunedInvalidTimeQualifier(result).transformed();
-        LOGGER.info("Pruned invalid time qualifier:\n {}", new PrintAST(result).asString());
         result = new EmptyPruned(result).transformed();
-        LOGGER.info("Empty pruned:\n {}", new PrintAST(result).asString());
         result = new FlattenLogical(result).transformed();
-        LOGGER.info("Logical flattened:\n {}", new PrintAST(result).asString());
         return result;
     }
 }

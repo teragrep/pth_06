@@ -57,7 +57,7 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public void open(long startOffset) {
+    public void open(final long startOffset) {
         throw new UnsupportedOperationException("open() not supported for StubHBaseQuery");
     }
 
@@ -77,7 +77,7 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public List<Result> nextBatch() {
+    public List<Result> currentBatch() {
         throw new UnsupportedOperationException("nextBatch() not supported for StubHBaseQuery");
     }
 
@@ -92,7 +92,12 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public void commit(long latest) {
+    public void commit(final long latest) {
         throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public long mostRecentOffset() {
+        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
     }
 }

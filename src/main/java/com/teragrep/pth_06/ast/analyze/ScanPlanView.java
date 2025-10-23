@@ -153,10 +153,10 @@ public final class ScanPlanView implements View {
     @Override
     public List<Result> nextWindow(final long duration) throws IOException {
         if (scanPlan.isStub()) {
-            throw new IllegalStateException("ScanRange was stub");
+            throw new IllegalStateException("ScanPlanView was stub");
         }
         if (!isOpen) {
-            throw new IllegalStateException("RangeView was closed");
+            throw new IllegalStateException("ScanPlanView was closed");
         }
         if (duration < 1) {
             throw new IllegalArgumentException("given duration <" + duration + "> was not a positive");

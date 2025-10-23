@@ -43,26 +43,49 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import org.apache.hadoop.hbase.client.Result;
+import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class StubHourlyWindows implements HourlyWindows {
+public final class ClassifiedXMLValueExpressions {
 
-    @Override
-    public boolean hasNext() {
-        throw new UnsupportedOperationException("hasNext() not supported for hasNext");
+    private final List<Expression> expressions;
+
+    public ClassifiedXMLValueExpressions(final List<Expression> expressions) {
+        this.expressions = expressions;
     }
 
-    @Override
-    public List<Result> nextHour() {
-        throw new UnsupportedOperationException("nextHour() not supported for hasNext");
+    public List<XMLValueExpression> indexList() {
+        return expressionListFilteredByTag(Expression.Tag.INDEX);
     }
 
-    @Override
-    public boolean isStub() {
-        return true;
+    public List<XMLValueExpression> sourceTypeList() {
+        return expressionListFilteredByTag(Expression.Tag.SOURCETYPE);
+    }
+
+    public List<XMLValueExpression> hostList() {
+        return expressionListFilteredByTag(Expression.Tag.HOST);
+    }
+
+    public List<XMLValueExpression> earliestList() {
+        return expressionListFilteredByTag(Expression.Tag.EARLIEST);
+    }
+
+    public List<XMLValueExpression> latestList() {
+        return expressionListFilteredByTag(Expression.Tag.LATEST);
+    }
+
+    private List<XMLValueExpression> expressionListFilteredByTag(final Expression.Tag tag) {
+        final List<XMLValueExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(tag) && expression.isLeaf()) {
+                list.add((XMLValueExpression) expression);
+            }
+        }
+        return list;
     }
 }
