@@ -786,7 +786,6 @@
         </repository>
       </distributionManagement>
       <properties>
-        <gpg.skip>${env.GITHUB_ACTOR != 'teragrep'}</gpg.skip>
         <jooq.regenerate.skip>true</jooq.regenerate.skip>
       </properties>
       <build>
