@@ -29,7 +29,16 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
+      - name: Set Revision
+        id: revision
+        run : |
+          if [ "${{ github.repository_owner }}" = "teragrep" ]; then
+            echo "revision=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "revision=${{ github.event.release.tag_name }}-${{ github.actor }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to GitHub Packages
-        run: mvn --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" -Dgpg.skip=true clean deploy -Ppublish-github-packages
+        run: mvn --batch-mode -Drevision=${{ steps.revision.outputs.revision }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" clean deploy -Ppublish-github-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
