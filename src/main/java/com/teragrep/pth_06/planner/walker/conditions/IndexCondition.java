@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.planner.StreamDBClient;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 import java.util.Objects;
 
@@ -66,7 +67,10 @@ public final class IndexCondition implements QueryCondition {
 
     public Condition condition() {
         Condition condition;
-        if (streamQuery) {
+        if ("*".equalsIgnoreCase(value)) {
+            condition = DSL.trueCondition();
+        }
+        else if (streamQuery) {
             condition = STREAMDB.STREAM.DIRECTORY.like(value.replace('*', '%'));
         }
         else {
@@ -74,7 +78,12 @@ public final class IndexCondition implements QueryCondition {
                     .like(value.replace('*', '%').toLowerCase());
         }
         if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
-            condition = condition.not();
+            if ("*".equalsIgnoreCase(value)) {
+                condition = DSL.falseCondition();
+            }
+            else {
+                condition = condition.not();
+            }
         }
         return condition;
     }
