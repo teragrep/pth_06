@@ -101,6 +101,13 @@ CREATE TABLE `host` (
                         PRIMARY KEY (`id`),
                         UNIQUE KEY `uix_host_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';
+DROP TABLE IF EXISTS `logtag`;
+CREATE TABLE `logtag` (
+                          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for logtag',
+                          `logtag` varchar(48) NOT NULL COMMENT 'A link back to CFEngine',
+                          PRIMARY KEY (`id`),
+                          UNIQUE KEY `uix_logtag` (`logtag`)
+) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains logtag values that are identified using the ID';
 CREATE TABLE `logfile` (
                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                            `logdate` date NOT NULL COMMENT 'Log file''s date',
@@ -121,6 +128,7 @@ CREATE TABLE `logfile` (
                            `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
                            `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
                            `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
+                           `logtag_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logtag',
                            PRIMARY KEY (`id`),
                            UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
                            KEY `bucket_id` (`bucket_id`),
@@ -131,11 +139,13 @@ CREATE TABLE `logfile` (
                            KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
                            KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
                            KEY `ix_logfile_epoch_expires` (`epoch_expires`),
+                           KEY `logtag_id` (`logtag_id`),
                            CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
                            CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
                            CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
-                           CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=135 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
+                           CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`),
+                           CONSTRAINT `logfile_ibfk_5` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
 INSERT INTO host (id, name) VALUES (1, 'testHost1');
 INSERT INTO bucket (id, name) VALUES (1, 'bucket1');
 INSERT INTO category (id, name) VALUES (1, 'testCategory');
