@@ -101,7 +101,6 @@ CREATE TABLE `host` (
                         PRIMARY KEY (`id`),
                         UNIQUE KEY `uix_host_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';
-DROP TABLE IF EXISTS `logtag`;
 CREATE TABLE `logtag` (
                           `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for logtag',
                           `logtag` varchar(48) NOT NULL COMMENT 'A link back to CFEngine',
