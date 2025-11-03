@@ -50,9 +50,7 @@ import java.sql.*;
 import java.util.Objects;
 import java.util.Set;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Snapshot;
-import com.codahale.metrics.Timer;
+import com.codahale.metrics.*;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
@@ -105,6 +103,8 @@ public final class StreamDBClient {
     private final boolean bloomEnabled;
     private final Condition journaldbCondition;
     private final ConditionWalker walker;
+    private final Reservoir histogramReservoir;
+    private final Reservoir timerReservoir;
 
     public StreamDBClient(Config config) throws SQLException {
 
@@ -167,10 +167,14 @@ public final class StreamDBClient {
         includeBeforeEpoch = config.archiveConfig.archiveIncludeBeforeEpoch;
 
         this.metricRegistry = new MetricRegistry();
+        this.histogramReservoir = new SlidingWindowReservoir(1000);
+        this.timerReservoir = new SlidingWindowReservoir(1000);
     }
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
-        final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
+        final Snapshot latencySnapshot = metricRegistry
+                .histogram("ArchiveDatabaseLatencyPerRow", () -> new Histogram(histogramReservoir))
+                .getSnapshot();
         return new CustomTaskMetric[] {
                 new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
                 new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
@@ -197,7 +201,9 @@ public final class StreamDBClient {
                 .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
 
         LOGGER.trace("StreamDBClient.pullToSliceTable select <{}>", select);
-        final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
+        final Timer.Context timerCtx = metricRegistry
+                .timer("ArchiveDatabaseLatency", () -> new Timer(timerReservoir))
+                .time();
         final int rows;
 
         try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
@@ -207,7 +213,9 @@ public final class StreamDBClient {
         final long latencyNs = timerCtx.stop();
 
         if (rows != 0) {
-            metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
+            metricRegistry
+                    .histogram("ArchiveDatabaseLatencyPerRow", () -> new Histogram(histogramReservoir))
+                    .update(latencyNs / rows);
         }
 
         LOGGER.info("StreamDBClient.pullToSliceTable" + ": took (" + "<{}> ms)", (latencyNs / 1_000_000d));
