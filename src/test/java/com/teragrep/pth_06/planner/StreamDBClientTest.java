@@ -122,7 +122,6 @@ class StreamDBClientTest {
 
         String filename = "example.log-@" + epoch + "-" + year + month + day + hour + ".log.gz";
         String path = year + "/" + month + "-" + day + "/example.tg.dev.test/example/" + filename;
-        System.out.println("path: " + path);
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(epoch),
                 Date.valueOf(zonedDateTime.toLocalDate()),
