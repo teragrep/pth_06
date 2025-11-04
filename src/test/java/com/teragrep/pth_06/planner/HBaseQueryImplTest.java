@@ -237,11 +237,11 @@ public class HBaseQueryImplTest {
         final Config config = new Config(opts);
         try (final HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
             final long earliest = hBaseQuery.earliest();
-            hBaseQuery.latest(); // increment first batch
             hBaseQuery.open(earliest);
+            hBaseQuery.latest(); // increment first batch
             final int size = hBaseQuery.currentBatch().size();
             Assertions.assertEquals(5, size);
-            Assertions.assertEquals(1262296800, hBaseQuery.mostRecentOffset());
+            Assertions.assertEquals(1262469600, hBaseQuery.mostRecentOffset());
         }
     }
 }
