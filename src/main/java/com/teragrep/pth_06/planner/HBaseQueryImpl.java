@@ -196,7 +196,8 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
         final long previousBatchOffset;
         if (!limitedResults.isStub()) {
             previousBatchOffset = limitedResults.latest();
-        } else {
+        }
+        else {
             previousBatchOffset = mostRecentOffset();
         }
         // update the current batch results
