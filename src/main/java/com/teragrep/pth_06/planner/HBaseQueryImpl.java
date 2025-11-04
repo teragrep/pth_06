@@ -73,7 +73,6 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     private final LogfileTable table;
     private final MetricRegistry metricRegistry;
     private LimitedResults limitedResults;
-    private long mostRecentOffset = Long.MIN_VALUE;
     private long mostRecentCommitedOffset = Long.MIN_VALUE;
     private HourlySlices hourlySlices;
 
@@ -127,7 +126,7 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
         if (isOpen()) {
             hourlySlices.close();
             this.hourlySlices = new StubHourlySlices();
-            this.mostRecentOffset = Long.MIN_VALUE;
+            this.limitedResults = new StubLimitedResults();
         }
     }
 
@@ -194,21 +193,29 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
         final long totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
-        // update the current results
+        final long previousBatchOffset;
+        if (!limitedResults.isStub()) {
+            previousBatchOffset = limitedResults.latest();
+        } else {
+            previousBatchOffset = mostRecentOffset();
+        }
+        // update the current batch results
         this.limitedResults = new BatchSizeLimitedResults(
                 hourlySlices,
                 batchSizeLimit,
                 config,
-                mostRecentOffset,
+                previousBatchOffset,
                 new MetricRegistry()
         );
+        // update metrics
         long rows = limitedResults.results().size();
         final long latencyNs = timerCtx.stop();
         if (rows != 0) {
             metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
         }
         metricRegistry.counter("ArchiveDatabaseRowCount").inc(rows);
-        return limitedResults.latest();
+        final long latest = limitedResults.latest();
+        return latest;
     }
 
     @Override
@@ -225,11 +232,11 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     @Override
     public long mostRecentOffset() {
         long offset;
-        if (mostRecentOffset == Long.MIN_VALUE) {
+        if (limitedResults.isStub()) {
             offset = earliest();
         }
         else {
-            offset = mostRecentOffset;
+            offset = limitedResults.latest();
         }
         return offset;
     }
