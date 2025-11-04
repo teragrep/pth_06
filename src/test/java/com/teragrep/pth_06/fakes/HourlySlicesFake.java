@@ -43,19 +43,44 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.fakes;
 
-import com.teragrep.pth_06.Stubbable;
+import com.teragrep.pth_06.planner.HourlySlices;
 import org.apache.hadoop.hbase.client.Result;
 
+import java.util.Collections;
 import java.util.List;
 
-public interface HourlySlices extends Stubbable {
+public class HourlySlicesFake implements HourlySlices {
 
-    public abstract boolean hasNext();
+    private final boolean hasNext;
 
-    public abstract List<Result> nextHour();
+    public HourlySlicesFake() {
+        this(false);
+    }
 
-    public abstract void close();
+    public HourlySlicesFake(boolean hasNext) {
+        this.hasNext = hasNext;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return hasNext;
+    }
+
+    @Override
+    public List<Result> nextHour() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 
 }

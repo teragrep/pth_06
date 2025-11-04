@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.fakes.HourlySlicesFake;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -79,7 +80,7 @@ public final class BatchSizeLimitedResultsTest {
         long startingOffset = Long.MIN_VALUE;
         BatchSizeLimit batchSizeLimit = new BatchSizeLimit(10000, 2);
         BatchSizeLimitedResults batchSizeLimitedResults = new BatchSizeLimitedResults(
-                new HourlySlices.FakeSlices(),
+                new HourlySlicesFake(),
                 batchSizeLimit,
                 new Config(opts),
                 startingOffset,
