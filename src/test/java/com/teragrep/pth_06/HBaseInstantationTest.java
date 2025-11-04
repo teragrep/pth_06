@@ -65,8 +65,10 @@ import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.execution.ui.SQLAppStatusStore;
+import org.apache.spark.sql.execution.ui.SQLPlanMetric;
 import org.apache.spark.sql.functions;
-import org.apache.spark.sql.streaming.DataStreamWriter;
+import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.Trigger;
 import org.jooq.Record11;
@@ -79,6 +81,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import scala.collection.JavaConverters;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -86,7 +89,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -130,6 +135,8 @@ public final class HBaseInstantationTest {
                 .config("spark.driver.extraJavaOptions", "-Duser.timezone=UCT")
                 .config("spark.executor.extraJavaOptions", "-Duser.timezone=UCT")
                 .config("spark.sql.session.timeZone", "UTC")
+                .config("spark.sql.streaming.metricsEnabled", "true")
+                .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
         final TestingHBaseClusterOption clusterOption = TestingHBaseClusterOption
@@ -270,8 +277,187 @@ public final class HBaseInstantationTest {
         Assertions.assertEquals(totalRows - 1, rows);
     }
 
+    @Test
+    public void testHBaseCustomMetrics() {
+        final SQLAppStatusStore statusStore = spark.sharedState().statusStore();
+        final int oldCount = statusStore.executionsList().size();
+        final Dataset<Row> df = spark
+                .readStream()
+                .format(TeragrepDatasource.class.getName())
+                .option("archive.enabled", "true")
+                .option("hbase.enabled", "true")
+                .option("S3endPoint", s3endpoint)
+                .option("S3identity", s3identity)
+                .option("S3credential", s3credential)
+                .option("DBusername", userName)
+                .option("DBpassword", password)
+                .option("DBurl", url)
+                .option("DBstreamdbname", "streamdb")
+                .option("DBjournaldbname", "journaldb")
+                .option("num_partitions", "1")
+                .option(
+                        "queryXML",
+                        "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1262296800\"/><latest operation=\"EQUALS\" value=\"1263679201\"/></AND></AND>"
+                )
+                .option("TeragrepAuditQuery", "index=f17_v2")
+                .option("TeragrepAuditReason", "test run at hbaseScanTest()")
+                .option("TeragrepAuditUser", System.getProperty("user.name"))
+                // hbase options
+                .option(
+                        "hbase.zookeeper.property.clientPort",
+                        testCluster.getConf().get("hbase.zookeeper.property.clientPort")
+                )
+                .option("hbase.master.hostname", testCluster.getConf().get("hbase.master.hostname"))
+                .option("hbase.regionserver.hostname", testCluster.getConf().get("hbase.regionserver.hostname"))
+                .option("hbase.zookeeper.quorum", testCluster.getConf().get("hbase.zookeeper.quorum"))
+                // kafka options
+                .option("kafka.enabled", "false")
+                .option("kafka.bootstrap.servers", "")
+                .option("kafka.sasl.mechanism", "")
+                .option("kafka.security.protocol", "")
+                .option("kafka.sasl.jaas.config", "")
+                .option("kafka.useMockKafkaConsumer", "false")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                .load();
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
+        streamingQuery.processAllAvailable();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
+        // Metrics
+        final Map<String, List<Long>> metricsValues = new HashMap<>();
+        while (statusStore.executionsCount() <= oldCount) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        while (statusStore.executionsList().isEmpty() || statusStore.executionsList().last().metricValues() == null) {
+            Assertions.assertDoesNotThrow(() -> Thread.sleep(100));
+        }
+
+        statusStore.executionsList(oldCount, (int) (statusStore.executionsCount() - oldCount)).foreach(v1 -> {
+            final Map<Object, String> mv = JavaConverters.mapAsJavaMap(v1.metricValues());
+            for (final SQLPlanMetric spm : JavaConverters.asJavaIterable(v1.metrics())) {
+                final long id = spm.accumulatorId();
+                final Object value = mv.get(id);
+                if (spm.metricType().startsWith("v2Custom_") && value != null) {
+                    final List<Long> preExistingValues = metricsValues
+                            .getOrDefault(spm.metricType(), new ArrayList<>());
+                    preExistingValues.add(Long.parseLong(value.toString()));
+                    metricsValues.put(spm.metricType(), preExistingValues);
+                }
+            }
+            return 0; // need to return something, expects scala Unit return value
+        });
+
+        // Check that all expected metrics are present
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"
+                                ),
+                        "ArchiveCompressedBytesProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator"),
+                        "BytesProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator"),
+                        "BytesPerSecond metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator"
+                                ),
+                        "RecordsProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator"
+                                ),
+                        "RecordsPerSecond metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"
+                                ),
+                        "ArchiveObjectsProcessed metric not present!"
+                );
+        Assertions
+                .assertTrue(
+                        metricsValues
+                                .containsKey(
+                                        "v2Custom_com.teragrep.pth_06.metrics.records.LatestKafkaTimestampMetricAggregator"
+                                ),
+                        "LatestKafkaTimestamp metric not present!"
+                );
+
+        // default batch size limit object count 5 results in 7 batches from 33 total rows
+        Assertions
+                .assertEquals(
+                        7,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        7, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator").size()
+                );
+        Assertions
+                .assertEquals(
+                        7,
+                        metricsValues
+                                .get(
+                                        "v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"
+                                )
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        7,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        totalRows,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
+                                .stream()
+                                .reduce(Long::sum)
+                                .orElseGet(Assertions::fail)
+                );
+        Assertions
+                .assertEquals(
+                        7,
+                        metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator")
+                                .size()
+                );
+        Assertions
+                .assertEquals(
+                        7, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator").size()
+                );
+    }
+
     private long resultRowsFromQuery(final String queryString) {
-        Dataset<Row> df = spark
+        final Dataset<Row> df = spark
                 .readStream()
                 .format(TeragrepDatasource.class.getName())
                 .option("archive.enabled", "true")
@@ -307,73 +493,12 @@ public final class HBaseInstantationTest {
                 .option("kafka.useMockKafkaConsumer", "false")
                 .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
                 .load();
-
-        Dataset<Row> df2 = df.agg(functions.count("*"));
-
-        DataStreamWriter<Row> dfWriter = df2
-                .writeStream()
-                .outputMode("complete")
-                .format("memory")
-                .trigger(Trigger.ProcessingTime(0))
-                .queryName("HBaseArchiveQuery")
-                .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
-                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true");
-
-        StreamingQuery streamingQuery = Assertions.assertDoesNotThrow(() -> dfWriter.start());
-
-        DataStreamWriter<Row> rowDataStreamWriter = df.writeStream().foreachBatch((ds, id) -> {
-            ds.show(false);
-        });
-        StreamingQuery sq = Assertions.assertDoesNotThrow(() -> rowDataStreamWriter.start());
-
-        sq.processAllAvailable();
-        Assertions.assertDoesNotThrow(sq::stop);
-        Assertions.assertDoesNotThrow(() -> sq.awaitTermination());
-
-        long rowCount = 0;
-        while (Assertions.assertDoesNotThrow(() -> !streamingQuery.awaitTermination(1000))) {
-
-            long resultSize = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").count();
-            if (resultSize > 0) {
-                rowCount = spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
-            }
-            if (
-                streamingQuery.lastProgress() == null
-                        || streamingQuery.status().message().equals("Initializing sources")
-            ) {
-                // queryString has not started
-            }
-            else if (streamingQuery.lastProgress().sources().length != 0) {
-                if (isArchiveDone(streamingQuery)) {
-                    Assertions.assertDoesNotThrow(streamingQuery::stop);
-                }
-            }
-        }
-        return rowCount;
-    }
-
-    private boolean isArchiveDone(StreamingQuery outQ) {
-        boolean archiveDone = true;
-        for (int i = 0; i < outQ.lastProgress().sources().length; i++) {
-            String startOffset = outQ.lastProgress().sources()[i].startOffset();
-            String endOffset = outQ.lastProgress().sources()[i].endOffset();
-            String description = outQ.lastProgress().sources()[i].description();
-
-            if (description != null && !description.startsWith("com.teragrep.pth_06.ArchiveMicroStreamReader@")) {
-                // ignore others than archive
-                continue;
-            }
-
-            if (startOffset != null) {
-                if (!startOffset.equalsIgnoreCase(endOffset)) {
-                    archiveDone = false;
-                }
-            }
-            else {
-                archiveDone = false;
-            }
-        }
-        return archiveDone;
+        final Dataset<Row> df2 = df.agg(functions.count("*"));
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df2.writeStream().outputMode("complete").format("memory").trigger(Trigger.ProcessingTime(0)).queryName("HBaseArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).start());
+        streamingQuery.processAllAvailable();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        return spark.sqlContext().sql("SELECT * FROM HBaseArchiveQuery").first().getAs(0);
     }
 
     private long preloadS3Data() throws IOException {

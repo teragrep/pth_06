@@ -45,11 +45,24 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.apache.hadoop.hbase.client.Result;
 
-public interface QueryMetrics {
+import java.util.List;
 
-    public abstract long mostRecentOffset();
+public class StubLimitedResults implements LimitedResults {
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    @Override
+    public List<Result> results() {
+        throw new UnsupportedOperationException("results() not supported by StubLimitedResults");
+    }
+
+    @Override
+    public long latest() {
+        throw new UnsupportedOperationException("latest() not supported by StubLimitedResults");
+    }
+
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 }

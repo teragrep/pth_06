@@ -50,15 +50,13 @@ import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HBaseQuery extends Stubbable, AutoCloseable {
+public interface HBaseQuery extends Stubbable, AutoCloseable, QueryMetrics {
 
     public abstract void open(final long startOffset);
 
     public abstract void close();
 
     public abstract boolean isOpen();
-
-    public abstract boolean hasNext();
 
     public abstract List<Result> currentBatch();
 
@@ -67,6 +65,4 @@ public interface HBaseQuery extends Stubbable, AutoCloseable {
     public abstract long latest();
 
     public abstract void commit(final long offset);
-
-    public abstract long mostRecentOffset();
 }

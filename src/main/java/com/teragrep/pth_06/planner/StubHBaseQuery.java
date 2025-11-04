@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
 import java.util.List;
 
@@ -72,11 +73,6 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public boolean hasNext() {
-        throw new UnsupportedOperationException("hasNext() not supported for StubHBaseQuery");
-    }
-
-    @Override
     public List<Result> currentBatch() {
         throw new UnsupportedOperationException("nextBatch() not supported for StubHBaseQuery");
     }
@@ -99,5 +95,10 @@ public final class StubHBaseQuery implements HBaseQuery {
     @Override
     public long mostRecentOffset() {
         throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        throw new UnsupportedOperationException("currentDatabaseMetrics() not supported for StubHBaseQuery");
     }
 }

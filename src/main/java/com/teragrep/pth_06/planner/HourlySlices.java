@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner;
 import com.teragrep.pth_06.Stubbable;
 import org.apache.hadoop.hbase.client.Result;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface HourlySlices extends Stubbable {
@@ -57,5 +58,38 @@ public interface HourlySlices extends Stubbable {
     public abstract List<Result> nextHour();
 
     public abstract void close();
+
+    public class FakeSlices implements HourlySlices {
+
+        private final boolean hasNext;
+
+        public FakeSlices() {
+            this(false);
+        }
+
+        public FakeSlices(boolean hasNext) {
+            this.hasNext = hasNext;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        @Override
+        public List<Result> nextHour() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public boolean isStub() {
+            return false;
+        }
+    }
 
 }

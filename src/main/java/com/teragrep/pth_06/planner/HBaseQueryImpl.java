@@ -45,18 +45,20 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.teragrep.pth_06.ast.analyze.ScanPlan;
 import com.teragrep.pth_06.ast.analyze.ScanPlanCollection;
 import com.teragrep.pth_06.ast.analyze.View;
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.planner.source.HBaseSource;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,25 +71,37 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     private final Config config;
     private final ScanPlanCollection scanPlanCollection;
     private final LogfileTable table;
-    private List<Result> batchResult = new ArrayList<>();
+    private final MetricRegistry metricRegistry;
+    private LimitedResults limitedResults;
     private long mostRecentOffset = Long.MIN_VALUE;
     private long mostRecentCommitedOffset = Long.MIN_VALUE;
     private HourlySlices hourlySlices;
 
     public HBaseQueryImpl(final Config config, final HBaseSource source) {
-        this(config, new ScanPlanCollection(config), new LogfileTable(config, source), new StubHourlySlices());
+        this(
+                config,
+                new ScanPlanCollection(config),
+                new LogfileTable(config, source),
+                new MetricRegistry(),
+                new StubHourlySlices(),
+                new StubLimitedResults()
+        );
     }
 
     private HBaseQueryImpl(
             final Config config,
             final ScanPlanCollection scanPlanCollection,
             final LogfileTable table,
-            final HourlySlices hourlySlices
+            final MetricRegistry metricRegistry,
+            final HourlySlices hourlySlices,
+            final LimitedResults limitedResults
     ) {
         this.config = config;
         this.scanPlanCollection = scanPlanCollection;
         this.table = table;
+        this.metricRegistry = metricRegistry;
         this.hourlySlices = hourlySlices;
+        this.limitedResults = limitedResults;
     }
 
     /**
@@ -122,11 +136,6 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
         return !hourlySlices.isStub();
     }
 
-    @Override
-    public boolean hasNext() {
-        return !hourlySlices.isStub() && hourlySlices.hasNext();
-    }
-
     /**
      * Returns the current batch, this value is updated using the latest() method
      * 
@@ -134,7 +143,10 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
      */
     @Override
     public List<Result> currentBatch() {
-        return batchResult;
+        if (limitedResults.isStub()) {
+            throw new IllegalStateException("current batch was not yet processed, latest() was not called");
+        }
+        return limitedResults.results();
     }
 
     /**
@@ -176,32 +188,27 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
             LOGGER.info("latest() called advancing query results from start offset <{}>", startOffset);
             open(startOffset);
         }
-        final byte[] columnFamilyBytes = Bytes.toBytes("meta");
         final long quantumLength = config.batchConfig.quantumLength;
         final long numPartitions = config.batchConfig.numPartitions;
         final long maxWeight = quantumLength * numPartitions;
         final long totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
-        final float fileCompressionRatio = config.batchConfig.fileCompressionRatio;
-        final float processingSpeed = config.batchConfig.processingSpeed;
+        final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final BatchSizeLimit batchSizeLimit = new BatchSizeLimit(maxWeight, totalObjectCountLimit);
-
-        this.batchResult = new ArrayList<>(); // replace last batch results
-        while (!batchSizeLimit.isOverLimit() && hasNext()) {
-            final List<Result> nextHourResults = hourlySlices.nextHour();
-            for (final Result hourlyResult : nextHourResults) {
-                final long fileSize = Bytes.toLong(hourlyResult.getValue(columnFamilyBytes, Bytes.toBytes("fs")));
-                final float hourlyResultEstimatedFileSize = fileSize * fileCompressionRatio / 1024 / 1024
-                        / processingSpeed;
-                batchSizeLimit.add(hourlyResultEstimatedFileSize);
-                mostRecentOffset = new EpochFromRowKey(hourlyResult.getRow()).epoch();
-                batchResult.add(hourlyResult);
-                if (batchSizeLimit.isOverLimit()) {
-                    LOGGER.info("Batch limit reached at offset at <{}>", mostRecentOffset);
-                    break;
-                }
-            }
+        // update the current results
+        this.limitedResults = new BatchSizeLimitedResults(
+                hourlySlices,
+                batchSizeLimit,
+                config,
+                mostRecentOffset,
+                new MetricRegistry()
+        );
+        long rows = limitedResults.results().size();
+        final long latencyNs = timerCtx.stop();
+        if (rows != 0) {
+            metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
         }
-        return mostRecentOffset;
+        metricRegistry.counter("ArchiveDatabaseRowCount").inc(rows);
+        return limitedResults.latest();
     }
 
     @Override
@@ -229,7 +236,12 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
 
     @Override
     public CustomTaskMetric[] currentDatabaseMetrics() {
-        LOGGER.info("currentDatabaseMetrics() called but not implemented for HbaseQuery");
-        return new CustomTaskMetric[0];
+        final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
+        return new CustomTaskMetric[] {
+                new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
+                new TaskMetric("ArchiveDatabaseRowMaxLatency", latencySnapshot.getMax()),
+                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) latencySnapshot.getMean()),
+                new TaskMetric("ArchiveDatabaseRowMinLatency", latencySnapshot.getMin()),
+        };
     }
 }

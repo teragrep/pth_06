@@ -52,7 +52,6 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
-import org.apache.spark.sql.SparkSession;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.types.ULong;
@@ -75,10 +74,6 @@ import java.util.UUID;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HBaseQueryImplTest {
 
-    private SparkSession spark;
-    private final String s3endpoint = "http://127.0.0.1:48080";
-    private final String s3identity = "s3identity";
-    private final String s3credential = "s3credential";
     String url;
     final String userName = "sa";
     final String password = "";
@@ -99,15 +94,6 @@ public class HBaseQueryImplTest {
         opts.put("S3credential", "S3credential");
         opts.put("DBusername", userName);
         opts.put("DBpassword", password);
-
-        spark = SparkSession
-                .builder()
-                .appName("Java Spark SQL basic example")
-                .master("local[2]")
-                .config("spark.driver.extraJavaOptions", "-Duser.timezone=UCT")
-                .config("spark.executor.extraJavaOptions", "-Duser.timezone=UCT")
-                .config("spark.sql.session.timeZone", "UTC")
-                .getOrCreate();
 
         final TestingHBaseClusterOption clusterOption = TestingHBaseClusterOption
                 .builder()
@@ -216,9 +202,9 @@ public class HBaseQueryImplTest {
     public void testOpen() {
         Config config = new Config(opts);
         try (HBaseQuery hBaseQuery = new HBaseQueryImpl(config, new LazySource(testCluster.getConf()))) {
-            Assertions.assertFalse(hBaseQuery.hasNext());
+            Assertions.assertFalse(hBaseQuery.isOpen());
             Assertions.assertDoesNotThrow(() -> hBaseQuery.open(0));
-            Assertions.assertTrue(hBaseQuery.hasNext());
+            Assertions.assertTrue(hBaseQuery.isOpen());
         }
     }
 
@@ -256,7 +242,6 @@ public class HBaseQueryImplTest {
             final int size = hBaseQuery.currentBatch().size();
             Assertions.assertEquals(5, size);
             Assertions.assertEquals(1262296800, hBaseQuery.mostRecentOffset());
-            Assertions.assertTrue(hBaseQuery.hasNext());
         }
     }
 }

@@ -45,11 +45,60 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import com.codahale.metrics.MetricRegistry;
+import com.teragrep.pth_06.config.Config;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
-public interface QueryMetrics {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-    public abstract long mostRecentOffset();
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public final class BatchSizeLimitedResultsTest {
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    final Map<String, String> opts = new HashMap<>();
+
+    @BeforeAll
+    public void setup() {
+        opts.put("archive.enabled", "true");
+        opts.put("hbase.enabled", "true");
+        opts.put("queryXML", "query");
+        opts.put("S3endPoint", "S3endPoint");
+        opts.put("S3identity", "S3identity");
+        opts.put("S3credential", "S3credential");
+        opts.put("DBusername", "username");
+        opts.put("DBpassword", "password");
+        opts.put("DBurl", "url");
+    }
+
+    @Test
+    public void testStartingOffset() {
+        long startingOffset = Long.MIN_VALUE;
+        BatchSizeLimit batchSizeLimit = new BatchSizeLimit(10000, 2);
+        BatchSizeLimitedResults batchSizeLimitedResults = new BatchSizeLimitedResults(
+                new HourlySlices.FakeSlices(),
+                batchSizeLimit,
+                new Config(opts),
+                startingOffset,
+                new MetricRegistry()
+        );
+        Assertions.assertEquals(startingOffset, batchSizeLimitedResults.latest());
+    }
+
+    @Test
+    public void testStubbable() {
+        final LimitedResults batchSizeLimitedResults = new BatchSizeLimitedResults(
+                new HourlyViewsSlices(new ArrayList<>(), 1L),
+                new BatchSizeLimit(1, 1),
+                new Config(opts),
+                1,
+                new MetricRegistry()
+        );
+        final LimitedResults stubResults = new StubLimitedResults();
+        Assertions.assertFalse(batchSizeLimitedResults.isStub());
+        Assertions.assertTrue(stubResults.isStub());
+    }
 }

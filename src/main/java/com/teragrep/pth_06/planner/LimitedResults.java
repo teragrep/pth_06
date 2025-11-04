@@ -45,11 +45,14 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import com.teragrep.pth_06.Stubbable;
+import org.apache.hadoop.hbase.client.Result;
 
-public interface QueryMetrics {
+import java.util.List;
 
-    public abstract long mostRecentOffset();
+public interface LimitedResults extends Stubbable {
 
-    public abstract CustomTaskMetric[] currentDatabaseMetrics();
+    public abstract List<Result> results();
+
+    public abstract long latest();
 }

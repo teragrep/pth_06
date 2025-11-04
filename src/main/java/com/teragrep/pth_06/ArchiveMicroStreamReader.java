@@ -346,7 +346,10 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final CustomTaskMetric[] metrics;
-        if (!archiveQuery.isStub() && hBaseQuery.isStub()) {
+        if (!hBaseQuery.isStub()) {
+            metrics = hBaseQuery.currentDatabaseMetrics();
+        }
+        else if (!archiveQuery.isStub()) {
             metrics = archiveQuery.currentDatabaseMetrics();
         }
         else {
