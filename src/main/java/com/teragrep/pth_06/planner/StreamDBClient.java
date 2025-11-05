@@ -46,7 +46,10 @@
 package com.teragrep.pth_06.planner;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -76,7 +79,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
-import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.coalesce;
+import static org.jooq.impl.DSL.select;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
