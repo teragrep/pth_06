@@ -113,6 +113,7 @@ class StreamDBClientTest {
 
     @AfterEach
     public void cleanup() {
+        Assertions.assertDoesNotThrow(() -> connection.close());
         mariadb.stop();
     }
 
