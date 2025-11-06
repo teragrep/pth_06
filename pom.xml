@@ -29,7 +29,7 @@
   </scm>
   <properties>
     <changelist>-SNAPSHOT</changelist>
-    <hbase.version>2.6.3-hadoop3</hbase.version>
+    <hbase.version>2.6.0-hadoop3</hbase.version>
     <java.version>1.8</java.version>
     <jclouds.version>2.3.0</jclouds.version>
     <maven.compiler.source>1.8</maven.compiler.source>
