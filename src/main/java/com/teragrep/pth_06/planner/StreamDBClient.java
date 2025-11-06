@@ -46,7 +46,10 @@
 package com.teragrep.pth_06.planner;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -76,7 +79,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
-
+import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.select;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
@@ -181,12 +184,15 @@ public final class StreamDBClient {
 
     public int pullToSliceTable(Date day) {
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
+        final Field<Date> logdateFunction = DSL
+                .field(
+                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
+                        JOURNALDB.LOGFILE.EPOCH_HOUR
+                );
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory, nestedTopNQuery.stream, JOURNALDB.HOST.NAME,
-                        JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
-                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime, JOURNALDB.LOGFILE.FILE_SIZE,
-                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        JOURNALDB.LOGFILE.LOGTAG, coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE), JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime, JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
@@ -377,7 +383,7 @@ public final class StreamDBClient {
                 JOURNALDB.LOGFILE.ID.as(id),
                 GetArchivedObjectsFilterTable.directory.as(directory),
                 GetArchivedObjectsFilterTable.stream.as(stream),
-                logtimeFunction.as(logtime)
+                coalesce(JOURNALDB.LOGFILE.EPOCH_HOUR, logtimeFunction).as(logtime)
         };
 
         private Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
@@ -402,8 +408,13 @@ public final class StreamDBClient {
                 }
             }
 
+            final Field<Date> logdateFunction = DSL
+                    .field(
+                            "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
+                            JOURNALDB.LOGFILE.EPOCH_HOUR
+                    );
             return selectOnConditionStep
-                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
+                    .where(coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE).eq(day).and(journaldbConditionArg))
                     .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                     .asTable(innerTable);
         }
