@@ -44,11 +44,11 @@
  * a licensee so wish it.
  */
 
--- MariaDB dump 10.19  Distrib 10.11.11-MariaDB, for Linux (x86_64)
+-- MariaDB dump 10.19  Distrib 10.11.13-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: journaldb
 -- ------------------------------------------------------
--- Server version	10.11.11-MariaDB
+-- Server version	10.11.13-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -208,25 +208,24 @@ CREATE TABLE `logfile` (
   `file_size` bigint(20) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s size in bytes',
   `sha256_checksum` char(44) NOT NULL COMMENT 'An SHA256 hash of the log file (Note: known to be 44 characters long)',
   `archive_etag` varchar(64) NOT NULL COMMENT 'Object storage''s MD5 hash of the log file (Note: room left for possible implementation changes)',
-  `logtag` varchar(48) NOT NULL COMMENT 'A link back to CFEngine',
   `source_system_id` smallint(5) unsigned NOT NULL COMMENT 'Log file''s source system (references source_system.id)',
   `category_id` smallint(5) unsigned NOT NULL DEFAULT 0 COMMENT 'Log file''s category (references category.id)',
   `uncompressed_file_size` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  uncompressed file size',
   `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
   `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
   `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
-  `logtag_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logtag',
+  `logtag_id` bigint(20) unsigned NOT NULL COMMENT 'Log file''s foreign key to logtag',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
   KEY `bucket_id` (`bucket_id`),
   KEY `category_id` (`category_id`),
   KEY `ix_logfile_expiration` (`expiration`),
   KEY `ix_logfile__source_system_id` (`source_system_id`),
-  KEY `cix_logfile_logdate_host_id_logtag` (`logdate`,`host_id`,`logtag`),
-  KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
-  KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
   KEY `ix_logfile_epoch_expires` (`epoch_expires`),
-  KEY `logtag_id` (`logtag_id`),
+  KEY `fk_logfile__logtag_id` (`logtag_id`),
+  KEY `cix_logfile_epoch_hour_host_id_logtag_id` (`epoch_hour`,`host_id`,`logtag_id`),
+  KEY `cix_logfile_host_id_logtag_id_logdate` (`host_id`,`logtag_id`,`logdate`),
+  KEY `cix_logfile_logdate_host_id_logtag_id` (`logdate`,`host_id`,`logtag_id`),
   CONSTRAINT `fk_logfile__logtag_id` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`),
   CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
   CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
@@ -355,4 +354,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-06 11:56:20
+-- Dump completed on 2025-11-07 10:39:41
