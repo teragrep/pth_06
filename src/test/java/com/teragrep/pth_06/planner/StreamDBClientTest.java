@@ -447,7 +447,6 @@ class StreamDBClientTest {
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile record has logtag originating from normalized logtag table instead of old logtag column that should no longer be used by StreamDBClient.
-        Assertions.assertEquals("oldExample", logfileRecord.get("logtag"));
         Assertions.assertEquals(ULong.valueOf(1), logfileRecord.get("logtag_id"));
         Assertions.assertEquals("example", hourRange.get(0).get(4, String.class));
     }
