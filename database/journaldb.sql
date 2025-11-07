@@ -227,11 +227,11 @@ CREATE TABLE `logfile` (
   KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
   KEY `ix_logfile_epoch_expires` (`epoch_expires`),
   KEY `logtag_id` (`logtag_id`),
+  CONSTRAINT `fk_logfile__logtag_id` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`),
   CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
   CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
   CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
-  CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`),
-  CONSTRAINT `logfile_ibfk_5` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`)
+  CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -91,7 +91,7 @@ import org.jooq.types.UShort;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Logfile extends TableImpl<LogfileRecord> {
 
-    private static final long serialVersionUID = 308607431;
+    private static final long serialVersionUID = 1081606291;
 
     /**
      * The reference instance of <code>journaldb.logfile</code>
@@ -266,7 +266,7 @@ public class Logfile extends TableImpl<LogfileRecord> {
 
     @Override
     public List<ForeignKey<LogfileRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<LogfileRecord, ?>>asList(Keys.LOGFILE_IBFK_1, Keys.LOGFILE_IBFK_2, Keys.LOGFILE_IBFK_5);
+        return Arrays.<ForeignKey<LogfileRecord, ?>>asList(Keys.LOGFILE_IBFK_1, Keys.LOGFILE_IBFK_2, Keys.FK_LOGFILE__LOGTAG_ID);
     }
 
     public Bucket bucket() {
@@ -278,7 +278,7 @@ public class Logfile extends TableImpl<LogfileRecord> {
     }
 
     public Logtag logtag() {
-        return new Logtag(this, Keys.LOGFILE_IBFK_5);
+        return new Logtag(this, Keys.FK_LOGFILE__LOGTAG_ID);
     }
 
     @Override

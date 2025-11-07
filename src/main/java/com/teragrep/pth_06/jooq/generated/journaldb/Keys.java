@@ -110,7 +110,7 @@ public class Keys {
 
     public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = ForeignKeys0.LOGFILE_IBFK_1;
     public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = ForeignKeys0.LOGFILE_IBFK_2;
-    public static final ForeignKey<LogfileRecord, LogtagRecord> LOGFILE_IBFK_5 = ForeignKeys0.LOGFILE_IBFK_5;
+    public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = ForeignKeys0.FK_LOGFILE__LOGTAG_ID;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
@@ -137,6 +137,6 @@ public class Keys {
     private static class ForeignKeys0 {
         public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_BUCKET_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_1", Logfile.LOGFILE.BUCKET_ID);
         public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_HOST_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_2", Logfile.LOGFILE.HOST_ID);
-        public static final ForeignKey<LogfileRecord, LogtagRecord> LOGFILE_IBFK_5 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_5", Logfile.LOGFILE.LOGTAG_ID);
+        public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "fk_logfile__logtag_id", Logfile.LOGFILE.LOGTAG_ID);
     }
 }
