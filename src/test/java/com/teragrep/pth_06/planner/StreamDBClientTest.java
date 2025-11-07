@@ -136,7 +136,6 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "oldExample",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
@@ -159,7 +158,6 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "oldExample",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
@@ -447,7 +445,6 @@ class StreamDBClientTest {
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that the resulting logfile record has logtag originating from normalized logtag table instead of old logtag column that should no longer be used by StreamDBClient.
-        Assertions.assertEquals("oldExample", logfileRecord.get("logtag"));
         Assertions.assertEquals(ULong.valueOf(1), logfileRecord.get("logtag_id"));
         Assertions.assertEquals("example", hourRange.get(0).get(4, String.class));
     }
