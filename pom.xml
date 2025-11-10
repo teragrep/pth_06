@@ -131,7 +131,6 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -139,18 +138,15 @@
       <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- force 3.4.1 hadoop for testing -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-api</artifactId>
       <version>3.4.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-runtime</artifactId>
       <version>3.4.1</version>
-      <scope>test</scope>
     </dependency>
     <!-- JUnit 4 required for HBase test classes -->
     <dependency>
