@@ -126,7 +126,7 @@
       <version>1.11.1026</version>
       <scope>provided</scope>
     </dependency>
-    <!-- Apache HBase -->
+    <!-- Apache HBase client -->
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
@@ -139,18 +139,18 @@
       <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- force 3.4.1 hadoop -->
+    <!-- force 3.4.1 hadoop for testing -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-api</artifactId>
       <version>3.4.1</version>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-runtime</artifactId>
       <version>3.4.1</version>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
     <!-- JUnit 4 required for HBase test classes -->
     <dependency>
@@ -842,6 +842,42 @@
                     <arg>--pinentry-mode</arg>
                     <arg>loopback</arg>
                   </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- packages the artifact as a shaded jar -->
+      <id>build-shaded-jar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <!-- relocate hadoop and hbase packages for shaded jar -->
+                  <relocations>
+                    <relocation>
+                      <pattern>org.apache.hadoop</pattern>
+                      <shadedPattern>${groupId}.${artifactId}.org.apache.hadoop</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>org.apache.hbase</pattern>
+                      <shadedPattern>${groupId}.${artifactId}.org.apache.hbase</shadedPattern>
+                    </relocation>
+                  </relocations>
+                  <minimizeJar>true</minimizeJar>
+                  <createDependencyReducedPom>false</createDependencyReducedPom>
                 </configuration>
               </execution>
             </executions>
