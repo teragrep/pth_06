@@ -131,6 +131,7 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -140,13 +141,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client-api</artifactId>
-      <version>3.4.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client-runtime</artifactId>
       <version>3.4.1</version>
+      <scope>test</scope>
     </dependency>
     <!-- JUnit 4 required for HBase test classes -->
     <dependency>
@@ -860,21 +857,6 @@
                   <goal>shade</goal>
                 </goals>
                 <phase>package</phase>
-                <configuration>
-                  <!-- relocate hadoop and hbase packages for shaded jar -->
-                  <relocations>
-                    <relocation>
-                      <pattern>org.apache.hadoop</pattern>
-                      <shadedPattern>${groupId}.${artifactId}.org.apache.hadoop</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>org.apache.hbase</pattern>
-                      <shadedPattern>${groupId}.${artifactId}.org.apache.hbase</shadedPattern>
-                    </relocation>
-                  </relocations>
-                  <minimizeJar>true</minimizeJar>
-                  <createDependencyReducedPom>false</createDependencyReducedPom>
-                </configuration>
               </execution>
             </executions>
           </plugin>
