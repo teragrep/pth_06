@@ -97,7 +97,7 @@ import static org.jooq.impl.DSL.select;
  */
 public final class StreamDBClient {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
 
     private final MetricRegistry metricRegistry;
     private final DSLContext ctx;
@@ -107,7 +107,7 @@ public final class StreamDBClient {
     private final ConditionWalker walker;
 
     public StreamDBClient(Config config) throws SQLException {
-
+        LOGGER.debug("StreamDBClient ctor called with config <[{}]>", config);
         this.bloomEnabled = config.archiveConfig.bloomEnabled;
 
         LOGGER.info("StreamDBClient bloom.enabled: " + this.bloomEnabled);
@@ -167,9 +167,11 @@ public final class StreamDBClient {
         includeBeforeEpoch = config.archiveConfig.archiveIncludeBeforeEpoch;
 
         this.metricRegistry = new MetricRegistry();
+        LOGGER.debug("StreamDBClient ctor exit");
     }
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
+        LOGGER.debug("StreamDBClient.currentDatabaseMetrics called");
         final Snapshot latencySnapshot = metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").getSnapshot();
         return new CustomTaskMetric[] {
                 new TaskMetric("ArchiveDatabaseRowCount", metricRegistry.counter("ArchiveDatabaseRowCount").getCount()),
@@ -180,6 +182,7 @@ public final class StreamDBClient {
     }
 
     public int pullToSliceTable(Date day) {
+        LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
         NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
@@ -214,11 +217,13 @@ public final class StreamDBClient {
 
         metricRegistry.counter("ArchiveDatabaseRowCount").inc(rows);
 
+        LOGGER.debug("StreamDBClient.pullToSliceTable returns <{}> rows", rows);
         return rows;
 
     }
 
     WeightedOffset getNextHourAndSizeFromSliceTable(long previousHour) {
+        LOGGER.debug("StreamDBClient.getNextHourAndSizeFromSliceTable called with previousHour <{}>", previousHour);
         Result<Record2<Long, ULong>> hourAndFilesizeRecord = ctx
                 .selectDistinct(SliceTable.logtime, SliceTable.filesize)
                 .from(SliceTable.SLICE_TABLE)
@@ -235,22 +240,30 @@ public final class StreamDBClient {
             weightedOffset = new WeightedOffset(offset, fileSize);
         }
 
+        LOGGER.debug("StreamDBClient.getNextHourAndSizeFromSliceTable returns weightedOffset <{}>", weightedOffset);
         return weightedOffset;
 
     }
 
     void deleteRangeFromSliceTable(long start, long end) {
+        LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable called  start <{}> end <{}>", start, end);
         ctx
                 .deleteFrom(SliceTable.SLICE_TABLE)
                 .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)))
                 .execute();
+        LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable exit");
     }
 
     Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
             long excludedStartHour,
             long includedEndHour
     ) {
-        return ctx
+        LOGGER
+                .debug(
+                        "StreamDBClient.getHourRange called excludedStartHour <{}> includedEndHour <{}>",
+                        excludedStartHour, includedEndHour
+                );
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = ctx
                 .select(
                         SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
                         SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
@@ -258,6 +271,9 @@ public final class StreamDBClient {
                 )
                 .from(SliceTable.SLICE_TABLE)
                 .where(SliceTable.logtime.greaterThan(excludedStartHour).and(SliceTable.logtime.lessOrEqual(includedEndHour)).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).fetch();
+
+        LOGGER.debug("StreamDBClient.getHourRange returns <{}> records", result.size());
+        return result;
     }
 
     public static class SliceTable {
@@ -282,6 +298,7 @@ public final class StreamDBClient {
         private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
 
         private static void create(DSLContext ctx) {
+            LOGGER.debug("SliceTable.create called");
             try (final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE)) {
                 dropTableStep.execute();
             }
@@ -295,6 +312,7 @@ public final class StreamDBClient {
             ) {
                 createIndexStep.execute();
             }
+            LOGGER.debug("SliceTable.create exit");
         }
 
     }
@@ -314,6 +332,7 @@ public final class StreamDBClient {
         private static final Index hostIndex = DSL.index(DSL.name("cix_host_id_tag"));
 
         private static void create(DSLContext ctx, Condition streamdbCondition) {
+            LOGGER.debug("GetArchivedObjectsFilterTable.create called condition <{}>", streamdbCondition);
             DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);
             dropQuery.execute();
 
@@ -351,6 +370,7 @@ public final class StreamDBClient {
             ) {
                 indexStep.execute();
             }
+            LOGGER.debug("GetArchivedObjectsFilterTable.create exit");
         }
 
     }
@@ -381,7 +401,11 @@ public final class StreamDBClient {
         };
 
         private Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
-
+            LOGGER
+                    .debug(
+                            "NestedTopNQuery.getTableStatement called condition <{}> date <{}>", journaldbConditionArg,
+                            day
+                    );
             SelectOnConditionStep<Record> selectOnConditionStep = select(resultFields)
                     .from(GetArchivedObjectsFilterTable.FILTER_TABLE)
                     .innerJoin(JOURNALDB.LOGFILE)
@@ -402,6 +426,7 @@ public final class StreamDBClient {
                 }
             }
 
+            LOGGER.debug("NestedTopNQuery.getTableStatement exit");
             return selectOnConditionStep
                     .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
                     .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
