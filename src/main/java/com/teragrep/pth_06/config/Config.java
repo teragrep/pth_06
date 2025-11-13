@@ -63,6 +63,8 @@ public final class Config {
     public final BatchConfig batchConfig;
     public final AuditConfig auditConfig;
 
+    public final LoggingConfig loggingConfig;
+
     public final boolean isArchiveEnabled;
     public final boolean isKafkaEnabled;
 
@@ -100,5 +102,7 @@ public final class Config {
 
         // fetch metadata (defaults to false)
         isMetadataQuery = opts.getOrDefault("metadataQuery.enabled", "false").equalsIgnoreCase("true");
+
+        loggingConfig = new LoggingConfigImpl(opts);
     }
 }

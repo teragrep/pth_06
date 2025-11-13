@@ -80,8 +80,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveMicroStreamReader.class);
-
+    private static final Logger classLogger = LoggerFactory.getLogger(ArchiveMicroStreamReader.class);
+    private final ConfiguredLogger LOGGER;
     /**
      * Contains the configurations given as options when loading from this datasource.
      */
@@ -95,6 +95,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * @param config Datasource configuration object
      */
     ArchiveMicroStreamReader(Config config) {
+        this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
         LOGGER.debug("ArchiveMicroStreamReader ctor called");
 
         this.config = config;
@@ -121,7 +122,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @VisibleForTesting
     ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
+        this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
         LOGGER.debug("ArchiveMicroStreamReader test ctor called");
+
         this.config = config;
         this.aq = aq;
         this.kq = kq;

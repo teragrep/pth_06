@@ -43,59 +43,24 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner.walker.conditions;
+package com.teragrep.pth_06.config;
 
-import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
-import org.jooq.Condition;
+import java.util.Map;
 
-import java.util.Objects;
+public final class LoggingConfigImpl implements LoggingConfig {
 
-import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
+    private final boolean isDebug;
 
-public final class HostCondition implements QueryCondition {
-
-    private final String value;
-    private final String operation;
-    private final boolean streamQuery;
-
-    public HostCondition(String value, String operation, boolean streamQuery) {
-        this.streamQuery = streamQuery;
-        this.value = value;
-        this.operation = operation;
+    public LoggingConfigImpl(final Map<String, String> opts) {
+        this(Boolean.parseBoolean(opts.getOrDefault("logging.debug.enabled", "false")));
     }
 
-    public Condition condition() {
-        Condition condition;
-        if (streamQuery) {
-            condition = STREAMDB.HOST.NAME.like(value.replace('*', '%'));
-        }
-        else {
-            condition = GetArchivedObjectsFilterTable.host.like(value.replace('*', '%').toLowerCase());
-        }
-        if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
-            condition = condition.not();
-        }
-        return condition;
+    public LoggingConfigImpl(final boolean isDebug) {
+        this.isDebug = isDebug;
     }
 
     @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null) {
-            return false;
-        }
-        if (object.getClass() != this.getClass()) {
-            return false;
-        }
-        final HostCondition cast = (HostCondition) object;
-        return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
-                && this.operation.equals(cast.operation);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value, operation, streamQuery);
+    public boolean isDebug() {
+        return isDebug;
     }
 }

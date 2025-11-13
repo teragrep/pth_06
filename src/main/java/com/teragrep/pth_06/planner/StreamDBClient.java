@@ -48,11 +48,11 @@ package com.teragrep.pth_06.planner;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Objects;
-import java.util.Set;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
+import com.teragrep.pth_06.ConfiguredLogger;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
@@ -67,14 +67,12 @@ import org.jooq.conf.Settings;
 import org.jooq.conf.ThrowExceptions;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
-import org.jooq.types.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
 import static org.jooq.impl.DSL.select;
@@ -97,7 +95,8 @@ import static org.jooq.impl.DSL.select;
  */
 public final class StreamDBClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StreamDBClient.class);
+    private static final Logger classLogger = LoggerFactory.getLogger(StreamDBClient.class);
+    private final ConfiguredLogger LOGGER;
 
     private final MetricRegistry metricRegistry;
     private final DSLContext ctx;
@@ -105,11 +104,16 @@ public final class StreamDBClient {
     private final boolean bloomEnabled;
     private final Condition journaldbCondition;
     private final ConditionWalker walker;
+    private final boolean isDebugEnabled;
+    private final GetArchivedObjectsFilterTable filterTable;
+    private final NestedTopNQuery nestedTopNQuery;
+    private final SliceTable sliceTable;
 
     public StreamDBClient(Config config) throws SQLException {
+        this.isDebugEnabled = config.loggingConfig.isDebug();
+        this.LOGGER = new ConfiguredLogger(classLogger, isDebugEnabled);
         LOGGER.debug("StreamDBClient ctor called with config <[{}]>", config);
         this.bloomEnabled = config.archiveConfig.bloomEnabled;
-
         LOGGER.info("StreamDBClient bloom.enabled: " + this.bloomEnabled);
 
         final String userName = config.archiveConfig.dbUsername;
@@ -121,7 +125,6 @@ public final class StreamDBClient {
         final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
         final boolean withoutFilters = config.archiveConfig.withoutFilters;
         final String withoutFiltersPattern = config.archiveConfig.withoutFiltersPattern;
-
         // https://blog.jooq.org/how-i-incorrectly-fetched-jdbc-resultsets-again/
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
@@ -133,6 +136,9 @@ public final class StreamDBClient {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         final Connection connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
+        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled);
+        this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
+        this.sliceTable = new SliceTable(ctx, isDebugEnabled);
 
         if (hideDatabaseExceptions) {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
@@ -160,8 +166,8 @@ public final class StreamDBClient {
             throw new IllegalArgumentException(e);
         }
 
-        GetArchivedObjectsFilterTable.create(ctx, streamdbCondition); // TEMPTABLE
-        SliceTable.create(ctx);
+        filterTable.create(streamdbCondition); // TEMPTABLE
+        sliceTable.create();
 
         // by default no cutoff
         includeBeforeEpoch = config.archiveConfig.archiveIncludeBeforeEpoch;
@@ -183,17 +189,17 @@ public final class StreamDBClient {
 
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
-        NestedTopNQuery nestedTopNQuery = new NestedTopNQuery();
+
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
-                        JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory, nestedTopNQuery.stream, JOURNALDB.HOST.NAME,
-                        JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
-                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime, JOURNALDB.LOGFILE.FILE_SIZE,
+                        JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
+                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
+                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
                         JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
-                .on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id))
+                .on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id()))
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
@@ -276,162 +282,12 @@ public final class StreamDBClient {
         return result;
     }
 
-    public static class SliceTable {
-
-        private static final String sliceTableName = "sliceTable";
-
-        public static final Table<Record> SLICE_TABLE = DSL.table(DSL.name(sliceTableName));
-        public static final Field<ULong> id = DSL.field(DSL.name(sliceTableName, "id"), ULong.class);
-        public static final Field<String> directory = DSL.field(DSL.name(sliceTableName, "directory"), String.class);
-        public static final Field<String> stream = DSL.field(DSL.name(sliceTableName, "stream"), String.class);
-        public static final Field<String> host = DSL.field(DSL.name(sliceTableName, "host"), String.class);
-        public static final Field<String> logtag = DSL.field(DSL.name(sliceTableName, "logtag"), String.class);
-        public static final Field<Date> logdate = DSL.field(DSL.name(sliceTableName, "logdate"), Date.class);
-        public static final Field<String> bucket = DSL.field(DSL.name(sliceTableName, "bucket"), String.class);
-        public static final Field<String> path = DSL.field(DSL.name(sliceTableName, "path"), String.class);
-        public static final Field<Long> logtime = DSL.field(DSL.name(sliceTableName, "logtime"), Long.class);
-        public static final Field<ULong> filesize = DSL.field(DSL.name(sliceTableName, "filesize"), ULong.class);
-        // additional metadata
-        public static final Field<ULong> uncompressedFilesize = DSL
-                .field(DSL.name(sliceTableName, "uncompressed_filesize"), ULong.class);
-
-        private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
-
-        private static void create(DSLContext ctx) {
-            LOGGER.debug("SliceTable.create called");
-            try (final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE)) {
-                dropTableStep.execute();
-            }
-            try (
-                    final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize)
-            ) {
-                createTableStep.execute();
-            }
-            try (
-                    final CreateIndexIncludeStep createIndexStep = ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime)
-            ) {
-                createIndexStep.execute();
-            }
-            LOGGER.debug("SliceTable.create exit");
-        }
-
+    ConditionWalker walker() {
+        return this.walker;
     }
 
-    public static class GetArchivedObjectsFilterTable {
-        // temporary table created from streamdb
-
-        private static final String tmpTableName = "getArchivedObjects_filter_table";
-
-        private static final Table<Record> FILTER_TABLE = DSL.table(DSL.name(tmpTableName));
-        public static final Field<UShort> host_id = DSL.field(DSL.name(tmpTableName, "host_id"), UShort.class);
-        public static final Field<String> host = DSL.field(DSL.name(tmpTableName, "host"), String.class);
-        private static final Field<String> tag = DSL.field(DSL.name(tmpTableName, "tag"), String.class);
-        public static final Field<String> directory = DSL.field(DSL.name(tmpTableName, "directory"), String.class);
-        public static final Field<String> stream = DSL.field(DSL.name(tmpTableName, "stream"), String.class);
-
-        private static final Index hostIndex = DSL.index(DSL.name("cix_host_id_tag"));
-
-        private static void create(DSLContext ctx, Condition streamdbCondition) {
-            LOGGER.debug("GetArchivedObjectsFilterTable.create called condition <{}>", streamdbCondition);
-            DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);
-            dropQuery.execute();
-
-            CreateTableWithDataStep query = ctx
-                    .createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)
-                    .as(
-                            select(
-                                    // these are hardcoded for the procedure execution
-                                    STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
-                            )
-                                    .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
-                                    .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))
-                                    .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
-                                    .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
-                                    .from(STREAMDB.STREAM)
-                                    .innerJoin(STREAMDB.LOG_GROUP)
-                                    .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                    .innerJoin(STREAMDB.HOST)
-                                    .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                    .innerJoin(JOURNALDB.HOST)
-                                    .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))
-                                    // following change
-                                    .where(streamdbCondition)
-                    );
-            query.execute();
-
-            // this could be within tmpTableCreateSql but JOOQ can't (yet) https://github.com/jOOQ/jOOQ/issues/11752
-            try (
-                    final CreateIndexIncludeStep indexStep = ctx.createIndex(GetArchivedObjectsFilterTable.hostIndex)
-                            //.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.
-                            .on(
-                                    GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,
-                                    GetArchivedObjectsFilterTable.tag
-                            )
-            ) {
-                indexStep.execute();
-            }
-            LOGGER.debug("GetArchivedObjectsFilterTable.create exit");
-        }
-
-    }
-
-    public class NestedTopNQuery {
-
-        private final String innerTableName = "limited";
-        private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
-
-        // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
-        public final Field<Long> logtimeFunction = DSL
-                .field(
-                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))",
-                        Long.class, JOURNALDB.LOGFILE.PATH
-                );
-
-        private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
-        private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
-        private final Field<String> stream = DSL.field(DSL.name(innerTableName, "stream"), String.class);
-        private final Field<Long> logtime = DSL.field(DSL.name(innerTableName, "logtime"), Long.class);
-        private final Field<Long> logtimeForOrderBy = DSL.field("logtime", Long.class);
-
-        private final SelectField<?>[] resultFields = {
-                JOURNALDB.LOGFILE.ID.as(id),
-                GetArchivedObjectsFilterTable.directory.as(directory),
-                GetArchivedObjectsFilterTable.stream.as(stream),
-                logtimeFunction.as(logtime)
-        };
-
-        private Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
-            LOGGER
-                    .debug(
-                            "NestedTopNQuery.getTableStatement called condition <{}> date <{}>", journaldbConditionArg,
-                            day
-                    );
-            SelectOnConditionStep<Record> selectOnConditionStep = select(resultFields)
-                    .from(GetArchivedObjectsFilterTable.FILTER_TABLE)
-                    .innerJoin(JOURNALDB.LOGFILE)
-                    .on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id).and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag)));
-
-            if (bloomEnabled) {
-                // join all tables needed for the condition generated by walker
-                final Set<Table<?>> tables = walker.conditionRequiredTables();
-                if (!tables.isEmpty()) {
-                    for (final Table<?> table : tables) {
-                        if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("Left join pattern match table: <{}>", table.getName());
-                        }
-                        selectOnConditionStep = selectOnConditionStep
-                                .leftJoin(table)
-                                .on(JOURNALDB.LOGFILE.ID.eq((Field<ULong>) table.field("partition_id")));
-                    }
-                }
-            }
-
-            LOGGER.debug("NestedTopNQuery.getTableStatement exit");
-            return selectOnConditionStep
-                    .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
-                    .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
-                    .asTable(innerTable);
-        }
+    boolean bloomEnabled() {
+        return this.bloomEnabled;
     }
 
     @Override
