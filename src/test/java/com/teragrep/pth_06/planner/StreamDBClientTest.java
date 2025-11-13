@@ -230,6 +230,30 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing that pullToSliceTable() does not pull any rows from the database when the index value in the queryXML does not match with logtag.
+     */
+    @Test
+    public void pullToSliceTableInvalidIndexTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts.put("queryXML", "<index value=\"invalidLogtag\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // 0 rows should be pulled to sliceTable
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+        Assertions.assertEquals(0, rows);
+    }
+
+    /**
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
      * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */

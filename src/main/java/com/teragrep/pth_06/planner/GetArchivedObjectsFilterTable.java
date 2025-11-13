@@ -49,6 +49,7 @@ import com.teragrep.pth_06.ConfiguredLogger;
 import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 import org.jooq.types.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,7 @@ public final class GetArchivedObjectsFilterTable {
     public static final Field<UShort> host_id = DSL.field(DSL.name(tmpTableName, "host_id"), UShort.class);
     public static final Field<String> host = DSL.field(DSL.name(tmpTableName, "host"), String.class);
     public static final Field<String> tag = DSL.field(DSL.name(tmpTableName, "tag"), String.class);
+    public static final Field<ULong> tag_id = DSL.field(DSL.name(tmpTableName, "tag_id"), ULong.class);
     public static final Field<String> directory = DSL.field(DSL.name(tmpTableName, "directory"), String.class);
     public static final Field<String> stream = DSL.field(DSL.name(tmpTableName, "stream"), String.class);
     private static final Index hostIndex = DSL.index(DSL.name("cix_host_id_tag"));
@@ -105,7 +107,8 @@ public final class GetArchivedObjectsFilterTable {
                                 STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
                         )
                                 .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
-                                .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))
+                                .select(JOURNALDB.LOGTAG.LOGTAG_.as(GetArchivedObjectsFilterTable.tag))
+                                .select(JOURNALDB.LOGTAG.ID.as(GetArchivedObjectsFilterTable.tag_id))
                                 .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
                                 .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
                                 .from(STREAMDB.STREAM)
@@ -115,6 +118,8 @@ public final class GetArchivedObjectsFilterTable {
                                 .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
                                 .innerJoin(JOURNALDB.HOST)
                                 .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))
+                                .innerJoin(JOURNALDB.LOGTAG)
+                                .on((STREAMDB.STREAM.TAG).eq(JOURNALDB.LOGTAG.LOGTAG_))
                                 // following change
                                 .where(streamdbCondition)
                 );
