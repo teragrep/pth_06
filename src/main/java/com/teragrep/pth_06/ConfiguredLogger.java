@@ -63,7 +63,7 @@ public final class ConfiguredLogger {
 
     public void debug(final String message, final Object ... args) {
         if (isDebug) {
-            info(message, args);
+            info("{DEBUG} ".concat(message), args);
         }
         else {
             logger.debug(message, args);
