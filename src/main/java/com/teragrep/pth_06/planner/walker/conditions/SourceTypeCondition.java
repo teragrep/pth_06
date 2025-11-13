@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.StreamDBClient;
+import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
 
 import java.util.Objects;
@@ -70,7 +70,7 @@ public final class SourceTypeCondition implements QueryCondition {
             condition = STREAMDB.STREAM.STREAM_.like(value.replace('*', '%'));
         }
         else {
-            condition = StreamDBClient.GetArchivedObjectsFilterTable.stream.like(value.replace('*', '%').toLowerCase());
+            condition = GetArchivedObjectsFilterTable.stream.like(value.replace('*', '%').toLowerCase());
         }
         if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
             condition = condition.not();

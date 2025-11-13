@@ -390,42 +390,36 @@ public class MockDBData {
                 DSLContext create = DSL.using(SQLDialect.DEFAULT);
                 Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = create
                         .newResult(
-                                StreamDBClient.SliceTable.id, StreamDBClient.SliceTable.directory,
-                                StreamDBClient.SliceTable.stream, StreamDBClient.SliceTable.host,
-                                StreamDBClient.SliceTable.logtag, StreamDBClient.SliceTable.logdate,
-                                StreamDBClient.SliceTable.bucket, StreamDBClient.SliceTable.path,
-                                StreamDBClient.SliceTable.logtime, StreamDBClient.SliceTable.filesize,
-                                StreamDBClient.SliceTable.uncompressedFilesize
+                                SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host,
+                                SliceTable.logtag, SliceTable.logdate, SliceTable.bucket, SliceTable.path,
+                                SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
                         );
                 //result.add(create.newRecord(1, "as", "asd", "as", "das", new Date(0), "sad", "path", 10, 10));
 
                 Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> newRecord = create
                         .newRecord(
-                                StreamDBClient.SliceTable.id, StreamDBClient.SliceTable.directory,
-                                StreamDBClient.SliceTable.stream, StreamDBClient.SliceTable.host,
-                                StreamDBClient.SliceTable.logtag, StreamDBClient.SliceTable.logdate,
-                                StreamDBClient.SliceTable.bucket, StreamDBClient.SliceTable.path,
-                                StreamDBClient.SliceTable.logtime, StreamDBClient.SliceTable.filesize,
-                                StreamDBClient.SliceTable.uncompressedFilesize
+                                SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host,
+                                SliceTable.logtag, SliceTable.logdate, SliceTable.bucket, SliceTable.path,
+                                SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
                         );
 
                 if (
                     id != null && directory != null && stream != null && host != null && logtag != null
                             && logdate != null && bucket != null && path != null && logtime != null && filesize != null
                 ) {
-                    newRecord.set(StreamDBClient.SliceTable.id, ULong.valueOf(id));
-                    newRecord.set(StreamDBClient.SliceTable.directory, directory);
-                    newRecord.set(StreamDBClient.SliceTable.stream, stream);
-                    newRecord.set(StreamDBClient.SliceTable.host, host);
-                    newRecord.set(StreamDBClient.SliceTable.logtag, logtag);
-                    newRecord.set(StreamDBClient.SliceTable.logdate, Date.valueOf(logdate));
-                    newRecord.set(StreamDBClient.SliceTable.bucket, bucket);
-                    newRecord.set(StreamDBClient.SliceTable.path, path);
-                    newRecord.set(StreamDBClient.SliceTable.logtime, Long.valueOf(logtime));
-                    newRecord.set(StreamDBClient.SliceTable.filesize, ULong.valueOf(filesize));
+                    newRecord.set(SliceTable.id, ULong.valueOf(id));
+                    newRecord.set(SliceTable.directory, directory);
+                    newRecord.set(SliceTable.stream, stream);
+                    newRecord.set(SliceTable.host, host);
+                    newRecord.set(SliceTable.logtag, logtag);
+                    newRecord.set(SliceTable.logdate, Date.valueOf(logdate));
+                    newRecord.set(SliceTable.bucket, bucket);
+                    newRecord.set(SliceTable.path, path);
+                    newRecord.set(SliceTable.logtime, Long.valueOf(logtime));
+                    newRecord.set(SliceTable.filesize, ULong.valueOf(filesize));
                     newRecord
                             .set(
-                                    StreamDBClient.SliceTable.uncompressedFilesize,
+                                    SliceTable.uncompressedFilesize,
                                     uncompressedFilesize != null ? ULong.valueOf(uncompressedFilesize) : null
                             );
 
@@ -445,12 +439,9 @@ public class MockDBData {
 
         return create
                 .select(
-                        StreamDBClient.SliceTable.id, StreamDBClient.SliceTable.directory,
-                        StreamDBClient.SliceTable.stream, StreamDBClient.SliceTable.host,
-                        StreamDBClient.SliceTable.logtag, StreamDBClient.SliceTable.logdate,
-                        StreamDBClient.SliceTable.bucket, StreamDBClient.SliceTable.path,
-                        StreamDBClient.SliceTable.logtime, StreamDBClient.SliceTable.filesize,
-                        StreamDBClient.SliceTable.uncompressedFilesize
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
+                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
+                        SliceTable.uncompressedFilesize
                 )
                 .fetch();
 

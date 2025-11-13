@@ -80,8 +80,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveMicroStreamReader.class);
-
+    private static final Logger classLogger = LoggerFactory.getLogger(ArchiveMicroStreamReader.class);
+    private final ConfiguredLogger LOGGER;
     /**
      * Contains the configurations given as options when loading from this datasource.
      */
@@ -95,7 +95,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * @param config Datasource configuration object
      */
     ArchiveMicroStreamReader(Config config) {
-        LOGGER.debug("ArchiveMicroBatchReader>");
+        this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
+        LOGGER.debug("ArchiveMicroStreamReader ctor called");
 
         this.config = config;
 
@@ -113,7 +114,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             this.kq = null;
         }
 
-        LOGGER.debug("MicroBatchReader> initialized");
+        LOGGER.debug("ArchiveMicroStreamReader ctor exit");
     }
 
     /**
@@ -121,11 +122,14 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @VisibleForTesting
     ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
+        this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
+        LOGGER.debug("ArchiveMicroStreamReader test ctor called");
+
         this.config = config;
         this.aq = aq;
         this.kq = kq;
 
-        LOGGER.debug("@VisibleForTesting MicroBatchReader> initialized");
+        LOGGER.debug("ArchiveMicroStreamReader test ctor exit");
     }
 
     /**
@@ -136,8 +140,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset initialOffset() {
+        LOGGER.debug("ArchiveMicroStreamReader.initialOffset called");
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
-        DatasourceOffset rv;
+        final DatasourceOffset rv;
         if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
             // only archive
             rv = new DatasourceOffset(new LongOffset(this.aq.getInitialOffset() - 3600L));
@@ -157,28 +162,33 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             // neither
             throw new IllegalStateException("no datasources enabled, can't get initial offset");
         }
-        LOGGER.debug("offset[initial]= {}", rv);
+        LOGGER.debug("ArchiveMicroStreamReader.initialOffset returns <{}>", rv);
         return rv;
     }
 
     /** {@inheritDoc} */
     @Override
     public Offset deserializeOffset(String json) {
-        return new DatasourceOffset(json);
+        LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset json <{}>", json);
+        final DatasourceOffset offset = new DatasourceOffset(json);
+        LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset deserialized <{}>", offset);
+        return offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public void commit(Offset offset) {
+        LOGGER.debug("ArchiveMicroStreamReader.commit offset <{}>", offset);
         if (this.config.isArchiveEnabled) {
             this.aq.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
         }
+        LOGGER.debug("ArchiveMicroStreamReader.commit exit");
     }
 
     /** {@inheritDoc} */
     @Override
     public void stop() {
-        LOGGER.debug("ArchiveMicroStreamReader.stop>");
+        LOGGER.debug("ArchiveMicroStreamReader.stop called");
     }
 
     /**
@@ -188,6 +198,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset latestOffset() {
+        LOGGER.debug("ArchiveMicroStreamReader.latestOffset called");
         DatasourceOffset rv;
         if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
             // only archive
@@ -209,7 +220,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
 
-        LOGGER.debug("offset[latest]= {}", rv);
+        LOGGER.debug("ArchiveMicroStreamReader.latestOffset returns <{}>", rv);
         return rv;
     }
 
@@ -222,6 +233,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public InputPartition[] planInputPartitions(Offset start, Offset end) {
+        LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
         List<InputPartition> inputPartitions = new LinkedList<>();
 
         Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
@@ -271,16 +283,25 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
         }
 
+        LOGGER
+                .debug(
+                        "ArchiveMicroStreamReader.planInputPartitions: returned <{}> inputPartitions",
+                        inputPartitions.size()
+                );
         return inputPartitions.toArray(new InputPartition[0]);
     }
 
     @Override
     public PartitionReaderFactory createReaderFactory() {
-        return new TeragrepPartitionReaderFactory(config.isMetadataQuery);
+        LOGGER.debug("ArchiveMicroStreamReader.createReaderFactory called");
+        final TeragrepPartitionReaderFactory readerFactory = new TeragrepPartitionReaderFactory(config.isMetadataQuery);
+        LOGGER.debug("ArchiveMicroStreamReader.createReaderFactory returned <{}>", readerFactory);
+        return readerFactory;
     }
 
     public DatasourceOffset mostRecentOffset() {
-        DatasourceOffset rv;
+        LOGGER.debug("ArchiveMicroStreamReader.mostRecentOffset called");
+        final DatasourceOffset rv;
         if (config.isArchiveEnabled && config.isKafkaEnabled) {
             rv = new DatasourceOffset(
                     new LongOffset(this.aq.mostRecentOffset()),
@@ -296,10 +317,12 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         else {
             throw new IllegalStateException("No datasources enabled, can't get last used offset");
         }
+        LOGGER.debug("ArchiveMicroStreamReader.mostRecentOffset returns <{}>", rv);
         return rv;
     }
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
+        LOGGER.debug("ArchiveMicroStreamReader.currentDatabaseMetrics called");
         final CustomTaskMetric[] metrics;
         if (aq != null) {
             metrics = aq.currentDatabaseMetrics();
@@ -307,6 +330,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         else {
             metrics = new CustomTaskMetric[0];
         }
+        LOGGER.debug("ArchiveMicroStreamReader.currentDatabaseMetrics returns <{}> metrics", metrics.length);
         return metrics;
     }
 }
