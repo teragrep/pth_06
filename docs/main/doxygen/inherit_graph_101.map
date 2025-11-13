@@ -1,5 +1,20 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,13,175,38"/>
-<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1task_1_1TeragrepPartitionReaderFactory.html" title=" " alt="" coords="223,5,448,45"/>
-<area shape="poly" id="edge73_Node000000_Node000001" title=" " alt="" coords="188,23,222,23,222,28,188,28"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="24,45,85,70"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1DatasourceOffset.html" title=" " alt="" coords="152,69,407,109"/>
+<area shape="poly" id="edge63_Node000000_Node000001" title=" " alt="" coords="99,61,152,69,152,74,98,66"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1KafkaOffset.html" title=" " alt="" coords="152,5,407,45"/>
+<area shape="poly" id="edge64_Node000000_Node000005" title=" " alt="" coords="98,49,152,41,152,46,99,54"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,205,104,230"/>
+<area shape="poly" id="edge67_Node000002_Node000001" title=" " alt="" coords="72,192,105,154,151,119,177,107,179,112,153,124,109,158,76,195"/>
+<area shape="poly" id="edge68_Node000002_Node000005" title=" " alt="" coords="62,191,75,159,93,123,119,86,150,55,171,43,173,48,154,59,123,90,98,125,79,162,67,193"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ArchiveS3ObjectMetadata.html" title=" " alt="" coords="174,197,385,237"/>
+<area shape="poly" id="edge65_Node000002_Node000003" title=" " alt="" coords="118,215,174,215,174,220,118,220"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1KafkaTopicPartitionOffsetMetadata.html" title=" " alt="" coords="174,261,385,301"/>
+<area shape="poly" id="edge66_Node000002_Node000004" title=" " alt="" coords="106,232,153,247,196,259,195,264,151,252,104,237"/>
+<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1SerializedDatasourceOffset.html" title=" " alt="" coords="152,325,407,365"/>
+<area shape="poly" id="edge69_Node000002_Node000006" title=" " alt="" coords="76,239,109,277,153,311,179,323,177,328,151,316,105,281,72,243"/>
+<area shape="rect" id="Node000007" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchSlice.html" title=" " alt="" coords="166,389,393,429"/>
+<area shape="poly" id="edge70_Node000002_Node000007" title=" " alt="" coords="67,242,79,273,98,309,123,345,154,375,173,387,171,392,150,379,119,349,93,312,75,275,62,244"/>
+<area shape="rect" id="Node000008" href="$classcom_1_1teragrep_1_1pth__06_1_1task_1_1Metadata.html" title=" " alt="" coords="183,133,376,173"/>
+<area shape="poly" id="edge71_Node000002_Node000008" title=" " alt="" coords="104,198,151,183,195,171,196,176,153,188,106,203"/>
 </map>

@@ -13,5 +13,6 @@ var searchData=
   ['conditionwalker_10',['ConditionWalker',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1ConditionWalker.html',1,'com::teragrep::pth_06::planner::walker']]],
   ['conditionwalkertest_11',['ConditionWalkerTest',['../classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html',1,'com::teragrep::pth_06::walker']]],
   ['config_12',['Config',['../classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html',1,'com::teragrep::pth_06::config']]],
-  ['custommetricstest_13',['CustomMetricsTest',['../classcom_1_1teragrep_1_1pth__06_1_1CustomMetricsTest.html',1,'com::teragrep::pth_06']]]
+  ['configuredlogger_13',['ConfiguredLogger',['../classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html',1,'com::teragrep::pth_06']]],
+  ['custommetricstest_14',['CustomMetricsTest',['../classcom_1_1teragrep_1_1pth__06_1_1CustomMetricsTest.html',1,'com::teragrep::pth_06']]]
 ];

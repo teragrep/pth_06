@@ -1,5 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,20,125,45"/>
-<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1ConditionMatchBloomDBTables_1_1TablesWithMatchingRegexAndNotEmpty.html" title=" " alt="" coords="173,5,535,60"/>
-<area shape="poly" id="edge60_Node000000_Node000001" title=" " alt="" coords="139,30,173,30,173,35,139,35"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,45,115,70"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1task_1_1ArchiveMicroBatchInputPartition.html" title=" " alt="" coords="163,5,393,45"/>
+<area shape="poly" id="edge55_Node000000_Node000001" title=" " alt="" coords="128,45,162,40,163,45,129,50"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartition.html" title=" " alt="" coords="169,69,387,109"/>
+<area shape="poly" id="edge56_Node000000_Node000002" title=" " alt="" coords="129,65,169,71,168,76,128,70"/>
 </map>

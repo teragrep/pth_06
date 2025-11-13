@@ -83,7 +83,7 @@ $(function() {
 <div class="dynheader">
 Collaboration diagram for com.teragrep.pth_06.config.Config:</div>
 <div class="dyncontent">
-<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config__coll__graph.svg" width="560" height="243"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config__coll__graph.svg" width="560" height="307"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
@@ -103,6 +103,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a976cb88f3600ef618d23ccc1c7826bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d0bcda953a8eb61e65aea3970fa8992" id="r_a0d0bcda953a8eb61e65aea3970fa8992"><td class="memItemLeft" align="right" valign="top">final <a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1AuditConfig.html">AuditConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0d0bcda953a8eb61e65aea3970fa8992">auditConfig</a></td></tr>
 <tr class="separator:a0d0bcda953a8eb61e65aea3970fa8992"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d45e783af4323f8145f5f26866da3e5" id="r_a7d45e783af4323f8145f5f26866da3e5"><td class="memItemLeft" align="right" valign="top">final <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1config_1_1LoggingConfig.html">LoggingConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7d45e783af4323f8145f5f26866da3e5">loggingConfig</a></td></tr>
+<tr class="separator:a7d45e783af4323f8145f5f26866da3e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0846a7ae29fe95b08d7fc015dcec07a6" id="r_a0846a7ae29fe95b08d7fc015dcec07a6"><td class="memItemLeft" align="right" valign="top">final boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a></td></tr>
 <tr class="separator:a0846a7ae29fe95b08d7fc015dcec07a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39a459eba785964b6f84337b2af9403f" id="r_a39a459eba785964b6f84337b2af9403f"><td class="memItemLeft" align="right" valign="top">final boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a></td></tr>
@@ -136,45 +138,48 @@ Eemeli Hukka </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00071">71</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   71</span>                                            {</div>
-<div class="line"><span class="lineno">   72</span>        this.query = opts.get(<span class="stringliteral">&quot;queryXML&quot;</span>);</div>
-<div class="line"><span class="lineno">   73</span>        <span class="keywordflow">if</span> (this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a088a9229bbe739acd7251b5294b47283">query</a> == <span class="keyword">null</span>) {</div>
-<div class="line"><span class="lineno">   74</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="stringliteral">&quot;no queryXML provided&quot;</span>);</div>
-<div class="line"><span class="lineno">   75</span>        }</div>
-<div class="line"><span class="lineno">   76</span> </div>
-<div class="line"><span class="lineno">   77</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a976cb88f3600ef618d23ccc1c7826bb6">batchConfig</a> = <span class="keyword">new</span> BatchConfig(opts);</div>
-<div class="line"><span class="lineno">   78</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0d0bcda953a8eb61e65aea3970fa8992">auditConfig</a> = <span class="keyword">new</span> AuditConfig(opts);</div>
-<div class="line"><span class="lineno">   79</span> </div>
-<div class="line"><span class="lineno">   80</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;archive.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">   81</span>        <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a>) {</div>
-<div class="line"><span class="lineno">   82</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a837beee43bbaaf04ecfc0e5ba3ce91dc">archiveConfig</a> = <span class="keyword">new</span> ArchiveConfig(opts);</div>
-<div class="line"><span class="lineno">   83</span>        }</div>
-<div class="line"><span class="lineno">   84</span>        <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">   85</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a837beee43bbaaf04ecfc0e5ba3ce91dc">archiveConfig</a> = <span class="keyword">new</span> ArchiveConfig();</div>
-<div class="line"><span class="lineno">   86</span>        }</div>
-<div class="line"><span class="lineno">   87</span> </div>
-<div class="line"><span class="lineno">   88</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;kafka.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">   89</span>        <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a>) {</div>
-<div class="line"><span class="lineno">   90</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#aa08a390875de83c80d39a4af03acb3ce">kafkaConfig</a> = <span class="keyword">new</span> KafkaConfig(opts);</div>
-<div class="line"><span class="lineno">   91</span>        }</div>
-<div class="line"><span class="lineno">   92</span>        <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">   93</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#aa08a390875de83c80d39a4af03acb3ce">kafkaConfig</a> = <span class="keyword">new</span> KafkaConfig();</div>
-<div class="line"><span class="lineno">   94</span>        }</div>
-<div class="line"><span class="lineno">   95</span> </div>
-<div class="line"><span class="lineno">   96</span>        <span class="comment">// check that at least one datasource is enabled</span></div>
-<div class="line"><span class="lineno">   97</span>        <span class="keywordflow">if</span> (!<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a> &amp;&amp; !<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a>) {</div>
-<div class="line"><span class="lineno">   98</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="stringliteral">&quot;No datasources enabled&quot;</span>);</div>
-<div class="line"><span class="lineno">   99</span>        }</div>
-<div class="line"><span class="lineno">  100</span> </div>
-<div class="line"><span class="lineno">  101</span>        <span class="comment">// fetch metadata (defaults to false)</span></div>
-<div class="line"><span class="lineno">  102</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7fbfaac783871880570b8302429043b8">isMetadataQuery</a> = opts.getOrDefault(<span class="stringliteral">&quot;metadataQuery.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">  103</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a0846a7ae29fe95b08d7fc015dcec07a6"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">com.teragrep.pth_06.config.Config.isArchiveEnabled</a></div><div class="ttdeci">final boolean isArchiveEnabled</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00066">Config.java:66</a></div></div>
+<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00073">73</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   73</span>                                            {</div>
+<div class="line"><span class="lineno">   74</span>        this.query = opts.get(<span class="stringliteral">&quot;queryXML&quot;</span>);</div>
+<div class="line"><span class="lineno">   75</span>        <span class="keywordflow">if</span> (this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a088a9229bbe739acd7251b5294b47283">query</a> == <span class="keyword">null</span>) {</div>
+<div class="line"><span class="lineno">   76</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="stringliteral">&quot;no queryXML provided&quot;</span>);</div>
+<div class="line"><span class="lineno">   77</span>        }</div>
+<div class="line"><span class="lineno">   78</span> </div>
+<div class="line"><span class="lineno">   79</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a976cb88f3600ef618d23ccc1c7826bb6">batchConfig</a> = <span class="keyword">new</span> BatchConfig(opts);</div>
+<div class="line"><span class="lineno">   80</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0d0bcda953a8eb61e65aea3970fa8992">auditConfig</a> = <span class="keyword">new</span> AuditConfig(opts);</div>
+<div class="line"><span class="lineno">   81</span> </div>
+<div class="line"><span class="lineno">   82</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;archive.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   83</span>        <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a>) {</div>
+<div class="line"><span class="lineno">   84</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a837beee43bbaaf04ecfc0e5ba3ce91dc">archiveConfig</a> = <span class="keyword">new</span> ArchiveConfig(opts);</div>
+<div class="line"><span class="lineno">   85</span>        }</div>
+<div class="line"><span class="lineno">   86</span>        <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">   87</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a837beee43bbaaf04ecfc0e5ba3ce91dc">archiveConfig</a> = <span class="keyword">new</span> ArchiveConfig();</div>
+<div class="line"><span class="lineno">   88</span>        }</div>
+<div class="line"><span class="lineno">   89</span> </div>
+<div class="line"><span class="lineno">   90</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;kafka.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   91</span>        <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a>) {</div>
+<div class="line"><span class="lineno">   92</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#aa08a390875de83c80d39a4af03acb3ce">kafkaConfig</a> = <span class="keyword">new</span> KafkaConfig(opts);</div>
+<div class="line"><span class="lineno">   93</span>        }</div>
+<div class="line"><span class="lineno">   94</span>        <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">   95</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#aa08a390875de83c80d39a4af03acb3ce">kafkaConfig</a> = <span class="keyword">new</span> KafkaConfig();</div>
+<div class="line"><span class="lineno">   96</span>        }</div>
+<div class="line"><span class="lineno">   97</span> </div>
+<div class="line"><span class="lineno">   98</span>        <span class="comment">// check that at least one datasource is enabled</span></div>
+<div class="line"><span class="lineno">   99</span>        <span class="keywordflow">if</span> (!<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">isArchiveEnabled</a> &amp;&amp; !<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">isKafkaEnabled</a>) {</div>
+<div class="line"><span class="lineno">  100</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="stringliteral">&quot;No datasources enabled&quot;</span>);</div>
+<div class="line"><span class="lineno">  101</span>        }</div>
+<div class="line"><span class="lineno">  102</span> </div>
+<div class="line"><span class="lineno">  103</span>        <span class="comment">// fetch metadata (defaults to false)</span></div>
+<div class="line"><span class="lineno">  104</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7fbfaac783871880570b8302429043b8">isMetadataQuery</a> = opts.getOrDefault(<span class="stringliteral">&quot;metadataQuery.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">  105</span> </div>
+<div class="line"><span class="lineno">  106</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7d45e783af4323f8145f5f26866da3e5">loggingConfig</a> = <span class="keyword">new</span> LoggingConfigImpl(opts);</div>
+<div class="line"><span class="lineno">  107</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a0846a7ae29fe95b08d7fc015dcec07a6"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0846a7ae29fe95b08d7fc015dcec07a6">com.teragrep.pth_06.config.Config.isArchiveEnabled</a></div><div class="ttdeci">final boolean isArchiveEnabled</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00068">Config.java:68</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a088a9229bbe739acd7251b5294b47283"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a088a9229bbe739acd7251b5294b47283">com.teragrep.pth_06.config.Config.query</a></div><div class="ttdeci">final String query</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00059">Config.java:59</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a0d0bcda953a8eb61e65aea3970fa8992"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a0d0bcda953a8eb61e65aea3970fa8992">com.teragrep.pth_06.config.Config.auditConfig</a></div><div class="ttdeci">final AuditConfig auditConfig</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00064">Config.java:64</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a39a459eba785964b6f84337b2af9403f"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">com.teragrep.pth_06.config.Config.isKafkaEnabled</a></div><div class="ttdeci">final boolean isKafkaEnabled</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00067">Config.java:67</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a7fbfaac783871880570b8302429043b8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7fbfaac783871880570b8302429043b8">com.teragrep.pth_06.config.Config.isMetadataQuery</a></div><div class="ttdeci">final boolean isMetadataQuery</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00069">Config.java:69</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a39a459eba785964b6f84337b2af9403f"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a39a459eba785964b6f84337b2af9403f">com.teragrep.pth_06.config.Config.isKafkaEnabled</a></div><div class="ttdeci">final boolean isKafkaEnabled</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00069">Config.java:69</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a7d45e783af4323f8145f5f26866da3e5"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7d45e783af4323f8145f5f26866da3e5">com.teragrep.pth_06.config.Config.loggingConfig</a></div><div class="ttdeci">final LoggingConfig loggingConfig</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00066">Config.java:66</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a7fbfaac783871880570b8302429043b8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a7fbfaac783871880570b8302429043b8">com.teragrep.pth_06.config.Config.isMetadataQuery</a></div><div class="ttdeci">final boolean isMetadataQuery</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00071">Config.java:71</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a837beee43bbaaf04ecfc0e5ba3ce91dc"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a837beee43bbaaf04ecfc0e5ba3ce91dc">com.teragrep.pth_06.config.Config.archiveConfig</a></div><div class="ttdeci">final ArchiveConfig archiveConfig</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00060">Config.java:60</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_a976cb88f3600ef618d23ccc1c7826bb6"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#a976cb88f3600ef618d23ccc1c7826bb6">com.teragrep.pth_06.config.Config.batchConfig</a></div><div class="ttdeci">final BatchConfig batchConfig</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00063">Config.java:63</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1Config_html_aa08a390875de83c80d39a4af03acb3ce"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1Config.html#aa08a390875de83c80d39a4af03acb3ce">com.teragrep.pth_06.config.Config.kafkaConfig</a></div><div class="ttdeci">final KafkaConfig kafkaConfig</div><div class="ttdef"><b>Definition</b> <a href="Config_8java_source.html#l00061">Config.java:61</a></div></div>
@@ -242,7 +247,7 @@ Eemeli Hukka </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00066">66</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00068">68</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
 
 </div>
 </div>
@@ -258,7 +263,7 @@ Eemeli Hukka </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00067">67</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00069">69</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
 
 </div>
 </div>
@@ -274,7 +279,7 @@ Eemeli Hukka </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00069">69</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00071">71</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
 
 </div>
 </div>
@@ -291,6 +296,22 @@ Eemeli Hukka </dd></dl>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00061">61</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
+
+</div>
+</div>
+<a id="a7d45e783af4323f8145f5f26866da3e5" name="a7d45e783af4323f8145f5f26866da3e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d45e783af4323f8145f5f26866da3e5">&#9670;&#160;</a></span>loggingConfig</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">final <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1config_1_1LoggingConfig.html">LoggingConfig</a> com.teragrep.pth_06.config.Config.loggingConfig</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Config_8java_source.html#l00066">66</a> of file <a class="el" href="Config_8java_source.html">Config.java</a>.</p>
 
 </div>
 </div>

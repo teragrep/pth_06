@@ -2,6 +2,11 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,49,223,89"/>
 <area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ArchiveMicroStreamReader.html#a411ca28ffc87898fce4bc8e77cdc0ee3" title=" " alt="" coords="275,5,537,60"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="223,53,261,48,261,53,223,58"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ArchiveMicroStreamReader.html#a36e4e32119c7727123f0afffcbb27780" title=" " alt="" coords="271,85,541,125"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="223,79,257,84,257,89,223,85"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1ArchiveMicroStreamReader.html#a36e4e32119c7727123f0afffcbb27780" title=" " alt="" coords="271,85,541,125"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="223,79,257,84,257,89,223,85"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="589,49,820,89"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="538,46,576,50,575,56,537,51"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="868,49,1099,89"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="820,66,854,66,854,71,820,71"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="541,86,576,82,576,87,542,91"/>
 </map>
