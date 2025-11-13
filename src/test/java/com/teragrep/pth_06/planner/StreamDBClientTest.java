@@ -230,7 +230,8 @@ class StreamDBClientTest {
     }
 
     /**
-     * Testing that pullToSliceTable() does not pull any rows from the database when the index value in the queryXML does not match with logtag.
+     * Testing that pullToSliceTable() does not pull any rows from the database when the index value in the queryXML
+     * does not match with logtag.
      */
     @Test
     public void pullToSliceTableInvalidIndexTest() {
