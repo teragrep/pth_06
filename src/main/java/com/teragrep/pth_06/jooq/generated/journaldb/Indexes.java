@@ -52,6 +52,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
 
 import javax.annotation.Generated;
 
@@ -83,14 +84,17 @@ public class Indexes {
     public static final Index HOST_UIX_HOST_NAME = Indexes0.HOST_UIX_HOST_NAME;
     public static final Index LOGFILE_BUCKET_ID = Indexes0.LOGFILE_BUCKET_ID;
     public static final Index LOGFILE_CATEGORY_ID = Indexes0.LOGFILE_CATEGORY_ID;
-    public static final Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG = Indexes0.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG;
-    public static final Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE = Indexes0.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE;
-    public static final Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG = Indexes0.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG;
+    public static final Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID = Indexes0.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID;
+    public static final Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE = Indexes0.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE;
+    public static final Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Indexes0.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID;
+    public static final Index LOGFILE_FK_LOGFILE__LOGTAG_ID = Indexes0.LOGFILE_FK_LOGFILE__LOGTAG_ID;
     public static final Index LOGFILE_IX_LOGFILE_EPOCH_EXPIRES = Indexes0.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES;
     public static final Index LOGFILE_IX_LOGFILE_EXPIRATION = Indexes0.LOGFILE_IX_LOGFILE_EXPIRATION;
     public static final Index LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID = Indexes0.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID;
     public static final Index LOGFILE_PRIMARY = Indexes0.LOGFILE_PRIMARY;
     public static final Index LOGFILE_UIX_LOGFILE_OBJECT_HASH = Indexes0.LOGFILE_UIX_LOGFILE_OBJECT_HASH;
+    public static final Index LOGTAG_PRIMARY = Indexes0.LOGTAG_PRIMARY;
+    public static final Index LOGTAG_UIX_LOGTAG = Indexes0.LOGTAG_UIX_LOGTAG;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
@@ -103,13 +107,16 @@ public class Indexes {
         public static Index HOST_UIX_HOST_NAME = Internal.createIndex("uix_host_name", Host.HOST, new OrderField[] { Host.HOST.NAME }, true);
         public static Index LOGFILE_BUCKET_ID = Internal.createIndex("bucket_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.BUCKET_ID }, false);
         public static Index LOGFILE_CATEGORY_ID = Internal.createIndex("category_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.CATEGORY_ID }, false);
-        public static Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG = Internal.createIndex("cix_logfile_epoch_hour_host_id_logtag", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_HOUR, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG }, false);
-        public static Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE = Internal.createIndex("cix_logfile_host_id_logtag_logdate", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG, Logfile.LOGFILE.LOGDATE }, false);
-        public static Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG = Internal.createIndex("cix_logfile_logdate_host_id_logtag", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGDATE, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG }, false);
+        public static Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID = Internal.createIndex("cix_logfile_epoch_hour_host_id_logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_HOUR, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID }, false);
+        public static Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE = Internal.createIndex("cix_logfile_host_id_logtag_id_logdate", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID, Logfile.LOGFILE.LOGDATE }, false);
+        public static Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Internal.createIndex("cix_logfile_logdate_host_id_logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGDATE, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID }, false);
+        public static Index LOGFILE_FK_LOGFILE__LOGTAG_ID = Internal.createIndex("fk_logfile__logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGTAG_ID }, false);
         public static Index LOGFILE_IX_LOGFILE_EPOCH_EXPIRES = Internal.createIndex("ix_logfile_epoch_expires", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_EXPIRES }, false);
         public static Index LOGFILE_IX_LOGFILE_EXPIRATION = Internal.createIndex("ix_logfile_expiration", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EXPIRATION }, false);
         public static Index LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID = Internal.createIndex("ix_logfile__source_system_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.SOURCE_SYSTEM_ID }, false);
         public static Index LOGFILE_PRIMARY = Internal.createIndex("PRIMARY", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.ID }, true);
         public static Index LOGFILE_UIX_LOGFILE_OBJECT_HASH = Internal.createIndex("uix_logfile_object_hash", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.OBJECT_KEY_HASH }, true);
+        public static Index LOGTAG_PRIMARY = Internal.createIndex("PRIMARY", Logtag.LOGTAG, new OrderField[] { Logtag.LOGTAG.ID }, true);
+        public static Index LOGTAG_UIX_LOGTAG = Internal.createIndex("uix_logtag", Logtag.LOGTAG, new OrderField[] { Logtag.LOGTAG.LOGTAG_ }, true);
     }
 }
