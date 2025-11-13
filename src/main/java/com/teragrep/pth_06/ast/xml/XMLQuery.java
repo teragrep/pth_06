@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.ast.xml;
 
 import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.PrintAST;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -62,6 +63,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class XMLQuery {
 
@@ -98,16 +100,12 @@ public final class XMLQuery {
         final Expression result;
         switch (tagName.toLowerCase()) {
             case "and":
-                final List<Expression> andExpMembers = visitLogical(element);
-                final Expression andLeft = andExpMembers.get(0);
-                final Expression andRight = andExpMembers.get(1);
-                result = new AndExpression(andLeft, andRight);
+                final List<Expression> andExpressionChildren = visitLogical(element);
+                result = new AndExpression(andExpressionChildren);
                 break;
             case "or":
-                final List<Expression> expressions = visitLogical(element);
-                final Expression left = expressions.get(0);
-                final Expression right = expressions.get(1);
-                result = new OrExpression(left, right);
+                final List<Expression> orExpressionChildren = visitLogical(element);
+                result = new OrExpression(orExpressionChildren);
                 break;
             case "index":
                 result = visitLeaf(element, Expression.Tag.INDEX);
@@ -156,6 +154,31 @@ public final class XMLQuery {
                 throw new IllegalArgumentException("Element children contained a non Element node");
             }
         }
+        if (expressions.isEmpty()) {
+            throw new IllegalStateException("Logical expression had no children");
+        }
         return expressions;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final XMLQuery xmlQuery = (XMLQuery) o;
+        return Objects.equals(xmlString, xmlQuery.xmlString);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(xmlString);
+    }
+
+    @Override
+    public String toString() {
+        return new PrintAST(asAST()).asString();
     }
 }

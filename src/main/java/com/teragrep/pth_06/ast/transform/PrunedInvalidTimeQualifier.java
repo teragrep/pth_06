@@ -60,7 +60,7 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
     private final List<String> acceptedOperations;
 
     public PrunedInvalidTimeQualifier(final Expression origin) {
-        this(origin, Arrays.asList("EQUALS", "LEQ", "GEQ", "MORE_THAN", "LESS_THAN"));
+        this(origin, Arrays.asList("EQUALS", "GE", "LE", "LEQ", "GEQ"));
     }
 
     private PrunedInvalidTimeQualifier(final Expression origin, List<String> acceptedOperations) {

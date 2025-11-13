@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.ast.transform;
 
 import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.PrintAST;
 import com.teragrep.pth_06.ast.xml.AndExpression;
 import com.teragrep.pth_06.ast.xml.OrExpression;
 import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
@@ -55,6 +56,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class WithDefaultValues implements ExpressionTransformation<Expression> {
@@ -167,5 +169,27 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
             tags.add(expr.tag());
         }
         return tags;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final WithDefaultValues that = (WithDefaultValues) o;
+        return defaultMinusHours == that.defaultMinusHours && Objects.equals(root, that.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(defaultMinusHours, root);
+    }
+
+    @Override
+    public String toString() {
+        return new PrintAST(transformed()).asString();
     }
 }

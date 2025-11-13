@@ -43,50 +43,31 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.config;
+package com.teragrep.pth_06.ast;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
+import com.teragrep.pth_06.ast.xml.AndExpression;
+import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+public final class PrintASTTest {
 
-public final class HBaseConfig {
-
-    public final String tableName;
-    public final String hostname;
-    public final String regionServerHostname;
-    public final String zookeeperQuorum;
-    public final String zookeeperClientPort;
-    public final long scanCachingSize;
-
-    public final boolean isStub;
-
-    public HBaseConfig(final Map<String, String> opts) {
-        tableName = opts.getOrDefault("hbase.tablename", "logfile");
-        hostname = opts.getOrDefault("hbase.master.hostname", "localhost");
-        regionServerHostname = opts.getOrDefault("hbase.regionserver.hostname", "localhost");
-        zookeeperQuorum = opts.getOrDefault("hbase.zookeeper.quorum", "localhost");
-        zookeeperClientPort = opts.getOrDefault("hbase.zookeeper.property.clientPort", "2181");
-        scanCachingSize = Long.parseLong(opts.getOrDefault("hbase.scanCacheSize", "100"));
-        isStub = false;
+    @Test
+    public void printSingleValue() {
+        Expression expression = new XMLValueExpressionImpl("value", "operation", Expression.Tag.INDEX);
+        String print = new PrintAST(expression).asString();
+        String expected = "VALUE(INDEX val=value op=operation)";
+        Assertions.assertEquals(expected, print);
     }
 
-    public Configuration asHadoopConfig() {
-        final Configuration config = HBaseConfiguration.create();
-        config.set("hbase.master.hostname", hostname);
-        config.set("hbase.regionserver.hostname", regionServerHostname);
-        config.set("hbase.zookeeper.quorum", zookeeperQuorum);
-        config.set("hbase.zookeeper.property.clientPort", zookeeperClientPort);
-        return config;
+    @Test
+    public void printLogical() {
+        Expression left = new XMLValueExpressionImpl("earliest", "GE", Expression.Tag.EARLIEST);
+        Expression right = new XMLValueExpressionImpl("latest", "LE", Expression.Tag.LATEST);
+        Expression expression = new AndExpression(left, right);
+        String print = new PrintAST(expression).asString();
+        String expected = "AND\n" + "  VALUE(EARLIEST val=earliest op=GE)\n" + "  VALUE(LATEST val=latest op=LE)";
+        Assertions.assertEquals(expected, print);
     }
 
-    public HBaseConfig() {
-        tableName = "";
-        hostname = "";
-        regionServerHostname = "";
-        zookeeperQuorum = "";
-        zookeeperClientPort = "";
-        scanCachingSize = 0L;
-        isStub = true;
-    }
 }

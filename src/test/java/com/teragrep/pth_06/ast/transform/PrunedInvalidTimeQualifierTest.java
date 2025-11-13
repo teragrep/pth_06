@@ -85,4 +85,17 @@ public final class PrunedInvalidTimeQualifierTest {
         Expression transformed = new PrunedInvalidTimeQualifier(andExpression).transformed();
         Assertions.assertEquals(andExpression, transformed);
     }
+
+    @Test
+    public void testSupportedOperations() {
+        Expression equals = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
+        Expression GE = new XMLValueExpressionImpl("1000", "GE", Expression.Tag.EARLIEST);
+        Expression LE = new XMLValueExpressionImpl("1000", "LE", Expression.Tag.EARLIEST);
+        Expression GEQ = new XMLValueExpressionImpl("1000", "GEQ", Expression.Tag.EARLIEST);
+        Expression LEQ = new XMLValueExpressionImpl("1000", "LEQ", Expression.Tag.EARLIEST);
+        AndExpression andExpression = new AndExpression(Arrays.asList(equals, GE, LE, GEQ, LEQ));
+        Expression pruned = new PrunedInvalidTimeQualifier(andExpression).transformed();
+        Assertions.assertTrue(pruned.isLogical());
+        Assertions.assertEquals(andExpression.children().size(), pruned.asLogical().children().size());
+    }
 }

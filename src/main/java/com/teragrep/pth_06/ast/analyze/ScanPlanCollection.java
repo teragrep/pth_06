@@ -108,7 +108,6 @@ public final class ScanPlanCollection {
         final String journaldbName = config.archiveConfig.dbJournalDbName;
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
-        final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
         final Connection connection;
         try {
             connection = DriverManager.getConnection(url, userName, password);
@@ -118,7 +117,7 @@ public final class ScanPlanCollection {
         }
 
         final Settings settings;
-        if (hideDatabaseExceptions) {
+        if (config.archiveConfig.hideDatabaseExceptions) {
             settings = new Settings()
                     .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName))).withThrowExceptions(ThrowExceptions.THROW_NONE);
             LOGGER.warn("SQL Exceptions set to THROW_NONE");

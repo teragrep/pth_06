@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.ast.xml;
 
 import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.PrintAST;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -56,20 +55,29 @@ public final class XMLQueryTest {
     public void testXMLFromQuery() {
         String query = "<AND><OR><index value=\"index_1\" operation=\"EQUALS\"/><sourcetype value=\"index_2\" operation=\"EQUALS\"/></OR><earliest value=\"1000\" operation=\"EQUALS\"/></AND>";
         XMLQuery xmlQuery = new XMLQuery(query);
-        Expression root = xmlQuery.asAST();
-        String result = new PrintAST(root).asString();
-        String expected = "AND\n" + "  OR\n" + "    VALUE(INDEX val=index_1 op=EQUALS)\n"
-                + "    VALUE(SOURCETYPE val=index_2 op=EQUALS)\n" + "  VALUE(EARLIEST val=1000 op=EQUALS)";
-        Assertions.assertEquals(expected, result);
+        Expression expected = new AndExpression(
+                new OrExpression(new XMLValueExpressionImpl("index_1", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("index_2", "EQUALS", Expression.Tag.SOURCETYPE)), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST)
+        );
+        Assertions.assertEquals(expected, xmlQuery.asAST());
     }
 
     @Test
     public void testSingleElementQuery() {
         String query = "<index value=\"index_1\" operation=\"EQUALS\"/>";
         XMLQuery xmlQuery = new XMLQuery(query);
-        Expression root = xmlQuery.asAST();
-        String result = new PrintAST(root).asString();
-        String expected = "VALUE(INDEX val=index_1 op=EQUALS)";
-        Assertions.assertEquals(expected, result);
+        Expression expected = new XMLValueExpressionImpl("index_1", "EQUALS", Expression.Tag.INDEX);
+        Assertions.assertEquals(expected, xmlQuery.asAST());
+    }
+
+    @Test
+    public void testIndexPlusTimeQualifier() {
+        String queryXML = "<AND><index operation=\"EQUALS\" value=\"example\"/><earliest operation=\"GE\" value=\"1447400598\"/></AND>";
+        XMLQuery query = new XMLQuery(queryXML);
+        Expression expected = new AndExpression(
+                new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX),
+                new XMLValueExpressionImpl("1447400598", "GE", Expression.Tag.EARLIEST)
+        );
+        Assertions.assertEquals(expected, query.asAST());
+
     }
 }
