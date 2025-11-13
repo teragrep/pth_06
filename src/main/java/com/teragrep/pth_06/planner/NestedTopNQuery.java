@@ -86,9 +86,13 @@ public final class NestedTopNQuery {
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
-        this.streamDBClient = streamDBClient;
-        this.logger = new ConfiguredLogger(classLogger, isDebug);
+        this(streamDBClient, new ConfiguredLogger(classLogger, isDebug));
 
+    }
+
+    public NestedTopNQuery(final StreamDBClient streamDBClient, final ConfiguredLogger configuredLogger) {
+        this.streamDBClient = streamDBClient;
+        this.logger = configuredLogger;
     }
 
     public Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
