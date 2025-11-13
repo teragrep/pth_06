@@ -264,4 +264,9 @@ public class KafkaQueryProcessor implements KafkaQuery {
     public void commit(KafkaOffset offset) {
         // no-op
     }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }
