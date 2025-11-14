@@ -53,6 +53,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
@@ -141,4 +143,23 @@ public final class NestedTopNQuery {
         return id;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final NestedTopNQuery that = (NestedTopNQuery) o;
+        return Objects.equals(logger, that.logger) && Objects.equals(streamDBClient, that.streamDBClient) && Objects
+                .equals(innerTableName, that.innerTableName) && Objects.equals(innerTable, that.innerTable)
+                && Objects.equals(logtimeFunction, that.logtimeFunction) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(logtime, that.logtime) && Objects.equals(logtimeForOrderBy, that.logtimeForOrderBy) && Objects.deepEquals(resultFields, that.resultFields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(
+                        logger, streamDBClient, innerTableName, innerTable, logtimeFunction, id, directory, stream,
+                        logtime, logtimeForOrderBy, Arrays.hashCode(resultFields)
+                );
+    }
 }

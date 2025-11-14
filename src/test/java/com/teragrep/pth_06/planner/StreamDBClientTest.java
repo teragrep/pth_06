@@ -371,10 +371,7 @@ class StreamDBClientTest {
     public void equalsHashCodeContractTest() {
         EqualsVerifier
                 .forClass(StreamDBClient.class)
-                .withNonnullFields(
-                        "metricRegistry", "ctx", "includeBeforeEpoch", "bloomEnabled", "journaldbCondition", "walker"
-                )
-                .withIgnoredFields("LOGGER")
-                .verify();
+                .withIgnoredFields("nestedTopNQuery")
+                .withPrefabValues(NestedTopNQuery.class, new NestedTopNQuery(null, false), new NestedTopNQuery(null, false)).verify();
     }
 }
