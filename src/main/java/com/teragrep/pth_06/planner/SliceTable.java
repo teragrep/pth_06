@@ -53,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.util.Objects;
 
 public final class SliceTable {
 
@@ -98,4 +99,17 @@ public final class SliceTable {
         LOGGER.debug("SliceTable.create exit");
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final SliceTable that = (SliceTable) o;
+        return Objects.equals(ctx, that.ctx) && Objects.equals(LOGGER, that.LOGGER);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ctx, LOGGER);
+    }
 }

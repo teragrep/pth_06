@@ -52,6 +52,8 @@ import org.jooq.types.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
 import static org.jooq.impl.DSL.select;
@@ -119,4 +121,17 @@ public final class GetArchivedObjectsFilterTable {
         logger.debug("GetArchivedObjectsFilterTable.create exit");
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final GetArchivedObjectsFilterTable that = (GetArchivedObjectsFilterTable) o;
+        return Objects.equals(logger, that.logger) && Objects.equals(ctx, that.ctx);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(logger, ctx);
+    }
 }
