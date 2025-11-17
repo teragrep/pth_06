@@ -45,20 +45,38 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import com.teragrep.pth_06.planner.walker.KafkaWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
-import java.util.Map;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.util.regex.Pattern;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public final class KafkaSubscriptionPatternFromQuery {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(KafkaSubscriptionPatternFromQuery.class);
+    private final String query;
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    public KafkaSubscriptionPatternFromQuery(final String query) {
+        this.query = query;
+    }
 
+    public Pattern pattern() {
+        String topicsRegexString;
+        try {
+            final KafkaWalker parser = new KafkaWalker();
+            topicsRegexString = parser.fromString(query);
+        }
+        catch (final ParserConfigurationException | IOException | SAXException ex) {
+            throw new RuntimeException("Exception building kafka pattern from query <" + query + "> exception: " + ex);
+        }
+        // KafkaWalker can return null
+        if (topicsRegexString == null || topicsRegexString.isEmpty()) {
+            topicsRegexString = ".*";
+            LOGGER.info("KafkaWalker returned an empty or null pattern, Using match all regex <{}>", topicsRegexString);
+        }
+        return Pattern.compile(topicsRegexString);
+    }
 }

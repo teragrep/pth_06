@@ -45,20 +45,44 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public final class SetOnceTest {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    @Test
+    public void testSetState() {
+        final SetOnce<String> stringSetOnce = new SetOnce<>();
+        stringSetOnce.set("test");
+        Assertions.assertEquals("test", stringSetOnce.value());
+    }
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    @Test
+    public void testIsSet() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        Assertions.assertFalse(setOnce.isSet());
+        setOnce.set("test");
+        Assertions.assertTrue(setOnce.isSet());
+    }
 
+    @Test
+    public void testExceptionOnMultipleSets() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        setOnce.set("test");
+        final IllegalStateException illegalStateException = assertThrows(
+                IllegalStateException.class, () -> setOnce.set("test-2")
+        );
+        final String expectedMessage = "Value is already set";
+        Assertions.assertEquals(expectedMessage, illegalStateException.getMessage());
+    }
+
+    @Test
+    public void testExceptionOnValueIfNotSet() {
+        final SetOnce<String> setOnce = new SetOnce<>();
+        final IllegalStateException illegalStateException = assertThrows(IllegalStateException.class, setOnce::value);
+        final String expectedMessage = "Value is not set";
+        Assertions.assertEquals(expectedMessage, illegalStateException.getMessage());
+    }
 }
