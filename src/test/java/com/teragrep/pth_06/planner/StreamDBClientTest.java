@@ -144,6 +144,7 @@ class StreamDBClientTest {
                 ULong.valueOf(epoch + (365 * 24 * 3600)),
                 ULong.valueOf(epoch),
                 ULong.valueOf(1),
+                null,
                 null
         );
 
@@ -168,6 +169,7 @@ class StreamDBClientTest {
                 null,
                 null,
                 ULong.valueOf(1),
+                null,
                 null
         );
 
