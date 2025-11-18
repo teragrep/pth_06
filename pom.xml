@@ -490,6 +490,10 @@
         <configuration>
           <parallel>all</parallel>
           <useUnlimitedThreads>true</useUnlimitedThreads>
+          <environmentVariables>
+            <TESTCONTAINERS_RYUK_DISABLED>true</TESTCONTAINERS_RYUK_DISABLED>
+            <DOCKER_HOST>unix://${XDG_RUNTIME_DIR}/podman/podman.sock</DOCKER_HOST>
+          </environmentVariables>
         </configuration>
       </plugin>
       <plugin>
