@@ -101,6 +101,12 @@ CREATE TABLE `host` (
                         PRIMARY KEY (`id`),
                         UNIQUE KEY `uix_host_name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=112 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Host names';
+CREATE TABLE `logformat` (
+                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for logformat',
+                             `name` varchar(255) NOT NULL COMMENT 'logformat of the logfile records',
+                             PRIMARY KEY (`id`),
+                             UNIQUE KEY `uix_logformat` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains logformat values that are identified using the ID';
 CREATE TABLE `logfile` (
                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                            `logdate` date NOT NULL COMMENT 'Log file''s date',
@@ -121,6 +127,7 @@ CREATE TABLE `logfile` (
                            `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
                            `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
                            `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
+                           `logformat_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logformat table',
                            PRIMARY KEY (`id`),
                            UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
                            KEY `bucket_id` (`bucket_id`),
@@ -131,6 +138,8 @@ CREATE TABLE `logfile` (
                            KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
                            KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
                            KEY `ix_logfile_epoch_expires` (`epoch_expires`),
+                           KEY `fk_logfile__logformat_id` (`logformat_id`),
+                           CONSTRAINT `fk_logfile__logformat_id` FOREIGN KEY (`logformat_id`) REFERENCES `logformat` (`id`),
                            CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
                            CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
                            CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
