@@ -142,37 +142,33 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public Offset initialOffset() {
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
-        final DatasourceOffset rv;
-        final boolean useArchive = !hBaseQuery.isStub() || !archiveQuery.isStub();
-        final boolean useKafka = !kafkaQuery.isStub();
-
-        if (useArchive && useKafka) {
-            final LongOffset archiveInitialOffset;
-            if (!hBaseQuery.isStub()) {
-                archiveInitialOffset = new LongOffset(hBaseQuery.earliest());
-            }
-            else {
-                archiveInitialOffset = new LongOffset(archiveQuery.getInitialOffset() - 3600L);
-            }
-            rv = new DatasourceOffset(archiveInitialOffset, new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.earliest()),
+                    new KafkaOffset(kafkaQuery.getBeginningOffsets(null))
+            );
         }
-        else if (useArchive) {
-            if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.earliest()));
-            }
-            else {
-                rv = new DatasourceOffset(new LongOffset(archiveQuery.getInitialOffset() - 3600L));
-            }
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.getInitialOffset() - 3600L),
+                    new KafkaOffset(kafkaQuery.getBeginningOffsets(null))
+            );
         }
-        else if (useKafka) {
-            rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.earliest()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.getInitialOffset() - 3600L));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
         }
         else {
             throw new IllegalStateException("no datasources enabled, can't get initial offset");
         }
-
-        LOGGER.debug("offset[initial]= {}", rv);
-        return rv;
+        LOGGER.debug("offset[initial]= {}", datasourceOffset);
+        return datasourceOffset;
     }
 
     /**
@@ -189,11 +185,14 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public void commit(final Offset offset) {
         final long offsetLongValue = ((DatasourceOffset) offset).getArchiveOffset().offset();
-        if (!hBaseQuery.isStub()) {
+        if (useHBase()) {
             hBaseQuery.commit(offsetLongValue);
         }
-        else if (!archiveQuery.isStub()) {
+        else if (useArchive()) {
             archiveQuery.commit(offsetLongValue);
+        }
+        else {
+            LOGGER.debug("Archive datasource was not enabled, commit() call ignored");
         }
     }
 
@@ -212,37 +211,33 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      */
     @Override
     public Offset latestOffset() {
-        final DatasourceOffset rv;
-        final boolean useArchive = !hBaseQuery.isStub() || !archiveQuery.isStub();
-        final boolean useKafka = !kafkaQuery.isStub();
-
-        if (useArchive && useKafka) {
-            final LongOffset archiveOffset;
-            if (!hBaseQuery.isStub()) {
-                archiveOffset = new LongOffset(hBaseQuery.latest());
-            }
-            else {
-                archiveOffset = new LongOffset(archiveQuery.incrementAndGetLatestOffset());
-            }
-            rv = new DatasourceOffset(archiveOffset, new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.latest()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
         }
-        else if (useArchive) {
-            if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
-            }
-            else {
-                rv = new DatasourceOffset(new LongOffset(archiveQuery.incrementAndGetLatestOffset()));
-            }
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.incrementAndGetLatestOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
         }
-        else if (useKafka) {
-            rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.incrementAndGetLatestOffset()));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
         }
         else {
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
-
-        LOGGER.debug("offset[latest]= {}", rv);
-        return rv;
+        LOGGER.debug("offset[latest]= {}", datasourceOffset);
+        return datasourceOffset;
     }
 
     /**
@@ -314,47 +309,57 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     }
 
     public DatasourceOffset mostRecentOffset() {
-        final DatasourceOffset rv;
-        final boolean useArchive = !hBaseQuery.isStub() || !archiveQuery.isStub();
-        final boolean useKafka = !kafkaQuery.isStub();
-        if (useArchive && useKafka) {
-            final LongOffset archiveOffset;
-            if (!hBaseQuery.isStub()) {
-                archiveOffset = new LongOffset(hBaseQuery.mostRecentOffset());
-            }
-            else {
-                archiveOffset = new LongOffset(archiveQuery.mostRecentOffset());
-            }
-            rv = new DatasourceOffset(archiveOffset, new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.mostRecentOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
         }
-        else if (useArchive) {
-            if (!hBaseQuery.isStub()) {
-                rv = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
-            }
-            else {
-                rv = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
-            }
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.mostRecentOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
         }
-        else if (useKafka) {
-            rv = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
         }
         else {
             throw new IllegalStateException("No datasources enabled, can't get last used offset");
         }
-        return rv;
+        return datasourceOffset;
     }
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
         final CustomTaskMetric[] metrics;
-        if (!hBaseQuery.isStub()) {
+        if (useHBase()) {
             metrics = hBaseQuery.currentDatabaseMetrics();
         }
-        else if (!archiveQuery.isStub()) {
+        else if (useArchive()) {
             metrics = archiveQuery.currentDatabaseMetrics();
         }
         else {
             metrics = new CustomTaskMetric[0];
         }
         return metrics;
+    }
+
+    private boolean useHBase() {
+        return !hBaseQuery.isStub();
+    }
+
+    private boolean useArchive() {
+        return !archiveQuery.isStub();
+    }
+
+    private boolean useKafka() {
+        return !kafkaQuery.isStub();
     }
 }

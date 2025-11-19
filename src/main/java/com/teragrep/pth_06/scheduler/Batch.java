@@ -84,29 +84,23 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
 
     public Batch processRange(Offset start, Offset end) {
         LOGGER.debug("processRange start <{}>, end <{}>", start, end);
-        final boolean archiverEnabled = !hbaseQuery.isStub() || !archiveQuery.isStub();
-        final boolean kafkaEnabled = !kafkaQuery.isStub();
-        final boolean bothEnabled = archiverEnabled && kafkaEnabled;
 
         final BatchSliceCollection slice;
-        if (bothEnabled) {
-            if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
-            }
-            else {
-                slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
-            }
+        if (useHBase() && useKafka()) {
+            slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
             slice.addAll(new KafkaBatchSliceCollection(kafkaQuery).processRange(start, end));
         }
-        else if (archiverEnabled) {
-            if (!hbaseQuery.isStub()) {
-                slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
-            }
-            else {
-                slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
-            }
+        else if (useArchive() && useKafka()) {
+            slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
+            slice.addAll(new KafkaBatchSliceCollection(kafkaQuery).processRange(start, end));
         }
-        else if (kafkaEnabled) {
+        else if (useHBase()) {
+            slice = new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end);
+        }
+        else if (useArchive()) {
+            slice = new ArchiveBatchSliceCollection(archiveQuery).processRange(start, end);
+        }
+        else if (useKafka()) {
             slice = new KafkaBatchSliceCollection(kafkaQuery).processRange(start, end);
         }
         else {
@@ -174,4 +168,15 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         return this;
     }
 
+    private boolean useHBase() {
+        return !hbaseQuery.isStub();
+    }
+
+    private boolean useArchive() {
+        return !archiveQuery.isStub();
+    }
+
+    private boolean useKafka() {
+        return !kafkaQuery.isStub();
+    }
 }
