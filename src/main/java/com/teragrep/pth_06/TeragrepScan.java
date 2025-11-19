@@ -139,4 +139,9 @@ public final class TeragrepScan implements Scan {
 
         return metrics.toArray(new CustomTaskMetric[0]);
     }
+
+    @Override
+    public ColumnarSupportMode columnarSupportMode() {
+        return ColumnarSupportMode.UNSUPPORTED;
+    }
 }
