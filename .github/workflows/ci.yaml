@@ -49,8 +49,8 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        java-version: 8.0.292+10
-        distribution: 'adopt'
+        java-version: 8
+        distribution: 'temurin'
 
     - name: Generate sources
       run: mvn -B generate-sources
