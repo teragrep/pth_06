@@ -1,0 +1,18 @@
+<map id="com.teragrep.pth_06.planner.walker.conditions.ValidElement.value" name="com.teragrep.pth_06.planner.walker.conditions.ValidElement.value">
+<area shape="rect" id="Node000001" title=" " alt="" coords="763,165,1093,205"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementCondition.html#a77e4bd928b9d9dd1e2ef3380f65e3ab7" title=" " alt="" coords="384,101,715,141"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="795,166,668,144,669,139,796,160"/>
+<area shape="rect" id="Node000007" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementCondition.html#a39e39896a78174cc458ec2266e6f1ddc" title="A set of tables needed to be joined to the query to use this condition." alt="" coords="384,165,715,205"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="749,188,715,188,715,183,749,183"/>
+<area shape="rect" id="Node000008" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ValidElementTest.html#aebd4924948cd0e533806857b2ba0ba83" title=" " alt="" coords="384,229,715,269"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="796,210,669,232,668,227,795,205"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="615,90,592,83,549,80,512,82,489,87,481,93,485,100,480,102,476,92,487,82,512,77,549,75,593,78,617,85"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementConditionTest.html#aa7b824b2c1a077cb408c7e0532131e67" title=" " alt="" coords="5,5,336,45"/>
+<area shape="poly" id="edge3_Node000002_Node000003" title=" " alt="" coords="474,100,335,60,282,48,283,43,337,55,475,95"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementConditionTest.html#afc3b6a3b2fe594a7c6df49f7ad3cb88a" title=" " alt="" coords="5,69,336,109"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="370,109,336,106,337,101,370,104"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementConditionTest.html#a8128d1d936c645c93ebfc6f5fe4cdbe6" title=" " alt="" coords="5,133,336,173"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="370,139,337,142,336,137,370,134"/>
+<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ElementConditionTest.html#aed3578cbc9f7e4f77695db0f1f45b40a" title=" " alt="" coords="5,197,336,237"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="407,148,385,156,361,172,337,188,302,200,300,195,335,183,359,167,383,151,405,143"/>
+</map>
