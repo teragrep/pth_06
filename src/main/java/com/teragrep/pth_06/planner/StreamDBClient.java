@@ -73,8 +73,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
-import static org.jooq.impl.DSL.coalesce;
-
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
 
@@ -216,9 +214,7 @@ public final class StreamDBClient implements AutoCloseable {
         SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
-                        JOURNALDB.HOST.NAME, coalesce(
-                                logdateFunction, JOURNALDB.LOGFILE.LOGDATE
-                        ), JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
+                        JOURNALDB.HOST.NAME, logdateFunction, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
                         nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
