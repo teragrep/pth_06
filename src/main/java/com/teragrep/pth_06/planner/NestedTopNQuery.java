@@ -59,7 +59,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
-import static org.jooq.impl.DSL.coalesce;
 
 public final class NestedTopNQuery {
 
@@ -68,9 +67,6 @@ public final class NestedTopNQuery {
     private final StreamDBClient streamDBClient;
     private final String innerTableName = "limited";
     private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
-
-    // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
-    private final SafeLogtimeFunction logtimeFunction = new SafeLogtimeFunction(JOURNALDB.LOGFILE.PATH);
 
     private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
     private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
@@ -82,7 +78,7 @@ public final class NestedTopNQuery {
             JOURNALDB.LOGFILE.ID.as(id),
             GetArchivedObjectsFilterTable.directory.as(directory),
             GetArchivedObjectsFilterTable.stream.as(stream),
-            coalesce(JOURNALDB.LOGFILE.EPOCH_HOUR, logtimeFunction.asField()).as(logtime)
+            JOURNALDB.LOGFILE.EPOCH_HOUR.as(logtime)
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
@@ -124,7 +120,7 @@ public final class NestedTopNQuery {
                         JOURNALDB.LOGFILE.EPOCH_HOUR
                 );
         return selectOnConditionStep
-                .where(coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE).eq(day).and(journaldbConditionArg))
+                .where(logdateFunction.eq(day).and(journaldbConditionArg))
                 .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
     }
@@ -151,17 +147,17 @@ public final class NestedTopNQuery {
             return false;
         }
         final NestedTopNQuery that = (NestedTopNQuery) o;
-        return Objects.equals(logger, that.logger) && Objects.equals(streamDBClient, that.streamDBClient) && Objects
-                .equals(innerTableName, that.innerTableName) && Objects.equals(innerTable, that.innerTable)
-                && Objects.equals(logtimeFunction, that.logtimeFunction) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(logtime, that.logtime) && Objects.equals(logtimeForOrderBy, that.logtimeForOrderBy) && Objects.deepEquals(resultFields, that.resultFields);
+        return Objects.equals(logger, that.logger) && Objects
+                .equals(streamDBClient, that.streamDBClient) && Objects.equals(innerTableName, that.innerTableName)
+                && Objects.equals(innerTable, that.innerTable) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(logtime, that.logtime) && Objects.equals(logtimeForOrderBy, that.logtimeForOrderBy) && Objects.deepEquals(resultFields, that.resultFields);
     }
 
     @Override
     public int hashCode() {
         return Objects
                 .hash(
-                        logger, streamDBClient, innerTableName, innerTable, logtimeFunction, id, directory, stream,
-                        logtime, logtimeForOrderBy, Arrays.hashCode(resultFields)
+                        logger, streamDBClient, innerTableName, innerTable, id, directory, stream, logtime,
+                        logtimeForOrderBy, Arrays.hashCode(resultFields)
                 );
     }
 }
