@@ -48,16 +48,16 @@ jobs:
     - name: Setup Signing
       uses: actions/setup-java@v4
       with:
-        java-version: 8.0.292+10
-        distribution: 'adopt'
+        java-version: 8
+        distribution: 'temurin'
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Setup GitHub Packages
       uses: actions/setup-java@v4
       with:
-        java-version: 8.0.292+10
-        distribution: 'adopt'
+        java-version: 8
+        distribution: 'temurin'
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Generate sources
@@ -78,8 +78,8 @@ jobs:
     - name: Setup Maven Central
       uses: actions/setup-java@v4
       with:
-        java-version: 8.0.292+10
-        distribution: 'adopt'
+        java-version: 8
+        distribution: 'temurin'
         server-id: central-sonatype-org
         server-username: CENTRAL_SONATYPE_ORG_USERNAME
         server-password: CENTRAL_SONATYPE_ORG_PASSWORD
