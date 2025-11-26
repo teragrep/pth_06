@@ -782,9 +782,12 @@
         <repository>
           <id>github</id>
           <name>GitHub Packages</name>
-          <url>https://maven.pkg.github.com/teragrep/pth_06</url>
+          <url>${github.packages.url}</url>
         </repository>
       </distributionManagement>
+      <properties>
+        <jooq.regenerate.skip>true</jooq.regenerate.skip>
+      </properties>
       <build>
         <plugins>
           <plugin>
