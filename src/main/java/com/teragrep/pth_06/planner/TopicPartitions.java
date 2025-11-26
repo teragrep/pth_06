@@ -45,20 +45,42 @@
  */
 package com.teragrep.pth_06.planner;
 
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+/** Represents the partitions of a Kafka topic */
+public final class TopicPartitions {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(TopicPartitions.class);
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    private final String topicName;
+    private final Consumer<byte[], byte[]> consumer;
 
+    TopicPartitions(final String topicName, final Consumer<byte[], byte[]> consumer) {
+        this.topicName = topicName;
+        this.consumer = consumer;
+    }
+
+    public List<TopicPartition> asList() {
+        final List<PartitionInfo> partitions = new ArrayList<>();
+        try {
+            partitions.addAll(consumer.partitionsFor(topicName));
+        }
+        catch (final TopicAuthorizationException e) {
+            LOGGER.warn("Was not authorized to view topic <{}>", topicName);
+        }
+
+        return partitions
+                .stream()
+                .map(partitionInfo -> new TopicPartition(topicName, partitionInfo.partition()))
+                .collect(Collectors.toList());
+    }
 }
