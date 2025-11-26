@@ -60,8 +60,13 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.sql.*;
-import java.time.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -108,6 +113,7 @@ class StreamDBClientTest {
 
     @AfterEach
     public void cleanup() {
+        Assertions.assertDoesNotThrow(() -> connection.close());
         mariadb.stop();
     }
 
@@ -122,7 +128,6 @@ class StreamDBClientTest {
 
         String filename = "example.log-@" + epoch + "-" + year + month + day + hour + ".log.gz";
         String path = year + "/" + month + "-" + day + "/example.tg.dev.test/example/" + filename;
-        System.out.println("path: " + path);
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(epoch),
                 Date.valueOf(zonedDateTime.toLocalDate()),
@@ -225,6 +230,42 @@ class StreamDBClientTest {
         // Both of the rows in the database for logdate of "2023-10-4" should be pulled to the slicetable.
         int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
         Assertions.assertEquals(2, rows);
+    }
+
+    /**
+     * Testing situation where epoch_hour is used as a source for logtime and logdate fields.
+     */
+    @Test
+    public void epochHourTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04 instead of the correct 2023-10-05 which epoch_hour is at, to test if epoch_hour takes priority or not.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Long earliestEpoch = 1696377600L; // 2023-10-04
+        Long latestOffset = earliestEpoch;
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        latestOffset = nextHourAndSizeFromSliceTable.offset();
+        Assertions.assertEquals(1696471200L, latestOffset);
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Assert that the resulting logfile metadata is as expected for logdate and logtime.
+        Assertions.assertEquals(1696471200L, hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
     }
 
     /**
@@ -365,6 +406,65 @@ class StreamDBClientTest {
         // find the next row after earliest and assert that it is stub.
         Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
 
+    }
+
+    /**
+     * Testing timezone handling of epoch_hour and logtime near midnight using 2 different session timezones.
+     */
+    @Test
+    public void epochHourTimezoneTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Create a LogfileRecord object with epoch_hour of 2023-10-05 01:00 UTC.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696467600L, false);
+        // Insert the logfileRecord to the database using JOOQ.
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Create an instance of StreamDBClient using the default server timezone (UTC-4).
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // Create another instance of StreamDBClient using explicitly set UTC session timezone.
+        final Map<String, String> optsUTC = this.opts;
+        optsUTC.put("DBurl", mariadb.getJdbcUrl() + "?forceConnectionTimeZoneToSession=true&connectionTimeZone=UTC");
+        final Config configUTC = new Config(optsUTC);
+        final StreamDBClient sdcUTC = Assertions.assertDoesNotThrow(() -> new StreamDBClient(configUTC));
+
+        final Long earliestEpoch = 1696377600L; // 2023-10-04
+        Long latestOffset = earliestEpoch;
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(1, rows);
+        // Do the same for sdcUTC
+        Assertions.assertEquals(rows, sdcUTC.pullToSliceTable(Date.valueOf("2023-10-5")));
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(latestOffset);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        // Do the same for sdcUTC
+        WeightedOffset nextHourAndSizeFromSliceTableUTC = sdcUTC.getNextHourAndSizeFromSliceTable(latestOffset);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTableUTC.isStub);
+
+        latestOffset = nextHourAndSizeFromSliceTable.offset();
+        Assertions.assertEquals(latestOffset, nextHourAndSizeFromSliceTableUTC.offset());
+
+        // Get the logfile results from the known hour range.
+        Assertions.assertEquals(1696467600L, latestOffset);
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Do the same for sdcUTC
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRangeUTC = sdcUTC
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRangeUTC.size());
+        // Assert that the resulting logfile metadata is as expected for logdate and logtime, they should not be affected by session timezone.
+        ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 1, 0, 0, 0, ZoneId.of("UTC"));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(8, Long.class));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRangeUTC.get(0).get(8, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRangeUTC.get(0).get(5, Date.class));
     }
 
     @Test

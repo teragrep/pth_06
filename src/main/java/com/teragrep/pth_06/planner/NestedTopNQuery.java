@@ -58,6 +58,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
+import static org.jooq.impl.DSL.coalesce;
 
 public final class NestedTopNQuery {
 
@@ -84,7 +85,7 @@ public final class NestedTopNQuery {
             JOURNALDB.LOGFILE.ID.as(id),
             GetArchivedObjectsFilterTable.directory.as(directory),
             GetArchivedObjectsFilterTable.stream.as(stream),
-            logtimeFunction.as(logtime)
+            coalesce(JOURNALDB.LOGFILE.EPOCH_HOUR, logtimeFunction).as(logtime)
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
@@ -121,8 +122,13 @@ public final class NestedTopNQuery {
         }
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
+        final Field<Date> logdateFunction = DSL
+                .field(
+                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
+                        JOURNALDB.LOGFILE.EPOCH_HOUR
+                );
         return selectOnConditionStep
-                .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
+                .where(coalesce(logdateFunction, JOURNALDB.LOGFILE.LOGDATE).eq(day).and(journaldbConditionArg))
                 .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
     }
