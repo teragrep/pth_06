@@ -232,15 +232,10 @@ public final class StreamDBClient {
     WeightedOffset getNextHourAndSizeFromSliceTable(long previousHour) {
         LOGGER.debug("StreamDBClient.getNextHourAndSizeFromSliceTable called with previousHour <{}>", previousHour);
 
-        final Result<Record2<Long, BigDecimal>> hourAndFilesizeRecord =
-                ctx
-                        .select(SliceTable.logtime, DSL.sum(SliceTable.filesize))
-                        .from(SliceTable.SLICE_TABLE)
-                        .where(SliceTable.logtime.greaterThan(previousHour).and(SliceTable.logtime.lessThan(includeBeforeEpoch)))
-                        .groupBy(SliceTable.logtime)
-                        .orderBy(SliceTable.logtime.asc())
-                        .limit(1)
-                        .fetch();
+        final Result<Record2<Long, BigDecimal>> hourAndFilesizeRecord = ctx
+                .select(SliceTable.logtime, DSL.sum(SliceTable.filesize))
+                .from(SliceTable.SLICE_TABLE)
+                .where(SliceTable.logtime.greaterThan(previousHour).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).groupBy(SliceTable.logtime).orderBy(SliceTable.logtime.asc()).limit(1).fetch();
         final WeightedOffset weightedOffset;
         if (hourAndFilesizeRecord.isEmpty()) {
             weightedOffset = new WeightedOffset();
