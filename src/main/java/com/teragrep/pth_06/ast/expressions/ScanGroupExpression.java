@@ -51,5 +51,5 @@ import java.util.List;
 
 public interface ScanGroupExpression extends Expression {
 
-    public List<ScanPlan> scanPlans();
+    public abstract List<ScanPlan> scanPlans();
 }
