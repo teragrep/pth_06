@@ -63,8 +63,8 @@ public final class AndExpressionTest {
     }
 
     @Test
-    public void testIsLeaf() {
-        Assertions.assertFalse(new AndExpression().isLeaf());
+    public void testIsValue() {
+        Assertions.assertFalse(new AndExpression().isValue());
     }
 
     @Test
@@ -73,9 +73,9 @@ public final class AndExpressionTest {
     }
 
     @Test
-    public void testAsLeaf() {
+    public void testAsValue() {
         final UnsupportedOperationException unsupportedOperationException = assertThrows(
-                UnsupportedOperationException.class, () -> new AndExpression().asLeaf()
+                UnsupportedOperationException.class, () -> new AndExpression().asValue()
         );
         final String expected = "asLeaf() not supported for AndExpression";
         Assertions.assertEquals(expected, unsupportedOperationException.getMessage());

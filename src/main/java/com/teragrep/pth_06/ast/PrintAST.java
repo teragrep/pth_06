@@ -106,28 +106,28 @@ public final class PrintAST {
                 result = orPrint.toString();
                 break;
             case INDEX:
-                final IndexExpression indexExpression = (IndexExpression) expression.asLeaf();
+                final IndexExpression indexExpression = (IndexExpression) expression.asValue();
                 result = String.format("%sVALUE%s", indent, indexExpression);
                 break;
             case SOURCETYPE:
-                final SourceTypeExpression sourceTypeExpression = (SourceTypeExpression) expression.asLeaf();
+                final SourceTypeExpression sourceTypeExpression = (SourceTypeExpression) expression.asValue();
                 result = String.format("%sVALUE%s", indent, sourceTypeExpression);
                 break;
             case HOST:
-                final HostExpression hostExpression = (HostExpression) expression.asLeaf();
+                final HostExpression hostExpression = (HostExpression) expression.asValue();
                 result = String.format("%sVALUE%s", indent, hostExpression);
                 break;
             case LATEST:
-                final LatestExpression latestExpression = (LatestExpression) expression.asLeaf();
+                final LatestExpression latestExpression = (LatestExpression) expression.asValue();
                 result = String.format("%sVALUE%s", indent, latestExpression);
                 break;
             case EARLIEST:
-                final EarliestExpression earliestExpression = (EarliestExpression) expression.asLeaf();
+                final EarliestExpression earliestExpression = (EarliestExpression) expression.asValue();
                 result = String.format("%sVALUE%s", indent, earliestExpression);
                 break;
             case INDEXSTATEMENT:
                 final IndexStatementExpression indexStatementExpression = (IndexStatementExpression) expression
-                        .asLeaf();
+                        .asValue();
                 result = String.format("%sVALUE%s", indent, indexStatementExpression);
                 break;
             case EMPTY:

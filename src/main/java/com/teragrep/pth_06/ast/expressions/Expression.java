@@ -53,9 +53,9 @@ public interface Expression {
 
     public abstract Tag tag();
 
-    public abstract boolean isLeaf();
+    public abstract boolean isValue();
 
-    public abstract ValueExpression asLeaf();
+    public abstract ValueExpression asValue();
 
     public abstract boolean isLogical();
 

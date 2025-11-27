@@ -50,7 +50,7 @@ import com.teragrep.pth_06.ast.expressions.Expression;
 
 import java.util.List;
 
-/** Simplify logical to leaf: AND(value) -> value */
+/** Simplify logical to value expression: AND(value) -> value */
 public final class IdentitySimplification implements ExpressionTransformation<Expression> {
 
     private final Expression origin;

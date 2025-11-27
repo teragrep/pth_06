@@ -137,7 +137,7 @@ public final class WithDefaultValuesTest {
         List<ValueExpression> earliestExpressions = expressions
                 .stream()
                 .filter(e -> e.tag().equals(Expression.Tag.EARLIEST))
-                .map(Expression::asLeaf)
+                .map(Expression::asValue)
                 .collect(Collectors.toList());
         Assertions.assertEquals(1, earliestExpressions.size());
         ValueExpression expression = earliestExpressions.get(0);
@@ -158,10 +158,10 @@ public final class WithDefaultValuesTest {
         List<ValueExpression> latestExpression = expressions
                 .stream()
                 .filter(e -> e.tag().equals(Expression.Tag.LATEST))
-                .map(Expression::asLeaf)
+                .map(Expression::asValue)
                 .collect(Collectors.toList());
         Assertions.assertEquals(1, latestExpression.size());
-        ValueExpression expression = latestExpression.get(0).asLeaf();
+        ValueExpression expression = latestExpression.get(0).asValue();
         String value = expression.value();
         long earliestEpoch = Long.valueOf(value);
         // system default time zone

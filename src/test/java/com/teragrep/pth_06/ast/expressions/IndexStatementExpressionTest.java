@@ -57,7 +57,7 @@ public final class IndexStatementExpressionTest {
         Assertions.assertEquals("value", expression.value());
         Assertions.assertEquals("operation", expression.operation());
         Assertions.assertEquals(Expression.Tag.INDEXSTATEMENT, expression.tag());
-        Assertions.assertTrue(expression.isLeaf());
+        Assertions.assertTrue(expression.isValue());
         Assertions.assertFalse(expression.isLogical());
     }
 

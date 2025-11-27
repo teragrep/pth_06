@@ -54,16 +54,16 @@ public final class EmptyExpressionTest {
     @Test
     public void testValues() {
         final EmptyExpression expression = new EmptyExpression();
-        Assertions.assertFalse(expression.isLeaf());
+        Assertions.assertFalse(expression.isValue());
         Assertions.assertFalse(expression.isLogical());
         Assertions.assertEquals(Expression.Tag.EMPTY, expression.tag());
     }
 
     @Test
-    public void testAsLeafIsUnsupported() {
+    public void testAsValueIsUnsupported() {
         final EmptyExpression expression = new EmptyExpression();
         final UnsupportedOperationException exception = Assertions
-                .assertThrows(UnsupportedOperationException.class, expression::asLeaf);
+                .assertThrows(UnsupportedOperationException.class, expression::asValue);
         final String expected = "asLeaf() not supported for EmptyExpression";
         Assertions.assertEquals(expected, exception.getMessage());
     }

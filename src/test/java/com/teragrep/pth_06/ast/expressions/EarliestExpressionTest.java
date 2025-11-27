@@ -57,7 +57,7 @@ public final class EarliestExpressionTest {
         Assertions.assertEquals("value", expression.value());
         Assertions.assertEquals("operation", expression.operation());
         Assertions.assertEquals(Expression.Tag.EARLIEST, expression.tag());
-        Assertions.assertTrue(expression.isLeaf());
+        Assertions.assertTrue(expression.isValue());
         Assertions.assertFalse(expression.isLogical());
     }
 

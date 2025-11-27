@@ -76,10 +76,10 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
             final List<Expression> prunedChildren = children.stream().filter(expression -> {
                 final boolean result;
                 if (
-                    expression.isLeaf() || expression.tag().equals(Expression.Tag.EARLIEST)
+                    expression.isValue() || expression.tag().equals(Expression.Tag.EARLIEST)
                             || expression.tag().equals(Expression.Tag.LATEST)
                 ) {
-                    final ValueExpression valueExpression = expression.asLeaf();
+                    final ValueExpression valueExpression = expression.asValue();
                     result = acceptedOperations
                             .stream()
                             .anyMatch(op -> op.equalsIgnoreCase(valueExpression.operation()));

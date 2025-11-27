@@ -58,12 +58,12 @@ public final class EmptyExpression implements Expression {
     }
 
     @Override
-    public boolean isLeaf() {
+    public boolean isValue() {
         return false;
     }
 
     @Override
-    public ValueExpression asLeaf() {
+    public ValueExpression asValue() {
         throw new UnsupportedOperationException("asLeaf() not supported for EmptyExpression");
     }
 

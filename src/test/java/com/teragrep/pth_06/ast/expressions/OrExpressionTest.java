@@ -63,8 +63,8 @@ public final class OrExpressionTest {
     }
 
     @Test
-    public void testIsLeaf() {
-        Assertions.assertFalse(new OrExpression().isLeaf());
+    public void testIsValue() {
+        Assertions.assertFalse(new OrExpression().isValue());
     }
 
     @Test
@@ -73,9 +73,9 @@ public final class OrExpressionTest {
     }
 
     @Test
-    public void testAsLeaf() {
+    public void testAsValue() {
         UnsupportedOperationException unsupportedOperationException = assertThrows(
-                UnsupportedOperationException.class, () -> new OrExpression().asLeaf()
+                UnsupportedOperationException.class, () -> new OrExpression().asValue()
         );
         String expected = "asLeaf() not supported for OrExpression";
         Assertions.assertEquals(expected, unsupportedOperationException.getMessage());

@@ -68,8 +68,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<IndexExpression> indexList() {
         final List<IndexExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.INDEX) && expression.isLeaf()) {
-                list.add((IndexExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.INDEX) && expression.isValue()) {
+                list.add((IndexExpression) expression.asValue());
             }
         }
         return list;
@@ -78,8 +78,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<SourceTypeExpression> sourceTypeList() {
         final List<SourceTypeExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.SOURCETYPE) && expression.isLeaf()) {
-                list.add((SourceTypeExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.SOURCETYPE) && expression.isValue()) {
+                list.add((SourceTypeExpression) expression.asValue());
             }
         }
         return list;
@@ -88,8 +88,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<HostExpression> hostList() {
         final List<HostExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.HOST) && expression.isLeaf()) {
-                list.add((HostExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.HOST) && expression.isValue()) {
+                list.add((HostExpression) expression.asValue());
             }
         }
         return list;
@@ -98,8 +98,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<EarliestExpression> earliestList() {
         final List<EarliestExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.EARLIEST) && expression.isLeaf()) {
-                list.add((EarliestExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.EARLIEST) && expression.isValue()) {
+                list.add((EarliestExpression) expression.asValue());
             }
         }
         return list;
@@ -108,8 +108,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<LatestExpression> latestList() {
         final List<LatestExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.LATEST) && expression.isLeaf()) {
-                list.add((LatestExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.LATEST) && expression.isValue()) {
+                list.add((LatestExpression) expression.asValue());
             }
         }
         return list;
@@ -118,8 +118,8 @@ public final class ClassifiedXMLValueExpressions {
     public List<IndexStatementExpression> indexStatementList() {
         final List<IndexStatementExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(Expression.Tag.INDEXSTATEMENT) && expression.isLeaf()) {
-                list.add((IndexStatementExpression) expression.asLeaf());
+            if (expression.tag().equals(Expression.Tag.INDEXSTATEMENT) && expression.isValue()) {
+                list.add((IndexStatementExpression) expression.asValue());
             }
         }
         return list;

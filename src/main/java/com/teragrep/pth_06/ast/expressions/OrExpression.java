@@ -76,12 +76,12 @@ public final class OrExpression implements LogicalExpression {
     }
 
     @Override
-    public boolean isLeaf() {
+    public boolean isValue() {
         return false;
     }
 
     @Override
-    public ValueExpression asLeaf() {
+    public ValueExpression asValue() {
         throw new UnsupportedOperationException("asLeaf() not supported for OrExpression");
     }
 

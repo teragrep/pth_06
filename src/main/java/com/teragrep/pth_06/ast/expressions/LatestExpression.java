@@ -83,12 +83,12 @@ public final class LatestExpression implements ValueExpression {
     }
 
     @Override
-    public boolean isLeaf() {
+    public boolean isValue() {
         return true;
     }
 
     @Override
-    public ValueExpression asLeaf() {
+    public ValueExpression asValue() {
         return this;
     }
 
