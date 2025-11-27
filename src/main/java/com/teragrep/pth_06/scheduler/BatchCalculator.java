@@ -47,6 +47,7 @@ package com.teragrep.pth_06.scheduler;
 
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.KafkaQuery;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ import java.util.PriorityQueue;
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
  * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple {@link BatchUnit}s. Each
  * of the slices contain the actual data.
- * 
+ *
  * @author Eemeli Hukka, Mikko Kortelainen
  */
 public final class BatchCalculator {
@@ -69,12 +70,13 @@ public final class BatchCalculator {
     private final Config config;
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
+    private final HBaseQuery hbaseQuery;
 
-    public BatchCalculator(Config config, ArchiveQuery aq, KafkaQuery kq) {
+    public BatchCalculator(Config config, ArchiveQuery archiveQuery, KafkaQuery kafkaQuery, HBaseQuery hbaseQuery) {
         this.config = config;
-
-        this.archiveQuery = aq;
-        this.kafkaQuery = kq;
+        this.archiveQuery = archiveQuery;
+        this.kafkaQuery = kafkaQuery;
+        this.hbaseQuery = hbaseQuery;
     }
 
     public List<List<BatchUnit>> processRange(Offset start, Offset end) {
@@ -82,12 +84,14 @@ public final class BatchCalculator {
 
         List<BatchUnit> slice = new ArrayList<>();
 
-        if (config.isArchiveEnabled) {
-            slice.addAll(new ArchiveRangeProcessor(this.archiveQuery).processRange(start, end));
+        if (useHBase()) {
+            slice.addAll(new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end));
         }
-
-        if (config.isKafkaEnabled) {
-            slice.addAll(new KafkaRangeProcessor(this.kafkaQuery).processRange(start, end));
+        else if (useArchive()) {
+            slice.addAll(new ArchiveRangeProcessor(archiveQuery).processRange(start, end));
+        }
+         if (useKafka()) {
+            slice.addAll(new KafkaRangeProcessor(kafkaQuery).processRange(start, end));
         }
 
         return buildBatch(slice);
@@ -125,5 +129,17 @@ public final class BatchCalculator {
 
         LOGGER.debug("getBatch <{}> ", taskSliceQueues);
         return taskSliceQueues;
+    }
+
+    private boolean useHBase() {
+        return !hbaseQuery.isStub();
+    }
+
+    private boolean useArchive() {
+        return !archiveQuery.isStub();
+    }
+
+    private boolean useKafka() {
+        return !kafkaQuery.isStub();
     }
 }

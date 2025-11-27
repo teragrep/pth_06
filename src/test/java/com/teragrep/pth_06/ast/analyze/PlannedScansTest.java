@@ -1,0 +1,232 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
+package com.teragrep.pth_06.ast.analyze;
+
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+public final class PlannedScansTest {
+
+    final List<Expression> timeQualifiers = Arrays
+            .asList(new EarliestExpression("1000", "EQUALS"), new LatestExpression("2000", "EQUALS"));
+    final ScanTimeQualifiers window = new ScanTimeQualifiers(new ClassifiedXMLValueExpressions(timeQualifiers));
+    final String userName = "sa";
+    final String password = "";
+    Connection conn;
+
+    @BeforeEach
+    public void setup() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
+            conn.prepareStatement("USE STREAMDB").execute();
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `log_group` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  PRIMARY KEY (`id`)\n" + ")"
+                    )
+                    .execute();
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `host` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `name` varchar(175) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `gid` int(10) unsigned NOT NULL,\n" + "  PRIMARY KEY (`id`),\n"
+                                    + "  KEY `host_gid` (`gid`),\n" + "  KEY `idx_name_id` (`name`,`id`),\n"
+                                    + "  CONSTRAINT `host_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `log_group` (`id`) ON DELETE CASCADE\n"
+                                    + ")"
+                    )
+                    .execute();
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `stream` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `gid` int(10) unsigned NOT NULL,\n"
+                                    + "  `directory` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `stream` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `tag` varchar(48) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  PRIMARY KEY (`id`),\n" + "  KEY `stream_gid` (`gid`),\n"
+                                    + "  CONSTRAINT `stream_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `log_group` (`id`) ON DELETE CASCADE\n"
+                                    + ") "
+                    )
+                    .execute();
+        });
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("USE STREAMDB").execute();
+            conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group');").execute();
+            conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group_2');").execute();
+            conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host', 1);").execute();
+            conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host_2', 2);").execute();
+            conn
+                    .prepareStatement(
+                            "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (1, 'test_directory', 'test_stream_1', 'test_tag');"
+                    )
+                    .execute();
+            conn
+                    .prepareStatement(
+                            "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (2, 'test_directory_2', 'test_stream_2', 'test_tag');"
+                    )
+                    .execute();
+        });
+    }
+
+    @AfterEach
+    public void stop() {
+        Assertions.assertDoesNotThrow(conn::close);
+    }
+
+    @Test
+    public void testSingleDirectoryMatch() {
+        final PlannedScans plannedScans = new PlannedScans(
+                window,
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
+        );
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("test_directory"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<ScanPlan> expectedPlans = Collections
+                .singletonList(new ScanPlanImpl(1, 1000, 2000, new FilterList()));
+        Assertions.assertEquals(expectedPlans, scanPlans);
+    }
+
+    @Test
+    public void testMultipleDirectoryMatches() {
+        final PlannedScans plannedScans = new PlannedScans(
+                window,
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
+        );
+        final List<IndexExpression> indexList = Arrays
+                .asList(new IndexExpression("test_directory"), new IndexExpression("test_directory_2"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<ScanPlan> expectedPlans = Arrays
+                .asList(new ScanPlanImpl(1, 1000, 2000, new FilterList()), new ScanPlanImpl(2, 1000, 2000, new FilterList()));
+        Assertions.assertEquals(expectedPlans, scanPlans);
+    }
+
+    @Test
+    public void testNoMatches() {
+        final PlannedScans plannedScans = new PlannedScans(
+                window,
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
+        );
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("noMatch"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                Collections.emptyList(),
+                Collections.emptyList()
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        Assertions.assertTrue(scanPlans.isEmpty());
+    }
+
+    @Test
+    public void testHostFilterMatch() {
+        final PlannedScans plannedScans = new PlannedScans(
+                window,
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
+        );
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("*"));
+        final List<HostExpression> hostList = Collections.singletonList(new HostExpression("test_host"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                hostList,
+                Collections.emptyList()
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        Assertions.assertEquals(1, scanPlans.size());
+    }
+
+    @Test
+    public void testSourceTypeFilterMatch() {
+        final PlannedScans plannedScans = new PlannedScans(
+                window,
+                new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
+        );
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("*"));
+        final List<SourceTypeExpression> sourceTypeList = Collections
+                .singletonList(new SourceTypeExpression("test_stream_1"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                Collections.emptyList(),
+                sourceTypeList
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        Assertions.assertEquals(1, scanPlans.size());
+    }
+
+}

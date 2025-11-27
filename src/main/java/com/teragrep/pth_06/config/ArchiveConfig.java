@@ -64,6 +64,10 @@ public final class ArchiveConfig {
     public final boolean epochMigrationMode;
 
     public final long archiveIncludeBeforeEpoch;
+    public final long defaultEarliestMinusHours;
+
+    // hbase
+    public final boolean isHBaseEnabled;
 
     // bloom
     public final boolean bloomEnabled;
@@ -80,6 +84,7 @@ public final class ArchiveConfig {
         dbUsername = getOrThrow(opts, "DBusername");
         dbPassword = getOrThrow(opts, "DBpassword");
         dbUrl = getOrThrow(opts, "DBurl");
+        isHBaseEnabled = opts.getOrDefault("hbase.enabled", "false").equalsIgnoreCase("true");
         bloomEnabled = opts.getOrDefault("bloom.enabled", "false").equalsIgnoreCase("true");
         withoutFilters = opts.getOrDefault("bloom.withoutFilters", "false").equalsIgnoreCase("true");
         withoutFiltersPattern = opts.getOrDefault("bloom.withoutFiltersPattern", "");
@@ -95,6 +100,8 @@ public final class ArchiveConfig {
         archiveIncludeBeforeEpoch = Long
                 .parseLong(opts.getOrDefault("archive.includeBeforeEpoch", String.valueOf(Long.MAX_VALUE)));
 
+        defaultEarliestMinusHours = Long.parseLong(opts.getOrDefault("archive.defaultMinusHours", String.valueOf(24)));
+
         isStub = false;
     }
 
@@ -109,6 +116,7 @@ public final class ArchiveConfig {
         dbJournalDbName = "";
         dbStreamDbName = "";
 
+        isHBaseEnabled = false;
         bloomEnabled = false;
         withoutFilters = false;
         withoutFiltersPattern = "";
@@ -118,7 +126,7 @@ public final class ArchiveConfig {
         epochMigrationMode = false;
 
         archiveIncludeBeforeEpoch = 0L;
-
+        defaultEarliestMinusHours = 24L;
         isStub = true;
     }
 

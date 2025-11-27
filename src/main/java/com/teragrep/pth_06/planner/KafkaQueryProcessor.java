@@ -277,4 +277,9 @@ public class KafkaQueryProcessor implements KafkaQuery {
             throw new IOException("Error during closing: " + exception.getMessage(), exception);
         }
     }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }
