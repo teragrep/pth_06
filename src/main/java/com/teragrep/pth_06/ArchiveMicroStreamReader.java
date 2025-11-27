@@ -47,10 +47,17 @@ package com.teragrep.pth_06;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.teragrep.pth_06.config.Config;
-import com.teragrep.pth_06.planner.*;
+import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.planner.HBaseQuery;
+import com.teragrep.pth_06.planner.KafkaQuery;
+import com.teragrep.pth_06.planner.factory.ArchiveQueryFactory;
+import com.teragrep.pth_06.planner.factory.Factory;
+import com.teragrep.pth_06.planner.factory.HBaseQueryFactory;
+import com.teragrep.pth_06.planner.factory.KafkaQueryFactory;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import com.teragrep.pth_06.scheduler.*;
+import com.teragrep.pth_06.scheduler.Batch;
+import com.teragrep.pth_06.scheduler.BatchSlice;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
@@ -73,10 +80,10 @@ import org.slf4j.LoggerFactory;
  * <h1>Archive Micro Stream Reader</h1> Custom Spark Structured Streaming Datasource that reads data from Archive and
  * Kafka in micro-batches.
  *
- * @see MicroBatchStream
- * @since 02/03/2021
  * @author Mikko Kortelainen
  * @author Eemeli Hukka
+ * @see MicroBatchStream
+ * @since 02/03/2021
  */
 public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
@@ -86,55 +93,51 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
      * Contains the configurations given as options when loading from this datasource.
      */
     private final Config config;
-    private final ArchiveQuery aq;
-    private final KafkaQuery kq;
+    private final ArchiveQuery archiveQuery;
+    private final KafkaQuery kafkaQuery;
+    private final HBaseQuery hBaseQuery;
 
     /**
      * Constructor for ArchiveMicroStreamReader
-     * 
+     *
      * @param config Datasource configuration object
      */
-    ArchiveMicroStreamReader(Config config) {
-        this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
-        LOGGER.debug("ArchiveMicroStreamReader ctor called");
+    ArchiveMicroStreamReader(final Config config) {
+        this(config, new ArchiveQueryFactory(config), new KafkaQueryFactory(config), new HBaseQueryFactory(config));
+    }
 
-        this.config = config;
-
-        if (config.isArchiveEnabled) {
-            this.aq = new ArchiveQueryProcessor(config);
-        }
-        else {
-            this.aq = null;
-        }
-
-        if (config.isKafkaEnabled) {
-            this.kq = new KafkaQueryProcessor(config);
-        }
-        else {
-            this.kq = null;
-        }
-
-        LOGGER.debug("ArchiveMicroStreamReader ctor exit");
+    ArchiveMicroStreamReader(
+            final Config config,
+            final Factory<ArchiveQuery> archiveQueryFactory,
+            final Factory<KafkaQuery> kafkaQueryFactory,
+            final Factory<HBaseQuery> hbaseQueryFactory
+    ) {
+        this(config, archiveQueryFactory.object(), kafkaQueryFactory.object(), hbaseQueryFactory.object());
     }
 
     /**
      * Used for testing.
      */
     @VisibleForTesting
-    ArchiveMicroStreamReader(ArchiveQuery aq, KafkaQuery kq, Config config) {
+    ArchiveMicroStreamReader(
+            final Config config,
+            final ArchiveQuery archiveQuery,
+            final KafkaQuery kafkaQuery,
+            final HBaseQuery hbaseQuery
+    ) {
         this.LOGGER = new ConfiguredLogger(classLogger, config.loggingConfig.isDebug());
         LOGGER.debug("ArchiveMicroStreamReader test ctor called");
-
         this.config = config;
-        this.aq = aq;
-        this.kq = kq;
+        this.archiveQuery = archiveQuery;
+        this.kafkaQuery = kafkaQuery;
+        this.hBaseQuery = hbaseQuery;
 
         LOGGER.debug("ArchiveMicroStreamReader test ctor exit");
     }
 
     /**
      * Used when Spark requests the initial offset when starting a new query.
-     * 
+     *
      * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      * @throws IllegalStateException if no datasources were enabled
      */
@@ -142,50 +145,68 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     public Offset initialOffset() {
         LOGGER.debug("ArchiveMicroStreamReader.initialOffset called");
         // archive only: subtract 3600s (1 hour) from earliest to return first row (start exclusive)
-        final DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.getInitialOffset() - 3600L));
-        }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getBeginningOffsets(null)));
-        }
-        else if (this.config.isArchiveEnabled) {
-            // both
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.getInitialOffset() - 3600L),
-                    new KafkaOffset(this.kq.getBeginningOffsets(null))
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.earliest()),
+                    new KafkaOffset(kafkaQuery.getBeginningOffsets(null))
             );
         }
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.getInitialOffset() - 3600L),
+                    new KafkaOffset(kafkaQuery.getBeginningOffsets(null))
+            );
+        }
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.earliest()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.getInitialOffset() - 3600L));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getBeginningOffsets(null)));
+        }
         else {
-            // neither
             throw new IllegalStateException("no datasources enabled, can't get initial offset");
         }
-        LOGGER.debug("ArchiveMicroStreamReader.initialOffset returns <{}>", rv);
-        return rv;
+        LOGGER.debug("ArchiveMicroStreamReader.initialOffset returns <{}>", datasourceOffset);
+        return datasourceOffset;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Offset deserializeOffset(String json) {
+    public Offset deserializeOffset(final String json) {
         LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset json <{}>", json);
-        final DatasourceOffset offset = new DatasourceOffset(json);
+        final DatasourceOffset offset  = new DatasourceOffset(json);
         LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset deserialized <{}>", offset);
         return offset;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void commit(Offset offset) {
+    public void commit(final Offset offset) {
         LOGGER.debug("ArchiveMicroStreamReader.commit offset <{}>", offset);
-        if (this.config.isArchiveEnabled) {
-            this.aq.commit(((DatasourceOffset) offset).getArchiveOffset().offset());
+        final long offsetLongValue = ((DatasourceOffset) offset).getArchiveOffset().offset();
+        if (useHBase()) {
+            hBaseQuery.commit(offsetLongValue);
+        }
+        else if (useArchive()) {
+            archiveQuery.commit(offsetLongValue);
+        }
+        else {
+            LOGGER.debug("Archive datasource was not enabled, commit() call ignored");
         }
         LOGGER.debug("ArchiveMicroStreamReader.commit exit");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() {
         LOGGER.debug("ArchiveMicroStreamReader.stop called");
@@ -193,56 +214,62 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Used when Spark progresses the query further to fetch more data.
-     * 
+     *
      * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      */
     @Override
     public Offset latestOffset() {
         LOGGER.debug("ArchiveMicroStreamReader.latestOffset called");
-        DatasourceOffset rv;
-        if (this.config.isArchiveEnabled && !this.config.isKafkaEnabled) {
-            // only archive
-            rv = new DatasourceOffset(new LongOffset(this.aq.incrementAndGetLatestOffset()));
-        }
-        else if (!this.config.isArchiveEnabled && this.config.isKafkaEnabled) {
-            // only kafka
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
-        }
-        else if (this.config.isArchiveEnabled) {
-            // both
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.incrementAndGetLatestOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.latest()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
             );
         }
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.incrementAndGetLatestOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
+        }
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.latest()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.incrementAndGetLatestOffset()));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
+        }
         else {
-            // neither
             throw new IllegalStateException("no datasources enabled, can't get latest offset");
         }
-
-        LOGGER.debug("ArchiveMicroStreamReader.latestOffset returns <{}>", rv);
-        return rv;
+        LOGGER.debug("ArchiveMicroStreamReader.latestOffset returns <{}>", datasourceOffset);
+        return datasourceOffset;
     }
 
     /**
      * Forms the batch between start and end offsets and forms the input partitions from that batch.
-     * 
+     *
      * @param start Start offset
      * @param end   End offset
      * @return InputPartitions as an array
      */
     @Override
-    public InputPartition[] planInputPartitions(Offset start, Offset end) {
+    public InputPartition[] planInputPartitions(final Offset start, final Offset end) {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
-        List<InputPartition> inputPartitions = new LinkedList<>();
+        final List<InputPartition> inputPartitions = new LinkedList<>();
 
-        Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        final int numPartitions = config.batchConfig.numPartitions;
+        final Batch currentBatch = new Batch(numPartitions, archiveQuery, kafkaQuery, hBaseQuery)
+                .processRange(start, end);
 
-        for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
+        for (final LinkedList<BatchSlice> taskObjectList : currentBatch) {
 
             // archive tasks
-            LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();
-            for (BatchSlice batchSlice : taskObjectList) {
+            final LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();
+            for (final BatchSlice batchSlice : taskObjectList) {
                 if (batchSlice.type.equals(BatchSlice.Type.ARCHIVE)) {
                     archiveTaskList.add(batchSlice.archiveS3ObjectMetadata);
                 }
@@ -266,7 +293,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             // kafka tasks
-            for (BatchSlice batchSlice : taskObjectList) {
+            for (final BatchSlice batchSlice : taskObjectList) {
                 if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
                     inputPartitions
                             .add(
@@ -301,36 +328,60 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     public DatasourceOffset mostRecentOffset() {
         LOGGER.debug("ArchiveMicroStreamReader.mostRecentOffset called");
-        final DatasourceOffset rv;
-        if (config.isArchiveEnabled && config.isKafkaEnabled) {
-            rv = new DatasourceOffset(
-                    new LongOffset(this.aq.mostRecentOffset()),
-                    new KafkaOffset(this.kq.getInitialEndOffsets())
+        final DatasourceOffset datasourceOffset;
+        if (useHBase() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(hBaseQuery.mostRecentOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
             );
         }
-        else if (config.isArchiveEnabled) {
-            rv = new DatasourceOffset(new LongOffset(this.aq.mostRecentOffset()));
+        else if (useArchive() && useKafka()) {
+            datasourceOffset = new DatasourceOffset(
+                    new LongOffset(archiveQuery.mostRecentOffset()),
+                    new KafkaOffset(kafkaQuery.getInitialEndOffsets())
+            );
         }
-        else if (config.isKafkaEnabled) {
-            rv = new DatasourceOffset(new KafkaOffset(this.kq.getInitialEndOffsets()));
+        else if (useHBase()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(hBaseQuery.mostRecentOffset()));
+        }
+        else if (useArchive()) {
+            datasourceOffset = new DatasourceOffset(new LongOffset(archiveQuery.mostRecentOffset()));
+        }
+        else if (useKafka()) {
+            datasourceOffset = new DatasourceOffset(new KafkaOffset(kafkaQuery.getInitialEndOffsets()));
         }
         else {
             throw new IllegalStateException("No datasources enabled, can't get last used offset");
         }
-        LOGGER.debug("ArchiveMicroStreamReader.mostRecentOffset returns <{}>", rv);
-        return rv;
+        LOGGER.debug("ArchiveMicroStreamReader.mostRecentOffset returns <{}>", datasourceOffset);
+        return datasourceOffset;
     }
 
     public CustomTaskMetric[] currentDatabaseMetrics() {
         LOGGER.debug("ArchiveMicroStreamReader.currentDatabaseMetrics called");
         final CustomTaskMetric[] metrics;
-        if (aq != null) {
-            metrics = aq.currentDatabaseMetrics();
+        if (useHBase()) {
+            metrics = hBaseQuery.currentDatabaseMetrics();
+        }
+        else if (useArchive()) {
+            metrics = archiveQuery.currentDatabaseMetrics();
         }
         else {
             metrics = new CustomTaskMetric[0];
         }
         LOGGER.debug("ArchiveMicroStreamReader.currentDatabaseMetrics returns <{}> metrics", metrics.length);
         return metrics;
+    }
+
+    private boolean useHBase() {
+        return !hBaseQuery.isStub();
+    }
+
+    private boolean useArchive() {
+        return !archiveQuery.isStub();
+    }
+
+    private boolean useKafka() {
+        return !kafkaQuery.isStub();
     }
 }
