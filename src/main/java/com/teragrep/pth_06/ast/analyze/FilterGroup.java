@@ -45,7 +45,8 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
@@ -54,17 +55,18 @@ import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class FilterGroup {
 
-    private final List<XMLValueExpression> hostList;
-    private final List<XMLValueExpression> sourceTypeList;
+    private final List<HostExpression> hostList;
+    private final List<SourceTypeExpression> sourceTypeList;
 
     public FilterGroup(final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
         this(classifiedXMLValueExpressions.hostList(), classifiedXMLValueExpressions.sourceTypeList());
     }
 
-    public FilterGroup(final List<XMLValueExpression> hostList, final List<XMLValueExpression> sourceTypeList) {
+    public FilterGroup(final List<HostExpression> hostList, final List<SourceTypeExpression> sourceTypeList) {
         this.hostList = hostList;
         this.sourceTypeList = sourceTypeList;
     }
@@ -72,7 +74,7 @@ public final class FilterGroup {
     public FilterList filterList() {
         final FilterList filterList = new FilterList();
 
-        for (XMLValueExpression hostExpression : hostList) {
+        for (HostExpression hostExpression : hostList) {
             final String value = hostExpression.value();
             final String operation = hostExpression.operation();
             final CompareOperator operator;
@@ -94,7 +96,7 @@ public final class FilterGroup {
             filterList.addFilter(hostFilter);
         }
 
-        for (final XMLValueExpression sourceTypeExpression : sourceTypeList) {
+        for (final SourceTypeExpression sourceTypeExpression : sourceTypeList) {
             final String value = sourceTypeExpression.value();
             final String operation = sourceTypeExpression.operation();
             final CompareOperator operator;
@@ -117,5 +119,22 @@ public final class FilterGroup {
         }
 
         return filterList;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final FilterGroup that = (FilterGroup) o;
+        return Objects.equals(hostList, that.hostList) && Objects.equals(sourceTypeList, that.sourceTypeList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostList, sourceTypeList);
     }
 }

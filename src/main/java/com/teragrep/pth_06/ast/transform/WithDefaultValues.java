@@ -45,11 +45,13 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
 import com.teragrep.pth_06.ast.PrintAST;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.OrExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
 import com.teragrep.pth_06.config.Config;
 
 import java.time.ZonedDateTime;
@@ -110,15 +112,14 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
         }
         final Set<Expression.Tag> tags = expressionTags(new AndExpression(andChildren));
         if (!tags.contains(Expression.Tag.INDEX)) {
-            andChildren.add(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));
+            andChildren.add(new IndexExpression("*", "EQUALS"));
         }
         if (!tags.contains(Expression.Tag.EARLIEST)) {
             andChildren
-                    .add(new XMLValueExpressionImpl(String.valueOf(ZonedDateTime.now().minusHours(defaultMinusHours).toEpochSecond()), "EQUALS", Expression.Tag.EARLIEST));
+                    .add(new EarliestExpression(String.valueOf(ZonedDateTime.now().minusHours(defaultMinusHours).toEpochSecond()), "EQUALS"));
         }
         if (!tags.contains(Expression.Tag.LATEST)) {
-            andChildren
-                    .add(new XMLValueExpressionImpl(String.valueOf(ZonedDateTime.now().toEpochSecond()), "EQUALS", Expression.Tag.LATEST));
+            andChildren.add(new LatestExpression(String.valueOf(ZonedDateTime.now().toEpochSecond()), "EQUALS"));
         }
         return new AndExpression(andChildren);
     }
@@ -139,15 +140,15 @@ public final class WithDefaultValues implements ExpressionTransformation<Express
             }
 
             if (!tags.contains(Expression.Tag.INDEX)) {
-                childExpressions.add(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));
+                childExpressions.add(new IndexExpression("*", "EQUALS"));
             }
             if (!tags.contains(Expression.Tag.EARLIEST)) {
                 childExpressions
-                        .add(new XMLValueExpressionImpl(String.valueOf(ZonedDateTime.now().minusHours(defaultMinusHours).toEpochSecond()), "EQUALS", Expression.Tag.EARLIEST));
+                        .add(new EarliestExpression(String.valueOf(ZonedDateTime.now().minusHours(defaultMinusHours).toEpochSecond()), "EQUALS"));
             }
             if (!tags.contains(Expression.Tag.LATEST)) {
                 childExpressions
-                        .add(new XMLValueExpressionImpl(String.valueOf(ZonedDateTime.now().toEpochSecond()), "EQUALS", Expression.Tag.LATEST));
+                        .add(new LatestExpression(String.valueOf(ZonedDateTime.now().toEpochSecond()), "EQUALS"));
             }
 
             // Wrap child expressions into an AND (or single expression if only one)

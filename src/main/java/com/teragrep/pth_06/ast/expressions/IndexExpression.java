@@ -43,41 +43,84 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.transform;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.expressions.Expression;
-import com.teragrep.pth_06.ast.expressions.AndExpression;
-import com.teragrep.pth_06.ast.expressions.IndexExpression;
-import com.teragrep.pth_06.ast.expressions.OrExpression;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.Objects;
 
-import java.util.Arrays;
+public final class IndexExpression implements ValueExpression {
 
-public final class FlattenLogicalTest {
+    private final String value;
+    private final String operation;
+    private final Tag tag;
 
-    @Test
-    public void testAndFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression andExpression = new AndExpression(value, new AndExpression(value, value));
-        Expression flattened = new FlattenLogical(andExpression).transformed();
-        Expression expected = new AndExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
+    public IndexExpression(final String value) {
+        this(value, "EQUALS");
     }
 
-    @Test
-    public void testOrFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression orExpression = new OrExpression(value, new OrExpression(value, value));
-        Expression flattened = new FlattenLogical(orExpression).transformed();
-        Expression expected = new OrExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
+    public IndexExpression(final String value, final String operation) {
+        this(value, operation, Tag.INDEX);
     }
 
-    @Test
-    public void testNonLogicalIgnored() {
-        Expression value = new IndexExpression("test", "EQUAL");
-        Expression flattened = new FlattenLogical(value).transformed();
-        Assertions.assertEquals(value, flattened);
+    private IndexExpression(final String value, final String operation, final Tag tag) {
+        this.value = value;
+        this.operation = operation;
+        this.tag = tag;
+    }
+
+    @Override
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String operation() {
+        return operation;
+    }
+
+    @Override
+    public Tag tag() {
+        return tag;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
+
+    @Override
+    public ValueExpression asLeaf() {
+        return this;
+    }
+
+    @Override
+    public boolean isLogical() {
+        return false;
+    }
+
+    @Override
+    public LogicalExpression asLogical() {
+        throw new UnsupportedOperationException("asLogical() not supported for IndexExpression");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%s val=%s op=%s)", tag, value, operation);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final IndexExpression other = (IndexExpression) o;
+        return Objects.equals(value, other.value) && Objects.equals(operation, other.operation) && tag == other.tag;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, operation, tag);
     }
 }

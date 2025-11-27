@@ -43,81 +43,68 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.LeafExpression;
-import com.teragrep.pth_06.ast.LogicalExpression;
+import java.util.Objects;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+public final class SourceTypeExpression implements ValueExpression {
 
-public final class AndExpression implements LogicalExpression {
+    private final String value;
+    private final String operation;
+    private final Tag tag;
 
-    private final List<Expression> children;
-
-    public AndExpression() {
-        this(Collections.emptyList());
+    public SourceTypeExpression(final String value) {
+        this(value, "EQUALS");
     }
 
-    public AndExpression(final Expression expression) {
-        this(Collections.singletonList(expression));
+    public SourceTypeExpression(final String value, final String operation) {
+        this(value, operation, Tag.SOURCETYPE);
     }
 
-    public AndExpression(final Expression left, final Expression right) {
-        this(Arrays.asList(left, right));
+    private SourceTypeExpression(final String value, final String operation, final Tag tag) {
+        this.value = value;
+        this.operation = operation;
+        this.tag = tag;
     }
 
-    public AndExpression(final List<Expression> children) {
-        this.children = children;
+    @Override
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String operation() {
+        return operation;
     }
 
     @Override
     public Tag tag() {
-        return Tag.AND;
+        return tag;
     }
 
     @Override
     public boolean isLeaf() {
-        return false;
-    }
-
-    @Override
-    public LeafExpression asLeaf() {
-        throw new UnsupportedOperationException("asLeaf() not supported for AndExpression");
-    }
-
-    @Override
-    public boolean isLogical() {
         return true;
     }
 
     @Override
-    public LogicalExpression asLogical() {
+    public ValueExpression asLeaf() {
         return this;
     }
 
     @Override
-    public List<Expression> children() {
-        return children;
+    public boolean isLogical() {
+        return false;
+    }
+
+    @Override
+    public LogicalExpression asLogical() {
+        throw new UnsupportedOperationException("asLogical() not supported for SourceTypeExpression");
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("AND(");
-        for (Expression child : children) {
-            sb.append(child);
-            sb.append(", ");
-        }
-        if (!children.isEmpty()) {
-            sb.delete(sb.length() - 2, sb.length()); // remove last ", "
-
-        }
-        sb.append(")");
-        return sb.toString();
+        return String.format("(%s val=%s op=%s)", tag, value, operation);
     }
 
     @Override
@@ -128,13 +115,12 @@ public final class AndExpression implements LogicalExpression {
         if (getClass() != o.getClass()) {
             return false;
         }
-        final AndExpression other = (AndExpression) o;
-        // equals if same children order does not matter
-        return new HashSet<>(children).equals(new HashSet<>(other.children));
+        final SourceTypeExpression other = (SourceTypeExpression) o;
+        return Objects.equals(value, other.value) && Objects.equals(operation, other.operation) && tag == other.tag;
     }
 
     @Override
     public int hashCode() {
-        return new HashSet<>(children).hashCode();
+        return Objects.hash(value, operation, tag);
     }
 }

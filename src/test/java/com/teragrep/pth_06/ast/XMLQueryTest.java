@@ -45,52 +45,45 @@
  */
 package com.teragrep.pth_06.ast;
 
-import java.util.Objects;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public final class EmptyExpression implements Expression {
+public final class XMLQueryTest {
 
-    public EmptyExpression() {
+    @Test
+    public void testXMLFromQuery() {
+        String query = "<AND><OR><index value=\"index_1\" operation=\"EQUALS\"/><sourcetype value=\"index_2\" operation=\"EQUALS\"/></OR><earliest value=\"1000\" operation=\"EQUALS\"/></AND>";
+        XMLQuery xmlQuery = new XMLQuery(query);
+        Expression expected = new AndExpression(
+                new OrExpression(new IndexExpression("index_1"), new SourceTypeExpression("index_2")),
+                new EarliestExpression("1000")
+        );
+        Assertions.assertEquals(expected, xmlQuery.asAST());
     }
 
-    @Override
-    public Tag tag() {
-        return Tag.EMPTY;
+    @Test
+    public void testSingleElementQuery() {
+        String query = "<index value=\"index_1\" operation=\"EQUALS\"/>";
+        XMLQuery xmlQuery = new XMLQuery(query);
+        Expression expected = new IndexExpression("index_1");
+        Assertions.assertEquals(expected, xmlQuery.asAST());
     }
 
-    @Override
-    public boolean isLeaf() {
-        return false;
-    }
+    @Test
+    public void testIndexPlusTimeQualifier() {
+        String queryXML = "<AND><index operation=\"EQUALS\" value=\"example\"/><earliest operation=\"GE\" value=\"1447400598\"/></AND>";
+        XMLQuery query = new XMLQuery(queryXML);
+        Expression expected = new AndExpression(
+                new IndexExpression("example"),
+                new EarliestExpression("1447400598", "GE")
+        );
+        Assertions.assertEquals(expected, query.asAST());
 
-    @Override
-    public LeafExpression<String> asLeaf() {
-        throw new UnsupportedOperationException("asLeaf() not supported for EmptyExpression");
-    }
-
-    @Override
-    public boolean isLogical() {
-        return false;
-    }
-
-    @Override
-    public LogicalExpression asLogical() {
-        throw new UnsupportedOperationException("asLogical() not supported for EmptyExpression");
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        final EmptyExpression other = (EmptyExpression) o;
-        return tag().equals(other.tag());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(tag());
     }
 }

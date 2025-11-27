@@ -45,14 +45,16 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.ValueExpression;
+
+import java.util.Objects;
 
 final class CalculatedTimeQualifierValue {
 
-    private final XMLValueExpression expression;
+    private final ValueExpression expression;
 
-    CalculatedTimeQualifierValue(final XMLValueExpression expression) {
+    CalculatedTimeQualifierValue(final ValueExpression expression) {
         this.expression = expression;
     }
 
@@ -60,19 +62,35 @@ final class CalculatedTimeQualifierValue {
         final long value;
         final Expression.Tag tag = expression.tag();
         final String operation = expression.operation();
-        final long parsedValue = Long.parseLong(expression.value());
         if ("GE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.EARLIEST)) {
-            value = parsedValue + 1; // exclude earliest epoch
+            value = Long.parseLong(expression.value()) + 1; // exclude earliest epoch
         }
         else if ("LE".equalsIgnoreCase(operation) && tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue - 1; // exclude latest epoch
+            value = Long.parseLong(expression.value()) - 1; // exclude latest epoch
         }
         else if (tag.equals(Expression.Tag.EARLIEST) || tag.equals(Expression.Tag.LATEST)) {
-            value = parsedValue;
+            value = Long.parseLong(expression.value());
         }
         else {
-            throw new IllegalArgumentException("expression was not a time qualifier");
+            throw new IllegalArgumentException("Expression " + expression + " was not a time qualifier");
         }
         return value;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final CalculatedTimeQualifierValue that = (CalculatedTimeQualifierValue) o;
+        return Objects.equals(expression, that.expression);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(expression);
     }
 }

@@ -43,11 +43,9 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.analyze;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.analyze.ScanPlan;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -63,7 +61,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-public class ScanGroupExpressionTest {
+public final class ScanGroupExpressionImplTest {
 
     final String userName = "sa";
     final String password = "";
@@ -110,10 +108,10 @@ public class ScanGroupExpressionTest {
     public void testEmpty() {
         DSLContext ctx = DSL.using(conn, SQLDialect.MYSQL);
         List<Expression> list = Arrays
-                .asList(new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
+                .asList(new IndexExpression("example"), new EarliestExpression("10"), new LatestExpression("1000"));
         AndExpression andExpression = new AndExpression(list);
-        ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        ScanGroupExpression scanGroupExpression = new ScanGroupExpressionImpl(ctx, andExpression);
+        List<ScanPlan> scanPlans = scanGroupExpression.scanPlans();
         Assertions.assertTrue(scanPlans.isEmpty());
     }
 
@@ -122,10 +120,10 @@ public class ScanGroupExpressionTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         DSLContext ctx = DSL.using(conn, SQLDialect.MYSQL);
         List<Expression> list = Arrays
-                .asList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_host", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
+                .asList(new IndexExpression("*"), new HostExpression("test_host"), new EarliestExpression("10"), new LatestExpression("1000"));
         AndExpression andExpression = new AndExpression(list);
-        ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        ScanGroupExpression scanGroupExpression = new ScanGroupExpressionImpl(ctx, andExpression);
+        List<ScanPlan> scanPlans = scanGroupExpression.scanPlans();
         Assertions.assertFalse(scanPlans.isEmpty());
     }
 

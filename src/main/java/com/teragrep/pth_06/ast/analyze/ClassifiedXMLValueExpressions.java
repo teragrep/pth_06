@@ -45,11 +45,17 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.IndexStatementExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class ClassifiedXMLValueExpressions {
 
@@ -59,33 +65,80 @@ public final class ClassifiedXMLValueExpressions {
         this.expressions = expressions;
     }
 
-    public List<XMLValueExpression> indexList() {
-        return expressionListFilteredByTag(Expression.Tag.INDEX);
-    }
-
-    public List<XMLValueExpression> sourceTypeList() {
-        return expressionListFilteredByTag(Expression.Tag.SOURCETYPE);
-    }
-
-    public List<XMLValueExpression> hostList() {
-        return expressionListFilteredByTag(Expression.Tag.HOST);
-    }
-
-    public List<XMLValueExpression> earliestList() {
-        return expressionListFilteredByTag(Expression.Tag.EARLIEST);
-    }
-
-    public List<XMLValueExpression> latestList() {
-        return expressionListFilteredByTag(Expression.Tag.LATEST);
-    }
-
-    private List<XMLValueExpression> expressionListFilteredByTag(final Expression.Tag tag) {
-        final List<XMLValueExpression> list = new ArrayList<>();
+    public List<IndexExpression> indexList() {
+        final List<IndexExpression> list = new ArrayList<>();
         for (final Expression expression : expressions) {
-            if (expression.tag().equals(tag) && expression.isLeaf()) {
-                list.add((XMLValueExpression) expression);
+            if (expression.tag().equals(Expression.Tag.INDEX) && expression.isLeaf()) {
+                list.add((IndexExpression) expression.asLeaf());
             }
         }
         return list;
+    }
+
+    public List<SourceTypeExpression> sourceTypeList() {
+        final List<SourceTypeExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(Expression.Tag.SOURCETYPE) && expression.isLeaf()) {
+                list.add((SourceTypeExpression) expression.asLeaf());
+            }
+        }
+        return list;
+    }
+
+    public List<HostExpression> hostList() {
+        final List<HostExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(Expression.Tag.HOST) && expression.isLeaf()) {
+                list.add((HostExpression) expression.asLeaf());
+            }
+        }
+        return list;
+    }
+
+    public List<EarliestExpression> earliestList() {
+        final List<EarliestExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(Expression.Tag.EARLIEST) && expression.isLeaf()) {
+                list.add((EarliestExpression) expression.asLeaf());
+            }
+        }
+        return list;
+    }
+
+    public List<LatestExpression> latestList() {
+        final List<LatestExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(Expression.Tag.LATEST) && expression.isLeaf()) {
+                list.add((LatestExpression) expression.asLeaf());
+            }
+        }
+        return list;
+    }
+
+    public List<IndexStatementExpression> indexStatementList() {
+        final List<IndexStatementExpression> list = new ArrayList<>();
+        for (final Expression expression : expressions) {
+            if (expression.tag().equals(Expression.Tag.INDEXSTATEMENT) && expression.isLeaf()) {
+                list.add((IndexStatementExpression) expression.asLeaf());
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final ClassifiedXMLValueExpressions that = (ClassifiedXMLValueExpressions) o;
+        return Objects.equals(expressions, that.expressions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(expressions);
     }
 }

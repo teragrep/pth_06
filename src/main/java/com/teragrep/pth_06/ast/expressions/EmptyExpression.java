@@ -43,69 +43,38 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
-
-import com.teragrep.pth_06.ast.LogicalExpression;
+package com.teragrep.pth_06.ast.expressions;
 
 import java.util.Objects;
 
-public final class XMLValueExpressionImpl implements XMLValueExpression {
+public final class EmptyExpression implements Expression {
 
-    private final String value;
-    private final String operation;
-    private final Tag tag;
-
-    public XMLValueExpressionImpl(final String value, final String operation, final Tag tag) {
-        this.value = value;
-        this.operation = operation;
-        this.tag = tag;
-    }
-
-    @Override
-    public String value() {
-        validateTag();
-        return value;
-    }
-
-    @Override
-    public String operation() {
-        validateTag();
-        return operation;
+    public EmptyExpression() {
     }
 
     @Override
     public Tag tag() {
-        validateTag();
-        return tag;
+        return Tag.EMPTY;
     }
 
     @Override
     public boolean isLeaf() {
-        validateTag();
-        return true;
+        return false;
     }
 
     @Override
-    public XMLValueExpression asLeaf() {
-        validateTag();
-        return this;
+    public ValueExpression asLeaf() {
+        throw new UnsupportedOperationException("asLeaf() not supported for EmptyExpression");
     }
 
     @Override
     public boolean isLogical() {
-        validateTag();
         return false;
     }
 
     @Override
     public LogicalExpression asLogical() {
-        validateTag();
-        throw new UnsupportedOperationException("asLogical() not supported for XMLValueExpressionImpl");
-    }
-
-    @Override
-    public String toString() {
-        return String.format("(%s val=%s op=%s)", tag, value, operation);
+        throw new UnsupportedOperationException("asLogical() not supported for EmptyExpression");
     }
 
     @Override
@@ -116,18 +85,12 @@ public final class XMLValueExpressionImpl implements XMLValueExpression {
         if (getClass() != o.getClass()) {
             return false;
         }
-        final XMLValueExpressionImpl other = (XMLValueExpressionImpl) o;
-        return Objects.equals(value, other.value) && Objects.equals(operation, other.operation) && tag == other.tag;
+        final EmptyExpression other = (EmptyExpression) o;
+        return tag().equals(other.tag());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, operation, tag);
-    }
-
-    private void validateTag() {
-        if (tag.equals(Tag.AND) || tag.equals(Tag.OR)) {
-            throw new IllegalArgumentException("AND and OR tags are not supported for XMLValueExpression");
-        }
+        return Objects.hashCode(tag());
     }
 }

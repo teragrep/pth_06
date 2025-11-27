@@ -45,10 +45,14 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.EmptyExpression;
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.EmptyExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,13 +62,9 @@ public final class PrunedInvalidTimeQualifierTest {
 
     @Test
     public void testNonEqualsPruned() {
-        XMLValueExpressionImpl equalsOperation = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
-        XMLValueExpressionImpl nonEqualEarliest = new XMLValueExpressionImpl(
-                "1000",
-                "NOT_EQUALS",
-                Expression.Tag.EARLIEST
-        );
-        XMLValueExpressionImpl nonEqualLatest = new XMLValueExpressionImpl("1000", "NOT_EQUALS", Expression.Tag.LATEST);
+        Expression equalsOperation = new EarliestExpression("1000", "EQUALS");
+        Expression nonEqualEarliest = new EarliestExpression("1000", "NOT_EQUALS");
+        Expression nonEqualLatest = new LatestExpression("1000", "NOT_EQUALS");
         AndExpression andExpression = new AndExpression(
                 Arrays.asList(equalsOperation, nonEqualEarliest, nonEqualLatest)
         );
@@ -75,11 +75,11 @@ public final class PrunedInvalidTimeQualifierTest {
 
     @Test
     public void testAllEqualsRemainsUnchanged() {
-        Expression earliest = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
-        Expression latest = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST);
-        Expression index = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.INDEX);
-        Expression host = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.HOST);
-        Expression sourceType = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.SOURCETYPE);
+        Expression earliest = new EarliestExpression("1000", "EQUALS");
+        Expression latest = new LatestExpression("1000", "EQUALS");
+        Expression index = new IndexExpression("1000", "EQUALS");
+        Expression host = new HostExpression("1000", "EQUALS");
+        Expression sourceType = new SourceTypeExpression("1000", "EQUALS");
         Expression empty = new EmptyExpression();
         Expression andExpression = new AndExpression(Arrays.asList(earliest, latest, index, host, sourceType, empty));
         Expression transformed = new PrunedInvalidTimeQualifier(andExpression).transformed();
@@ -87,12 +87,25 @@ public final class PrunedInvalidTimeQualifierTest {
     }
 
     @Test
-    public void testSupportedOperations() {
-        Expression equals = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
-        Expression GE = new XMLValueExpressionImpl("1000", "GE", Expression.Tag.EARLIEST);
-        Expression LE = new XMLValueExpressionImpl("1000", "LE", Expression.Tag.EARLIEST);
-        Expression GEQ = new XMLValueExpressionImpl("1000", "GEQ", Expression.Tag.EARLIEST);
-        Expression LEQ = new XMLValueExpressionImpl("1000", "LEQ", Expression.Tag.EARLIEST);
+    public void testSupportedEarliestOperations() {
+        Expression equals = new EarliestExpression("1000", "EQUALS");
+        Expression GE = new EarliestExpression("1000", "GE");
+        Expression LE = new EarliestExpression("1000", "LE");
+        Expression GEQ = new EarliestExpression("1000", "GEQ");
+        Expression LEQ = new EarliestExpression("1000", "LEQ");
+        AndExpression andExpression = new AndExpression(Arrays.asList(equals, GE, LE, GEQ, LEQ));
+        Expression pruned = new PrunedInvalidTimeQualifier(andExpression).transformed();
+        Assertions.assertTrue(pruned.isLogical());
+        Assertions.assertEquals(andExpression.children().size(), pruned.asLogical().children().size());
+    }
+
+    @Test
+    public void testSupportedLatestOperations() {
+        Expression equals = new LatestExpression("1000", "EQUALS");
+        Expression GE = new LatestExpression("1000", "GE");
+        Expression LE = new LatestExpression("1000", "LE");
+        Expression GEQ = new LatestExpression("1000", "GEQ");
+        Expression LEQ = new LatestExpression("1000", "LEQ");
         AndExpression andExpression = new AndExpression(Arrays.asList(equals, GE, LE, GEQ, LEQ));
         Expression pruned = new PrunedInvalidTimeQualifier(andExpression).transformed();
         Assertions.assertTrue(pruned.isLogical());

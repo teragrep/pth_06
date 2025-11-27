@@ -45,9 +45,9 @@
  */
 package com.teragrep.pth_06.ast.meta;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
@@ -61,37 +61,31 @@ public final class StreamDBConditionTest {
 
     @Test
     public void testIndexEquals() {
-        Condition streamDBCondition = new StreamDBCondition(
-                new XMLValueExpressionImpl("index", "EQUALS", Expression.Tag.INDEX)
-        ).condition();
+        Condition streamDBCondition = new StreamDBCondition(new IndexExpression("index")).condition();
         String expected = "\"streamdb\".\"stream\".\"directory\" like 'index'";
         Assertions.assertEquals(expected, streamDBCondition.toString());
     }
 
     @Test
     public void testIndexWildcard() {
-        Condition streamDBCondition = new StreamDBCondition(
-                new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX)
-        ).condition();
+        Condition streamDBCondition = new StreamDBCondition(new IndexExpression("*")).condition();
         String expected = "\"streamdb\".\"stream\".\"directory\" like '%'";
         Assertions.assertEquals(expected, streamDBCondition.toString());
     }
 
     @Test
     public void testIndexNotEquals() {
-        Condition streamDBCondition = new StreamDBCondition(
-                new XMLValueExpressionImpl("index", "NOT_EQUALS", Expression.Tag.INDEX)
-        ).condition();
+        Condition streamDBCondition = new StreamDBCondition(new IndexExpression("index", "NOT_EQUALS")).condition();
         String expected = "not (\"streamdb\".\"stream\".\"directory\" like 'index')";
         Assertions.assertEquals(expected, streamDBCondition.toString());
     }
 
     @Test
     public void testHost() {
-        List<XMLValueExpression> hostExpressions = Arrays
-                .asList(new XMLValueExpressionImpl("host_1", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("host_2", "EQUALS", Expression.Tag.HOST));
+        List<HostExpression> hostExpressions = Arrays
+                .asList(new HostExpression("host_1"), new HostExpression("host_2"));
         Condition streamDBCondition = new StreamDBCondition(
-                new XMLValueExpressionImpl("index", "EQUALS", Expression.Tag.INDEX),
+                new IndexExpression("index"),
                 hostExpressions,
                 Collections.emptyList()
         ).condition();
@@ -103,10 +97,10 @@ public final class StreamDBConditionTest {
 
     @Test
     public void testSourcetype() {
-        List<XMLValueExpression> sourceTypeExpressions = Arrays
-                .asList(new XMLValueExpressionImpl("source_1", "EQUALS", Expression.Tag.SOURCETYPE), new XMLValueExpressionImpl("source_2", "EQUALS", Expression.Tag.SOURCETYPE));
+        List<SourceTypeExpression> sourceTypeExpressions = Arrays
+                .asList(new SourceTypeExpression("source_1"), new SourceTypeExpression("source_2"));
         Condition streamDBCondition = new StreamDBCondition(
-                new XMLValueExpressionImpl("index", "EQUALS", Expression.Tag.INDEX),
+                new IndexExpression("index"),
                 Collections.emptyList(),
                 sourceTypeExpressions
         ).condition();

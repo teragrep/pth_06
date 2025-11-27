@@ -45,9 +45,11 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import com.teragrep.pth_06.ast.meta.StreamDBCondition;
 import com.teragrep.pth_06.ast.meta.StreamIDs;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
 import org.jooq.DSLContext;
 
 import java.util.ArrayList;
@@ -56,9 +58,9 @@ import java.util.List;
 public final class StreamIDGroup {
 
     private final DSLContext ctx;
-    private final List<XMLValueExpression> indexList;
-    private final List<XMLValueExpression> hostList;
-    private final List<XMLValueExpression> sourceTypeList;
+    private final List<IndexExpression> indexList;
+    private final List<HostExpression> hostList;
+    private final List<SourceTypeExpression> sourceTypeList;
 
     public StreamIDGroup(final DSLContext ctx, final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
         this(
@@ -71,9 +73,9 @@ public final class StreamIDGroup {
 
     public StreamIDGroup(
             final DSLContext ctx,
-            final List<XMLValueExpression> indexList,
-            final List<XMLValueExpression> hostList,
-            final List<XMLValueExpression> sourceTypeList
+            final List<IndexExpression> indexList,
+            final List<HostExpression> hostList,
+            final List<SourceTypeExpression> sourceTypeList
     ) {
         this.ctx = ctx;
         this.indexList = indexList;
@@ -83,7 +85,7 @@ public final class StreamIDGroup {
 
     public List<Long> combinedStreamIds() {
         final List<Long> streamIdList = new ArrayList<>();
-        for (final XMLValueExpression indexExpression : indexList) {
+        for (final IndexExpression indexExpression : indexList) {
             final StreamIDs streamIDs = new StreamIDs(
                     ctx,
                     new StreamDBCondition(indexExpression, hostList, sourceTypeList).condition()

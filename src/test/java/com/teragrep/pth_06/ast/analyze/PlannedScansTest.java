@@ -45,9 +45,12 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
@@ -57,8 +60,6 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +68,7 @@ import java.util.UUID;
 public final class PlannedScansTest {
 
     final List<Expression> timeQualifiers = Arrays
-            .asList(new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("2000", "EQUALS", Expression.Tag.LATEST));
+            .asList(new EarliestExpression("1000", "EQUALS"), new LatestExpression("2000", "EQUALS"));
     final ScanTimeQualifiers window = new ScanTimeQualifiers(new ClassifiedXMLValueExpressions(timeQualifiers));
     final String userName = "sa";
     final String password = "";
@@ -111,6 +112,23 @@ public final class PlannedScansTest {
                     )
                     .execute();
         });
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("USE STREAMDB").execute();
+            conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group');").execute();
+            conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group_2');").execute();
+            conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host', 1);").execute();
+            conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host_2', 2);").execute();
+            conn
+                    .prepareStatement(
+                            "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (1, 'test_directory', 'test_stream_1', 'test_tag');"
+                    )
+                    .execute();
+            conn
+                    .prepareStatement(
+                            "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (2, 'test_directory_2', 'test_stream_2', 'test_tag');"
+                    )
+                    .execute();
+        });
     }
 
     @AfterEach
@@ -120,111 +138,95 @@ public final class PlannedScansTest {
 
     @Test
     public void testSingleDirectoryMatch() {
-        Assertions.assertDoesNotThrow(this::insertTestValues);
-        PlannedScans plannedScans = new PlannedScans(
+        final PlannedScans plannedScans = new PlannedScans(
                 window,
                 new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
-        List<XMLValueExpression> indexList = Collections
-                .singletonList(new XMLValueExpressionImpl("test_directory", "EQUALS", Expression.Tag.INDEX));
-        StreamIDGroup streamIDGroup = new StreamIDGroup(
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("test_directory"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
                 DSL.using(conn),
                 indexList,
-                new ArrayList<>(),
-                new ArrayList<>()
+                Collections.emptyList(),
+                Collections.emptyList()
         );
-        List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
-        List<ScanPlan> expectedPlans = Collections.singletonList(new ScanPlanImpl(1, 1000, 2000, new FilterList()));
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<ScanPlan> expectedPlans = Collections
+                .singletonList(new ScanPlanImpl(1, 1000, 2000, new FilterList()));
         Assertions.assertEquals(expectedPlans, scanPlans);
     }
 
     @Test
     public void testMultipleDirectoryMatches() {
-        Assertions.assertDoesNotThrow(this::insertTestValues);
-        PlannedScans plannedScans = new PlannedScans(
+        final PlannedScans plannedScans = new PlannedScans(
                 window,
                 new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
-        List<XMLValueExpression> indexList = Arrays
-                .asList(new XMLValueExpressionImpl("test_directory", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("test_directory_2", "EQUALS", Expression.Tag.INDEX));
-        StreamIDGroup streamIDGroup = new StreamIDGroup(
+        final List<IndexExpression> indexList = Arrays
+                .asList(new IndexExpression("test_directory"), new IndexExpression("test_directory_2"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
                 DSL.using(conn),
                 indexList,
-                new ArrayList<>(),
-                new ArrayList<>()
+                Collections.emptyList(),
+                Collections.emptyList()
         );
-        List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
-        List<ScanPlan> expectedPlans = Arrays
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<ScanPlan> expectedPlans = Arrays
                 .asList(new ScanPlanImpl(1, 1000, 2000, new FilterList()), new ScanPlanImpl(2, 1000, 2000, new FilterList()));
         Assertions.assertEquals(expectedPlans, scanPlans);
     }
 
     @Test
     public void testNoMatches() {
-        Assertions.assertDoesNotThrow(this::insertTestValues);
-        PlannedScans plannedScans = new PlannedScans(
+        final PlannedScans plannedScans = new PlannedScans(
                 window,
                 new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
-        List<XMLValueExpression> indexList = Collections
-                .singletonList(new XMLValueExpressionImpl("noMatch", "EQUALS", Expression.Tag.INDEX));
-        StreamIDGroup streamIDGroup = new StreamIDGroup(
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("noMatch"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
                 DSL.using(conn),
                 indexList,
-                new ArrayList<>(),
-                new ArrayList<>()
+                Collections.emptyList(),
+                Collections.emptyList()
         );
-        List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
         Assertions.assertTrue(scanPlans.isEmpty());
     }
 
     @Test
     public void testHostFilterMatch() {
-        Assertions.assertDoesNotThrow(this::insertTestValues);
-        PlannedScans plannedScans = new PlannedScans(
+        final PlannedScans plannedScans = new PlannedScans(
                 window,
                 new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
-        List<XMLValueExpression> indexList = Collections
-                .singletonList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));
-        List<XMLValueExpression> hostList = Collections
-                .singletonList(new XMLValueExpressionImpl("test_host", "EQUALS", Expression.Tag.HOST));
-        StreamIDGroup streamIDGroup = new StreamIDGroup(DSL.using(conn), indexList, hostList, new ArrayList<>());
-        List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("*"));
+        final List<HostExpression> hostList = Collections.singletonList(new HostExpression("test_host"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                hostList,
+                Collections.emptyList()
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
         Assertions.assertEquals(1, scanPlans.size());
     }
 
     @Test
     public void testSourceTypeFilterMatch() {
-        Assertions.assertDoesNotThrow(this::insertTestValues);
-        PlannedScans plannedScans = new PlannedScans(
+        final PlannedScans plannedScans = new PlannedScans(
                 window,
                 new FilterGroup(new ClassifiedXMLValueExpressions(timeQualifiers))
         );
-        List<XMLValueExpression> indexList = Collections
-                .singletonList(new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX));
-        List<XMLValueExpression> sourceTypeList = Collections
-                .singletonList(new XMLValueExpressionImpl("test_stream_1", "EQUALS", Expression.Tag.SOURCETYPE));
-        StreamIDGroup streamIDGroup = new StreamIDGroup(DSL.using(conn), indexList, new ArrayList<>(), sourceTypeList);
-        List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
+        final List<IndexExpression> indexList = Collections.singletonList(new IndexExpression("*"));
+        final List<SourceTypeExpression> sourceTypeList = Collections
+                .singletonList(new SourceTypeExpression("test_stream_1"));
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(
+                DSL.using(conn),
+                indexList,
+                Collections.emptyList(),
+                sourceTypeList
+        );
+        final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
         Assertions.assertEquals(1, scanPlans.size());
     }
 
-    private void insertTestValues() throws SQLException {
-        conn.prepareStatement("USE STREAMDB").execute();
-        conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group');").execute();
-        conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group_2');").execute();
-        conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host', 1);").execute();
-        conn.prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES ('test_host_2', 2);").execute();
-        conn
-                .prepareStatement(
-                        "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (1, 'test_directory', 'test_stream_1', 'test_tag');"
-                )
-                .execute();
-        conn
-                .prepareStatement(
-                        "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (2, 'test_directory_2', 'test_stream_2', 'test_tag');"
-                )
-                .execute();
-    }
 }

@@ -45,8 +45,11 @@
  */
 package com.teragrep.pth_06.ast;
 
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +57,7 @@ public final class PrintASTTest {
 
     @Test
     public void printSingleValue() {
-        Expression expression = new XMLValueExpressionImpl("value", "operation", Expression.Tag.INDEX);
+        Expression expression = new IndexExpression("value", "operation");
         String print = new PrintAST(expression).asString();
         String expected = "VALUE(INDEX val=value op=operation)";
         Assertions.assertEquals(expected, print);
@@ -62,8 +65,8 @@ public final class PrintASTTest {
 
     @Test
     public void printLogical() {
-        Expression left = new XMLValueExpressionImpl("earliest", "GE", Expression.Tag.EARLIEST);
-        Expression right = new XMLValueExpressionImpl("latest", "LE", Expression.Tag.LATEST);
+        Expression left = new EarliestExpression("earliest", "GE");
+        Expression right = new LatestExpression("latest", "LE");
         Expression expression = new AndExpression(left, right);
         String print = new PrintAST(expression).asString();
         String expected = "AND\n" + "  VALUE(EARLIEST val=earliest op=GE)\n" + "  VALUE(LATEST val=latest op=LE)";

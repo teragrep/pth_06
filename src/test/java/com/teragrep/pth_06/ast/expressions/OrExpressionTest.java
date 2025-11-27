@@ -43,41 +43,63 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.transform;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.expressions.Expression;
-import com.teragrep.pth_06.ast.expressions.AndExpression;
-import com.teragrep.pth_06.ast.expressions.IndexExpression;
-import com.teragrep.pth_06.ast.expressions.OrExpression;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
-public final class FlattenLogicalTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+public final class OrExpressionTest {
 
     @Test
-    public void testAndFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression andExpression = new AndExpression(value, new AndExpression(value, value));
-        Expression flattened = new FlattenLogical(andExpression).transformed();
-        Expression expected = new AndExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
+    public void testTag() {
+        Expression.Tag tag = new OrExpression().tag();
+        Assertions.assertEquals(Expression.Tag.OR, tag);
     }
 
     @Test
-    public void testOrFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression orExpression = new OrExpression(value, new OrExpression(value, value));
-        Expression flattened = new FlattenLogical(orExpression).transformed();
-        Expression expected = new OrExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
+    public void testIsLeaf() {
+        Assertions.assertFalse(new OrExpression().isLeaf());
     }
 
     @Test
-    public void testNonLogicalIgnored() {
-        Expression value = new IndexExpression("test", "EQUAL");
-        Expression flattened = new FlattenLogical(value).transformed();
-        Assertions.assertEquals(value, flattened);
+    public void testIsLogical() {
+        Assertions.assertTrue(new OrExpression().isLogical());
+    }
+
+    @Test
+    public void testAsLeaf() {
+        UnsupportedOperationException unsupportedOperationException = assertThrows(
+                UnsupportedOperationException.class, () -> new OrExpression().asLeaf()
+        );
+        String expected = "asLeaf() not supported for OrExpression";
+        Assertions.assertEquals(expected, unsupportedOperationException.getMessage());
+    }
+
+    @Test
+    public void testAsLogical() {
+        LogicalExpression logical = new OrExpression().asLogical();
+        // test we have access to the logical expression children() method
+        Assertions.assertTrue(logical.children().isEmpty());
+    }
+
+    @Test
+    public void testChildren() {
+        Expression value = new IndexExpression("TEST");
+        Expression orExpression = new OrExpression(Arrays.asList(value, value, value));
+        List<Expression> children = orExpression.asLogical().children();
+        Assertions.assertFalse(children.isEmpty());
+        Assertions.assertEquals(3, children.size());
+        Assertions.assertTrue(children.stream().allMatch(e -> e.equals(value)));
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(OrExpression.class).withNonnullFields("children").verify();
     }
 }

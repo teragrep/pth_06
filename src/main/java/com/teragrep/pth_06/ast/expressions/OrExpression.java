@@ -43,45 +43,76 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.transform;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.expressions.Expression;
-import com.teragrep.pth_06.ast.expressions.AndExpression;
-import com.teragrep.pth_06.ast.expressions.OrExpression;
-
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.List;
 
-/**
- * Prunes duplicate children from a AND/OR expression
- */
-public final class UniqueChildren implements ExpressionTransformation<Expression> {
+public final class OrExpression implements LogicalExpression {
 
-    private final Expression origin;
+    private final List<Expression> children;
 
-    public UniqueChildren(final Expression origin) {
-        this.origin = origin;
+    public OrExpression() {
+        this(Collections.emptyList());
     }
 
-    public Expression transformed() {
-        System.out.println();
-        final Expression optimizedExpression;
-        if (origin.isLogical()) {
-            final Set<Expression> unique = new HashSet<>(origin.asLogical().children());
-            final Expression.Tag tag = origin.tag();
-            if (tag.equals(Expression.Tag.AND)) {
-                optimizedExpression = new AndExpression(new ArrayList<>(unique));
-            }
-            else {
-                optimizedExpression = new OrExpression(new ArrayList<>(unique));
-            }
+    public OrExpression(final Expression expression) {
+        this(Collections.singletonList(expression));
+    }
+
+    public OrExpression(final Expression left, final Expression right) {
+        this(Arrays.asList(left, right));
+    }
+
+    public OrExpression(final List<Expression> children) {
+        this.children = children;
+    }
+
+    @Override
+    public Tag tag() {
+        return Tag.OR;
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return false;
+    }
+
+    @Override
+    public ValueExpression asLeaf() {
+        throw new UnsupportedOperationException("asLeaf() not supported for OrExpression");
+    }
+
+    @Override
+    public boolean isLogical() {
+        return true;
+    }
+
+    @Override
+    public LogicalExpression asLogical() {
+        return this;
+    }
+
+    @Override
+    public List<Expression> children() {
+        return children;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("OR(");
+        for (Expression child : children) {
+            sb.append(child);
+            sb.append(", ");
         }
-        else {
-            optimizedExpression = origin;
+        if (!children.isEmpty()) {
+            sb.delete(sb.length() - 2, sb.length()); // remove last ", "
         }
-        return optimizedExpression;
+        sb.append(")");
+        return sb.toString();
     }
 
     @Override
@@ -92,12 +123,13 @@ public final class UniqueChildren implements ExpressionTransformation<Expression
         if (getClass() != o.getClass()) {
             return false;
         }
-        final UniqueChildren that = (UniqueChildren) o;
-        return Objects.equals(origin, that.origin);
+        final OrExpression other = (OrExpression) o;
+        // equals if same children order does not matter
+        return new HashSet<>(children).equals(new HashSet<>(other.children));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(origin);
+        return new HashSet<>(children).hashCode();
     }
 }

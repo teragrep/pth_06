@@ -43,22 +43,26 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast;
+package com.teragrep.pth_06.ast.expressions;
 
-public interface Expression {
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public static enum Tag {
-        EMPTY, INDEX, SOURCETYPE, HOST, EARLIEST, LATEST, INDEXSTATEMENT, AND, OR
+public final class EarliestExpressionTest {
+
+    @Test
+    public void testValues() {
+        final ValueExpression expression = new EarliestExpression("value", "operation");
+        Assertions.assertEquals("value", expression.value());
+        Assertions.assertEquals("operation", expression.operation());
+        Assertions.assertEquals(Expression.Tag.EARLIEST, expression.tag());
+        Assertions.assertTrue(expression.isLeaf());
+        Assertions.assertFalse(expression.isLogical());
     }
 
-    public abstract Tag tag();
-
-    public abstract boolean isLeaf();
-
-    public abstract LeafExpression asLeaf();
-
-    public abstract boolean isLogical();
-
-    public abstract LogicalExpression asLogical();
-
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(EarliestExpression.class).withNonnullFields("value", "operation", "tag").verify();
+    }
 }

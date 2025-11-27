@@ -43,65 +43,27 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.LogicalExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-public final class OrExpressionTest {
+public final class IndexExpressionTest {
 
     @Test
-    public void testTag() {
-        Expression.Tag tag = new OrExpression().tag();
-        Assertions.assertEquals(Expression.Tag.OR, tag);
-    }
-
-    @Test
-    public void testIsLeaf() {
-        Assertions.assertFalse(new OrExpression().isLeaf());
-    }
-
-    @Test
-    public void testIsLogical() {
-        Assertions.assertTrue(new OrExpression().isLogical());
-    }
-
-    @Test
-    public void testAsLeaf() {
-        UnsupportedOperationException unsupportedOperationException = assertThrows(
-                UnsupportedOperationException.class, () -> new OrExpression().asLeaf()
-        );
-        String expected = "asLeaf() not supported for OrExpression";
-        Assertions.assertEquals(expected, unsupportedOperationException.getMessage());
-    }
-
-    @Test
-    public void testAsLogical() {
-        LogicalExpression logical = new OrExpression().asLogical();
-        // test we have access to the logical expression children() method
-        Assertions.assertTrue(logical.children().isEmpty());
-    }
-
-    @Test
-    public void testChildren() {
-        Expression value = new XMLValueExpressionImpl("TEST", "EQUALS", Expression.Tag.INDEX);
-        Expression orExpression = new OrExpression(Arrays.asList(value, value, value));
-        List<Expression> children = orExpression.asLogical().children();
-        Assertions.assertFalse(children.isEmpty());
-        Assertions.assertEquals(3, children.size());
-        Assertions.assertTrue(children.stream().allMatch(e -> e.equals(value)));
+    public void testValues() {
+        final ValueExpression expression = new IndexExpression("value", "operation");
+        Assertions.assertEquals("value", expression.value());
+        Assertions.assertEquals("operation", expression.operation());
+        Assertions.assertEquals(Expression.Tag.INDEX, expression.tag());
+        Assertions.assertTrue(expression.isLeaf());
+        Assertions.assertFalse(expression.isLogical());
     }
 
     @Test
     public void testContract() {
-        EqualsVerifier.forClass(OrExpression.class).withNonnullFields("children").verify();
+        EqualsVerifier.forClass(IndexExpression.class).withNonnullFields("value", "operation", "tag").verify();
     }
+
 }

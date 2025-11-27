@@ -45,7 +45,9 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.ScanGroupExpression;
+import com.teragrep.pth_06.ast.expressions.ScanGroupExpressionImpl;
 import com.teragrep.pth_06.ast.transform.WithDefaultValues;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.LogfileTable;
@@ -142,8 +144,8 @@ public final class ScanPlanCollection {
                     collectScanPlans(ctx, child);
                 }
             }
-            final ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, expression.asLogical());
-            scanPlans.addAll(scanGroupExpression.value());
+            final ScanGroupExpression scanGroupExpression = new ScanGroupExpressionImpl(ctx, expression.asLogical());
+            scanPlans.addAll(scanGroupExpression.scanPlans());
         }
     }
 

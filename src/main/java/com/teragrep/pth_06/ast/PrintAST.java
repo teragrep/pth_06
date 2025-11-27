@@ -45,7 +45,13 @@
  */
 package com.teragrep.pth_06.ast;
 
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.IndexStatementExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 
 import java.util.Collections;
 import java.util.List;
@@ -100,13 +106,29 @@ public final class PrintAST {
                 result = orPrint.toString();
                 break;
             case INDEX:
+                final IndexExpression indexExpression = (IndexExpression) expression.asLeaf();
+                result = String.format("%sVALUE%s", indent, indexExpression);
+                break;
             case SOURCETYPE:
+                final SourceTypeExpression sourceTypeExpression = (SourceTypeExpression) expression.asLeaf();
+                result = String.format("%sVALUE%s", indent, sourceTypeExpression);
+                break;
             case HOST:
+                final HostExpression hostExpression = (HostExpression) expression.asLeaf();
+                result = String.format("%sVALUE%s", indent, hostExpression);
+                break;
             case LATEST:
+                final LatestExpression latestExpression = (LatestExpression) expression.asLeaf();
+                result = String.format("%sVALUE%s", indent, latestExpression);
+                break;
             case EARLIEST:
+                final EarliestExpression earliestExpression = (EarliestExpression) expression.asLeaf();
+                result = String.format("%sVALUE%s", indent, earliestExpression);
+                break;
             case INDEXSTATEMENT:
-                final XMLValueExpressionImpl value = (XMLValueExpressionImpl) expression;
-                result = String.format("%sVALUE%s", indent, value);
+                final IndexStatementExpression indexStatementExpression = (IndexStatementExpression) expression
+                        .asLeaf();
+                result = String.format("%sVALUE%s", indent, indexStatementExpression);
                 break;
             case EMPTY:
                 result = String.format("%sEMPTY", indent);

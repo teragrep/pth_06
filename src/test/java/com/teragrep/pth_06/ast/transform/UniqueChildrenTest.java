@@ -45,9 +45,9 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,7 +58,7 @@ public final class UniqueChildrenTest {
 
     @Test
     public void testEqualValues() {
-        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression value = new IndexExpression("test", "equals");
         Expression andExpression = new AndExpression(value, value);
         Expression optimized = new UniqueChildren(andExpression).transformed();
         Assertions.assertEquals(new AndExpression(value), optimized);
@@ -66,8 +66,8 @@ public final class UniqueChildrenTest {
 
     @Test
     public void testUnoptimizableExpression() {
-        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
-        Expression value2 = new XMLValueExpressionImpl("test_2", "equals", Expression.Tag.INDEX);
+        Expression value = new IndexExpression("test", "equals");
+        Expression value2 = new IndexExpression("test_2", "equals");
         Expression andExpression = new AndExpression(value, value2);
         Expression optimized = new UniqueChildren(andExpression).transformed();
         Assertions.assertEquals(andExpression, optimized);
@@ -75,7 +75,7 @@ public final class UniqueChildrenTest {
 
     @Test
     public void testListOfValues() {
-        Expression value = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression value = new IndexExpression("test", "equals");
         AndExpression andExpression = new AndExpression(Arrays.asList(value, value, value));
         Expression optimized = new UniqueChildren(andExpression).transformed();
         Assertions.assertEquals(new AndExpression(value), optimized);

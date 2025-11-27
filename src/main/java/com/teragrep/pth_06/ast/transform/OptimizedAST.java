@@ -45,11 +45,11 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.expressions.Expression;
 import com.teragrep.pth_06.ast.PrintAST;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.OrExpression;
-import com.teragrep.pth_06.ast.xml.XMLQuery;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
+import com.teragrep.pth_06.ast.XMLQuery;
 import com.teragrep.pth_06.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

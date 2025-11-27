@@ -43,40 +43,50 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.LeafExpression;
-import com.teragrep.pth_06.ast.LogicalExpression;
+import com.teragrep.pth_06.ast.analyze.ClassifiedXMLValueExpressions;
+import com.teragrep.pth_06.ast.analyze.FilterGroup;
+import com.teragrep.pth_06.ast.analyze.PlannedScans;
+import com.teragrep.pth_06.ast.analyze.ScanPlan;
+import com.teragrep.pth_06.ast.analyze.ScanTimeQualifiers;
+import com.teragrep.pth_06.ast.analyze.StreamIDGroup;
+import com.teragrep.pth_06.ast.MergeIntersectingPlans;
+import org.jooq.DSLContext;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
-public final class OrExpression implements LogicalExpression {
+public final class ScanGroupExpressionImpl implements ScanGroupExpression {
 
-    private final List<Expression> children;
+    private final DSLContext ctx;
+    private final List<Expression> expressions;
 
-    public OrExpression() {
-        this(Collections.emptyList());
+    public ScanGroupExpressionImpl(final DSLContext ctx, final LogicalExpression origin) {
+        this(ctx, origin.children());
     }
 
-    public OrExpression(final Expression expression) {
-        this(Collections.singletonList(expression));
+    public ScanGroupExpressionImpl(final DSLContext ctx, final List<Expression> expressions) {
+        this.ctx = ctx;
+        this.expressions = expressions;
     }
 
-    public OrExpression(final Expression left, final Expression right) {
-        this(Arrays.asList(left, right));
-    }
-
-    public OrExpression(final List<Expression> children) {
-        this.children = children;
+    @Override
+    public List<ScanPlan> scanPlans() {
+        final ClassifiedXMLValueExpressions classifiedXMLValueExpressions = new ClassifiedXMLValueExpressions(
+                expressions
+        );
+        final ScanTimeQualifiers scanTimeQualifiers = new ScanTimeQualifiers(classifiedXMLValueExpressions);
+        final FilterGroup filterGroup = new FilterGroup(classifiedXMLValueExpressions);
+        final PlannedScans plannedScans = new PlannedScans(scanTimeQualifiers, filterGroup);
+        final StreamIDGroup streamIDGroup = new StreamIDGroup(ctx, classifiedXMLValueExpressions);
+        final List<ScanPlan> scanPlanList = plannedScans.planListForGroup(streamIDGroup);
+        final MergeIntersectingPlans mergeIntersectingPlans = new MergeIntersectingPlans(scanPlanList);
+        return mergeIntersectingPlans.mergedRanges();
     }
 
     @Override
     public Tag tag() {
-        return Tag.OR;
+        throw new UnsupportedOperationException("tag() not supported by ScanGroupExpression");
     }
 
     @Override
@@ -85,55 +95,17 @@ public final class OrExpression implements LogicalExpression {
     }
 
     @Override
-    public LeafExpression asLeaf() {
-        throw new UnsupportedOperationException("asLeaf() not supported for OrExpression");
+    public ValueExpression asLeaf() {
+        throw new UnsupportedOperationException("asLeaf() not supported by ScanGroupExpression");
     }
 
     @Override
     public boolean isLogical() {
-        return true;
+        return false;
     }
 
     @Override
     public LogicalExpression asLogical() {
-        return this;
-    }
-
-    @Override
-    public List<Expression> children() {
-        return children;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("OR(");
-        for (Expression child : children) {
-            sb.append(child);
-            sb.append(", ");
-        }
-        if (!children.isEmpty()) {
-            sb.delete(sb.length() - 2, sb.length()); // remove last ", "
-        }
-        sb.append(")");
-        return sb.toString();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (getClass() != o.getClass()) {
-            return false;
-        }
-        final OrExpression other = (OrExpression) o;
-        // equals if same children order does not matter
-        return new HashSet<>(children).equals(new HashSet<>(other.children));
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashSet<>(children).hashCode();
+        throw new UnsupportedOperationException("asLogical() not supported by ScanGroupExpression");
     }
 }

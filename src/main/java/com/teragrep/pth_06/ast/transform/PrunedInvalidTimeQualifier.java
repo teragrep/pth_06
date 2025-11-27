@@ -45,10 +45,10 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.OrExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
+import com.teragrep.pth_06.ast.expressions.ValueExpression;
 
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +79,7 @@ public final class PrunedInvalidTimeQualifier implements ExpressionTransformatio
                     expression.isLeaf() || expression.tag().equals(Expression.Tag.EARLIEST)
                             || expression.tag().equals(Expression.Tag.LATEST)
                 ) {
-                    final XMLValueExpression valueExpression = (XMLValueExpression) expression.asLeaf();
+                    final ValueExpression valueExpression = expression.asLeaf();
                     result = acceptedOperations
                             .stream()
                             .anyMatch(op -> op.equalsIgnoreCase(valueExpression.operation()));

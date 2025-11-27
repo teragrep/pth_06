@@ -45,7 +45,8 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,14 +55,14 @@ import java.util.List;
 public final class ScanTimeQualifiers {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ScanTimeQualifiers.class);
-    private final List<XMLValueExpression> earliestList;
-    private final List<XMLValueExpression> latestList;
+    private final List<EarliestExpression> earliestList;
+    private final List<LatestExpression> latestList;
 
     public ScanTimeQualifiers(final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
         this(classifiedXMLValueExpressions.earliestList(), classifiedXMLValueExpressions.latestList());
     }
 
-    public ScanTimeQualifiers(final List<XMLValueExpression> earliestList, final List<XMLValueExpression> latestList) {
+    public ScanTimeQualifiers(final List<EarliestExpression> earliestList, final List<LatestExpression> latestList) {
         this.earliestList = earliestList;
         this.latestList = latestList;
     }
@@ -74,7 +75,7 @@ public final class ScanTimeQualifiers {
             LOGGER.warn("Multiple time qualifiers found. earliest size: <{}>", earliestList.size());
         }
         long earliest = Long.MAX_VALUE;
-        for (final XMLValueExpression expression : earliestList) {
+        for (final EarliestExpression expression : earliestList) {
             final long expressionCalculatedValue = new CalculatedTimeQualifierValue(expression).value();
             earliest = Math.min(earliest, expressionCalculatedValue);
         }
@@ -89,7 +90,7 @@ public final class ScanTimeQualifiers {
             LOGGER.warn("Multiple time qualifiers found. latest size: <{}>", latestList.size());
         }
         long latest = Long.MIN_VALUE;
-        for (final XMLValueExpression expression : latestList) {
+        for (final LatestExpression expression : latestList) {
             final long expressionValue = Long.parseLong(expression.value());
             latest = Math.max(latest, expressionValue);
         }

@@ -49,7 +49,7 @@ import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public class StubLimitedResults implements LimitedResults {
+public final class StubLimitedResults implements LimitedResults {
 
     @Override
     public List<Result> results() {

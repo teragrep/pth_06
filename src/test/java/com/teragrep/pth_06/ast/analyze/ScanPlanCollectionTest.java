@@ -45,10 +45,15 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.ScanGroupExpression;
+import com.teragrep.pth_06.ast.expressions.ScanGroupExpressionImpl;
 import com.teragrep.pth_06.ast.transform.WithDefaultValues;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -117,10 +122,10 @@ public final class ScanPlanCollectionTest {
     public void testEmpty() {
         DSLContext ctx = DSL.using(conn, SQLDialect.MYSQL);
         List<Expression> list = Arrays
-                .asList(new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
+                .asList(new IndexExpression("example"), new EarliestExpression("10"), new LatestExpression("1000"));
         AndExpression andExpression = new AndExpression(list);
-        ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression);
-        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        ScanGroupExpression scanGroupExpression = new ScanGroupExpressionImpl(ctx, andExpression);
+        List<ScanPlan> scanPlans = scanGroupExpression.scanPlans();
         Assertions.assertTrue(scanPlans.isEmpty());
     }
 
@@ -129,10 +134,10 @@ public final class ScanPlanCollectionTest {
         Assertions.assertDoesNotThrow(this::insertTestValues);
         DSLContext ctx = DSL.using(conn, SQLDialect.MYSQL);
         List<Expression> list = Arrays
-                .asList(new XMLValueExpressionImpl("test_host", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("10", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST));
+                .asList(new HostExpression("test_host"), new EarliestExpression("10"), new LatestExpression("1000"));
         Expression andExpression = new WithDefaultValues(24, new AndExpression(list)).transformed();
-        ScanGroupExpression scanGroupExpression = new ScanGroupExpression(ctx, andExpression.asLogical());
-        List<ScanPlan> scanPlans = scanGroupExpression.value();
+        ScanGroupExpression scanGroupExpression = new ScanGroupExpressionImpl(ctx, andExpression.asLogical());
+        List<ScanPlan> scanPlans = scanGroupExpression.scanPlans();
         Assertions.assertFalse(scanPlans.isEmpty());
     }
 

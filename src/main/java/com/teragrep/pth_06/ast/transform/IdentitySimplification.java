@@ -45,8 +45,8 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.EmptyExpression;
-import com.teragrep.pth_06.ast.Expression;
+import com.teragrep.pth_06.ast.expressions.EmptyExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
 
 import java.util.List;
 

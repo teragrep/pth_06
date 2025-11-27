@@ -45,10 +45,10 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.EmptyExpression;
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EmptyExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +58,7 @@ public final class EmptyPrunedTest {
 
     @Test
     public void testEmptyChildrenPruned() {
-        Expression left = new XMLValueExpressionImpl("TEST", "EQUALS", Expression.Tag.INDEX);
+        Expression left = new IndexExpression("TEST");
         Expression right = new EmptyExpression();
         AndExpression andExpression = new AndExpression(left, right);
         Expression transformed = new EmptyPruned(andExpression).transformed();
@@ -67,8 +67,8 @@ public final class EmptyPrunedTest {
 
     @Test
     public void testNoEmptyChildren() {
-        Expression left = new XMLValueExpressionImpl("TEST", "EQUALS", Expression.Tag.INDEX);
-        Expression right = new XMLValueExpressionImpl("TEST_2", "EQUALS", Expression.Tag.INDEX);
+        Expression left = new IndexExpression("TEST");
+        Expression right = new IndexExpression("TEST_2");
         AndExpression andExpression = new AndExpression(left, right);
         Expression transformed = new EmptyPruned(andExpression).transformed();
         Assertions.assertEquals(andExpression, transformed);

@@ -45,9 +45,10 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -55,36 +56,38 @@ public final class CalculatedTimeQualifierValueTest {
 
     @Test
     public void testEarliestEquals() {
-        XMLValueExpression expression = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
-        XMLValueExpression expressionLowerCase = new XMLValueExpressionImpl("1000", "equals", Expression.Tag.EARLIEST);
-        CalculatedTimeQualifierValue calculated = new CalculatedTimeQualifierValue(expression);
-        CalculatedTimeQualifierValue calculatedLowerCase = new CalculatedTimeQualifierValue(expressionLowerCase);
+        final EarliestExpression expression = new EarliestExpression("1000", "EQUALS");
+        final EarliestExpression expressionLowerCase = new EarliestExpression("1000", "equals");
+        final CalculatedTimeQualifierValue calculated = new CalculatedTimeQualifierValue(expression);
+        final CalculatedTimeQualifierValue calculatedLowerCase = new CalculatedTimeQualifierValue(expressionLowerCase);
         Assertions.assertEquals(1000L, calculated.value());
         Assertions.assertEquals(1000L, calculatedLowerCase.value());
     }
 
     @Test
     public void testLatest() {
-        XMLValueExpression expression = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST);
-        XMLValueExpression expressionLowerCase = new XMLValueExpressionImpl("1000", "equals", Expression.Tag.LATEST);
-        CalculatedTimeQualifierValue calculated = new CalculatedTimeQualifierValue(expression);
-        CalculatedTimeQualifierValue calculatedLowerCase = new CalculatedTimeQualifierValue(expressionLowerCase);
+        final LatestExpression expression = new LatestExpression("1000", "EQUALS");
+        final LatestExpression expressionLowerCase = new LatestExpression("1000", "equals");
+        final CalculatedTimeQualifierValue calculated = new CalculatedTimeQualifierValue(expression);
+        final CalculatedTimeQualifierValue calculatedLowerCase = new CalculatedTimeQualifierValue(expressionLowerCase);
         Assertions.assertEquals(1000L, calculated.value());
         Assertions.assertEquals(1000L, calculatedLowerCase.value());
     }
 
     @Test
     public void testGreaterThan() {
-        XMLValueExpression earliestExpression = new XMLValueExpressionImpl("1000", "GE", Expression.Tag.EARLIEST);
-        XMLValueExpression earliestExpressionLower = new XMLValueExpressionImpl("1000", "ge", Expression.Tag.EARLIEST);
-        XMLValueExpression latestExpression = new XMLValueExpressionImpl("1000", "GE", Expression.Tag.LATEST);
-        XMLValueExpression latestExpressionLower = new XMLValueExpressionImpl("1000", "ge", Expression.Tag.LATEST);
-        CalculatedTimeQualifierValue calculatedEarliest = new CalculatedTimeQualifierValue(earliestExpression);
-        CalculatedTimeQualifierValue calculatedEarliestLower = new CalculatedTimeQualifierValue(
+        final EarliestExpression earliestExpression = new EarliestExpression("1000", "GE");
+        final EarliestExpression earliestExpressionLower = new EarliestExpression("1000", "ge");
+        final LatestExpression latestExpression = new LatestExpression("1000", "GE");
+        final LatestExpression latestExpressionLower = new LatestExpression("1000", "ge");
+        final CalculatedTimeQualifierValue calculatedEarliest = new CalculatedTimeQualifierValue(earliestExpression);
+        final CalculatedTimeQualifierValue calculatedEarliestLower = new CalculatedTimeQualifierValue(
                 earliestExpressionLower
         );
-        CalculatedTimeQualifierValue calculatedLatest = new CalculatedTimeQualifierValue(latestExpression);
-        CalculatedTimeQualifierValue calculatedLatestLower = new CalculatedTimeQualifierValue(latestExpressionLower);
+        final CalculatedTimeQualifierValue calculatedLatest = new CalculatedTimeQualifierValue(latestExpression);
+        final CalculatedTimeQualifierValue calculatedLatestLower = new CalculatedTimeQualifierValue(
+                latestExpressionLower
+        );
         Assertions.assertEquals(1001L, calculatedEarliest.value());
         Assertions.assertEquals(1001L, calculatedEarliestLower.value());
         Assertions.assertEquals(1000L, calculatedLatest.value());
@@ -93,19 +96,36 @@ public final class CalculatedTimeQualifierValueTest {
 
     @Test
     public void testLessThan() {
-        XMLValueExpression earliestExpression = new XMLValueExpressionImpl("1000", "LE", Expression.Tag.EARLIEST);
-        XMLValueExpression earliestExpressionLower = new XMLValueExpressionImpl("1000", "le", Expression.Tag.EARLIEST);
-        XMLValueExpression latestExpression = new XMLValueExpressionImpl("1000", "LE", Expression.Tag.LATEST);
-        XMLValueExpression latestExpressionLower = new XMLValueExpressionImpl("1000", "le", Expression.Tag.LATEST);
-        CalculatedTimeQualifierValue calculatedEarliest = new CalculatedTimeQualifierValue(earliestExpression);
-        CalculatedTimeQualifierValue calculatedEarliestLower = new CalculatedTimeQualifierValue(
+        final EarliestExpression earliestExpression = new EarliestExpression("1000", "LE");
+        final EarliestExpression earliestExpressionLower = new EarliestExpression("1000", "le");
+        final LatestExpression latestExpression = new LatestExpression("1000", "LE");
+        final LatestExpression latestExpressionLower = new LatestExpression("1000", "le");
+        final CalculatedTimeQualifierValue calculatedEarliest = new CalculatedTimeQualifierValue(earliestExpression);
+        final CalculatedTimeQualifierValue calculatedEarliestLower = new CalculatedTimeQualifierValue(
                 earliestExpressionLower
         );
-        CalculatedTimeQualifierValue calculatedLatest = new CalculatedTimeQualifierValue(latestExpression);
-        CalculatedTimeQualifierValue calculatedLatestLower = new CalculatedTimeQualifierValue(latestExpressionLower);
+        final CalculatedTimeQualifierValue calculatedLatest = new CalculatedTimeQualifierValue(latestExpression);
+        final CalculatedTimeQualifierValue calculatedLatestLower = new CalculatedTimeQualifierValue(
+                latestExpressionLower
+        );
         Assertions.assertEquals(1000L, calculatedEarliest.value());
         Assertions.assertEquals(1000L, calculatedEarliestLower.value());
         Assertions.assertEquals(999L, calculatedLatest.value());
         Assertions.assertEquals(999L, calculatedLatestLower.value());
+    }
+
+    @Test
+    public void testNonTimeQualifierExpression() {
+        final IndexExpression indexExpression = new IndexExpression("index");
+        final CalculatedTimeQualifierValue calculated = new CalculatedTimeQualifierValue(indexExpression);
+        final IllegalArgumentException exception = Assertions
+                .assertThrows(IllegalArgumentException.class, calculated::value);
+        final String expected = "Expression (INDEX val=index op=EQUALS) was not a time qualifier";
+        Assertions.assertEquals(expected, exception.getMessage());
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(CalculatedTimeQualifierValue.class).withNonnullFields("expression").verify();
     }
 }

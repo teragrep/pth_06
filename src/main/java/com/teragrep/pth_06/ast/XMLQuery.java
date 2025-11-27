@@ -43,10 +43,17 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.PrintAST;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.IndexStatementExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -97,6 +104,8 @@ public final class XMLQuery {
     private Expression elementToNode(final Element element) {
         final String tagName = element.getTagName();
         LOGGER.info("Incoming element <{}>", tagName);
+        final String value = element.getAttribute("value");
+        final String operation = element.getAttribute("operation");
         final Expression result;
         switch (tagName.toLowerCase()) {
             case "and":
@@ -108,35 +117,29 @@ public final class XMLQuery {
                 result = new OrExpression(orExpressionChildren);
                 break;
             case "index":
-                result = visitLeaf(element, Expression.Tag.INDEX);
+                result = new IndexExpression(value, operation);
                 break;
             case "host":
-                result = visitLeaf(element, Expression.Tag.HOST);
+                result = new HostExpression(value, operation);
                 break;
             case "sourcetype":
-                result = visitLeaf(element, Expression.Tag.SOURCETYPE);
+                result = new SourceTypeExpression(value, operation);
                 break;
             case "earliest":
             case "index_earliest":
-                result = visitLeaf(element, Expression.Tag.EARLIEST);
+                result = new EarliestExpression(value, operation);
                 break;
             case "latest":
             case "index_latest":
-                result = visitLeaf(element, Expression.Tag.LATEST);
+                result = new LatestExpression(value, operation);
                 break;
             case "indexstatement":
-                result = visitLeaf(element, Expression.Tag.INDEXSTATEMENT);
+                result = new IndexStatementExpression(value, operation);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported element <" + tagName + ">");
         }
         return result;
-    }
-
-    private Expression visitLeaf(final Element element, final Expression.Tag tag) {
-        final String value = element.getAttribute("value");
-        final String operation = element.getAttribute("operation");
-        return new XMLValueExpressionImpl(value, operation, tag);
     }
 
     private List<Expression> visitLogical(final Element element) {

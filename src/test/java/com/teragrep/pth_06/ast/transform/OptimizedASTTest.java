@@ -45,11 +45,12 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.EmptyExpression;
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.OrExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.EmptyExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -62,8 +63,8 @@ public final class OptimizedASTTest {
 
     @Test
     public void testASTOptimization() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
-        XMLValueExpressionImpl earliestExp = new XMLValueExpressionImpl("test_2", "equals", Expression.Tag.EARLIEST);
+        Expression indexExp = new IndexExpression("test", "equals");
+        Expression earliestExp = new EarliestExpression("test_2", "equals");
         Expression ast = new AndExpression(
                 new OrExpression(indexExp, indexExp),
                 new AndExpression(earliestExp, earliestExp)
@@ -75,7 +76,7 @@ public final class OptimizedASTTest {
 
     @Test
     public void testEqualBinaryMembersToValue() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression indexExp = new IndexExpression("test", "equals");
         Expression ast = new AndExpression(indexExp, indexExp);
         Expression optimizedAST = new OptimizedAST(ast).transformed();
         Assertions.assertEquals(indexExp, optimizedAST);
@@ -83,7 +84,7 @@ public final class OptimizedASTTest {
 
     @Test
     public void testSingleDepthNestedBinary() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression indexExp = new IndexExpression("test", "equals");
         Expression ast = new AndExpression(new OrExpression(indexExp, indexExp), indexExp);
         Expression optimizedAST = new OptimizedAST(ast).transformed();
         Assertions.assertEquals(indexExp, optimizedAST);
@@ -91,7 +92,7 @@ public final class OptimizedASTTest {
 
     @Test
     public void testMultipleDepthNestedBinaryExpressionsToValue() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression indexExp = new IndexExpression("test", "equals");
         Expression ast = new AndExpression(
                 new AndExpression(new AndExpression(indexExp, indexExp), new AndExpression(indexExp, indexExp)),
                 new AndExpression(indexExp, indexExp)
@@ -102,7 +103,7 @@ public final class OptimizedASTTest {
 
     @Test
     public void testUnbalancedNestedBinaryExpressionsToValue() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression indexExp = new IndexExpression("test", "equals");
         Expression ast = new AndExpression(
                 new AndExpression(new AndExpression(indexExp, indexExp), indexExp),
                 indexExp
@@ -113,7 +114,7 @@ public final class OptimizedASTTest {
 
     @Test
     public void testUnbalancedNestedEqualBinaryWithEmpty() {
-        XMLValueExpressionImpl indexExp = new XMLValueExpressionImpl("test", "equals", Expression.Tag.INDEX);
+        Expression indexExp = new IndexExpression("test", "equals");
         Expression ast = new AndExpression(
                 new AndExpression(new AndExpression(indexExp, indexExp), new EmptyExpression()),
                 indexExp
@@ -124,11 +125,11 @@ public final class OptimizedASTTest {
 
     @Test
     public void testFlattenedLogical() {
-        Expression value1 = new XMLValueExpressionImpl("1", "equals", Expression.Tag.INDEX);
-        Expression value2 = new XMLValueExpressionImpl("2", "equals", Expression.Tag.INDEX);
-        Expression value3 = new XMLValueExpressionImpl("3", "equals", Expression.Tag.INDEX);
-        Expression value4 = new XMLValueExpressionImpl("4", "equals", Expression.Tag.INDEX);
-        Expression value5 = new XMLValueExpressionImpl("5", "equals", Expression.Tag.INDEX);
+        Expression value1 = new IndexExpression("1", "equals");
+        Expression value2 = new IndexExpression("2", "equals");
+        Expression value3 = new IndexExpression("3", "equals");
+        Expression value4 = new IndexExpression("4", "equals");
+        Expression value5 = new IndexExpression("5", "equals");
         Expression root = new AndExpression(
                 value1,
                 new AndExpression(value2, new OrExpression(value3, new OrExpression(value4, value5)))

@@ -49,7 +49,7 @@ import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public class StubHourlySlices implements HourlySlices {
+public final class StubHourlySlices implements HourlySlices {
 
     @Override
     public boolean hasNext() {

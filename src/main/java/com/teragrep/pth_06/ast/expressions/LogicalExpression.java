@@ -43,41 +43,12 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.transform;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.expressions.Expression;
-import com.teragrep.pth_06.ast.expressions.AndExpression;
-import com.teragrep.pth_06.ast.expressions.IndexExpression;
-import com.teragrep.pth_06.ast.expressions.OrExpression;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.List;
 
-import java.util.Arrays;
+public interface LogicalExpression extends Expression {
 
-public final class FlattenLogicalTest {
+    public abstract List<Expression> children();
 
-    @Test
-    public void testAndFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression andExpression = new AndExpression(value, new AndExpression(value, value));
-        Expression flattened = new FlattenLogical(andExpression).transformed();
-        Expression expected = new AndExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
-    }
-
-    @Test
-    public void testOrFlattening() {
-        Expression value = new IndexExpression("test");
-        Expression orExpression = new OrExpression(value, new OrExpression(value, value));
-        Expression flattened = new FlattenLogical(orExpression).transformed();
-        Expression expected = new OrExpression(Arrays.asList(value, value, value));
-        Assertions.assertEquals(expected, flattened);
-    }
-
-    @Test
-    public void testNonLogicalIgnored() {
-        Expression value = new IndexExpression("test", "EQUAL");
-        Expression flattened = new FlattenLogical(value).transformed();
-        Assertions.assertEquals(value, flattened);
-    }
 }

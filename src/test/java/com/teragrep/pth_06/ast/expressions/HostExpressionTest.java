@@ -43,12 +43,26 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.LeafExpression;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public interface XMLValueExpression extends LeafExpression<String> {
+public final class HostExpressionTest {
 
-    public abstract String operation();
+    @Test
+    public void testValues() {
+        final ValueExpression expression = new HostExpression("value", "operation");
+        Assertions.assertEquals("value", expression.value());
+        Assertions.assertEquals("operation", expression.operation());
+        Assertions.assertEquals(Expression.Tag.HOST, expression.tag());
+        Assertions.assertTrue(expression.isLeaf());
+        Assertions.assertFalse(expression.isLogical());
+    }
 
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(HostExpression.class).withNonnullFields("value", "operation", "tag").verify();
+    }
 }

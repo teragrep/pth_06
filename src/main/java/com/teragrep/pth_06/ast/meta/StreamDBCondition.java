@@ -45,7 +45,9 @@
  */
 package com.teragrep.pth_06.ast.meta;
 
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import com.teragrep.pth_06.planner.walker.conditions.HostCondition;
 import com.teragrep.pth_06.planner.walker.conditions.IndexCondition;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
@@ -62,26 +64,26 @@ import java.util.Objects;
 public final class StreamDBCondition implements QueryCondition {
 
     private final Logger LOGGER = LoggerFactory.getLogger(StreamDBCondition.class);
-    private final XMLValueExpression index;
-    private final List<XMLValueExpression> hosts;
-    private final List<XMLValueExpression> sourcetypes;
+    private final IndexExpression index;
+    private final List<HostExpression> hosts;
+    private final List<SourceTypeExpression> sourcetypes;
 
-    public StreamDBCondition(final XMLValueExpression index) {
+    public StreamDBCondition(final IndexExpression index) {
         this(index, Collections.emptyList(), Collections.emptyList());
     }
 
     public StreamDBCondition(
-            final XMLValueExpression index,
-            final XMLValueExpression host,
-            final XMLValueExpression sourcetype
+            final IndexExpression index,
+            final HostExpression host,
+            final SourceTypeExpression sourcetype
     ) {
         this(index, Collections.singletonList(host), Collections.singletonList(sourcetype));
     }
 
     public StreamDBCondition(
-            final XMLValueExpression index,
-            final List<XMLValueExpression> hosts,
-            final List<XMLValueExpression> sourcetypes
+            final IndexExpression index,
+            final List<HostExpression> hosts,
+            final List<SourceTypeExpression> sourcetypes
     ) {
         this.index = index;
         this.hosts = hosts;
@@ -106,7 +108,7 @@ public final class StreamDBCondition implements QueryCondition {
 
     private Condition sourceTypeCondition() {
         Condition condition = DSL.noCondition();
-        for (final XMLValueExpression sourceType : sourcetypes) {
+        for (final SourceTypeExpression sourceType : sourcetypes) {
             final String value = sourceType.value();
             final String operation = sourceType.operation();
             final Condition sourceTypeCondition = new SourceTypeCondition(value, operation, true).condition();
@@ -122,7 +124,7 @@ public final class StreamDBCondition implements QueryCondition {
 
     private Condition hostCondition() {
         Condition condition = DSL.noCondition();
-        for (final XMLValueExpression host : hosts) {
+        for (final HostExpression host : hosts) {
             final String value = host.value();
             final String operation = host.operation();
             final Condition hostCondition = new HostCondition(value, operation, true).condition();

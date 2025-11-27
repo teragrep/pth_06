@@ -45,11 +45,12 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-import com.teragrep.pth_06.ast.EmptyExpression;
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.AndExpression;
-import com.teragrep.pth_06.ast.xml.OrExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.EmptyExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.AndExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.OrExpression;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +70,7 @@ public final class IdentitySimplificationTest {
 
     @Test
     public void testLogicalWithSingleChild() {
-        Expression value = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
+        Expression value = new EarliestExpression("1000", "EQUALS");
         Expression andExpression = new AndExpression(value);
         OrExpression orExpression = new OrExpression(value);
         Expression transformedAnd = new IdentitySimplification(andExpression).transformed();
@@ -80,8 +81,8 @@ public final class IdentitySimplificationTest {
 
     @Test
     public void testLogicalWithMoreThanOneChild() {
-        Expression left = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST);
-        Expression right = new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.LATEST);
+        Expression left = new EarliestExpression("1000", "EQUALS");
+        Expression right = new LatestExpression("1000", "EQUALS");
         Expression andExpression = new AndExpression(left, right);
         OrExpression orExpression = new OrExpression(left, right);
         Expression transformedAnd = new IdentitySimplification(andExpression).transformed();

@@ -45,9 +45,14 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
+import com.teragrep.pth_06.ast.expressions.Expression;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
+import com.teragrep.pth_06.ast.expressions.IndexStatementExpression;
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,46 +63,56 @@ import java.util.List;
 public final class ClassifiedXMLValueExpressionsTest {
 
     private final List<Expression> expressions = Arrays
-            .asList(new XMLValueExpressionImpl("index", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("host", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("sourcetype", "EQUALS", Expression.Tag.SOURCETYPE), new XMLValueExpressionImpl("earliest", "EQUALS", Expression.Tag.EARLIEST), new XMLValueExpressionImpl("latest", "EQUALS", Expression.Tag.LATEST));
+            .asList(new IndexExpression("index"), new HostExpression("host"), new SourceTypeExpression("sourcetype"), new EarliestExpression("earliest"), new LatestExpression("latest"), new IndexStatementExpression("indexstatement"));
 
     @Test
     public void testIndexList() {
-        List<XMLValueExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).indexList();
-        Assertions.assertEquals(1, xmlValueExpressions.size());
-        Assertions.assertEquals("index", xmlValueExpressions.get(0).value());
+        final List<IndexExpression> indexExpressions = new ClassifiedXMLValueExpressions(expressions).indexList();
+        Assertions.assertEquals(1, indexExpressions.size());
+        Assertions.assertEquals("index", indexExpressions.get(0).value());
     }
 
     @Test
     public void testHostList() {
-        List<XMLValueExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).hostList();
+        final List<HostExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).hostList();
         Assertions.assertEquals(1, xmlValueExpressions.size());
         Assertions.assertEquals("host", xmlValueExpressions.get(0).value());
     }
 
     @Test
     public void testSourceTypeList() {
-        List<XMLValueExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).sourceTypeList();
+        final List<SourceTypeExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions)
+                .sourceTypeList();
         Assertions.assertEquals(1, xmlValueExpressions.size());
         Assertions.assertEquals("sourcetype", xmlValueExpressions.get(0).value());
     }
 
     @Test
     public void testEarliestList() {
-        List<XMLValueExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).earliestList();
+        final List<EarliestExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions)
+                .earliestList();
         Assertions.assertEquals(1, xmlValueExpressions.size());
         Assertions.assertEquals("earliest", xmlValueExpressions.get(0).value());
     }
 
     @Test
     public void testLatestList() {
-        List<XMLValueExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).latestList();
+        final List<LatestExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions).latestList();
         Assertions.assertEquals(1, xmlValueExpressions.size());
         Assertions.assertEquals("latest", xmlValueExpressions.get(0).value());
     }
 
     @Test
+    public void testIndexStatement() {
+        final List<IndexStatementExpression> xmlValueExpressions = new ClassifiedXMLValueExpressions(expressions)
+                .indexStatementList();
+        Assertions.assertEquals(1, xmlValueExpressions.size());
+        Assertions.assertEquals("indexstatement", xmlValueExpressions.get(0).value());
+    }
+
+    @Test
     public void testEmptyList() {
-        ClassifiedXMLValueExpressions classifiedXMLValueExpressions = new ClassifiedXMLValueExpressions(
+        final ClassifiedXMLValueExpressions classifiedXMLValueExpressions = new ClassifiedXMLValueExpressions(
                 new ArrayList<>()
         );
         Assertions.assertTrue(classifiedXMLValueExpressions.indexList().isEmpty());
@@ -105,6 +120,11 @@ public final class ClassifiedXMLValueExpressionsTest {
         Assertions.assertTrue(classifiedXMLValueExpressions.sourceTypeList().isEmpty());
         Assertions.assertTrue(classifiedXMLValueExpressions.earliestList().isEmpty());
         Assertions.assertTrue(classifiedXMLValueExpressions.latestList().isEmpty());
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(ClassifiedXMLValueExpressions.class).withNonnullFields("expressions").verify();
     }
 
 }

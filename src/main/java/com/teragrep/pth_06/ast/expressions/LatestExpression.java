@@ -43,47 +43,43 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.analyze;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.LeafExpression;
-import com.teragrep.pth_06.ast.LogicalExpression;
-import com.teragrep.pth_06.ast.MergeIntersectingPlans;
-import org.jooq.DSLContext;
+import java.util.Objects;
 
-import java.util.List;
+public final class LatestExpression implements ValueExpression {
 
-public final class ScanGroupExpression implements LeafExpression<List<ScanPlan>> {
+    private final String value;
+    private final String operation;
+    private final Tag tag;
 
-    private final DSLContext ctx;
-    private final List<Expression> expressions;
-
-    public ScanGroupExpression(final DSLContext ctx, final LogicalExpression origin) {
-        this(ctx, origin.children());
+    public LatestExpression(final String value) {
+        this(value, "EQUALS");
     }
 
-    public ScanGroupExpression(final DSLContext ctx, final List<Expression> expressions) {
-        this.ctx = ctx;
-        this.expressions = expressions;
+    public LatestExpression(final String value, final String operation) {
+        this(value, operation, Tag.LATEST);
+    }
+
+    private LatestExpression(final String value, final String operation, final Tag tag) {
+        this.value = value;
+        this.operation = operation;
+        this.tag = tag;
     }
 
     @Override
-    public List<ScanPlan> value() {
-        final ClassifiedXMLValueExpressions classifiedXMLValueExpressions = new ClassifiedXMLValueExpressions(
-                expressions
-        );
-        final ScanTimeQualifiers scanTimeQualifiers = new ScanTimeQualifiers(classifiedXMLValueExpressions);
-        final FilterGroup filterGroup = new FilterGroup(classifiedXMLValueExpressions);
-        final PlannedScans plannedScans = new PlannedScans(scanTimeQualifiers, filterGroup);
-        final StreamIDGroup streamIDGroup = new StreamIDGroup(ctx, classifiedXMLValueExpressions);
-        final List<ScanPlan> scanPlanList = plannedScans.planListForGroup(streamIDGroup);
-        final MergeIntersectingPlans mergeIntersectingPlans = new MergeIntersectingPlans(scanPlanList);
-        return mergeIntersectingPlans.mergedRanges();
+    public String value() {
+        return value;
+    }
+
+    @Override
+    public String operation() {
+        return operation;
     }
 
     @Override
     public Tag tag() {
-        throw new UnsupportedOperationException("tag() not supported by ScanGroupExpression");
+        return tag;
     }
 
     @Override
@@ -92,7 +88,7 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanPlan>>
     }
 
     @Override
-    public LeafExpression<List<ScanPlan>> asLeaf() {
+    public ValueExpression asLeaf() {
         return this;
     }
 
@@ -103,6 +99,28 @@ public final class ScanGroupExpression implements LeafExpression<List<ScanPlan>>
 
     @Override
     public LogicalExpression asLogical() {
-        throw new UnsupportedOperationException("asLogical() not supported by ScanGroupExpression");
+        throw new UnsupportedOperationException("asLogical() not supported for EarliestExpression");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%s val=%s op=%s)", tag, value, operation);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final LatestExpression other = (LatestExpression) o;
+        return Objects.equals(value, other.value) && Objects.equals(operation, other.operation) && tag == other.tag;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, operation, tag);
     }
 }

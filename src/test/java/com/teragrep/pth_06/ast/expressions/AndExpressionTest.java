@@ -43,41 +43,63 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.ast.xml;
+package com.teragrep.pth_06.ast.expressions;
 
-import com.teragrep.pth_06.ast.Expression;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public final class XMLQueryTest {
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public final class AndExpressionTest {
 
     @Test
-    public void testXMLFromQuery() {
-        String query = "<AND><OR><index value=\"index_1\" operation=\"EQUALS\"/><sourcetype value=\"index_2\" operation=\"EQUALS\"/></OR><earliest value=\"1000\" operation=\"EQUALS\"/></AND>";
-        XMLQuery xmlQuery = new XMLQuery(query);
-        Expression expected = new AndExpression(
-                new OrExpression(new XMLValueExpressionImpl("index_1", "EQUALS", Expression.Tag.INDEX), new XMLValueExpressionImpl("index_2", "EQUALS", Expression.Tag.SOURCETYPE)), new XMLValueExpressionImpl("1000", "EQUALS", Expression.Tag.EARLIEST)
-        );
-        Assertions.assertEquals(expected, xmlQuery.asAST());
+    public void testTag() {
+        final Expression.Tag tag = new AndExpression().tag();
+        Assertions.assertEquals(Expression.Tag.AND, tag);
     }
 
     @Test
-    public void testSingleElementQuery() {
-        String query = "<index value=\"index_1\" operation=\"EQUALS\"/>";
-        XMLQuery xmlQuery = new XMLQuery(query);
-        Expression expected = new XMLValueExpressionImpl("index_1", "EQUALS", Expression.Tag.INDEX);
-        Assertions.assertEquals(expected, xmlQuery.asAST());
+    public void testIsLeaf() {
+        Assertions.assertFalse(new AndExpression().isLeaf());
     }
 
     @Test
-    public void testIndexPlusTimeQualifier() {
-        String queryXML = "<AND><index operation=\"EQUALS\" value=\"example\"/><earliest operation=\"GE\" value=\"1447400598\"/></AND>";
-        XMLQuery query = new XMLQuery(queryXML);
-        Expression expected = new AndExpression(
-                new XMLValueExpressionImpl("example", "EQUALS", Expression.Tag.INDEX),
-                new XMLValueExpressionImpl("1447400598", "GE", Expression.Tag.EARLIEST)
-        );
-        Assertions.assertEquals(expected, query.asAST());
+    public void testIsLogical() {
+        Assertions.assertTrue(new AndExpression().isLogical());
+    }
 
+    @Test
+    public void testAsLeaf() {
+        final UnsupportedOperationException unsupportedOperationException = assertThrows(
+                UnsupportedOperationException.class, () -> new AndExpression().asLeaf()
+        );
+        final String expected = "asLeaf() not supported for AndExpression";
+        Assertions.assertEquals(expected, unsupportedOperationException.getMessage());
+    }
+
+    @Test
+    public void testAsLogical() {
+        final LogicalExpression logical = new AndExpression().asLogical();
+        // test we have access to the logical expression children() method
+        Assertions.assertTrue(logical.children().isEmpty());
+    }
+
+    @Test
+    public void testChildren() {
+        final Expression value = new IndexExpression("TEST");
+        final Expression andExpression = new AndExpression(Arrays.asList(value, value, value));
+        final List<Expression> children = andExpression.asLogical().children();
+        Assertions.assertFalse(children.isEmpty());
+        Assertions.assertEquals(3, children.size());
+        Assertions.assertTrue(children.stream().allMatch(e -> e.equals(value)));
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(AndExpression.class).withNonnullFields("children").verify();
     }
 }

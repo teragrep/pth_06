@@ -45,9 +45,9 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.hadoop.hbase.CompareOperator;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.RegexStringComparator;
@@ -64,8 +64,7 @@ public final class FilterGroupTest {
 
     @Test
     public void testHostFilterList() {
-        List<XMLValueExpression> hostExpressions = Arrays
-                .asList(new XMLValueExpressionImpl("host1", "EQUALS", Expression.Tag.HOST), new XMLValueExpressionImpl("host2", "EQUALS", Expression.Tag.HOST));
+        List<HostExpression> hostExpressions = Arrays.asList(new HostExpression("host1"), new HostExpression("host2"));
         FilterGroup filterGroup = new FilterGroup(hostExpressions, new ArrayList<>());
         FilterList filterList = filterGroup.filterList();
 
@@ -76,8 +75,8 @@ public final class FilterGroupTest {
 
     @Test
     public void testSourceTypeFilterList() {
-        List<XMLValueExpression> sourceTypeExpressions = Arrays
-                .asList(new XMLValueExpressionImpl("source1", "EQUALS", Expression.Tag.SOURCETYPE), new XMLValueExpressionImpl("source2", "EQUALS", Expression.Tag.SOURCETYPE));
+        List<SourceTypeExpression> sourceTypeExpressions = Arrays
+                .asList(new SourceTypeExpression("source1"), new SourceTypeExpression("source2"));
         FilterGroup filterGroup = new FilterGroup(new ArrayList<>(), sourceTypeExpressions);
         FilterList filterList = filterGroup.filterList();
 
@@ -91,5 +90,10 @@ public final class FilterGroupTest {
         FilterGroup filterGroup = new FilterGroup(new ArrayList<>(), new ArrayList<>());
         FilterList filterList = filterGroup.filterList();
         Assertions.assertTrue(filterList.getFilters().isEmpty());
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(FilterGroup.class).withNonnullFields("hostList", "sourceTypeList").verify();
     }
 }

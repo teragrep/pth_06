@@ -45,8 +45,8 @@
  */
 package com.teragrep.pth_06.ast.meta;
 
-import com.teragrep.pth_06.ast.Expression;
-import com.teragrep.pth_06.ast.xml.XMLValueExpressionImpl;
+import com.teragrep.pth_06.ast.expressions.HostExpression;
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
@@ -128,16 +128,8 @@ public final class StreamIDsTest {
     @Test
     public void testSingleIndex() {
         Assertions.assertDoesNotThrow(this::insertTestValues);
-        XMLValueExpressionImpl indexExpression = new XMLValueExpressionImpl(
-                "test_directory",
-                "EQUALS",
-                Expression.Tag.INDEX
-        );
-        Condition streamdbCondition = new StreamDBCondition(
-                indexExpression,
-                Collections.emptyList(),
-                Collections.emptyList()
-        ).condition();
+        IndexExpression indexExpression = new IndexExpression("test_directory", "EQUALS");
+        Condition streamdbCondition = new StreamDBCondition(indexExpression).condition();
         StreamIDs streamIDs = new StreamIDs(DSL.using(conn), streamdbCondition);
         List<Long> streamIdList = streamIDs.streamIdList();
         List<Long> expectedList = Collections.singletonList(1L);
@@ -147,12 +139,8 @@ public final class StreamIDsTest {
     @Test
     public void testMultipleIndex() {
         Assertions.assertDoesNotThrow(this::insertTestValues);
-        XMLValueExpressionImpl indexExpression = new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX);
-        Condition streamdbCondition = new StreamDBCondition(
-                indexExpression,
-                Collections.emptyList(),
-                Collections.emptyList()
-        ).condition();
+        IndexExpression indexExpression = new IndexExpression("*", "EQUALS");
+        Condition streamdbCondition = new StreamDBCondition(indexExpression).condition();
         StreamIDs streamIDs = new StreamIDs(DSL.using(conn), streamdbCondition);
         List<Long> streamIdList = streamIDs.streamIdList();
         List<Long> expectedList = Arrays.asList(1L, 2L);
@@ -162,8 +150,8 @@ public final class StreamIDsTest {
     @Test
     public void testSingleHost() {
         Assertions.assertDoesNotThrow(this::insertTestValues);
-        XMLValueExpressionImpl indexExpression = new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX);
-        XMLValueExpressionImpl hostCondition = new XMLValueExpressionImpl("test_host_2", "EQUALS", Expression.Tag.HOST);
+        IndexExpression indexExpression = new IndexExpression("*", "EQUALS");
+        HostExpression hostCondition = new HostExpression("test_host_2", "EQUALS");
         Condition streamdbCondition = new StreamDBCondition(
                 indexExpression,
                 Collections.singletonList(hostCondition),
@@ -178,8 +166,8 @@ public final class StreamIDsTest {
     @Test
     public void testMultipleHosts() {
         Assertions.assertDoesNotThrow(this::insertTestValues);
-        XMLValueExpressionImpl indexExpression = new XMLValueExpressionImpl("*", "EQUALS", Expression.Tag.INDEX);
-        XMLValueExpressionImpl hostCondition = new XMLValueExpressionImpl("test*", "EQUALS", Expression.Tag.HOST);
+        IndexExpression indexExpression = new IndexExpression("*", "EQUALS");
+        HostExpression hostCondition = new HostExpression("test*", "EQUALS");
         Condition streamdbCondition = new StreamDBCondition(
                 indexExpression,
                 Collections.singletonList(hostCondition),
