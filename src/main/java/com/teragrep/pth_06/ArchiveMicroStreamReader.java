@@ -180,7 +180,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public Offset deserializeOffset(final String json) {
         LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset json <{}>", json);
-        final DatasourceOffset offset  = new DatasourceOffset(json);
+        final DatasourceOffset offset = new DatasourceOffset(json);
         LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset deserialized <{}>", offset);
         return offset;
     }
