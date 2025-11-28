@@ -113,4 +113,17 @@ final class WeightedOffset {
         }
         return offset;
     }
+
+    /**
+     * Returns the file size if the object is not a stub object.
+     * 
+     * @return file size
+     * @throws IllegalStateException if the object is a stub
+     */
+    long fileSize() {
+        if (isStub) {
+            throw new IllegalStateException("WeightedOffset is stub");
+        }
+        return fileSize;
+    }
 }
