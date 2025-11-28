@@ -79,16 +79,16 @@ public final class OptimizedAST implements ExpressionTransformation {
     public Expression transformed() {
         Expression current = root;
         Expression last;
-        LOGGER.trace("Start AST:\n {}", new PrintAST(root).asString());
+        LOGGER.trace("Start AST:\n {}", new PrintAST(root));
         int i = 0;
         do { // apply until no optimization changes occur
             last = current;
             current = walkAndApply(current);
             i++;
-            LOGGER.trace("Optimize run <{}> AST:\n {}", i, new PrintAST(current).asString());
+            LOGGER.trace("Optimize run <{}> AST:\n {}", i, new PrintAST(current));
         }
         while (!current.equals(last));
-        LOGGER.info("Optimized final AST:\n {}", new PrintAST(current).asString());
+        LOGGER.info("Optimized final AST:\n {}", new PrintAST(current));
         return current;
     }
 

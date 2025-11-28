@@ -67,10 +67,6 @@ public final class PrintAST {
         this.root = root;
     }
 
-    public String asString() {
-        return printWithIndent(root, "");
-    }
-
     private String printWithIndent(final Expression expression, final String indent) {
         final Expression.Tag tag = expression.tag();
         final String identIncrease = "  ";
@@ -137,5 +133,10 @@ public final class PrintAST {
                 throw new IllegalArgumentException("Unsupported tag <" + tag + ">");
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return printWithIndent(root, "");
     }
 }
