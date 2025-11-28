@@ -137,8 +137,8 @@ public final class OptimizedAST implements ExpressionTransformation {
 
     // apply all optimizations once for a single expression
     private Expression transformedSingleExpression(final Expression expression) {
-        return new UniqueChildren(
-                new IdentitySimplification(new PrunedInvalidTimeQualifier(new EmptyPruned(new FlattenLogical(expression))))
+        return new FlattenLogical(
+                new EmptyPruned(new PrunedInvalidTimeQualifier(new IdentitySimplification(new UniqueChildren(expression))))
         ).transformed();
     }
 }
