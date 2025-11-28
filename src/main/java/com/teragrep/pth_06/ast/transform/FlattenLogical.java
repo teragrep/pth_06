@@ -52,9 +52,13 @@ import com.teragrep.pth_06.ast.expressions.OrExpression;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class FlattenLogical implements ExpressionTransformation<Expression> {
+public final class FlattenLogical implements ExpressionTransformation {
 
     private final Expression origin;
+
+    public FlattenLogical(final ExpressionTransformation transformation) {
+        this(transformation.transformed());
+    }
 
     public FlattenLogical(final Expression origin) {
         this.origin = origin;

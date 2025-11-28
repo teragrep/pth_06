@@ -97,13 +97,16 @@ public final class XMLQuery {
         catch (final IOException | SAXException e) {
             throw new RuntimeException("Error parsing XML to elements: " + e.getMessage());
         }
+
         final Element root = document.getDocumentElement();
-        return elementToNode(root);
+        final Expression ast = elementToNode(root);
+        LOGGER.info("Parsed XML <{}>\n as AST <{}>", xmlString, new PrintAST(ast));
+        return ast;
     }
 
     private Expression elementToNode(final Element element) {
         final String tagName = element.getTagName();
-        LOGGER.info("Incoming element <{}>", tagName);
+        LOGGER.debug("Incoming element <{}>", tagName);
         final String value = element.getAttribute("value");
         final String operation = element.getAttribute("operation");
         final Expression result;

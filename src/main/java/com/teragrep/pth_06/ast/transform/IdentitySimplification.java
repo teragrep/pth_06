@@ -51,9 +51,13 @@ import com.teragrep.pth_06.ast.expressions.Expression;
 import java.util.List;
 
 /** Simplify logical to value expression: AND(value) -> value */
-public final class IdentitySimplification implements ExpressionTransformation<Expression> {
+public final class IdentitySimplification implements ExpressionTransformation {
 
     private final Expression origin;
+
+    public IdentitySimplification(final ExpressionTransformation transformation) {
+        this(transformation.transformed());
+    }
 
     public IdentitySimplification(final Expression origin) {
         this.origin = origin;

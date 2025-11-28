@@ -57,9 +57,13 @@ import java.util.Set;
 /**
  * Prunes duplicate children from a AND/OR expression
  */
-public final class UniqueChildren implements ExpressionTransformation<Expression> {
+public final class UniqueChildren implements ExpressionTransformation {
 
     private final Expression origin;
+
+    public UniqueChildren(final ExpressionTransformation transformation) {
+        this(transformation.transformed());
+    }
 
     public UniqueChildren(final Expression origin) {
         this.origin = origin;
