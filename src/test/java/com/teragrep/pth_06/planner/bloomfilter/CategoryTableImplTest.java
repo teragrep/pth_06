@@ -61,6 +61,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
@@ -68,10 +69,8 @@ import java.util.List;
  *
  * @see org.jooq.QueryPart
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CategoryTableImplTest {
 
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
     // matches IPv4
@@ -79,10 +78,13 @@ public class CategoryTableImplTest {
     // matches IPv4 starting with 255.
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -106,10 +108,6 @@ public class CategoryTableImplTest {
                 id++;
             }
         });
-    }
-
-    @BeforeEach
-    public void createTargetTable() {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -123,7 +121,7 @@ public class CategoryTableImplTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }
