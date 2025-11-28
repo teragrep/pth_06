@@ -58,7 +58,7 @@ public final class PrintASTTest {
     @Test
     public void printSingleValue() {
         Expression expression = new IndexExpression("value", "operation");
-        String print = new PrintAST(expression).asString();
+        String print = new PrintAST(expression).toString();
         String expected = "VALUE(INDEX val=value op=operation)";
         Assertions.assertEquals(expected, print);
     }
@@ -68,7 +68,7 @@ public final class PrintASTTest {
         Expression left = new EarliestExpression("earliest", "GE");
         Expression right = new LatestExpression("latest", "LE");
         Expression expression = new AndExpression(left, right);
-        String print = new PrintAST(expression).asString();
+        String print = new PrintAST(expression).toString();
         String expected = "AND\n" + "  VALUE(EARLIEST val=earliest op=GE)\n" + "  VALUE(LATEST val=latest op=LE)";
         Assertions.assertEquals(expected, print);
     }

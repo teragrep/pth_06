@@ -185,6 +185,6 @@ public final class XMLQuery {
 
     @Override
     public String toString() {
-        return new PrintAST(asAST()).asString();
+        return new PrintAST(asAST()).toString();
     }
 }

@@ -73,7 +73,8 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     private final LogfileTable table;
     private final MetricRegistry metricRegistry;
     private LimitedResults limitedResults;
-    private long mostRecentCommitedOffset = Long.MIN_VALUE;
+    private boolean hasCommitedOffset = false;
+    private long mostRecentCommitedOffset = 0;
     private HourlySlices hourlySlices;
 
     public HBaseQueryImpl(final Config config, final HBaseSource source) {
@@ -177,11 +178,11 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     @Override
     public long latest() {
         long startOffset;
-        if (mostRecentCommitedOffset == Long.MIN_VALUE) {
-            startOffset = earliest();
+        if (hasCommitedOffset) {
+            startOffset = mostRecentCommitedOffset;
         }
         else {
-            startOffset = mostRecentCommitedOffset;
+            startOffset = earliest();
         }
         if (!isOpen()) {
             LOGGER.info("latest() called advancing query results from start offset <{}>", startOffset);
@@ -206,7 +207,7 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
                 batchSizeLimit,
                 config,
                 previousBatchOffset,
-                new MetricRegistry()
+                metricRegistry
         );
         // update metrics
         long rows = limitedResults.results().size();
@@ -215,14 +216,14 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
             metricRegistry.histogram("ArchiveDatabaseLatencyPerRow").update(latencyNs / rows);
         }
         metricRegistry.counter("ArchiveDatabaseRowCount").inc(rows);
-        final long latest = limitedResults.latest();
-        return latest;
+        return limitedResults.latest();
     }
 
     @Override
     public void commit(final long offset) {
         mostRecentCommitedOffset = offset;
-        LOGGER.debug("Commited to offset <{}>", offset);
+        hasCommitedOffset = true;
+        LOGGER.debug("Commited offset <{}>", offset);
     }
 
     @Override

@@ -191,6 +191,6 @@ public final class WithDefaultValues implements ExpressionTransformation {
 
     @Override
     public String toString() {
-        return new PrintAST(transformed()).asString();
+        return new PrintAST(transformed()).toString();
     }
 }
