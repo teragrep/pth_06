@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Objects;
 
@@ -230,18 +231,18 @@ public final class StreamDBClient {
 
     WeightedOffset getNextHourAndSizeFromSliceTable(long previousHour) {
         LOGGER.debug("StreamDBClient.getNextHourAndSizeFromSliceTable called with previousHour <{}>", previousHour);
-        Result<Record2<Long, ULong>> hourAndFilesizeRecord = ctx
-                .selectDistinct(SliceTable.logtime, SliceTable.filesize)
-                .from(SliceTable.SLICE_TABLE)
-                .where(SliceTable.logtime.greaterThan(previousHour).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).orderBy(SliceTable.logtime.asc()).limit(1).fetch();
 
+        final Result<Record2<Long, BigDecimal>> hourAndFilesizeRecord = ctx
+                .select(SliceTable.logtime, DSL.sum(SliceTable.filesize))
+                .from(SliceTable.SLICE_TABLE)
+                .where(SliceTable.logtime.greaterThan(previousHour).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).groupBy(SliceTable.logtime).orderBy(SliceTable.logtime.asc()).limit(1).fetch();
         final WeightedOffset weightedOffset;
         if (hourAndFilesizeRecord.isEmpty()) {
             weightedOffset = new WeightedOffset();
         }
         else {
-            long offset = hourAndFilesizeRecord.get(0).get(0, Long.class);
-            long fileSize = hourAndFilesizeRecord.get(0).get(1, ULong.class).longValue();
+            final long offset = hourAndFilesizeRecord.get(0).get(0, Long.class);
+            final long fileSize = hourAndFilesizeRecord.get(0).get(1, BigDecimal.class).longValue();
 
             weightedOffset = new WeightedOffset(offset, fileSize);
         }
