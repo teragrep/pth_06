@@ -45,8 +45,10 @@
  */
 package com.teragrep.pth_06.ast.transform;
 
-public interface ExpressionTransformation<T> {
+import com.teragrep.pth_06.ast.expressions.Expression;
 
-    public abstract T transformed();
+public interface ExpressionTransformation {
+
+    public abstract Expression transformed();
 
 }

@@ -56,9 +56,13 @@ import java.util.stream.Collectors;
 /**
  * Optimizes AND/OR expressions with empty values into value expressions
  */
-public final class EmptyPruned implements ExpressionTransformation<Expression> {
+public final class EmptyPruned implements ExpressionTransformation {
 
     private final Expression origin;
+
+    public EmptyPruned(final ExpressionTransformation transformation) {
+        this(transformation.transformed());
+    }
 
     public EmptyPruned(final Expression origin) {
         this.origin = origin;

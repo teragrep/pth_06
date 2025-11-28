@@ -54,10 +54,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class PrunedInvalidTimeQualifier implements ExpressionTransformation<Expression> {
+public final class PrunedInvalidTimeQualifier implements ExpressionTransformation {
 
     private final Expression origin;
     private final List<String> acceptedOperations;
+
+    public PrunedInvalidTimeQualifier(final ExpressionTransformation transformation) {
+        this(transformation.transformed());
+    }
 
     public PrunedInvalidTimeQualifier(final Expression origin) {
         this(origin, Arrays.asList("EQUALS", "GE", "LE", "LEQ", "GEQ"));

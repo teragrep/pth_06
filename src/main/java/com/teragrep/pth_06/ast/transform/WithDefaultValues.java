@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public final class WithDefaultValues implements ExpressionTransformation<Expression> {
+public final class WithDefaultValues implements ExpressionTransformation {
 
     private final long defaultMinusHours;
     private final Expression root;
