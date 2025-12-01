@@ -297,6 +297,49 @@ class StreamDBClientTest {
         Assertions.assertEquals(instantPlusHour.toEpochSecond(), nextHourAndSizeFromSliceTable.offset());
     }
 
+    @Test
+    public void weightedOffsetTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        final Instant instant = Instant.ofEpochSecond(1696471200L);
+
+        final ZonedDateTime baseTime = ZonedDateTime.ofInstant(instant, zoneId);
+        final ZonedDateTime baseMinusOneHour = baseTime.minusHours(1);
+        final ZonedDateTime basePlusOneHour = baseTime.plusMinutes(1);
+        final ZonedDateTime basePlusOneDay = baseTime.plusDays(1);
+
+        final LogfileRecord baseRecord = logfileRecordForEpoch(baseTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(baseRecord).execute();
+        final LogfileRecord plusOneHourRecord = logfileRecordForEpoch(basePlusOneHour.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneHourRecord).execute();
+        final LogfileRecord plusOneDayRecord = logfileRecordForEpoch(basePlusOneDay.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+
+        // pull baseTime to SliceTable and assert weightedOffset to contain filesize=240 (2 rows) for that hour
+        final int baseTimeRows = sdc.pullToSliceTable(Date.valueOf(baseTime.toLocalDate()));
+        Assertions.assertEquals(2, baseTimeRows);
+        final WeightedOffset weightedOffsetForBaseTime = sdc
+                .getNextHourAndSizeFromSliceTable(baseMinusOneHour.toEpochSecond());
+
+        Assertions.assertEquals(baseTime.toEpochSecond(), weightedOffsetForBaseTime.offset());
+        Assertions.assertEquals(240L, weightedOffsetForBaseTime.fileSize());
+
+        // pull baseTime+1day to SliceTable and assert weightedOffset to contain filesize=120 (1 row) for that hour
+        final int plusOneDayRows = sdc.pullToSliceTable(Date.valueOf(basePlusOneDay.toLocalDate()));
+        Assertions.assertEquals(1, plusOneDayRows);
+        final WeightedOffset weightedOffsetForPlusOneDay = sdc
+                .getNextHourAndSizeFromSliceTable(baseTime.toEpochSecond());
+        Assertions.assertEquals(basePlusOneDay.toEpochSecond(), weightedOffsetForPlusOneDay.offset());
+        Assertions.assertEquals(120L, weightedOffsetForPlusOneDay.fileSize());
+    }
+
     /**
      * Testing deleteRangeFromSliceTable() method functionality with old logtime implementation.
      */
