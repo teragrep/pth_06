@@ -1,0 +1,10 @@
+<map id="com.teragrep.pth_06.planner.offset.SerializedDatasourceOffset" name="com.teragrep.pth_06.planner.offset.SerializedDatasourceOffset">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,183,260,223"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="93,5,191,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,44,139,80,136,182,130,182,134,80,137,44"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1KafkaOffset.html" title=" " alt="" coords="149,80,404,120"/>
+<area shape="poly" id="edge4_Node000003_Node000002" title=" " alt="" coords="174,35,246,78,244,82,172,40"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="240,130,161,185,158,180,237,126"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="246,5,307,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="279,44,279,80,274,80,274,44"/>
+</map>

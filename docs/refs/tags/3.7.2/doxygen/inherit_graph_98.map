@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,45,92,70"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1Batch.html" title=" " alt="" coords="140,5,367,45"/>
+<area shape="poly" id="edge57_Node000000_Node000001" title=" " alt="" coords="105,46,139,40,140,46,106,51"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchSliceCollection.html" title=" " alt="" coords="140,69,367,109"/>
+<area shape="poly" id="edge58_Node000000_Node000002" title=" " alt="" coords="106,64,140,69,139,74,105,69"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveBatchSliceCollection.html" title=" " alt="" coords="415,37,641,77"/>
+<area shape="poly" id="edge59_Node000002_Node000003" title=" " alt="" coords="380,72,414,68,415,73,380,77"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1KafkaBatchSliceCollection.html" title=" " alt="" coords="415,101,641,141"/>
+<area shape="poly" id="edge60_Node000002_Node000004" title=" " alt="" coords="380,101,415,105,414,111,380,107"/>
+</map>
