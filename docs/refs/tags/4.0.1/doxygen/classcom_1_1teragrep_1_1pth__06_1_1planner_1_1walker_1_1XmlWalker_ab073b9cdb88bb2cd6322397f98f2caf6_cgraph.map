@@ -1,0 +1,6 @@
+<map id="com.teragrep.pth_06.planner.walker.XmlWalker.fromString" name="com.teragrep.pth_06.planner.walker.XmlWalker.fromString">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,29,264,69"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1XmlWalker.html#a6d485da5354b0705be79b93f8b525b2c" title="Walk through tree using depth&#45;first order and generate spark&#45;query using appropriate emit&#45;methods." alt="" coords="312,29,571,69"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="264,47,298,47,298,52,264,52"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="385,30,382,20,391,10,411,5,441,3,476,5,495,13,494,18,475,11,441,8,412,10,394,15,387,21,390,28"/>
+</map>
