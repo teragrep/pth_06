@@ -52,7 +52,9 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 /**
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
@@ -111,47 +113,37 @@ public final class Batch {
 
     }
 
-    public void addSlice(LinkedList<BatchSlice> sliceCollection) {
+    private void addSlice(LinkedList<BatchSlice> sliceCollection) {
 
-        while (!sliceCollection.isEmpty()) {
-            BatchSlice longestObject = null;
+        PriorityQueue<BatchSlice> batchSliceQueue = new PriorityQueue<>(
+                Comparator.comparingLong(BatchSlice::getSize).reversed()
+        );
 
-            // find the longest object
-            for (BatchSlice objectMetadata : sliceCollection) {
-                if (longestObject == null) {
-                    longestObject = objectMetadata;
+        batchSliceQueue.addAll(sliceCollection);
+
+        while (!batchSliceQueue.isEmpty()) {
+
+            BatchSlice longestObject = batchSliceQueue.poll();
+
+            // find shortest queue
+            BatchTaskQueue shortestQueue = null;
+            for (BatchTaskQueue btq : runQueueArray) {
+                if (shortestQueue == null) {
+                    shortestQueue = btq;
                 }
                 else {
-                    if (longestObject.getSize() > objectMetadata.getSize()) {
-                        longestObject = objectMetadata;
-                    }
-                }
-            }
-
-            // object found
-            if (longestObject != null) {
-                sliceCollection.remove(longestObject);
-
-                // find shortest queue
-                BatchTaskQueue shortestQueue = null;
-                for (BatchTaskQueue btq : runQueueArray) {
-                    if (shortestQueue == null) {
+                    if (shortestQueue.getQueueTime() > btq.getQueueTime()) {
                         shortestQueue = btq;
                     }
-                    else {
-                        if (shortestQueue.getQueueTime() > btq.getQueueTime()) {
-                            shortestQueue = btq;
-                        }
-                    }
                 }
-                if (shortestQueue != null) {
-                    shortestQueue.add(longestObject);
-                }
-                else {
-                    throw new RuntimeException("shortestQueue was null");
-                }
-
             }
+            if (shortestQueue != null) {
+                shortestQueue.add(longestObject);
+            }
+            else {
+                throw new RuntimeException("shortestQueue was null");
+            }
+
         }
     }
 }
