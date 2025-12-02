@@ -61,10 +61,9 @@ import java.util.LinkedList;
  * 
  * @author Eemeli Hukka
  */
-public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
+public final class Batch {
 
     private final Logger LOGGER = LoggerFactory.getLogger(Batch.class);
-    private long numberOfBatches = 0;
     private final LinkedList<BatchTaskQueue> runQueueArray;
     private final Config config;
     private final ArchiveQuery archiveQuery;
@@ -82,7 +81,7 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
         this.kafkaQuery = kq;
     }
 
-    public Batch processRange(Offset start, Offset end) {
+    public LinkedList<LinkedList<BatchSlice>> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
         BatchSliceCollection slice = null;
@@ -102,11 +101,17 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
             this.addSlice(slice);
         }
 
-        return this.getBatch();
+        final LinkedList<LinkedList<BatchSlice>> taskSliceQueues = new LinkedList<>();
+
+        for (BatchTaskQueue btq : runQueueArray) {
+            taskSliceQueues.add(btq.getQueue());
+        }
+        LOGGER.debug("getBatch: " + taskSliceQueues);
+        return taskSliceQueues;
+
     }
 
     public void addSlice(LinkedList<BatchSlice> sliceCollection) {
-        numberOfBatches++;
 
         while (!sliceCollection.isEmpty()) {
             BatchSlice longestObject = null;
@@ -149,14 +154,4 @@ public final class Batch extends LinkedList<LinkedList<BatchSlice>> {
             }
         }
     }
-
-    public Batch getBatch() {
-        this.clear(); // clear on getBatch?
-        for (BatchTaskQueue btq : runQueueArray) {
-            this.add(btq.getQueue());
-        }
-        LOGGER.debug("getBatch: " + this);
-        return this;
-    }
-
 }
