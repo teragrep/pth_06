@@ -45,6 +45,9 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.config.BatchConfig;
+import com.teragrep.pth_06.config.Config;
+
 /**
  * Class for checking the batch size and ensuring that it does not grow over the given weight and total object count
  * limit.
@@ -62,6 +65,14 @@ public final class BatchSizeLimit {
 
     /** accumulated sum of object count */
     private long accumulatedObjectCount;
+
+    public BatchSizeLimit(final Config config) {
+        this(config.batchConfig);
+    }
+
+    public BatchSizeLimit(final BatchConfig batchConfig) {
+        this(((long) batchConfig.quantumLength * batchConfig.numPartitions), batchConfig.totalObjectCountLimit);
+    }
 
     /**
      * Initialize the BatchSizeLimit with the given maximum size and maximum object count.
