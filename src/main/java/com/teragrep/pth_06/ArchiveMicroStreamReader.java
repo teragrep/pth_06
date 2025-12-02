@@ -236,7 +236,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
         List<InputPartition> inputPartitions = new LinkedList<>();
 
-        Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        LinkedList<LinkedList<BatchSlice>> currentBatch = new Batch(config, aq, kq).processRange(start, end);
 
         for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
 
