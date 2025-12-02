@@ -58,7 +58,7 @@ import java.util.PriorityQueue;
 
 /**
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
- * Each batch is constructed from a {@link BatchSliceCollection}, which in turn consists of multiple
+ * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple
  * {@link BatchSlice}s. Each of the slices contain the actual data.
  * 
  * @author Eemeli Hukka
@@ -86,21 +86,18 @@ public final class Batch {
     public LinkedList<LinkedList<BatchSlice>> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
-        BatchSliceCollection slice = null;
+        LinkedList<BatchSlice> slice = new LinkedList<>();
+
         if (config.isArchiveEnabled) {
-            slice = new ArchiveBatchSliceCollection(this.archiveQuery).processRange(start, end);
+            slice.addAll(new ArchiveRangeProcessor(this.archiveQuery).processRange(start, end));
         }
 
         if (config.isKafkaEnabled) {
-            if (slice == null) {
-                slice = new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end);
-            }
-            else {
-                slice.addAll(new KafkaBatchSliceCollection(this.kafkaQuery).processRange(start, end));
-            }
+            slice.addAll(new KafkaRangeProcessor(this.kafkaQuery).processRange(start, end));
         }
-        if (slice != null && !slice.isEmpty()) {
-            this.addSlice(slice);
+
+        if (!slice.isEmpty()) {
+            buildBatch(slice);
         }
 
         final LinkedList<LinkedList<BatchSlice>> taskSliceQueues = new LinkedList<>();
@@ -108,12 +105,13 @@ public final class Batch {
         for (BatchTaskQueue btq : runQueueArray) {
             taskSliceQueues.add(btq.getQueue());
         }
+
         LOGGER.debug("getBatch: " + taskSliceQueues);
         return taskSliceQueues;
 
     }
 
-    private void addSlice(LinkedList<BatchSlice> sliceCollection) {
+    private void buildBatch(LinkedList<BatchSlice> sliceCollection) {
 
         PriorityQueue<BatchSlice> batchSliceQueue = new PriorityQueue<>(
                 Comparator.comparingLong(BatchSlice::getSize).reversed()

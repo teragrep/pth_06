@@ -45,59 +45,57 @@
  */
 package com.teragrep.pth_06.scheduler;
 
-import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
-import com.teragrep.pth_06.planner.ArchiveQuery;
+import com.teragrep.pth_06.KafkaTopicPartitionOffsetMetadata;
+import com.teragrep.pth_06.planner.KafkaQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import com.teragrep.pth_06.planner.offset.KafkaOffset;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.spark.sql.connector.read.streaming.Offset;
-import org.jooq.Record;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
+import java.util.LinkedList;
+import java.util.Map;
 
-public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
+public final class KafkaRangeProcessor implements RangeProcessor {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveBatchSliceCollection.class);
-    private final ArchiveQuery aq;
+    private final Logger LOGGER = LoggerFactory.getLogger(KafkaRangeProcessor.class);
+    private final KafkaQuery kq;
 
-    public ArchiveBatchSliceCollection(ArchiveQuery aq) {
+    public KafkaRangeProcessor(KafkaQuery kq) {
         super();
-        this.aq = aq;
+        this.kq = kq;
     }
 
-    public ArchiveBatchSliceCollection processRange(Offset start, Offset end) {
-        LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
+    public LinkedList<BatchSlice> processRange(Offset start, Offset end) {
+        KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
+        KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
+        LinkedList<BatchSlice> rv = generate(kafkaStartOffset, kafkaEndOffset);
+        LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
+        return rv;
+    }
 
-        this.clear(); // clear internal list
+    private LinkedList<BatchSlice> generate(KafkaOffset start, KafkaOffset end) {
+        LinkedList<BatchSlice> rv = new LinkedList<>();
+        for (Map.Entry<TopicPartition, Long> entry : start.getOffsetMap().entrySet()) {
+            TopicPartition topicPartition = entry.getKey();
+            long topicStart = entry.getValue();
+            long topicEnd = end.getOffsetMap().get(topicPartition);
+            if (topicStart != topicEnd) {
+                // new offsets available
+                rv
+                        .add(
+                                new BatchSlice(
+                                        new KafkaTopicPartitionOffsetMetadata(
+                                                entry.getKey(),
+                                                start.getOffsetMap().get(entry.getKey()),
+                                                end.getOffsetMap().get(entry.getKey())
+                                        )
+                                )
+                        );
 
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
-                .processBetweenUnixEpochHours(
-                        ((DatasourceOffset) start).getArchiveOffset().offset(),
-                        ((DatasourceOffset) end).getArchiveOffset().offset()
-                );
-
-        for (Record r : result) {
-            // uncompressed size can be null
-            long uncompressedSize = -1L;
-            if (r.get(10) != null) {
-                uncompressedSize = r.get(10, Long.class);
             }
-
-            this
-                    .add(new BatchSlice(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
-                            r.get(6, String.class), // bucket
-                            r.get(7, String.class), // path
-                            r.get(1, String.class), // directory
-                            r.get(2, String.class), // stream
-                            r.get(3, String.class), // host
-                            r.get(8, Long.class), // logtime
-                            r.get(9, Long.class), // compressedSize
-                            uncompressedSize // uncompressedSize
-                    )));
         }
-        return this;
+        return rv;
     }
 }

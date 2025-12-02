@@ -49,7 +49,7 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 
 import java.util.LinkedList;
 
-public abstract class BatchSliceCollection extends LinkedList<BatchSlice> {
+public interface RangeProcessor {
 
-    public abstract BatchSliceCollection processRange(Offset start, Offset end);
+    public abstract LinkedList<BatchSlice> processRange(Offset start, Offset end);
 }
