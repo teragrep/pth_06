@@ -67,6 +67,15 @@ public final class BatchSizeLimitedResults implements LimitedResults {
 
     public BatchSizeLimitedResults(
             final HourlySlices slices,
+            final Config config,
+            final long startingOffset,
+            MetricRegistry metricRegistry
+    ) {
+        this(slices, new BatchSizeLimit(config), config.batchConfig, startingOffset, metricRegistry);
+    }
+
+    public BatchSizeLimitedResults(
+            final HourlySlices slices,
             final BatchSizeLimit limit,
             final Config config,
             final long startingOffset,
