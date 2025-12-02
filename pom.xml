@@ -29,6 +29,7 @@
   </scm>
   <properties>
     <changelist>-SNAPSHOT</changelist>
+    <hbase.version>2.6.0-hadoop3</hbase.version>
     <java.version>1.8</java.version>
     <jclouds.version>2.3.0</jclouds.version>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -125,11 +126,43 @@
       <version>1.11.1026</version>
       <scope>provided</scope>
     </dependency>
+    <!-- Apache HBase client -->
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-client</artifactId>
+      <version>${hbase.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-testing-util</artifactId>
+      <version>${hbase.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client-runtime</artifactId>
+      <version>3.4.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- JUnit 4 required for HBase test classes -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
     <!-- typesafe -->
     <dependency>
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
       <version>1.4.0</version>
+    </dependency>
+    <!-- compatible version import for  jclouds -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
     </dependency>
     <!-- tests -->
     <dependency>
@@ -782,9 +815,12 @@
         <repository>
           <id>github</id>
           <name>GitHub Packages</name>
-          <url>https://maven.pkg.github.com/teragrep/pth_06</url>
+          <url>${github.packages.url}</url>
         </repository>
       </distributionManagement>
+      <properties>
+        <jooq.regenerate.skip>true</jooq.regenerate.skip>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -804,6 +840,27 @@
                     <arg>loopback</arg>
                   </gpgArguments>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- packages the artifact as a shaded jar -->
+      <id>build-shaded-jar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
