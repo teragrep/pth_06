@@ -58,26 +58,20 @@ import java.util.PriorityQueue;
 
 /**
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
- * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple
- * {@link BatchUnit}s. Each of the slices contain the actual data.
+ * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple {@link BatchUnit}s. Each
+ * of the slices contain the actual data.
  * 
- * @author Eemeli Hukka
+ * @author Eemeli Hukka, Mikko Kortelainen
  */
-public final class Batch {
+public final class BatchCalculator {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(Batch.class);
-    private final LinkedList<BatchTaskQueue> runQueueArray;
+    private final Logger LOGGER = LoggerFactory.getLogger(BatchCalculator.class);
     private final Config config;
     private final ArchiveQuery archiveQuery;
     private final KafkaQuery kafkaQuery;
 
-    public Batch(Config config, ArchiveQuery aq, KafkaQuery kq) {
+    public BatchCalculator(Config config, ArchiveQuery aq, KafkaQuery kq) {
         this.config = config;
-        this.runQueueArray = new LinkedList<>();
-
-        for (int i = 0; i < config.batchConfig.numPartitions; i++) {
-            this.runQueueArray.add(new BatchTaskQueue());
-        }
 
         this.archiveQuery = aq;
         this.kafkaQuery = kq;
@@ -96,22 +90,17 @@ public final class Batch {
             slice.addAll(new KafkaRangeProcessor(this.kafkaQuery).processRange(start, end));
         }
 
-        if (!slice.isEmpty()) {
-            buildBatch(slice);
-        }
-
-        final LinkedList<LinkedList<BatchUnit>> taskSliceQueues = new LinkedList<>();
-
-        for (BatchTaskQueue btq : runQueueArray) {
-            taskSliceQueues.add(btq.getQueue());
-        }
-
-        LOGGER.debug("getBatch: " + taskSliceQueues);
-        return taskSliceQueues;
+        return buildBatch(slice);
 
     }
 
-    private void buildBatch(LinkedList<BatchUnit> sliceCollection) {
+    private LinkedList<LinkedList<BatchUnit>> buildBatch(LinkedList<BatchUnit> sliceCollection) {
+
+        final LinkedList<BatchTaskQueue> runQueueArray = new LinkedList<>();
+
+        for (int i = 0; i < config.batchConfig.numPartitions; i++) {
+            runQueueArray.add(new BatchTaskQueue());
+        }
 
         PriorityQueue<BatchUnit> batchUnitQueue = new PriorityQueue<>(
                 Comparator.comparingLong(BatchUnit::getSize).reversed()
@@ -143,5 +132,14 @@ public final class Batch {
             }
 
         }
+
+        final LinkedList<LinkedList<BatchUnit>> taskSliceQueues = new LinkedList<>();
+
+        for (BatchTaskQueue btq : runQueueArray) {
+            taskSliceQueues.add(btq.getQueue());
+        }
+
+        LOGGER.debug("getBatch: " + taskSliceQueues);
+        return taskSliceQueues;
     }
 }
