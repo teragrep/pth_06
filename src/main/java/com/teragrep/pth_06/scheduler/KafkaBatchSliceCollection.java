@@ -67,9 +67,15 @@ public final class KafkaBatchSliceCollection extends BatchSliceCollection {
     }
 
     public KafkaBatchSliceCollection processRange(Offset start, Offset end) {
-        KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
-        KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
-        KafkaBatchSliceCollection rv = generate(kafkaStartOffset, kafkaEndOffset);
+        final KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
+        final KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
+        final KafkaBatchSliceCollection rv;
+        if (kafkaStartOffset == null || kafkaEndOffset == null) {
+            LOGGER.warn("start or end kafka offset was null, returning empty collection");
+            rv = this;
+        } else {
+            rv = generate(kafkaStartOffset, kafkaEndOffset);
+        }
         LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
         return rv;
     }
