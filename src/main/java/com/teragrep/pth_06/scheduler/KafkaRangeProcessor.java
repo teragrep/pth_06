@@ -67,16 +67,16 @@ public final class KafkaRangeProcessor implements RangeProcessor {
         this.kq = kq;
     }
 
-    public LinkedList<BatchSlice> processRange(Offset start, Offset end) {
+    public LinkedList<BatchUnit> processRange(Offset start, Offset end) {
         KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
         KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
-        LinkedList<BatchSlice> rv = generate(kafkaStartOffset, kafkaEndOffset);
+        LinkedList<BatchUnit> rv = generate(kafkaStartOffset, kafkaEndOffset);
         LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
         return rv;
     }
 
-    private LinkedList<BatchSlice> generate(KafkaOffset start, KafkaOffset end) {
-        LinkedList<BatchSlice> rv = new LinkedList<>();
+    private LinkedList<BatchUnit> generate(KafkaOffset start, KafkaOffset end) {
+        LinkedList<BatchUnit> rv = new LinkedList<>();
         for (Map.Entry<TopicPartition, Long> entry : start.getOffsetMap().entrySet()) {
             TopicPartition topicPartition = entry.getKey();
             long topicStart = entry.getValue();
@@ -85,7 +85,7 @@ public final class KafkaRangeProcessor implements RangeProcessor {
                 // new offsets available
                 rv
                         .add(
-                                new BatchSlice(
+                                new BatchUnit(
                                         new KafkaTopicPartitionOffsetMetadata(
                                                 entry.getKey(),
                                                 start.getOffsetMap().get(entry.getKey()),

@@ -59,7 +59,7 @@ import java.util.PriorityQueue;
 /**
  * <h1>Batch</h1> Contains the necessary operations to form a Spark batch. It consists of Archive and/or Kafka data.
  * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple
- * {@link BatchSlice}s. Each of the slices contain the actual data.
+ * {@link BatchUnit}s. Each of the slices contain the actual data.
  * 
  * @author Eemeli Hukka
  */
@@ -83,10 +83,10 @@ public final class Batch {
         this.kafkaQuery = kq;
     }
 
-    public LinkedList<LinkedList<BatchSlice>> processRange(Offset start, Offset end) {
+    public LinkedList<LinkedList<BatchUnit>> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
-        LinkedList<BatchSlice> slice = new LinkedList<>();
+        LinkedList<BatchUnit> slice = new LinkedList<>();
 
         if (config.isArchiveEnabled) {
             slice.addAll(new ArchiveRangeProcessor(this.archiveQuery).processRange(start, end));
@@ -100,7 +100,7 @@ public final class Batch {
             buildBatch(slice);
         }
 
-        final LinkedList<LinkedList<BatchSlice>> taskSliceQueues = new LinkedList<>();
+        final LinkedList<LinkedList<BatchUnit>> taskSliceQueues = new LinkedList<>();
 
         for (BatchTaskQueue btq : runQueueArray) {
             taskSliceQueues.add(btq.getQueue());
@@ -111,17 +111,17 @@ public final class Batch {
 
     }
 
-    private void buildBatch(LinkedList<BatchSlice> sliceCollection) {
+    private void buildBatch(LinkedList<BatchUnit> sliceCollection) {
 
-        PriorityQueue<BatchSlice> batchSliceQueue = new PriorityQueue<>(
-                Comparator.comparingLong(BatchSlice::getSize).reversed()
+        PriorityQueue<BatchUnit> batchUnitQueue = new PriorityQueue<>(
+                Comparator.comparingLong(BatchUnit::getSize).reversed()
         );
 
-        batchSliceQueue.addAll(sliceCollection);
+        batchUnitQueue.addAll(sliceCollection);
 
-        while (!batchSliceQueue.isEmpty()) {
+        while (!batchUnitQueue.isEmpty()) {
 
-            BatchSlice longestObject = batchSliceQueue.poll();
+            BatchUnit longestObject = batchUnitQueue.poll();
 
             // find shortest queue
             BatchTaskQueue shortestQueue = null;
