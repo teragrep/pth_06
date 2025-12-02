@@ -88,6 +88,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     private final Config config;
     private final ArchiveQuery aq;
     private final KafkaQuery kq;
+    private final BatchCalculator batchCalculator;
 
     /**
      * Constructor for ArchiveMicroStreamReader
@@ -114,6 +115,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             this.kq = null;
         }
 
+        this.batchCalculator = new BatchCalculator(this.config, this.aq, this.kq);
         LOGGER.debug("ArchiveMicroStreamReader ctor exit");
     }
 
@@ -129,6 +131,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         this.aq = aq;
         this.kq = kq;
 
+        this.batchCalculator = new BatchCalculator(this.config, this.aq, this.kq);
         LOGGER.debug("ArchiveMicroStreamReader test ctor exit");
     }
 
@@ -236,7 +239,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
         List<InputPartition> inputPartitions = new LinkedList<>();
 
-        LinkedList<LinkedList<BatchUnit>> currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        LinkedList<LinkedList<BatchUnit>> currentBatch = batchCalculator.processRange(start, end);
 
         for (LinkedList<BatchUnit> taskObjectList : currentBatch) {
 
