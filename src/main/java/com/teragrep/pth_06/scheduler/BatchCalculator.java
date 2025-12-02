@@ -52,7 +52,6 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -96,46 +95,27 @@ public final class BatchCalculator {
 
     private LinkedList<LinkedList<BatchUnit>> buildBatch(LinkedList<BatchUnit> sliceCollection) {
 
-        final LinkedList<BatchTaskQueue> runQueueArray = new LinkedList<>();
+        final PriorityQueue<BatchTaskQueue> runQueues = new PriorityQueue<>();
 
         for (int i = 0; i < config.batchConfig.numPartitions; i++) {
-            runQueueArray.add(new BatchTaskQueue());
+            runQueues.add(new BatchTaskQueue());
         }
 
-        PriorityQueue<BatchUnit> batchUnitQueue = new PriorityQueue<>(
-                Comparator.comparingLong(BatchUnit::getSize).reversed()
-        );
-
-        batchUnitQueue.addAll(sliceCollection);
+        PriorityQueue<BatchUnit> batchUnitQueue = new PriorityQueue<>(sliceCollection);
 
         while (!batchUnitQueue.isEmpty()) {
-
             BatchUnit longestObject = batchUnitQueue.poll();
 
-            // find shortest queue
-            BatchTaskQueue shortestQueue = null;
-            for (BatchTaskQueue btq : runQueueArray) {
-                if (shortestQueue == null) {
-                    shortestQueue = btq;
-                }
-                else {
-                    if (shortestQueue.getQueueTime() > btq.getQueueTime()) {
-                        shortestQueue = btq;
-                    }
-                }
+            if (!runQueues.isEmpty()) {
+                BatchTaskQueue shortestQueque = runQueues.poll();
+                shortestQueque.add(longestObject);
+                runQueues.add(shortestQueque);
             }
-            if (shortestQueue != null) {
-                shortestQueue.add(longestObject);
-            }
-            else {
-                throw new RuntimeException("shortestQueue was null");
-            }
-
         }
 
         final LinkedList<LinkedList<BatchUnit>> taskSliceQueues = new LinkedList<>();
 
-        for (BatchTaskQueue btq : runQueueArray) {
+        for (BatchTaskQueue btq : runQueues) {
             taskSliceQueues.add(btq.getQueue());
         }
 

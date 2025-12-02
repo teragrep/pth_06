@@ -54,7 +54,7 @@ import java.util.LinkedList;
  * @since 23/02/2022
  * @author Mikko Kortelainen
  */
-public final class BatchTaskQueue {
+public final class BatchTaskQueue implements Comparable<BatchTaskQueue> {
 
     private final float compressionRatio = 15.5F;
     private final float contextSwitchCost = 0.1F; // seconds
@@ -68,11 +68,11 @@ public final class BatchTaskQueue {
     }
 
     // give estimate on the queueTime after adding an object
-    float estimate(BatchUnit batchUnit) {
+    private float estimate(BatchUnit batchUnit) {
         return queueTime + (batchUnit.getSize() * compressionRatio) / 1024 / 1024 / processingSpeed;
     }
 
-    void add(BatchUnit batchUnit) {
+    public void add(BatchUnit batchUnit) {
         queue.add(batchUnit);
         queueTime = estimate(batchUnit);
     }
@@ -84,4 +84,14 @@ public final class BatchTaskQueue {
     public float getQueueTime() {
         return queueTime;
     }
+
+    @Override
+    public int compareTo(final BatchTaskQueue other) {
+        if (other == null) {
+            throw new IllegalArgumentException("other is null");
+        }
+
+        return Float.compare(this.getQueueTime(), other.getQueueTime());
+    }
+
 }
