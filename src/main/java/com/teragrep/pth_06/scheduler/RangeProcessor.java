@@ -51,5 +51,5 @@ import java.util.LinkedList;
 
 public interface RangeProcessor {
 
-    public abstract LinkedList<BatchSlice> processRange(Offset start, Offset end);
+    public abstract LinkedList<BatchUnit> processRange(Offset start, Offset end);
 }

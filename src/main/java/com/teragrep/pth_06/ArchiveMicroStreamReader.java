@@ -236,15 +236,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
         List<InputPartition> inputPartitions = new LinkedList<>();
 
-        LinkedList<LinkedList<BatchSlice>> currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        LinkedList<LinkedList<BatchUnit>> currentBatch = new Batch(config, aq, kq).processRange(start, end);
 
-        for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
+        for (LinkedList<BatchUnit> taskObjectList : currentBatch) {
 
             // archive tasks
             LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();
-            for (BatchSlice batchSlice : taskObjectList) {
-                if (batchSlice.type.equals(BatchSlice.Type.ARCHIVE)) {
-                    archiveTaskList.add(batchSlice.archiveS3ObjectMetadata);
+            for (BatchUnit batchUnit : taskObjectList) {
+                if (batchUnit.type.equals(BatchUnit.Type.ARCHIVE)) {
+                    archiveTaskList.add(batchUnit.archiveS3ObjectMetadata);
                 }
             }
 
@@ -266,15 +266,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             // kafka tasks
-            for (BatchSlice batchSlice : taskObjectList) {
-                if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
+            for (BatchUnit batchUnit : taskObjectList) {
+                if (batchUnit.type.equals(BatchUnit.Type.KAFKA)) {
                     inputPartitions
                             .add(
                                     new KafkaMicroBatchInputPartition(
                                             config.kafkaConfig.executorOpts,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.topicPartition,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.startOffset,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.endOffset,
                                             config.kafkaConfig.executorConfig,
                                             config.kafkaConfig.skipNonRFC5424Records
                                     )

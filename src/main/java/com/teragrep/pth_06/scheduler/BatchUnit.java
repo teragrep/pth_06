@@ -59,7 +59,7 @@ import java.io.Serializable;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public final class BatchSlice implements Serializable {
+public final class BatchUnit implements Serializable {
 
     public static enum Type {
         ARCHIVE, KAFKA
@@ -69,13 +69,13 @@ public final class BatchSlice implements Serializable {
     public final ArchiveS3ObjectMetadata archiveS3ObjectMetadata;
     public final KafkaTopicPartitionOffsetMetadata kafkaTopicPartitionOffsetMetadata;
 
-    public BatchSlice(ArchiveS3ObjectMetadata archiveS3ObjectMetadata) {
+    public BatchUnit(ArchiveS3ObjectMetadata archiveS3ObjectMetadata) {
         this.type = Type.ARCHIVE;
         this.archiveS3ObjectMetadata = archiveS3ObjectMetadata;
         this.kafkaTopicPartitionOffsetMetadata = null;
     }
 
-    public BatchSlice(KafkaTopicPartitionOffsetMetadata kafkaTopicPartitionOffsetMetadata) {
+    public BatchUnit(KafkaTopicPartitionOffsetMetadata kafkaTopicPartitionOffsetMetadata) {
         this.type = Type.KAFKA;
         this.archiveS3ObjectMetadata = null;
         this.kafkaTopicPartitionOffsetMetadata = kafkaTopicPartitionOffsetMetadata;
