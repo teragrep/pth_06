@@ -54,7 +54,8 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public final class KafkaRangeProcessor implements RangeProcessor {
@@ -67,16 +68,16 @@ public final class KafkaRangeProcessor implements RangeProcessor {
         this.kq = kq;
     }
 
-    public LinkedList<BatchUnit> processRange(Offset start, Offset end) {
+    public List<BatchUnit> processRange(Offset start, Offset end) {
         KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
         KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
-        LinkedList<BatchUnit> rv = generate(kafkaStartOffset, kafkaEndOffset);
+        List<BatchUnit> rv = generate(kafkaStartOffset, kafkaEndOffset);
         LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
         return rv;
     }
 
-    private LinkedList<BatchUnit> generate(KafkaOffset start, KafkaOffset end) {
-        LinkedList<BatchUnit> rv = new LinkedList<>();
+    private List<BatchUnit> generate(KafkaOffset start, KafkaOffset end) {
+        List<BatchUnit> rv = new ArrayList<>();
         for (Map.Entry<TopicPartition, Long> entry : start.getOffsetMap().entrySet()) {
             TopicPartition topicPartition = entry.getKey();
             long topicStart = entry.getValue();

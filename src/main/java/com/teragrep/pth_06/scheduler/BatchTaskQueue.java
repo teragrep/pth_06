@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <h1>Batch Task Queue</h1> Class for creating a queue of batch tasks. Uses LinkedList with BatchSlices.
+ * <h1>Batch Task Queue</h1> Class for creating a queue of batch tasks. Uses List with BatchUnits.
  *
  * @see BatchUnit
  * @since 23/02/2022

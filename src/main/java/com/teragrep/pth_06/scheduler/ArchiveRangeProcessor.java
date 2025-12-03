@@ -57,7 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class ArchiveRangeProcessor implements RangeProcessor {
 
@@ -69,10 +70,10 @@ public final class ArchiveRangeProcessor implements RangeProcessor {
         this.aq = aq;
     }
 
-    public LinkedList<BatchUnit> processRange(Offset start, Offset end) {
+    public List<BatchUnit> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
 
-        LinkedList<BatchUnit> batchUnits = new LinkedList<>();
+        List<BatchUnit> batchUnits = new ArrayList<>();
 
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
                 .processBetweenUnixEpochHours(
