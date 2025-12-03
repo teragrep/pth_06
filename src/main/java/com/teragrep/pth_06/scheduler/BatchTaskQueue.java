@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.scheduler;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,7 +65,7 @@ public final class BatchTaskQueue implements Comparable<BatchTaskQueue> {
     private double queueTime = 0L; // seconds how long the queue will take to process
 
     BatchTaskQueue() {
-        this.queue = new LinkedList<>();
+        this.queue = new ArrayList<>();
     }
 
     // give estimate on the queueTime after adding an object

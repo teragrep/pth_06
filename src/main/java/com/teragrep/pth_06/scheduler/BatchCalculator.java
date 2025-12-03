@@ -112,6 +112,9 @@ public final class BatchCalculator {
                 shortestQueue.add(longestObject);
                 runQueues.add(shortestQueue);
             }
+            else {
+                throw new IllegalStateException("number of partitions is less than 1");
+            }
         }
 
         final List<List<BatchUnit>> taskSliceQueues = new ArrayList<>(runQueues.size());
