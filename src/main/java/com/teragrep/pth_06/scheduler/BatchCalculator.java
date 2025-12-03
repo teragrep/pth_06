@@ -52,7 +52,8 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
@@ -76,10 +77,10 @@ public final class BatchCalculator {
         this.kafkaQuery = kq;
     }
 
-    public LinkedList<LinkedList<BatchUnit>> processRange(Offset start, Offset end) {
+    public List<List<BatchUnit>> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange");
 
-        LinkedList<BatchUnit> slice = new LinkedList<>();
+        List<BatchUnit> slice = new ArrayList<>();
 
         if (config.isArchiveEnabled) {
             slice.addAll(new ArchiveRangeProcessor(this.archiveQuery).processRange(start, end));
@@ -93,7 +94,7 @@ public final class BatchCalculator {
 
     }
 
-    private LinkedList<LinkedList<BatchUnit>> buildBatch(LinkedList<BatchUnit> sliceCollection) {
+    private List<List<BatchUnit>> buildBatch(List<BatchUnit> sliceCollection) {
 
         final PriorityQueue<BatchTaskQueue> runQueues = new PriorityQueue<>();
 
@@ -107,19 +108,19 @@ public final class BatchCalculator {
             BatchUnit longestObject = batchUnitQueue.poll();
 
             if (!runQueues.isEmpty()) {
-                BatchTaskQueue shortestQueque = runQueues.poll();
-                shortestQueque.add(longestObject);
-                runQueues.add(shortestQueque);
+                BatchTaskQueue shortestQueue = runQueues.poll();
+                shortestQueue.add(longestObject);
+                runQueues.add(shortestQueue);
             }
         }
 
-        final LinkedList<LinkedList<BatchUnit>> taskSliceQueues = new LinkedList<>();
+        final List<List<BatchUnit>> taskSliceQueues = new ArrayList<>(runQueues.size());
 
         for (BatchTaskQueue btq : runQueues) {
             taskSliceQueues.add(btq.getQueue());
         }
 
-        LOGGER.debug("getBatch: " + taskSliceQueues);
+        LOGGER.debug("getBatch <{}> ", taskSliceQueues);
         return taskSliceQueues;
     }
 }

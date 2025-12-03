@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.scheduler;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <h1>Batch Task Queue</h1> Class for creating a queue of batch tasks. Uses LinkedList with BatchSlices.
@@ -56,19 +57,19 @@ import java.util.LinkedList;
  */
 public final class BatchTaskQueue implements Comparable<BatchTaskQueue> {
 
-    private final float compressionRatio = 15.5F;
-    private final float contextSwitchCost = 0.1F; // seconds
-    private final float processingSpeed = 273 / 2F; // rlo_06 273 megabytes per second, spark the half of it
+    private final double compressionRatio = 15.5F;
+    private final double contextSwitchCost = 0.1F; // seconds
+    private final double processingSpeed = 273 / 2F; // rlo_06 273 megabytes per second, spark the half of it
 
-    private final LinkedList<BatchUnit> queue;
-    private float queueTime = 0L; // seconds how long the queue will take to process
+    private final List<BatchUnit> queue;
+    private double queueTime = 0L; // seconds how long the queue will take to process
 
     BatchTaskQueue() {
         this.queue = new LinkedList<>();
     }
 
     // give estimate on the queueTime after adding an object
-    private float estimate(BatchUnit batchUnit) {
+    private double estimate(BatchUnit batchUnit) {
         return queueTime + (batchUnit.getSize() * compressionRatio) / 1024 / 1024 / processingSpeed;
     }
 
@@ -77,21 +78,17 @@ public final class BatchTaskQueue implements Comparable<BatchTaskQueue> {
         queueTime = estimate(batchUnit);
     }
 
-    public LinkedList<BatchUnit> getQueue() {
+    public List<BatchUnit> getQueue() {
         return queue;
     }
 
-    public float getQueueTime() {
+    public double getQueueTime() {
         return queueTime;
     }
 
     @Override
     public int compareTo(final BatchTaskQueue other) {
-        if (other == null) {
-            throw new IllegalArgumentException("other is null");
-        }
-
-        return Float.compare(this.getQueueTime(), other.getQueueTime());
+        return Double.compare(this.getQueueTime(), other.getQueueTime());
     }
 
 }
