@@ -57,21 +57,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
-public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
+public final class ArchiveRangeProcessor implements RangeProcessor {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveBatchSliceCollection.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveRangeProcessor.class);
     private final ArchiveQuery aq;
 
-    public ArchiveBatchSliceCollection(ArchiveQuery aq) {
+    public ArchiveRangeProcessor(ArchiveQuery aq) {
         super();
         this.aq = aq;
     }
 
-    public ArchiveBatchSliceCollection processRange(Offset start, Offset end) {
+    public List<BatchUnit> processRange(Offset start, Offset end) {
         LOGGER.debug("processRange(): args: start: " + start + " end: " + end);
 
-        this.clear(); // clear internal list
+        List<BatchUnit> batchUnits = new ArrayList<>();
 
         Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
                 .processBetweenUnixEpochHours(
@@ -86,8 +88,8 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
                 uncompressedSize = r.get(10, Long.class);
             }
 
-            this
-                    .add(new BatchSlice(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
+            batchUnits
+                    .add(new BatchUnit(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
                             r.get(6, String.class), // bucket
                             r.get(7, String.class), // path
                             r.get(1, String.class), // directory
@@ -98,6 +100,6 @@ public final class ArchiveBatchSliceCollection extends BatchSliceCollection {
                             uncompressedSize // uncompressedSize
                     )));
         }
-        return this;
+        return batchUnits;
     }
 }

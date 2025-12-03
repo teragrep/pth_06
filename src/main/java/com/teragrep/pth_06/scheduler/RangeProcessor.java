@@ -47,9 +47,9 @@ package com.teragrep.pth_06.scheduler;
 
 import org.apache.spark.sql.connector.read.streaming.Offset;
 
-import java.util.LinkedList;
+import java.util.List;
 
-public abstract class BatchSliceCollection extends LinkedList<BatchSlice> {
+public interface RangeProcessor {
 
-    public abstract BatchSliceCollection processRange(Offset start, Offset end);
+    public abstract List<BatchUnit> processRange(Offset start, Offset end);
 }

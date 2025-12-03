@@ -45,43 +45,50 @@
  */
 package com.teragrep.pth_06.scheduler;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * <h1>Batch Task Queue</h1> Class for creating a queue of batch tasks. Uses LinkedList with BatchSlices.
+ * <h1>Batch Task Queue</h1> Class for creating a queue of batch tasks. Uses List with BatchUnits.
  *
- * @see BatchSlice
+ * @see BatchUnit
  * @since 23/02/2022
  * @author Mikko Kortelainen
  */
-public final class BatchTaskQueue {
+public final class BatchTaskQueue implements Comparable<BatchTaskQueue> {
 
-    private final float compressionRatio = 15.5F;
-    private final float contextSwitchCost = 0.1F; // seconds
-    private final float processingSpeed = 273 / 2F; // rlo_06 273 megabytes per second, spark the half of it
+    private final double compressionRatio = 15.5F;
+    private final double contextSwitchCost = 0.1F; // seconds
+    private final double processingSpeed = 273 / 2F; // rlo_06 273 megabytes per second, spark the half of it
 
-    private final LinkedList<BatchSlice> queue;
-    private float queueTime = 0L; // seconds how long the queue will take to process
+    private final List<BatchUnit> queue;
+    private double queueTime = 0L; // seconds how long the queue will take to process
 
     BatchTaskQueue() {
-        this.queue = new LinkedList<>();
+        this.queue = new ArrayList<>();
     }
 
     // give estimate on the queueTime after adding an object
-    float estimate(BatchSlice batchSlice) {
-        return queueTime + (batchSlice.getSize() * compressionRatio) / 1024 / 1024 / processingSpeed;
+    private double estimate(BatchUnit batchUnit) {
+        return queueTime + (batchUnit.getSize() * compressionRatio) / 1024 / 1024 / processingSpeed;
     }
 
-    void add(BatchSlice batchSlice) {
-        queue.add(batchSlice);
-        queueTime = estimate(batchSlice);
+    public void add(BatchUnit batchUnit) {
+        queue.add(batchUnit);
+        queueTime = estimate(batchUnit);
     }
 
-    public LinkedList<BatchSlice> getQueue() {
+    public List<BatchUnit> getQueue() {
         return queue;
     }
 
-    public float getQueueTime() {
+    public double getQueueTime() {
         return queueTime;
     }
+
+    @Override
+    public int compareTo(final BatchTaskQueue other) {
+        return Double.compare(this.getQueueTime(), other.getQueueTime());
+    }
+
 }
