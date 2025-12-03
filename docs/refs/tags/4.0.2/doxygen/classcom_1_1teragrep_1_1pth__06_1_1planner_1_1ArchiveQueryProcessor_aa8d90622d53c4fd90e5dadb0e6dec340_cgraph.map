@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.planner.ArchiveQueryProcessor.currentDatabaseMetrics" name="com.teragrep.pth_06.planner.ArchiveQueryProcessor.currentDatabaseMetrics">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,289,60"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#a94bfcc395eb96d3c4ed2363f7cea991d" title=" " alt="" coords="337,13,624,53"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="289,30,324,30,324,35,289,35"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="672,13,903,53"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="624,30,658,30,658,35,624,35"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="951,13,1181,53"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="903,30,937,30,937,35,903,35"/>
+</map>
