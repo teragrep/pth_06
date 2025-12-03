@@ -54,36 +54,39 @@ import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-public final class KafkaBatchSliceCollection extends BatchSliceCollection {
+public final class KafkaRangeProcessor implements RangeProcessor {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ArchiveBatchSliceCollection.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(KafkaRangeProcessor.class);
     private final KafkaQuery kq;
 
-    public KafkaBatchSliceCollection(KafkaQuery kq) {
+    public KafkaRangeProcessor(KafkaQuery kq) {
         super();
         this.kq = kq;
     }
 
-    public KafkaBatchSliceCollection processRange(Offset start, Offset end) {
+    public List<BatchUnit> processRange(Offset start, Offset end) {
         KafkaOffset kafkaStartOffset = ((DatasourceOffset) start).getKafkaOffset();
         KafkaOffset kafkaEndOffset = ((DatasourceOffset) end).getKafkaOffset();
-        KafkaBatchSliceCollection rv = generate(kafkaStartOffset, kafkaEndOffset);
+        List<BatchUnit> rv = generate(kafkaStartOffset, kafkaEndOffset);
         LOGGER.debug("processRange(): arg start " + start + " arg end: " + end + " rv: " + rv);
         return rv;
     }
 
-    private KafkaBatchSliceCollection generate(KafkaOffset start, KafkaOffset end) {
+    private List<BatchUnit> generate(KafkaOffset start, KafkaOffset end) {
+        List<BatchUnit> rv = new ArrayList<>();
         for (Map.Entry<TopicPartition, Long> entry : start.getOffsetMap().entrySet()) {
             TopicPartition topicPartition = entry.getKey();
             long topicStart = entry.getValue();
             long topicEnd = end.getOffsetMap().get(topicPartition);
             if (topicStart != topicEnd) {
                 // new offsets available
-                this
+                rv
                         .add(
-                                new BatchSlice(
+                                new BatchUnit(
                                         new KafkaTopicPartitionOffsetMetadata(
                                                 entry.getKey(),
                                                 start.getOffsetMap().get(entry.getKey()),
@@ -94,6 +97,6 @@ public final class KafkaBatchSliceCollection extends BatchSliceCollection {
 
             }
         }
-        return this;
+        return rv;
     }
 }

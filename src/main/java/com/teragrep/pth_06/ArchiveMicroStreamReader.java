@@ -61,6 +61,7 @@ import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -88,6 +89,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     private final Config config;
     private final ArchiveQuery aq;
     private final KafkaQuery kq;
+    private final BatchCalculator batchCalculator;
 
     /**
      * Constructor for ArchiveMicroStreamReader
@@ -114,6 +116,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             this.kq = null;
         }
 
+        this.batchCalculator = new BatchCalculator(this.config, this.aq, this.kq);
         LOGGER.debug("ArchiveMicroStreamReader ctor exit");
     }
 
@@ -129,6 +132,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         this.aq = aq;
         this.kq = kq;
 
+        this.batchCalculator = new BatchCalculator(this.config, this.aq, this.kq);
         LOGGER.debug("ArchiveMicroStreamReader test ctor exit");
     }
 
@@ -234,17 +238,17 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public InputPartition[] planInputPartitions(Offset start, Offset end) {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
-        List<InputPartition> inputPartitions = new LinkedList<>();
+        List<InputPartition> inputPartitions = new ArrayList<>();
 
-        Batch currentBatch = new Batch(config, aq, kq).processRange(start, end);
+        List<List<BatchUnit>> currentBatch = batchCalculator.processRange(start, end);
 
-        for (LinkedList<BatchSlice> taskObjectList : currentBatch) {
+        for (List<BatchUnit> taskObjectList : currentBatch) {
 
             // archive tasks
             LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();
-            for (BatchSlice batchSlice : taskObjectList) {
-                if (batchSlice.type.equals(BatchSlice.Type.ARCHIVE)) {
-                    archiveTaskList.add(batchSlice.archiveS3ObjectMetadata);
+            for (BatchUnit batchUnit : taskObjectList) {
+                if (batchUnit.type.equals(BatchUnit.Type.ARCHIVE)) {
+                    archiveTaskList.add(batchUnit.archiveS3ObjectMetadata);
                 }
             }
 
@@ -266,15 +270,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
             }
 
             // kafka tasks
-            for (BatchSlice batchSlice : taskObjectList) {
-                if (batchSlice.type.equals(BatchSlice.Type.KAFKA)) {
+            for (BatchUnit batchUnit : taskObjectList) {
+                if (batchUnit.type.equals(BatchUnit.Type.KAFKA)) {
                     inputPartitions
                             .add(
                                     new KafkaMicroBatchInputPartition(
                                             config.kafkaConfig.executorOpts,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.topicPartition,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.startOffset,
-                                            batchSlice.kafkaTopicPartitionOffsetMetadata.endOffset,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.topicPartition,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.startOffset,
+                                            batchUnit.kafkaTopicPartitionOffsetMetadata.endOffset,
                                             config.kafkaConfig.executorConfig,
                                             config.kafkaConfig.skipNonRFC5424Records
                                     )
