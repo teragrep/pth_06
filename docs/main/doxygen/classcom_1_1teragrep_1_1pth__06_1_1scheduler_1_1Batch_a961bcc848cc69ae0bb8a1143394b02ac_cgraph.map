@@ -1,7 +1,0 @@
-<map id="com.teragrep.pth_06.scheduler.Batch.addSlice" name="com.teragrep.pth_06.scheduler.Batch.addSlice">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,37,232,77"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchTaskQueue.html#af45361c6f8feebc3ce8ab09fb5b4494d" title=" " alt="" coords="280,5,511,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,42,266,38,267,43,233,47"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchSlice.html#a924403c9b17d1af7ed974097ba972a65" title=" " alt="" coords="282,69,509,109"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="233,68,269,72,268,77,232,73"/>
-</map>

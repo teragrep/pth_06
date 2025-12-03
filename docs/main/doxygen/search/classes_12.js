@@ -18,5 +18,5 @@ var searchData=
   ['tokenizedvaluetest_15',['TokenizedValueTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokenizedValueTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
   ['tokensasstrings_16',['TokensAsStrings',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStrings.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
   ['tokensasstringstest_17',['TokensAsStringsTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStringsTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['type_18',['Type',['../enumcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchSlice_1_1Type.html',1,'com::teragrep::pth_06::scheduler::BatchSlice']]]
+  ['type_18',['Type',['../enumcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit_1_1Type.html',1,'com::teragrep::pth_06::scheduler::BatchUnit']]]
 ];

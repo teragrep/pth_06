@@ -1,6 +1,0 @@
-<map id="com.teragrep.pth_06.scheduler.KafkaBatchSliceCollection.processRange" name="com.teragrep.pth_06.scheduler.KafkaBatchSliceCollection.processRange">
-<area shape="rect" id="Node000001" title=" " alt="" coords="280,29,567,69"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1Batch.html#a0b815fb6ec8440cb7802544806c486e3" title=" " alt="" coords="5,29,232,69"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="266,52,232,52,232,47,266,47"/>
-<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="171,18,153,11,119,8,89,10,71,15,64,21,68,28,63,30,59,20,68,10,88,5,119,3,154,5,173,13"/>
-</map>
