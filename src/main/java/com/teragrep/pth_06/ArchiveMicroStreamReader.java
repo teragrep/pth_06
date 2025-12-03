@@ -61,6 +61,7 @@ import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -237,11 +238,11 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public InputPartition[] planInputPartitions(Offset start, Offset end) {
         LOGGER.debug("ArchiveMicroStreamReader.planInputPartitions: start <{}>, end <{}>", start, end);
-        List<InputPartition> inputPartitions = new LinkedList<>();
+        List<InputPartition> inputPartitions = new ArrayList<>();
 
-        LinkedList<LinkedList<BatchUnit>> currentBatch = batchCalculator.processRange(start, end);
+        List<List<BatchUnit>> currentBatch = batchCalculator.processRange(start, end);
 
-        for (LinkedList<BatchUnit> taskObjectList : currentBatch) {
+        for (List<BatchUnit> taskObjectList : currentBatch) {
 
             // archive tasks
             LinkedList<ArchiveS3ObjectMetadata> archiveTaskList = new LinkedList<>();

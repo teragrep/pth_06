@@ -63,10 +63,6 @@ public final class BatchUnit implements Serializable, Comparable<BatchUnit> {
 
     @Override
     public int compareTo(final BatchUnit other) {
-        if (other == null) {
-            throw new IllegalArgumentException("BatchUnit cannot be null");
-        }
-
         // reverse ordering
         return Long.compare(other.getSize(), this.getSize());
     }
