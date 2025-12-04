@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +77,46 @@ public class HostConditionTest {
         HostCondition streamElementCondition = new HostCondition("f17", "NOT_EQUALS", true);
         String e = "not (\"getArchivedObjects_filter_table\".\"host\" like 'f17')";
         String eStream = "not (\"streamdb\".\"host\".\"name\" like 'f17')";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void wildcardAsTrueTest() {
+        HostCondition elementCondition = new HostCondition("*", "EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("*", "EQUALS", true);
+        Assertions.assertEquals(DSL.trueCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.trueCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void wildcardNegationAsFalseTest() {
+        HostCondition elementCondition = new HostCondition("*", "NOT_EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("*", "NOT_EQUALS", true);
+        Assertions.assertEquals(DSL.falseCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.falseCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void testPartialWildcard() {
+        HostCondition elementCondition = new HostCondition("value*", "EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("value*", "EQUALS", true);
+        String e = "\"getArchivedObjects_filter_table\".\"host\" like 'value%'";
+        String eStream = "\"streamdb\".\"host\".\"name\" like 'value%'";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void testPartialWildcardNegation() {
+        HostCondition elementCondition = new HostCondition("value*", "NOT_EQUALS", false);
+        HostCondition streamElementCondition = new HostCondition("value*", "NOT_EQUALS", true);
+        String e = "not (\"getArchivedObjects_filter_table\".\"host\" like 'value%')";
+        String eStream = "not (\"streamdb\".\"host\".\"name\" like 'value%')";
         Condition elementResult = elementCondition.condition();
         Condition streamElementResult = streamElementCondition.condition();
         Assertions.assertEquals(e, elementResult.toString());
