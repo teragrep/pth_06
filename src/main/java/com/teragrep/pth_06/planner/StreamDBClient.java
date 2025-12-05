@@ -62,10 +62,7 @@ import com.teragrep.pth_06.planner.walker.FilterlessSearchImpl;
 import com.teragrep.pth_06.planner.walker.FilterlessSearchStub;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.*;
-import org.jooq.conf.MappedSchema;
-import org.jooq.conf.RenderMapping;
-import org.jooq.conf.Settings;
-import org.jooq.conf.ThrowExceptions;
+import org.jooq.conf.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -106,6 +103,7 @@ public final class StreamDBClient {
     private final Condition journaldbCondition;
     private final ConditionWalker walker;
     private final boolean isDebugEnabled;
+    private final boolean isLogSQL;
     private final GetArchivedObjectsFilterTable filterTable;
     private final NestedTopNQuery nestedTopNQuery;
     private final SliceTable sliceTable;
@@ -113,6 +111,7 @@ public final class StreamDBClient {
     public StreamDBClient(Config config) throws SQLException {
         this.isDebugEnabled = config.loggingConfig.isDebug();
         this.LOGGER = new ConfiguredLogger(classLogger, isDebugEnabled);
+        this.isLogSQL = config.sqlConfig.isLog();
         LOGGER.debug("StreamDBClient ctor called with config <[{}]>", config);
         this.bloomEnabled = config.archiveConfig.bloomEnabled;
         LOGGER.info("StreamDBClient bloom.enabled: " + this.bloomEnabled);
@@ -123,27 +122,41 @@ public final class StreamDBClient {
         final String journaldbName = config.archiveConfig.dbJournalDbName;
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
-        final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
+        final boolean isSQLThrowExceptionsNone = config.sqlConfig.isThrowExceptionsNone();
+        final boolean isSQLExecuteLogging = config.sqlConfig.isExecuteLogging();
         final boolean withoutFilters = config.archiveConfig.withoutFilters;
         final String withoutFiltersPattern = config.archiveConfig.withoutFiltersPattern;
         // https://blog.jooq.org/how-i-incorrectly-fetched-jdbc-resultsets-again/
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
-        if (hideDatabaseExceptions) {
+        if (isSQLThrowExceptionsNone) {
             settings = settings.withThrowExceptions(ThrowExceptions.THROW_NONE);
             LOGGER.warn("StreamDBClient SQL Exceptions set to THROW_NONE");
+        }
+
+        if (isSQLExecuteLogging) {
+            settings.withExecuteLogging(true);
         }
 
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         final Connection connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled);
+        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
         this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
-        this.sliceTable = new SliceTable(ctx, isDebugEnabled);
+        this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
-        if (hideDatabaseExceptions) {
+        if (isSQLThrowExceptionsNone) {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
-            ctx.execute("SET sql_mode = 'NO_ENGINE_SUBSTITUTION';");
+
+            final String noEngineSubstitution = "SET sql_mode = 'NO_ENGINE_SUBSTITUTION';";
+            if (isLogSQL) {
+                LOGGER
+                        .info(
+                                "{SQL} StreamDBClient noEngineSubstitution <\n{}\n>", "noEngineSubstitution",
+                                noEngineSubstitution
+                        );
+            }
+            ctx.execute(noEngineSubstitution);
         }
 
         // -- TODO use dslContext.batch for all initial operations
@@ -206,11 +219,17 @@ public final class StreamDBClient {
                 .join(JOURNALDB.HOST)
                 .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
 
-        LOGGER.trace("StreamDBClient.pullToSliceTable select <{}>", select);
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
 
         try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
+            if (isLogSQL) {
+                LOGGER
+                        .info(
+                                "{SQL} StreamDBClient.pullToSliceTable selectStep <\n{}\n>",
+                                selectStep.getSQL(ParamType.INLINED)
+                        );
+            }
             rows = selectStep.execute();
         }
 
@@ -254,10 +273,20 @@ public final class StreamDBClient {
 
     void deleteRangeFromSliceTable(long start, long end) {
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable called  start <{}> end <{}>", start, end);
-        ctx
+
+        DeleteConditionStep<Record> deleteRangeStep = ctx
                 .deleteFrom(SliceTable.SLICE_TABLE)
-                .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)))
-                .execute();
+                .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)));
+
+        if (isLogSQL) {
+            LOGGER
+                    .info(
+                            "{SQL} StreamDBClient.deleteRangeFromSliceTable deleteRangeStep <\n{}\n>",
+                            deleteRangeStep.getSQL(ParamType.INLINED)
+                    );
+        }
+        deleteRangeStep.execute();
+
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable exit");
     }
 
@@ -300,7 +329,7 @@ public final class StreamDBClient {
         return includeBeforeEpoch == that.includeBeforeEpoch
                 && bloomEnabled == that.bloomEnabled && isDebugEnabled == that.isDebugEnabled && Objects
                         .equals(LOGGER, that.LOGGER)
-                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable);
+                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
     }
 
     @Override
@@ -308,7 +337,7 @@ public final class StreamDBClient {
         return Objects
                 .hash(
                         LOGGER, metricRegistry, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition, walker,
-                        isDebugEnabled, filterTable, sliceTable
+                        isDebugEnabled, filterTable, sliceTable, isLogSQL
                 );
     }
 }
