@@ -1,5 +1,29 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,13,148,38"/>
-<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1TaskMetric.html" title=" " alt="" coords="196,5,411,45"/>
-<area shape="poly" id="edge59_Node000000_Node000001" title=" " alt="" coords="162,23,196,23,196,28,162,28"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,412,119,437"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1bytes_1_1ArchiveCompressedBytesProcessedMetricAggregator.html" title=" " alt="" coords="195,5,491,60"/>
+<area shape="poly" id="edge47_Node000000_Node000001" title=" " alt="" coords="60,398,63,332,77,244,90,197,108,151,133,108,165,71,194,51,197,55,168,75,137,111,113,153,95,198,82,245,68,332,65,398"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1bytes_1_1BytesPerSecondMetricAggregator.html" title=" " alt="" coords="216,85,471,125"/>
+<area shape="poly" id="edge48_Node000000_Node000002" title=" " alt="" coords="62,398,68,342,84,271,98,233,115,197,137,163,165,135,189,119,215,109,217,114,191,124,168,139,141,167,120,200,102,235,89,272,73,343,67,398"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1bytes_1_1BytesProcessedMetricAggregator.html" title=" " alt="" coords="216,149,471,189"/>
+<area shape="poly" id="edge49_Node000000_Node000003" title=" " alt="" coords="65,397,75,353,94,299,123,244,142,220,165,199,189,184,215,174,217,179,191,189,168,203,146,223,127,247,99,301,80,355,70,399"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1database_1_1ArchiveDatabaseRowAvgLatencyMetricAggregator.html" title=" " alt="" coords="169,213,518,253"/>
+<area shape="poly" id="edge50_Node000000_Node000004" title=" " alt="" coords="70,398,84,366,104,329,131,293,165,262,187,250,190,255,168,267,135,296,109,332,89,369,75,400"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1database_1_1ArchiveDatabaseRowCountMetricAggregator.html" title=" " alt="" coords="187,277,499,317"/>
+<area shape="poly" id="edge51_Node000000_Node000005" title=" " alt="" coords="80,400,116,361,140,342,165,326,194,314,196,319,168,331,143,346,120,365,83,403"/>
+<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1database_1_1ArchiveDatabaseRowMaxLatencyMetricAggregator.html" title=" " alt="" coords="167,341,520,381"/>
+<area shape="poly" id="edge52_Node000000_Node000006" title=" " alt="" coords="113,405,166,390,221,378,222,383,167,395,114,410"/>
+<area shape="rect" id="Node000007" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1database_1_1ArchiveDatabaseRowMinLatencyMetricAggregator.html" title=" " alt="" coords="169,405,518,445"/>
+<area shape="poly" id="edge53_Node000000_Node000007" title=" " alt="" coords="132,422,168,422,168,427,132,427"/>
+<area shape="rect" id="Node000008" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1objects_1_1ArchiveObjectsProcessedMetricAggregator.html" title=" " alt="" coords="194,469,493,509"/>
+<area shape="poly" id="edge54_Node000000_Node000008" title=" " alt="" coords="114,439,167,454,222,466,221,471,166,459,113,444"/>
+<area shape="rect" id="Node000009" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1offsets_1_1ArchiveOffsetMetricAggregator.html" title=" " alt="" coords="212,533,475,573"/>
+<area shape="poly" id="edge55_Node000000_Node000009" title=" " alt="" coords="83,446,120,484,143,503,168,518,213,535,211,540,165,523,140,507,116,488,80,450"/>
+<area shape="rect" id="Node000010" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1offsets_1_1KafkaOffsetMetricAggregator.html" title=" " alt="" coords="212,597,475,637"/>
+<area shape="poly" id="edge56_Node000000_Node000010" title=" " alt="" coords="75,449,89,481,109,517,135,553,168,582,213,603,211,608,165,587,131,557,104,520,84,483,70,451"/>
+<area shape="rect" id="Node000011" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1records_1_1LatestKafkaTimestampMetricAggregator.html" title=" " alt="" coords="200,661,487,701"/>
+<area shape="poly" id="edge57_Node000000_Node000011" title=" " alt="" coords="70,451,80,495,99,548,127,602,146,626,168,647,201,665,199,670,165,651,142,630,123,605,94,550,75,496,65,452"/>
+<area shape="rect" id="Node000012" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1records_1_1RecordsPerSecondMetricAggregator.html" title=" " alt="" coords="210,725,477,765"/>
+<area shape="poly" id="edge58_Node000000_Node000012" title=" " alt="" coords="67,451,73,506,89,577,102,614,120,650,141,683,168,711,188,724,211,734,209,739,186,729,165,715,137,686,115,652,98,616,84,579,68,507,62,451"/>
+<area shape="rect" id="Node000013" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1records_1_1RecordsProcessedMetricAggregator.html" title=" " alt="" coords="210,789,477,829"/>
+<area shape="poly" id="edge59_Node000000_Node000013" title=" " alt="" coords="65,451,67,517,81,605,93,652,112,697,137,739,168,775,188,789,211,799,209,804,186,793,165,779,132,742,107,699,88,654,75,606,62,518,60,451"/>
 </map>

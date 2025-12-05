@@ -1,7 +1,8 @@
 <map id="com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable.create" name="com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable.create">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,268,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,35,268,75"/>
 <area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="316,5,547,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="268,23,302,23,302,28,268,28"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="595,5,825,45"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="547,23,581,23,581,28,547,28"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="268,39,302,36,302,41,268,44"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="595,35,825,75"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="268,54,316,55,547,55,581,54,581,60,547,60,316,60,268,60"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="547,35,581,38,581,44,547,40"/>
 </map>
