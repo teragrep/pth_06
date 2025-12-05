@@ -89,7 +89,7 @@ public final class ArchiveConfig {
         dbStreamDbName = opts.getOrDefault("DBstreamdbname", "streamdb");
 
         // hide exceptions
-        hideDatabaseExceptions = opts.getOrDefault("hideDatabaseExceptions", "false").equalsIgnoreCase("true");
+        hideDatabaseExceptions = opts.getOrDefault("hideDatabaseExceptions", "false").equalsIgnoreCase("true"); // TODO move to SQLConfig
 
         // skip not rfc5424 parseable files
         skipNonRFC5424Files = opts.getOrDefault("skipNonRFC5424Files", "false").equalsIgnoreCase("true");

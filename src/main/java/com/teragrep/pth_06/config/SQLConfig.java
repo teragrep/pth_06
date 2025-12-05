@@ -45,68 +45,7 @@
  */
 package com.teragrep.pth_06.config;
 
-import java.util.Map;
+public interface SQLConfig {
 
-/**
- * <h1>Config</h1> Holds all the settings for the program. Including MariaDB, Kafka and Spark.
- *
- * @since 17/08/2021
- * @author Mikko Kortelainen
- * @author Eemeli Hukka
- */
-public final class Config {
-
-    public final String query;
-    public final ArchiveConfig archiveConfig;
-    public final KafkaConfig kafkaConfig;
-
-    public final BatchConfig batchConfig;
-    public final AuditConfig auditConfig;
-
-    public final LoggingConfig loggingConfig;
-
-    public final SQLConfig sqlConfig;
-
-    public final boolean isArchiveEnabled;
-    public final boolean isKafkaEnabled;
-
-    public final boolean isMetadataQuery;
-
-    public Config(Map<String, String> opts) {
-        this.query = opts.get("queryXML");
-        if (this.query == null) {
-            throw new IllegalArgumentException("no queryXML provided");
-        }
-
-        batchConfig = new BatchConfig(opts);
-        auditConfig = new AuditConfig(opts);
-
-        isArchiveEnabled = opts.getOrDefault("archive.enabled", "false").equalsIgnoreCase("true");
-        if (isArchiveEnabled) {
-            archiveConfig = new ArchiveConfig(opts);
-        }
-        else {
-            archiveConfig = new ArchiveConfig();
-        }
-
-        isKafkaEnabled = opts.getOrDefault("kafka.enabled", "false").equalsIgnoreCase("true");
-        if (isKafkaEnabled) {
-            kafkaConfig = new KafkaConfig(opts);
-        }
-        else {
-            kafkaConfig = new KafkaConfig();
-        }
-
-        // check that at least one datasource is enabled
-        if (!isArchiveEnabled && !isKafkaEnabled) {
-            throw new IllegalStateException("No datasources enabled");
-        }
-
-        // fetch metadata (defaults to false)
-        isMetadataQuery = opts.getOrDefault("metadataQuery.enabled", "false").equalsIgnoreCase("true");
-
-        loggingConfig = new LoggingConfigImpl(opts);
-
-        sqlConfig = new SQLConfigImpl(opts);
-    }
+    public abstract boolean isLog();
 }
