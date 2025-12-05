@@ -138,7 +138,7 @@ public final class StreamDBClient {
             settings.withExecuteLogging(true);
         }
 
-        System.getProperties().setProperty("org.jooq.no-logo", "true"); // TODO configure from SQLConfig
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
         final Connection connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
