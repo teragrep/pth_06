@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.planner.walker.conditions.CategoryTableCondition.condition" name="com.teragrep.pth_06.planner.walker.conditions.CategoryTableCondition.condition">
+<area shape="rect" id="Node000001" title=" " alt="" coords="384,69,715,109"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1CategoryTableConditionTest.html#ada498bfcba1ffbfd0f40f29b18406679" title=" " alt="" coords="5,5,336,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="416,70,289,48,290,43,417,64"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1CategoryTableConditionTest.html#ab5459f9a080070461f3c7b4e3a37499e" title=" " alt="" coords="5,69,336,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="370,92,337,92,337,87,370,87"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1CategoryTableConditionTest.html#a6bfd511bc18d4d348258f54d8ea94217" title=" " alt="" coords="5,133,336,173"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="417,114,290,136,289,131,416,109"/>
+</map>
