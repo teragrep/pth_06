@@ -73,6 +73,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
+import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.select;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
@@ -203,13 +204,18 @@ public final class StreamDBClient {
 
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
-
+        final Field<Date> logdateFunction = DSL
+                .field(
+                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
+                        JOURNALDB.LOGFILE.EPOCH_HOUR
+                );
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
-                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
-                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
-                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGTAG, coalesce(
+                                logdateFunction, JOURNALDB.LOGFILE.LOGDATE
+                        ), JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(),
+                        JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
