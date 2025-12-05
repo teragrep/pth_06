@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
 import org.jooq.*;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -77,23 +78,43 @@ public final class SliceTable {
             .field(DSL.name(sliceTableName, "uncompressed_filesize"), ULong.class);
 
     private static final Index logtimeIndex = DSL.index(DSL.name("ix_logtime"));
+    private final boolean isLogSQL;
 
-    public SliceTable(final DSLContext ctx, final boolean isDebugEnabled) {
+    public SliceTable(final DSLContext ctx, final boolean isDebugEnabled, final boolean isLogSQL) {
         this.ctx = ctx;
         this.LOGGER = new ConfiguredLogger(classLogger, isDebugEnabled);
+        this.isLogSQL = isLogSQL;
     }
 
     public void create() {
         LOGGER.debug("SliceTable.create called");
         try (final DropTableStep dropTableStep = ctx.dropTemporaryTableIfExists(SLICE_TABLE)) {
+            if (isLogSQL) {
+                LOGGER.info("{SQL} SliceTable.create dropTableStep <\n{}\n>", dropTableStep.getSQL(ParamType.INLINED));
+            }
             dropTableStep.execute();
         }
         try (
                 final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize)
         ) {
+            if (isLogSQL) {
+                LOGGER
+                        .info(
+                                "{SQL} SliceTable.create createTableStep <\n{}\n>",
+                                createTableStep.getSQL(ParamType.INLINED)
+                        );
+            }
             createTableStep.execute();
         }
         try (final CreateIndexIncludeStep createIndexStep = ctx.createIndex(logtimeIndex).on(SLICE_TABLE, logtime)) {
+
+            if (isLogSQL) {
+                LOGGER
+                        .info(
+                                "{SQL} SliceTable.create createIndexStep <\n{}\n>",
+                                createIndexStep.getSQL(ParamType.INLINED)
+                        );
+            }
             createIndexStep.execute();
         }
         LOGGER.debug("SliceTable.create exit");
@@ -105,11 +126,11 @@ public final class SliceTable {
             return false;
         }
         final SliceTable that = (SliceTable) o;
-        return Objects.equals(ctx, that.ctx) && Objects.equals(LOGGER, that.LOGGER);
+        return Objects.equals(ctx, that.ctx) && Objects.equals(LOGGER, that.LOGGER) && isLogSQL == that.isLogSQL;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ctx, LOGGER);
+        return Objects.hash(ctx, LOGGER, isLogSQL);
     }
 }

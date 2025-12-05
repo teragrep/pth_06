@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
 import org.jooq.*;
+import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.jooq.types.UShort;
 import org.slf4j.Logger;
@@ -74,14 +75,26 @@ public final class GetArchivedObjectsFilterTable {
     private static final Logger classLogger = LoggerFactory.getLogger(GetArchivedObjectsFilterTable.class);
     private final DSLContext ctx;
 
-    public GetArchivedObjectsFilterTable(final DSLContext ctx, final boolean isDebug) {
+    private final boolean isLogSQL;
+
+    public GetArchivedObjectsFilterTable(final DSLContext ctx, final boolean isDebug, final boolean isLogSQL) {
         this.ctx = ctx;
         this.logger = new ConfiguredLogger(classLogger, isDebug);
+        this.isLogSQL = isLogSQL;
     }
 
     public void create(final Condition streamdbCondition) {
         logger.debug("GetArchivedObjectsFilterTable.create called condition <{}>", streamdbCondition);
         DropTableStep dropQuery = ctx.dropTemporaryTableIfExists(GetArchivedObjectsFilterTable.FILTER_TABLE);
+
+        if (isLogSQL) {
+            logger
+                    .info(
+                            "{SQL} GetArchivedObjectsFilterTable.create dropQuery <\n{}\n>",
+                            dropQuery.getSQL(ParamType.INLINED)
+                    );
+        }
+
         dropQuery.execute();
 
         CreateTableWithDataStep query = ctx
@@ -105,6 +118,11 @@ public final class GetArchivedObjectsFilterTable {
                                 // following change
                                 .where(streamdbCondition)
                 );
+
+        if (isLogSQL) {
+            logger.info("{SQL} GetArchivedObjectsFilterTable.create query <\n{}\n>", query.getSQL(ParamType.INLINED));
+        }
+
         query.execute();
 
         // this could be within tmpTableCreateSql but JOOQ can't (yet) https://github.com/jOOQ/jOOQ/issues/11752
@@ -116,6 +134,13 @@ public final class GetArchivedObjectsFilterTable {
                                 GetArchivedObjectsFilterTable.tag
                         )
         ) {
+            if (isLogSQL) {
+                logger
+                        .info(
+                                "{SQL} GetArchivedObjectsFilterTable.create indexStep <\n{}\n>",
+                                indexStep.getSQL(ParamType.INLINED)
+                        );
+            }
             indexStep.execute();
         }
         logger.debug("GetArchivedObjectsFilterTable.create exit");
@@ -127,11 +152,11 @@ public final class GetArchivedObjectsFilterTable {
             return false;
         }
         final GetArchivedObjectsFilterTable that = (GetArchivedObjectsFilterTable) o;
-        return Objects.equals(logger, that.logger) && Objects.equals(ctx, that.ctx);
+        return Objects.equals(logger, that.logger) && Objects.equals(ctx, that.ctx) && isLogSQL == that.isLogSQL;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(logger, ctx);
+        return Objects.hash(logger, ctx, isLogSQL);
     }
 }
