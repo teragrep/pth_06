@@ -1,0 +1,15 @@
+<map id="com.teragrep.pth_06.scheduler.BatchUnit" name="com.teragrep.pth_06.scheduler.BatchUnit">
+<area shape="rect" id="Node000001" title=" " alt="" coords="601,104,828,144"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,47,104,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,40,153,25,273,8,368,4,414,8,462,16,578,48,637,73,685,101,683,106,634,77,576,53,461,21,413,13,368,9,273,13,154,30,100,45"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1ArchiveS3ObjectMetadata.html" title=" " alt="" coords="161,40,372,80"/>
+<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="117,57,161,57,161,62,117,62"/>
+<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1KafkaTopicPartitionOffsetMetadata.html" title=" " alt="" coords="161,104,372,144"/>
+<area shape="poly" id="edge7_Node000006_Node000002" title=" " alt="" coords="107,74,154,89,194,101,193,106,153,94,106,79"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="169,168,364,194"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="377,164,601,135,602,141,378,169"/>
+<area shape="rect" id="Node000004" href="$enumcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit_1_1Type.html" title=" " alt="" coords="153,218,380,258"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="393,220,484,203,577,180,627,162,672,141,674,146,629,166,578,185,485,208,394,225"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="386,65,480,74,578,88,640,101,639,106,577,93,479,79,385,70"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="386,121,601,121,601,126,386,126"/>
+</map>
