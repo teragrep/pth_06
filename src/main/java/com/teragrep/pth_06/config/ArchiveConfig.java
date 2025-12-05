@@ -60,7 +60,6 @@ public final class ArchiveConfig {
     public final String s3Identity;
     public final String s3Credential;
 
-    public final boolean hideDatabaseExceptions;
     public final boolean skipNonRFC5424Files;
 
     public final long archiveIncludeBeforeEpoch;
@@ -88,9 +87,6 @@ public final class ArchiveConfig {
         dbJournalDbName = opts.getOrDefault("DBjournaldbname", "journaldb");
         dbStreamDbName = opts.getOrDefault("DBstreamdbname", "streamdb");
 
-        // hide exceptions
-        hideDatabaseExceptions = opts.getOrDefault("hideDatabaseExceptions", "false").equalsIgnoreCase("true"); // TODO move to SQLConfig
-
         // skip not rfc5424 parseable files
         skipNonRFC5424Files = opts.getOrDefault("skipNonRFC5424Files", "false").equalsIgnoreCase("true");
 
@@ -116,7 +112,6 @@ public final class ArchiveConfig {
         withoutFiltersPattern = "";
         bloomDbName = "";
 
-        hideDatabaseExceptions = false;
         skipNonRFC5424Files = false;
 
         archiveIncludeBeforeEpoch = 0L;

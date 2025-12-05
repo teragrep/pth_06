@@ -50,17 +50,36 @@ import java.util.Map;
 public final class SQLConfigImpl implements SQLConfig {
 
     private final boolean isLog;
+    private final boolean isExecuteLogging;
+    private final boolean isThrowExceptionsNone;
 
     public SQLConfigImpl(final Map<String, String> opts) {
-        this(Boolean.parseBoolean(opts.getOrDefault("sql.log.enabled", "false")));
+        this(
+                Boolean.parseBoolean(opts.getOrDefault("sql.log.enabled", "false")),
+                Boolean.parseBoolean(opts.getOrDefault("sql.executeLogging.enabled", "false")),
+                Boolean.parseBoolean(opts.getOrDefault("hideDatabaseExceptions", "false"))
+        );
     }
 
-    public SQLConfigImpl(boolean isLog) {
+    public SQLConfigImpl(final boolean isLog, final boolean isExecuteLogging, final boolean isThrowExceptionsNone) {
         this.isLog = isLog;
+        this.isExecuteLogging = isExecuteLogging;
+        this.isThrowExceptionsNone = isThrowExceptionsNone;
     }
 
     @Override
     public boolean isLog() {
         return isLog;
     }
+
+    @Override
+    public boolean isExecuteLogging() {
+        return isExecuteLogging;
+    }
+
+    @Override
+    public boolean isThrowExceptionsNone() {
+        return isThrowExceptionsNone;
+    }
+
 }

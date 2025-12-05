@@ -122,22 +122,21 @@ public final class StreamDBClient {
         final String journaldbName = config.archiveConfig.dbJournalDbName;
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
-        final boolean hideDatabaseExceptions = config.archiveConfig.hideDatabaseExceptions;
+        final boolean isSQLThrowExceptionsNone = config.sqlConfig.isThrowExceptionsNone();
+        final boolean isSQLExecuteLogging = config.sqlConfig.isExecuteLogging();
         final boolean withoutFilters = config.archiveConfig.withoutFilters;
         final String withoutFiltersPattern = config.archiveConfig.withoutFiltersPattern;
         // https://blog.jooq.org/how-i-incorrectly-fetched-jdbc-resultsets-again/
         Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
-        if (hideDatabaseExceptions) {
+        if (isSQLThrowExceptionsNone) {
             settings = settings.withThrowExceptions(ThrowExceptions.THROW_NONE);
             LOGGER.warn("StreamDBClient SQL Exceptions set to THROW_NONE");
         }
 
-        /* TODO figure out what to do with JOOQ native logging
-        if (isExecuteLogging) {
+        if (isSQLExecuteLogging) {
             settings.withExecuteLogging(true);
         }
-         */
 
         System.getProperties().setProperty("org.jooq.no-logo", "true"); // TODO configure from SQLConfig
         final Connection connection = DriverManager.getConnection(url, userName, password);
@@ -146,7 +145,7 @@ public final class StreamDBClient {
         this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
         this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
-        if (hideDatabaseExceptions) {
+        if (isSQLThrowExceptionsNone) {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
 
             final String noEngineSubstitution = "SET sql_mode = 'NO_ENGINE_SUBSTITUTION';";

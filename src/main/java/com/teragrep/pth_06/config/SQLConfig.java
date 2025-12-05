@@ -48,4 +48,8 @@ package com.teragrep.pth_06.config;
 public interface SQLConfig {
 
     public abstract boolean isLog();
+
+    public abstract boolean isExecuteLogging();
+
+    public abstract boolean isThrowExceptionsNone();
 }
