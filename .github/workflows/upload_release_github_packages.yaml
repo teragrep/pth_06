@@ -9,7 +9,6 @@ jobs:
     name: Upload
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       packages: write
 
     steps:
@@ -32,9 +31,9 @@ jobs:
       - name: Publish to GitHub Packages
         run: | 
           if [ "${{ github.repository_owner }}" = "teragrep" ]; then 
-            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" clean deploy -Ppublish-github-packages
+            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= -Dgpg.skip=true clean deploy -Ppublish-github-packages
           else
-            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }}-${{ github.actor }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" -Dgpg.skip=true clean deploy -Ppublish-github-packages
+            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }}-${{ github.actor }} -Dsha1= -Dchangelist= -Dgpg.skip=true clean deploy -Ppublish-github-packages
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
