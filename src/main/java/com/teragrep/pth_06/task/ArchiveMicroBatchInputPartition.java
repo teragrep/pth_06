@@ -76,6 +76,7 @@ public class ArchiveMicroBatchInputPartition implements InputPartition {
     public final String TeragrepAuditPluginClassName;
 
     public final boolean skipNonRFC5424Files;
+    public final boolean epochMigrationMode;
 
     public ArchiveMicroBatchInputPartition(
             String S3endPoint,
@@ -86,7 +87,8 @@ public class ArchiveMicroBatchInputPartition implements InputPartition {
             String TeragrepAuditReason,
             String TeragrepAuditUser,
             String TeragrepAuditPluginClassName,
-            boolean skipNonRFC5424Files
+            boolean skipNonRFC5424Files,
+            boolean epochMigrationMode
     ) {
         LOGGER.debug("ArchiveMicroBatchInputPartition> init");
 
@@ -102,6 +104,7 @@ public class ArchiveMicroBatchInputPartition implements InputPartition {
         this.TeragrepAuditPluginClassName = TeragrepAuditPluginClassName;
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
+        this.epochMigrationMode = epochMigrationMode;
     }
 
     @Override

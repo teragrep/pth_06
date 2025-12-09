@@ -106,6 +106,8 @@ public final class RowConverter {
 
     final boolean skipNonRFC5424Files;
 
+    final boolean epochMigrationMode;
+
     private InputStream inputStream = null;
 
     public RowConverter(
@@ -118,6 +120,21 @@ public final class RowConverter {
             String stream,
             String host,
             boolean skipNonRFC5424Files
+    ) {
+        this(auditPlugin, s3client, id, bucket, path, directory, stream, host, skipNonRFC5424Files, false);
+    }
+
+    public RowConverter(
+            AuditPlugin auditPlugin,
+            AmazonS3 s3client,
+            String id,
+            String bucket,
+            String path,
+            String directory,
+            String stream,
+            String host,
+            boolean skipNonRFC5424Files,
+            boolean epochMigrationMode
     ) {
         this.auditPlugin = auditPlugin;
 
@@ -138,6 +155,8 @@ public final class RowConverter {
         this.s3client = s3client;
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
+
+        this.epochMigrationMode = epochMigrationMode;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Initialized s3client:" + s3client);
@@ -262,41 +281,57 @@ public final class RowConverter {
 
         final long epochMicros = rfc3339ToEpoch(new RFC5424Timestamp(rfc5424Frame.timestamp).toZonedDateTime());
 
-        // input
-        final byte[] source = eventToSource();
+        if (epochMigrationMode) {
+            LOGGER.info("EPOCH MIGRATION MODE ENABLED");
+            rowWriter.reset();
+            rowWriter.zeroOutNullBytes();
+            rowWriter.write(0, epochMicros);
+            rowWriter.write(1, UTF8String.fromString(""));
+            rowWriter.write(2, this.directory);
+            rowWriter.write(3, this.stream);
+            rowWriter.write(4, this.host);
+            rowWriter.write(5, UTF8String.fromString(""));
+            rowWriter.write(6, this.id);
+            rowWriter.write(7, currentOffset);
+            rowWriter.write(8, UTF8String.fromString(""));
+        }
+        else {
+            // input
+            final byte[] source = eventToSource();
 
-        // origin
-        final byte[] origin = eventToOrigin();
+            // origin
+            final byte[] origin = eventToOrigin();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER
-                    .trace(
-                            "PARSED  epochMicros: " + epochMicros + "  message: "
-                                    + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER
+                        .trace(
+                                "PARSED  epochMicros: " + epochMicros + "  message: "
+                                        + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
+                        );
+            }
+
+            rowWriter.reset();
+            rowWriter.zeroOutNullBytes();
+            rowWriter.write(0, epochMicros);
+            rowWriter.write(1, UTF8String.fromBytes(rfc5424Frame.msg.toBytes()));
+            rowWriter.write(2, this.directory);
+            rowWriter.write(3, this.stream);
+            rowWriter.write(4, this.host);
+            rowWriter.write(5, UTF8String.fromBytes(source));
+            rowWriter.write(6, this.id);
+            rowWriter.write(7, currentOffset);
+            rowWriter.write(8, UTF8String.fromBytes(origin));
+
+            auditPlugin
+                    .audit(
+                            epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
+                            this.host.getBytes(), source, this.id.toString(), currentOffset
                     );
         }
-
-        rowWriter.reset();
-        rowWriter.zeroOutNullBytes();
-        rowWriter.write(0, epochMicros);
-        rowWriter.write(1, UTF8String.fromBytes(rfc5424Frame.msg.toBytes()));
-        rowWriter.write(2, this.directory);
-        rowWriter.write(3, this.stream);
-        rowWriter.write(4, this.host);
-        rowWriter.write(5, UTF8String.fromBytes(source));
-        rowWriter.write(6, this.id);
-        rowWriter.write(7, currentOffset);
-        rowWriter.write(8, UTF8String.fromBytes(origin));
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Get Event,  row=written");
         }
 
-        auditPlugin
-                .audit(
-                        epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
-                        this.host.getBytes(), source, this.id.toString(), currentOffset
-                );
         return rowWriter.getRow();
 
     }
