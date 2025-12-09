@@ -45,7 +45,8 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import java.time.Instant;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,43 +54,50 @@ import java.util.regex.Pattern;
 final class S3ObjectHeader {
 
     private final String header;
-    private final Pattern validPattern;
+    private final Pattern validSyslogPattern;
 
-    S3ObjectHeader(final String header) {
-        this(
-                header,
-                Pattern
-                        .compile(
-                                "^([12]\\d{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T(?:[01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)(?:\\.\\d{1,6})?(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)|-)$"
-                        )
-        );
+    S3ObjectHeader(final InputStream inputStream) {
+        this(new HeaderFromStream(inputStream).asString());
     }
 
-    private S3ObjectHeader(final String header, final Pattern validPattern) {
+    S3ObjectHeader(final String header) {
+        this(header, Pattern.compile("^(" + "(?:[12]\\d{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])" + // YYYY-MM-DD
+                "T" + "(?:[01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)" + // HH:MM:SS
+                "(?:\\.\\d{1,6})?" + // fractions
+                "(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d))" + // Z / offset
+                "|-" + // or nil(-)
+                ").*"
+        ));
+    }
+
+    private S3ObjectHeader(final String header, final Pattern validSyslogPattern) {
         this.header = header;
-        this.validPattern = validPattern;
+        this.validSyslogPattern = validSyslogPattern;
     }
 
     boolean isValid() {
-        return validPattern.matcher(header).matches();
+        return validSyslogPattern.matcher(header).lookingAt();
     }
 
     long epoch() {
-        if (!isValid()) {
-            throw new IllegalStateException("Cannot extract epoch for object not in syslog format");
-        }
-        Matcher matcher = validPattern.matcher(header);
+        final Matcher matcher = validSyslogPattern.matcher(header);
         // timestamp expected in group 1, nil value checked
-        if (!matcher.matches() || "-".equals(matcher.group(1))) {
-            throw new IllegalStateException("Cannot extract a nil value from timestamp");
+        final String timestampString;
+        if (!matcher.lookingAt()) {
+            throw new IllegalStateException("Cannot extract a valid timestamp from header");
         }
-        long epoch;
+        else {
+            timestampString = matcher.group(1);
+        }
+        if ("-".equals(timestampString)) {
+            throw new IllegalArgumentException("Cannot extract epoch, timestamp value was nil (-)");
+        }
+        final long epoch;
         try {
-            final String timestampString = matcher.group(1);
-            epoch = Instant.parse(timestampString).getEpochSecond();
+            epoch = OffsetDateTime.parse(timestampString).toEpochSecond();
         }
         catch (final DateTimeParseException e) {
-            throw new IllegalArgumentException("RFC5424 format timestamp was not parseable");
+            throw new IllegalArgumentException("RFC5424 format timestamp was not parseable", e);
         }
         return epoch;
     }

@@ -47,29 +47,37 @@ package com.teragrep.pth_06.task.s3;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-public class HeaderFromStream {
+public final class HeaderFromStream {
 
     private final InputStream inputStream;
     private final int headerSize;
 
-    // read first 64KB
-    HeaderFromStream(InputStream inputStream) {
-        this(inputStream, (64 * 1024));
+    // max bytes for syslog timestamp is around 32 but set 40 for some buffer
+    HeaderFromStream(final InputStream inputStream) {
+        this(inputStream, 40);
     }
 
-    HeaderFromStream(InputStream inputStream, int headerSize) {
+    private HeaderFromStream(final InputStream inputStream, int headerSize) {
         this.inputStream = inputStream;
         this.headerSize = headerSize;
     }
 
-    String asString() throws IOException {
+    String asString() {
         final byte[] headerBuffer = new byte[headerSize];
-        final int read = inputStream.read(headerBuffer);
-        if (read <= 0) {
-            throw new IllegalStateException("Could not read any bytes from input");
+        final int bytesRead;
+        try {
+            bytesRead = inputStream.read(headerBuffer);
+            if (bytesRead <= 0) {
+                throw new IllegalStateException("No bytes could be read from the input stream");
+            }
         }
-        return new String(headerBuffer, 0, read, StandardCharsets.UTF_8);
+        catch (final IOException e) {
+            throw new UncheckedIOException("Failed to read header from input stream", e);
+        }
+        //
+        return new String(headerBuffer, 0, bytesRead, StandardCharsets.UTF_8);
     }
 }
