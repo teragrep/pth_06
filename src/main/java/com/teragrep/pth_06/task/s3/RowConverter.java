@@ -119,20 +119,6 @@ public final class RowConverter {
             String directory,
             String stream,
             String host,
-            boolean skipNonRFC5424Files
-    ) {
-        this(auditPlugin, s3client, id, bucket, path, directory, stream, host, skipNonRFC5424Files, false);
-    }
-
-    public RowConverter(
-            AuditPlugin auditPlugin,
-            AmazonS3 s3client,
-            String id,
-            String bucket,
-            String path,
-            String directory,
-            String stream,
-            String host,
             boolean skipNonRFC5424Files,
             boolean epochMigrationMode
     ) {

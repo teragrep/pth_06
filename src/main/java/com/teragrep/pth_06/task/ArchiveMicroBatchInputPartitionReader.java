@@ -91,6 +91,8 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     private final boolean epochMigrationMode;
     private final MetricRegistry metricRegistry;
 
+    private boolean epochRowReturned;
+
     public ArchiveMicroBatchInputPartitionReader(
             MetricRegistry metricRegistry,
             String S3endPoint,
@@ -128,11 +130,16 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         this.skipNonRFC5424Files = skipNonRFC5424Files;
         this.epochMigrationMode = epochMigrationMode;
         this.metricRegistry = metricRegistry;
+        LOGGER.info("Epoch migration mode=<{}>", epochMigrationMode);
     }
 
     // read zip until it ends
     @Override
     public boolean next() throws IOException {
+        // fast exit if first row already returned for epoch migration
+        if (epochMigrationMode && epochRowReturned) {
+            return false;
+        }
         // true if data is available, false if not
         boolean rv = false;
 
@@ -204,6 +211,10 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     @Override
     public InternalRow get() {
         metricRegistry.counter("RecordsProcessed").inc();
+        // epoch migration limit to single next() call
+        if (epochMigrationMode) {
+            epochRowReturned = true;
+        }
         return rowConverter.get();
     }
 
