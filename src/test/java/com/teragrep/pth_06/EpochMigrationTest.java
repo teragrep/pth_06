@@ -121,7 +121,6 @@ public final class EpochMigrationTest {
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
                 .option("archive.enabled", "true")
-                .option("archive.epochMigrationMode", "true")
                 .option("epochMigrationMode", "true")
                 .option("S3endPoint", s3endpoint)
                 .option("S3identity", s3identity)
