@@ -128,7 +128,6 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         this.skipNonRFC5424Files = skipNonRFC5424Files;
         this.epochMigrationMode = epochMigrationMode;
         this.metricRegistry = metricRegistry;
-        LOGGER.info("Epoch migration mode=<{}>", epochMigrationMode);
     }
 
     // read zip until it ends
