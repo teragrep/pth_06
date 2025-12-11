@@ -45,39 +45,46 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
+import org.apache.spark.unsafe.types.UTF8String;
 
-public final class HeaderFromStream {
+class FirstEventOnlyRow implements SerializableRow {
 
-    private final InputStream inputStream;
-    private final int headerSize;
+    private final long epochMicros;
+    private final UTF8String directory;
+    private final UTF8String stream;
+    private final UTF8String host;
+    private final UTF8String id;
+    private final long offset;
 
-    // max bytes for syslog timestamp is around 32 but set 40 for some buffer
-    HeaderFromStream(final InputStream inputStream) {
-        this(inputStream, 40);
+    FirstEventOnlyRow(
+            long epochMicros,
+            UTF8String directory,
+            UTF8String stream,
+            UTF8String host,
+            UTF8String id,
+            long offset
+    ) {
+        this.epochMicros = epochMicros;
+        this.directory = directory;
+        this.stream = stream;
+        this.host = host;
+        this.id = id;
+        this.offset = offset;
     }
 
-    private HeaderFromStream(final InputStream inputStream, int headerSize) {
-        this.inputStream = inputStream;
-        this.headerSize = headerSize;
-    }
-
-    String asString() {
-        final byte[] headerBuffer = new byte[headerSize];
-        final int bytesRead;
-        try {
-            bytesRead = inputStream.read(headerBuffer);
-            if (bytesRead <= 0) {
-                throw new IllegalStateException("No bytes could be read from the input stream");
-            }
-        }
-        catch (final IOException e) {
-            throw new UncheckedIOException("Failed to read header from input stream", e);
-        }
-        //
-        return new String(headerBuffer, 0, bytesRead, StandardCharsets.UTF_8);
+    @Override
+    public void serializeTo(final UnsafeRowWriter writer) {
+        writer.reset();
+        writer.zeroOutNullBytes();
+        writer.write(0, epochMicros);
+        writer.write(1, UTF8String.fromString(""));
+        writer.write(2, directory);
+        writer.write(3, stream);
+        writer.write(4, host);
+        writer.write(5, UTF8String.fromString(""));
+        writer.write(6, id);
+        writer.write(7, offset);
+        writer.write(8, UTF8String.fromString(""));
     }
 }
