@@ -218,30 +218,31 @@ public final class RowConverter {
             LOGGER.trace("<{}>  Read event from S3-file: <[{}]>/<[{}]>", currentOffset, bucket, path);
         }
 
+        boolean rv;
         // if first event is returned stop reading
         if (epochMigrationMode && currentOffset > 0) {
             LOGGER.debug("Epoch migration mode: already returned first event for this object, stopping further events");
-            return false;
+            rv = false;
         }
+        else {
+            try {
+                rv = rfc5424Frame.next();
+                if (rv) {
+                    this.currentOffset++;
 
-        boolean rv;
-        try {
-            rv = rfc5424Frame.next();
-            if (rv) {
-                this.currentOffset++;
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("<{}> Read event: <[{}]>", currentOffset, rfc5424Frame);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("<{}> Read event: <[{}]>", currentOffset, rfc5424Frame);
+                    }
                 }
             }
-        }
-        catch (ParseException parseException) {
-            LOGGER.error("ParseException at object: <[{}]>/<[{}]>", bucket, path);
-            if (skipNonRFC5424Files) {
-                rv = false;
-            }
-            else {
-                throw parseException;
+            catch (ParseException parseException) {
+                LOGGER.error("ParseException at object: <[{}]>/<[{}]>", bucket, path);
+                if (skipNonRFC5424Files) {
+                    rv = false;
+                }
+                else {
+                    throw parseException;
+                }
             }
         }
         return rv;
