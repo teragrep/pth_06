@@ -73,7 +73,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,7 +86,6 @@ public final class EpochMigrationTest {
     private final String s3endpoint = "http://127.0.0.1:48080";
     private final String s3identity = "s3identity";
     private final String s3credential = "s3credential";
-    final Map<String, String> opts = new HashMap<>();
     private final MockS3 mockS3 = new MockS3(s3endpoint, s3identity, s3credential);
     long totalRows;
 
@@ -161,18 +159,22 @@ public final class EpochMigrationTest {
         for (Row row : rows) {
             java.sql.Timestamp ts = row.getAs("_time");
             long epochSeconds = ts.getTime();
-            // mock data epoch ranges but divided by 1000 to ensure epoch is from s3 object
+            // mock data epoch ranges but divided by 1000 when written to S3 so we can ensure epoch is calculated from the s3 object
             Assertions.assertTrue(epochSeconds >= 1200000);
             Assertions.assertTrue(epochSeconds <= 1400000);
 
-            // Fields that should be empty
+            // message should be empty in epoch migration mode
             Assertions.assertEquals("", row.getAs("_raw"));
-            Assertions.assertEquals("", row.getAs("source"));
-            Assertions.assertEquals("", row.getAs("origin"));
 
             // Fields that should have values from the mock data
             Assertions.assertNotNull(row.getAs("index"));
             Assertions.assertFalse(((String) row.getAs("index")).isEmpty(), "index should not be empty");
+
+            Assertions.assertNotNull(row.getAs("source"));
+            Assertions.assertFalse(((String) row.getAs("source")).isEmpty(), "source should not be empty");
+
+            Assertions.assertNotNull(row.getAs("origin"));
+            Assertions.assertFalse(((String) row.getAs("origin")).isEmpty(), "origin should not be empty");
 
             Assertions.assertNotNull(row.getAs("sourcetype"));
             Assertions.assertFalse(((String) row.getAs("sourcetype")).isEmpty(), "sourcetype should not be empty");
@@ -183,8 +185,10 @@ public final class EpochMigrationTest {
             Assertions.assertNotNull(row.getAs("partition"));
             Assertions.assertFalse(((String) row.getAs("partition")).isEmpty(), "partition should not be empty");
 
-            Assertions.assertNotNull(row.getAs("offset"));
-            Assertions.assertTrue(row.getAs("offset") instanceof Long, "offset should be a Long");
+            Object offsetObj = row.getAs("offset");
+            Assertions.assertNotNull(offsetObj);
+            Assertions.assertTrue(offsetObj instanceof Long, "offset should be a Long");
+            Assertions.assertEquals(1L, ((Long) offsetObj).longValue(), "offset should always be the first event");
 
         }
     }
