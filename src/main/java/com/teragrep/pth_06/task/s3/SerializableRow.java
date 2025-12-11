@@ -45,60 +45,9 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 
-final class S3ObjectHeader {
+public interface SerializableRow {
 
-    private final String header;
-    private final Pattern validSyslogPattern;
-
-    S3ObjectHeader(final InputStream inputStream) {
-        this(new HeaderFromStream(inputStream).asString());
-    }
-
-    S3ObjectHeader(final String header) {
-        this(header, Pattern.compile("^(" + "(?:[12]\\d{3}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])" + // YYYY-MM-DD
-                "T" + "(?:[01]\\d|2[0-3]):[0-5]\\d:(?:[0-5]\\d|60)" + // HH:MM:SS
-                "(?:\\.\\d{1,6})?" + // fractions
-                "(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d))" + // Z / offset
-                "|-" + // or nil(-)
-                ").*"
-        ));
-    }
-
-    private S3ObjectHeader(final String header, final Pattern validSyslogPattern) {
-        this.header = header;
-        this.validSyslogPattern = validSyslogPattern;
-    }
-
-    boolean isValid() {
-        return validSyslogPattern.matcher(header).lookingAt();
-    }
-
-    long epoch() {
-        final Matcher matcher = validSyslogPattern.matcher(header);
-        // timestamp expected in group 1, nil value checked
-        final String timestampString;
-        if (!matcher.lookingAt()) {
-            throw new IllegalStateException("Cannot extract a valid timestamp from header");
-        }
-        else {
-            timestampString = matcher.group(1);
-        }
-        if ("-".equals(timestampString)) {
-            throw new IllegalArgumentException("Cannot extract epoch, timestamp value was nil (-)");
-        }
-        final long epoch;
-        try {
-            epoch = OffsetDateTime.parse(timestampString).toEpochSecond();
-        }
-        catch (final DateTimeParseException e) {
-            throw new IllegalArgumentException("RFC5424 format timestamp was not parseable", e);
-        }
-        return epoch;
-    }
+    public abstract void serializeTo(final UnsafeRowWriter writer);
 }

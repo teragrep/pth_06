@@ -218,6 +218,12 @@ public final class RowConverter {
             LOGGER.trace("<{}>  Read event from S3-file: <[{}]>/<[{}]>", currentOffset, bucket, path);
         }
 
+        // if first event is returned stop reading
+        if (epochMigrationMode && currentOffset > 0) {
+            LOGGER.debug("Epoch migration mode: already returned first event for this object, stopping further events");
+            return false;
+        }
+
         boolean rv;
         try {
             rv = rfc5424Frame.next();
@@ -252,61 +258,41 @@ public final class RowConverter {
     }
 
     public InternalRow get() {
-        //System.out.println("RowConverter.get>");
         if (LOGGER.isDebugEnabled()) {
-            LOGGER
-                    .debug(
-                            "RowConverter.get> Partition (" + this.id + "):" + bucket + "/" + path + " Get("
-                                    + currentOffset + ")"
-                    );
+            LOGGER.debug("RowConverter.get() partition(<{}>):<{}>/<{}> offset(<{}>)", id, bucket, path, currentOffset);
+            LOGGER.debug("Parser syslog event: <{}>", rfc5424Frame.toString());
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Parsersyslog event:" + rfc5424Frame.toString());
-        }
+        final SerializableRow serializableRow;
 
         final long epochMicros = rfc3339ToEpoch(new RFC5424Timestamp(rfc5424Frame.timestamp).toZonedDateTime());
 
         if (epochMigrationMode) {
-            LOGGER.info("EPOCH MIGRATION MODE ENABLED");
-            rowWriter.reset();
-            rowWriter.zeroOutNullBytes();
-            rowWriter.write(0, epochMicros);
-            rowWriter.write(1, UTF8String.fromString(""));
-            rowWriter.write(2, this.directory);
-            rowWriter.write(3, this.stream);
-            rowWriter.write(4, this.host);
-            rowWriter.write(5, UTF8String.fromString(""));
-            rowWriter.write(6, this.id);
-            rowWriter.write(7, currentOffset);
-            rowWriter.write(8, UTF8String.fromString(""));
+            serializableRow = new FirstEventOnlyRow(epochMicros, directory, stream, host, id, currentOffset);
         }
         else {
             // input
             final byte[] source = eventToSource();
 
-            // origin
-            final byte[] origin = eventToOrigin();
-
             if (LOGGER.isDebugEnabled()) {
                 LOGGER
                         .trace(
-                                "PARSED  epochMicros: " + epochMicros + "  message: "
-                                        + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
+                                "PARSED epochMicros: <{}>  message: <{}>", epochMicros,
+                                new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
                         );
             }
 
-            rowWriter.reset();
-            rowWriter.zeroOutNullBytes();
-            rowWriter.write(0, epochMicros);
-            rowWriter.write(1, UTF8String.fromBytes(rfc5424Frame.msg.toBytes()));
-            rowWriter.write(2, this.directory);
-            rowWriter.write(3, this.stream);
-            rowWriter.write(4, this.host);
-            rowWriter.write(5, UTF8String.fromBytes(source));
-            rowWriter.write(6, this.id);
-            rowWriter.write(7, currentOffset);
-            rowWriter.write(8, UTF8String.fromBytes(origin));
+            serializableRow = new StandardEventRow(
+                    epochMicros,
+                    UTF8String.fromBytes(rfc5424Frame.msg.toBytes()),
+                    directory,
+                    stream,
+                    host,
+                    UTF8String.fromBytes(source),
+                    id,
+                    currentOffset,
+                    UTF8String.fromBytes(eventToOrigin())
+            );
 
             auditPlugin
                     .audit(
@@ -314,6 +300,10 @@ public final class RowConverter {
                             this.host.getBytes(), source, this.id.toString(), currentOffset
                     );
         }
+
+        // serialize selected row to writer
+        serializableRow.serializeTo(rowWriter);
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Get Event,  row=written");
         }
