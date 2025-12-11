@@ -48,7 +48,7 @@ package com.teragrep.pth_06.task.s3;
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 import org.apache.spark.unsafe.types.UTF8String;
 
-class FirstEventOnlyRow implements SerializableRow {
+final class FirstEventOnlyRow implements SerializableRow {
 
     private final long epochMicros;
     private final UTF8String directory;
@@ -58,12 +58,12 @@ class FirstEventOnlyRow implements SerializableRow {
     private final long offset;
 
     FirstEventOnlyRow(
-            long epochMicros,
-            UTF8String directory,
-            UTF8String stream,
-            UTF8String host,
-            UTF8String id,
-            long offset
+            final long epochMicros,
+            final UTF8String directory,
+            final UTF8String stream,
+            final UTF8String host,
+            final UTF8String id,
+            final long offset
     ) {
         this.epochMicros = epochMicros;
         this.directory = directory;

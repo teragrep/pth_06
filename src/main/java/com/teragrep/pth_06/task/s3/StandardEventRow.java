@@ -48,7 +48,7 @@ package com.teragrep.pth_06.task.s3;
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 import org.apache.spark.unsafe.types.UTF8String;
 
-class StandardEventRow implements SerializableRow {
+final class StandardEventRow implements SerializableRow {
 
     private final long epochMicros;
     private final UTF8String msg;
@@ -61,15 +61,15 @@ class StandardEventRow implements SerializableRow {
     private final UTF8String origin;
 
     StandardEventRow(
-            long epochMicros,
-            UTF8String msg,
-            UTF8String directory,
-            UTF8String stream,
-            UTF8String host,
-            UTF8String source,
-            UTF8String id,
-            long offset,
-            UTF8String origin
+            final long epochMicros,
+            final UTF8String msg,
+            final UTF8String directory,
+            final UTF8String stream,
+            final UTF8String host,
+            final UTF8String source,
+            final UTF8String id,
+            final long offset,
+            final UTF8String origin
     ) {
         this.epochMicros = epochMicros;
         this.msg = msg;
