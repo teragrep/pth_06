@@ -263,46 +263,45 @@ public final class RowConverter {
             LOGGER.debug("Parser syslog event: <{}>", rfc5424Frame.toString());
         }
 
-        final SerializableRow serializableRow;
-
         final long epochMicros = rfc3339ToEpoch(new RFC5424Timestamp(rfc5424Frame.timestamp).toZonedDateTime());
 
-        if (epochMigrationMode) {
-            serializableRow = new FirstEventOnlyRow(epochMicros, directory, stream, host, id, currentOffset);
-        }
-        else {
-            // input
-            final byte[] source = eventToSource();
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER
-                        .trace(
-                                "PARSED epochMicros: <{}>  message: <{}>", epochMicros,
-                                new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
-                        );
-            }
-
-            serializableRow = new StandardEventRow(
-                    epochMicros,
-                    UTF8String.fromBytes(rfc5424Frame.msg.toBytes()),
-                    directory,
-                    stream,
-                    host,
-                    UTF8String.fromBytes(source),
-                    id,
-                    currentOffset,
-                    UTF8String.fromBytes(eventToOrigin())
-            );
-
-            auditPlugin
-                    .audit(
-                            epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
-                            this.host.getBytes(), source, this.id.toString(), currentOffset
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER
+                    .trace(
+                            "PARSED epochMicros: <{}>  message: <{}>", epochMicros,
+                            new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
                     );
         }
 
-        // serialize selected row to writer
-        serializableRow.serializeTo(rowWriter);
+        final UTF8String message;
+
+        if (epochMigrationMode) {
+            message = UTF8String.EMPTY_UTF8;
+        }
+        else {
+            message = UTF8String.fromBytes(rfc5424Frame.msg.toBytes());
+        }
+
+        // input
+        final byte[] source = eventToSource();
+
+        rowWriter.reset();
+        rowWriter.zeroOutNullBytes();
+        rowWriter.write(0, epochMicros);
+        rowWriter.write(1, message);
+        rowWriter.write(2, directory);
+        rowWriter.write(3, stream);
+        rowWriter.write(4, host);
+        rowWriter.write(5, UTF8String.fromBytes(source));
+        rowWriter.write(6, id);
+        rowWriter.write(7, currentOffset);
+        rowWriter.write(8, UTF8String.fromBytes(eventToOrigin()));
+
+        auditPlugin
+                .audit(
+                        epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
+                        this.host.getBytes(), source, this.id.toString(), currentOffset
+                );
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Get Event,  row=written");
