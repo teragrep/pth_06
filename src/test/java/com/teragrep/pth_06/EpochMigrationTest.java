@@ -46,7 +46,6 @@
 package com.teragrep.pth_06;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.Bucket;
 import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.SDElement;
 import com.cloudbees.syslog.Severity;
@@ -72,9 +71,13 @@ import org.junit.jupiter.api.TestInstance;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
@@ -104,7 +107,7 @@ public final class EpochMigrationTest {
                 .config("spark.metrics.namespace", "teragrep")
                 .getOrCreate();
 
-        totalRows = Assertions.assertDoesNotThrow(this::preloadS3Data);
+        totalRows = Assertions.assertDoesNotThrow(this::preloadDualS3Data);
     }
 
     @AfterAll
@@ -115,7 +118,7 @@ public final class EpochMigrationTest {
 
     @Test
     public void testEpochMigration() {
-        Dataset<Row> df = spark
+        final Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
                 .option("archive.enabled", "true")
@@ -151,14 +154,14 @@ public final class EpochMigrationTest {
         Assertions.assertDoesNotThrow(streamingQuery::stop);
         Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
 
-        Dataset<Row> resultDf = spark.sql("SELECT * FROM MockArchiveQuery");
-        long rowCount = resultDf.count();
+        final Dataset<Row> resultDf = spark.sql("SELECT * FROM MockArchiveQuery");
+        final long rowCount = resultDf.count();
         Assertions.assertEquals(totalRows, rowCount);
 
-        List<Row> rows = resultDf.collectAsList();
-        for (Row row : rows) {
-            java.sql.Timestamp ts = row.getAs("_time");
-            long epochSeconds = ts.getTime();
+        final List<Row> rows = resultDf.collectAsList();
+        for (final Row row : rows) {
+            final Timestamp ts = row.getAs("_time");
+            final long epochSeconds = ts.getTime();
             // mock data epoch ranges but divided by 1000 when written to S3 so we can ensure epoch is calculated from the s3 object
             Assertions.assertTrue(epochSeconds >= 1200000);
             Assertions.assertTrue(epochSeconds <= 1400000);
@@ -185,7 +188,7 @@ public final class EpochMigrationTest {
             Assertions.assertNotNull(row.getAs("partition"));
             Assertions.assertFalse(((String) row.getAs("partition")).isEmpty(), "partition should not be empty");
 
-            Object offsetObj = row.getAs("offset");
+            final Object offsetObj = row.getAs("offset");
             Assertions.assertNotNull(offsetObj);
             Assertions.assertTrue(offsetObj instanceof Long, "offset should be a Long");
             Assertions.assertEquals(1L, ((Long) offsetObj).longValue(), "offset should always be the first event");
@@ -193,118 +196,104 @@ public final class EpochMigrationTest {
         }
     }
 
-    private long preloadS3Data() throws IOException {
+    @Test
+    public void testEpochMigrationOptionDisabled() {
+        final Dataset<Row> df = spark
+                .readStream()
+                .format("com.teragrep.pth_06.MockTeragrepDatasource")
+                .option("archive.enabled", "true")
+                .option("epochMigrationMode", "false")
+                .option("S3endPoint", s3endpoint)
+                .option("S3identity", s3identity)
+                .option("S3credential", s3credential)
+                .option("DBusername", "mock")
+                .option("DBpassword", "mock")
+                .option("DBurl", "mock")
+                .option("DBstreamdbname", "mock")
+                .option("DBjournaldbname", "mock")
+                .option("num_partitions", "1")
+                .option("queryXML", "<index value=\"f17\" operation=\"EQUALS\"/>")
+                // audit information
+                .option("TeragrepAuditQuery", "index=f17")
+                .option("TeragrepAuditReason", "testEpochMigration()")
+                .option("TeragrepAuditUser", System.getProperty("user.name"))
+                // kafka options
+                .option("kafka.enabled", "false")
+                .option("kafka.bootstrap.servers", "")
+                .option("kafka.sasl.mechanism", "")
+                .option("kafka.security.protocol", "")
+                .option("kafka.sasl.jaas.config", "")
+                .option("kafka.useMockKafkaConsumer", "true")
+                .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                // metadata options
+                .option("metadataQuery.enabled", "false")
+                .load();
+        final StreamingQuery streamingQuery = Assertions
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
+        streamingQuery.processAllAvailable();
+        Assertions.assertDoesNotThrow(streamingQuery::stop);
+        Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
+        final Dataset<Row> resultDf = spark.sql("SELECT * FROM MockArchiveQuery");
+        final long rowCount = resultDf.count();
+        // preloaded s3 data adds 2 messages per S3 object
+        Assertions.assertEquals(totalRows * 2, rowCount, "two rows per s3 object should be present");
+    }
+
+    private long preloadDualS3Data() throws IOException {
         long rows = 0L;
-        AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
-
-        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
+        final AmazonS3 amazonS3 = new Pth06S3Client(s3endpoint, s3identity, s3credential).build();
+        final TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
                 .getVirtualDatabaseMap();
-
+        final Set<String> existingBuckets = new HashSet<>();
         for (
-            Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap
+            final Map.Entry<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> entry : virtualDatabaseMap
                     .entrySet()
         ) {
             for (
-                Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record10 : entry
+                final Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record : entry
                         .getValue()
             ) {
-                String host = record10.get(3, String.class);
-                String logtag = record10.get(4, String.class);
-                String bucket = record10.get(6, String.class);
-                String path = record10.get(7, String.class);
-                // divide by 1000 to test s3 object data is used for epoch values
-                long logtime = record10.get(8, ULong.class).longValue() / 1000;
+                final String bucket = record.get(6, String.class);
+                final String path = record.get(7, String.class);
 
-                String recordAsJson = record10.formatJSON();
-
-                // <46>1 2010-01-01T12:34:56.123456+02:00 hostname.domain.tld pstats - -
-                SyslogMessage syslog = new SyslogMessage();
-                syslog = syslog
-                        .withFacility(Facility.USER)
-                        .withSeverity(Severity.WARNING)
-                        .withTimestamp(logtime)
-                        .withHostname(host)
-                        .withAppName(logtag)
-                        .withMsg(recordAsJson);
-
-                // [event_id@48577 hostname="hostname.domain.tld" uuid="" unixtime="" id_source="source"]
-
-                SDElement event_id_48577 = new SDElement("event_id@48577")
-                        .addSDParam("hostname", host)
-                        .addSDParam("uuid", UUID.randomUUID().toString())
-                        .addSDParam("source", "source")
-                        .addSDParam("unixtime", Long.toString(System.currentTimeMillis()));
-
-                syslog = syslog.withSDElement(event_id_48577);
-
-                // [event_format@48577 original_format="rfc5424"]
-
-                SDElement event_format_48577 = new SDElement("event_id@48577").addSDParam("original_format", "rfc5424");
-
-                syslog = syslog.withSDElement(event_format_48577);
-
-                // [event_node_relay@48577 hostname="relay.domain.tld" source="hostname.domain.tld" source_module="imudp"]
-
-                SDElement event_node_relay_48577 = new SDElement("event_node_relay@48577")
-                        .addSDParam("hostname", "relay.domain.tld")
-                        .addSDParam("source", host)
-                        .addSDParam("source_module", "imudp");
-
-                syslog = syslog.withSDElement(event_node_relay_48577);
-
-                // [event_version@48577 major="2" minor="2" hostname="relay.domain.tld" version_source="relay"]
-
-                SDElement event_version_48577 = new SDElement("event_version@48577")
-                        .addSDParam("major", "2")
-                        .addSDParam("minor", "2")
-                        .addSDParam("hostname", "relay.domain.tld")
-                        .addSDParam("version_source", "relay");
-
-                syslog = syslog.withSDElement(event_version_48577);
-
-                // [event_node_router@48577 source="relay.domain.tld" source_module="imrelp" hostname="router.domain.tld"]
-
-                SDElement event_node_router_48577 = new SDElement("event_node_router@48577")
-                        .addSDParam("source", "relay.domain.tld")
-                        .addSDParam("source_module", "imrelp")
-                        .addSDParam("hostname", "router.domain.tld");
-
-                syslog = syslog.withSDElement(event_node_router_48577);
-
-                // [origin@48577 hostname="original.hostname.domain.tld"]
-
-                SDElement origin_48577 = new SDElement("origin@48577")
-                        .addSDParam("hostname", "original.hostname.domain.tld");
-                syslog = syslog.withSDElement(origin_48577);
-
-                // check if this bucket exists
-                boolean bucketExists = false;
-                for (Bucket existingBucket : amazonS3.listBuckets()) {
-                    if (existingBucket.getName().equals(bucket)) {
-                        bucketExists = true;
-                        break;
-                    }
-                }
-                if (!bucketExists) {
+                // add bucket if missing
+                if (existingBuckets.add(bucket) && !amazonS3.doesBucketExistV2(bucket)) {
                     amazonS3.createBucket(bucket);
                 }
 
-                // compress the message
-                String syslogMessage = syslog.toRfc5424SyslogMessage();
-
-                ByteArrayOutputStream outStream = new ByteArrayOutputStream(syslogMessage.length());
-                GZIPOutputStream gzip = new GZIPOutputStream(outStream);
-                gzip.write(syslogMessage.getBytes());
-                gzip.close();
-
-                ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());
-
-                // upload as file
-                amazonS3.putObject(bucket, path, inStream, null);
+                final String firstEvent = buildSyslogMessage(record);
+                final String secondEvent = buildSyslogMessage(record);
+                // two messages per s3 object
+                final String combined = firstEvent + "\n" + secondEvent;
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream(combined.length());
+                try (final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(baos)) {
+                    gzipOutputStream.write(combined.getBytes(StandardCharsets.UTF_8));
+                }
+                final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                amazonS3.putObject(bucket, path, bais, null);
                 rows++;
             }
-
         }
         return rows;
+    }
+
+    private String buildSyslogMessage(
+            final Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record
+    ) {
+        final String host = record.get(3, String.class);
+        final String logtag = record.get(4, String.class);
+        // divide by 1000 to test s3 object data is used for epoch values
+        final long logtime = record.get(8, ULong.class).longValue() / 1000;
+        final String recordAsJson = record.formatJSON();
+        final SyslogMessage syslog = new SyslogMessage()
+                .withFacility(Facility.USER)
+                .withSeverity(Severity.WARNING)
+                .withTimestamp(logtime)
+                .withHostname(host)
+                .withAppName(logtag)
+                .withMsg(recordAsJson)
+                .withSDElement(new SDElement("event_id@48577").addSDParam("hostname", host).addSDParam("uuid", UUID.randomUUID().toString()).addSDParam("source", "source").addSDParam("unixtime", Long.toString(System.currentTimeMillis()))).withSDElement(new SDElement("event_format@48577").addSDParam("original_format", "rfc5424")).withSDElement(new SDElement("event_node_relay@48577").addSDParam("hostname", "relay.domain.tld").addSDParam("source", host).addSDParam("source_module", "imudp")).withSDElement(new SDElement("event_version@48577").addSDParam("major", "2").addSDParam("minor", "2").addSDParam("hostname", "relay.domain.tld").addSDParam("version_source", "relay")).withSDElement(new SDElement("event_node_router@48577").addSDParam("source", "relay.domain.tld").addSDParam("source_module", "imrelp").addSDParam("hostname", "router.domain.tld")).withSDElement(new SDElement("origin@48577").addSDParam("hostname", "original.hostname.domain.tld"));
+
+        return syslog.toRfc5424SyslogMessage();
     }
 }
