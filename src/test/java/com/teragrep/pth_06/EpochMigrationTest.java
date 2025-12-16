@@ -74,6 +74,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -159,12 +161,11 @@ public final class EpochMigrationTest {
         Assertions.assertEquals(totalRows, rowCount);
 
         final List<Row> rows = resultDf.collectAsList();
+        final List<Long> epochs = new ArrayList<>();
         for (final Row row : rows) {
             final Timestamp ts = row.getAs("_time");
             final long epochSeconds = ts.getTime();
-            // mock data epoch ranges but divided by 1000 when written to S3 so we can ensure epoch is calculated from the s3 object
-            Assertions.assertTrue(epochSeconds >= 1200000);
-            Assertions.assertTrue(epochSeconds <= 1400000);
+            epochs.add(epochSeconds);
 
             // message should be empty in epoch migration mode
             Assertions.assertEquals("", row.getAs("_raw"));
@@ -194,6 +195,14 @@ public final class EpochMigrationTest {
             Assertions.assertEquals(1L, ((Long) offsetObj).longValue(), "offset should always be the first event");
 
         }
+        final List<Long> expectedEpochs = Arrays
+                .asList(
+                        1262296L, 1262300L, 1262383L, 1262386L, 1262469L, 1262473L, 1262556L, 1262559L, 1262642L,
+                        1262646L, 1262728L, 1262732L, 1262815L, 1262818L, 1262901L, 1262905L, 1262988L, 1262991L,
+                        1263074L, 1263078L, 1263160L, 1263164L, 1263247L, 1263250L, 1263333L, 1263337L, 1263420L,
+                        1263423L, 1263506L, 1263510L, 1263592L, 1263596L, 1263679L
+                );
+        Assertions.assertEquals(expectedEpochs, epochs);
     }
 
     @Test
