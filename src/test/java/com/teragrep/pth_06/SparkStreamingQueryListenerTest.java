@@ -55,8 +55,6 @@ import com.teragrep.pth_06.planner.MockDBData;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
 import com.teragrep.pth_06.task.s3.MockS3;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -77,7 +75,7 @@ import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public final class SourceStatusTest {
+public final class SparkStreamingQueryListenerTest {
 
     private SparkSession spark;
 
@@ -115,7 +113,7 @@ public final class SourceStatusTest {
     }
 
     @Test
-    public void testSourceStatus() {
+    public void testOnQueryIdle() {
         final Dataset<Row> df = spark
                 .readStream()
                 .format("com.teragrep.pth_06.MockTeragrepDatasource")
@@ -145,14 +143,13 @@ public final class SourceStatusTest {
                 .load();
 
         final StreamingQuery streamingQuery = Assertions
-                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory").trigger(Trigger.ProcessingTime(0)).queryName("MockArchiveQuery").option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID()).option("spark.cleaner.referenceTracking.cleanCheckpoints", "true").start());
-
-        final Map<String, Object> configMap = new HashMap<>();
-        configMap.put("dpl.pth_06.archive.enabled", true);
-        configMap.put("dpl.pth_06.kafka.enabled", true);
-        final Config typesafeConfig = ConfigFactory.parseMap(configMap);
-
-        final SourceStatus sourceStatus = new SourceStatus(typesafeConfig);
+                .assertDoesNotThrow(() -> df.writeStream().outputMode(OutputMode.Append()).format("memory")
+                        .trigger(Trigger.ProcessingTime(0))
+                        .queryName("MockArchiveQuery")
+                        .option("checkpointLocation", "/tmp/checkpoint/" + UUID.randomUUID())
+                        .option("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+                        .start()
+                );
 
         final int[] triggered = {
                 0
@@ -170,18 +167,16 @@ public final class SourceStatusTest {
 
             @Override
             public void onQueryProgress(final QueryProgressEvent event) {
-                if (event.progress().id().equals(id)) {
+                if (id.equals(event.progress().id())) {
                     latestOffset[0] = event.progress().sources()[0].latestOffset();
                 }
             }
 
             @Override
             public void onQueryIdle(final QueryIdleEvent event) {
-                if (event.id().equals(id)) {
+                if (id.equals(event.id())) {
                     triggered[0]++;
-                    if (sourceStatus.isQueryDone(streamingQuery)) {
-                        Assertions.assertDoesNotThrow(streamingQuery::stop);
-                    }
+                    Assertions.assertDoesNotThrow(streamingQuery::stop);
                 }
             }
 
