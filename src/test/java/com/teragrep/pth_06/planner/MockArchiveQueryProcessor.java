@@ -75,16 +75,16 @@ public class MockArchiveQueryProcessor implements ArchiveQuery {
 
     private final MetricRegistry metricRegistry;
 
-    public MockArchiveQueryProcessor(String query) {
+    public MockArchiveQueryProcessor(final String query) {
+        this(query, new MockDBData());
+    }
 
+    public MockArchiveQueryProcessor(final String query, final MockDBData mockDBData) {
         if (!query.equals(expectedQuery)) {
             throw new IllegalArgumentException("query not expectedQuery: " + query);
         }
 
-        MockDBData mockDBData = new MockDBData();
-
         this.virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
-
         this.metricRegistry = new MetricRegistry();
     }
 
