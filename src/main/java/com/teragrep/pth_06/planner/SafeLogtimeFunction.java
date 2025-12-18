@@ -48,6 +48,8 @@ package com.teragrep.pth_06.planner;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+import java.util.Objects;
+
 /**
  * Extracts date string from a path field using regex, converts to date and then to unix timestamp or returns 0 if
  * function can't find date string or convert to date
@@ -67,5 +69,22 @@ final class SafeLogtimeFunction {
         //                                                 ^^^^^^^^^^ match
         final String unixTimestamp = "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))";
         return DSL.field("COALESCE(" + unixTimestamp + ", 0)", Long.class, pathField);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final SafeLogtimeFunction that = (SafeLogtimeFunction) o;
+        return Objects.equals(pathField, that.pathField);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(pathField);
     }
 }

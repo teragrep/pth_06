@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -81,19 +82,18 @@ public final class SafeLogtimeFunctionTest {
     @AfterEach
     public void cleanup() {
         mariadb.stop();
-        boolean isClosed = Assertions.assertDoesNotThrow(connection::isClosed);
+        final boolean isClosed = Assertions.assertDoesNotThrow(connection::isClosed);
         if (!isClosed) {
             Assertions.assertDoesNotThrow(connection::close);
         }
     }
 
     @Test
-    void validPathReturnsCorrectEpoch() {
+    public void validPathReturnsCorrectEpoch() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-
-        String validPath = "2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010011601.log.gz";
-        Long result = ctx
+        final String validPath = "2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010011601.log.gz";
+        final Long result = ctx
                 .select(fn.asField())
                 .from(DSL.select(DSL.val(validPath).as("path")).asTable())
                 .fetchOne(0, Long.class);
@@ -104,10 +104,10 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    void invalidPathReturnsEpochZero() {
+    public void invalidPathReturnsEpochZero() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        Long result = ctx
+        final Long result = ctx
                 .select(fn.asField())
                 .from(DSL.select(DSL.val("this/is/not/a/valid/path").as("path")).asTable())
                 .fetchOne(0, Long.class);
@@ -115,10 +115,10 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    void nullPathReturnsEpochZero() {
+    public void nullPathReturnsEpochZero() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        Long result = ctx
+        final Long result = ctx
                 .select(fn.asField())
                 .from(DSL.select(DSL.val((String) null).as("path")).asTable())
                 .fetchOne(0, Long.class);
@@ -126,14 +126,19 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    void malformedDateReturnsEpochZero() {
+    public void malformedDateReturnsEpochZero() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        String invalidDatePath = "2010/01-16/folder/f17_v2/-@INVALIDDATE";
-        Long result = ctx
+        final String invalidDatePath = "2010/01-16/folder/f17_v2/-@INVALIDDATE";
+        final Long result = ctx
                 .select(fn.asField())
                 .from(DSL.select(DSL.val(invalidDatePath).as("path")).asTable())
                 .fetchOne(0, Long.class);
         Assertions.assertEquals(0L, result);
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(SafeLogtimeFunction.class).verify();
     }
 }
