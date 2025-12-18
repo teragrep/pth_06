@@ -69,11 +69,7 @@ public final class NestedTopNQuery {
     private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
 
     // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
-    public final Field<Long> logtimeFunction = DSL
-            .field(
-                    "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))",
-                    Long.class, JOURNALDB.LOGFILE.PATH
-            );
+    private final SafeLogtimeFunction logtimeFunction = new SafeLogtimeFunction(JOURNALDB.LOGFILE.PATH);
 
     private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
     private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
@@ -85,7 +81,7 @@ public final class NestedTopNQuery {
             JOURNALDB.LOGFILE.ID.as(id),
             GetArchivedObjectsFilterTable.directory.as(directory),
             GetArchivedObjectsFilterTable.stream.as(stream),
-            logtimeFunction.as(logtime)
+            logtimeFunction.asField().as(logtime)
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
