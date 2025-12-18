@@ -89,7 +89,7 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    public void validPathReturnsCorrectEpoch() {
+    public void validPathTest() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         final String validPath = "2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010011601.log.gz";
@@ -104,7 +104,7 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    public void invalidPathReturnsEpochZero() {
+    public void invalidPathReturnsZeroEpochTest() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         final Long result = ctx
@@ -115,7 +115,7 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    public void nullPathReturnsEpochZero() {
+    public void nullPathReturnsZeroEpochTest() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         final Long result = ctx
@@ -126,7 +126,7 @@ public final class SafeLogtimeFunctionTest {
     }
 
     @Test
-    public void malformedDateReturnsEpochZero() {
+    public void malformedDateReturnsZeroEpochTest() {
         final SafeLogtimeFunction fn = new SafeLogtimeFunction(DSL.field("path", String.class));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         final String invalidDatePath = "2010/01-16/folder/f17_v2/-@INVALIDDATE";
