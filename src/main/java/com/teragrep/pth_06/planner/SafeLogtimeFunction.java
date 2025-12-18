@@ -62,12 +62,13 @@ final class SafeLogtimeFunction {
         this.pathField = pathField;
     }
 
+    // regex substring to find date from a string path
+    // example path:
+    // 2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz
+    //
     Field<Long> asField() {
-        // regex substring to find date from a string path
-        // example path:
-        // 2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz
-        //                                                 ^^^^^^^^^^ match
-        final String unixTimestamp = "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '%Y%m%d%H'))";
+        final String unixTimestamp = "UNIX_TIMESTAMP(STR_TO_DATE("
+                + "IFNULL(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '1970010100'), '%Y%m%d%H'))";
         return DSL.field("COALESCE(" + unixTimestamp + ", 0)", Long.class, pathField);
     }
 
