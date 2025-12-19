@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
+import com.teragrep.pth_06.jooq.generated.journaldb.Indexes;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
@@ -102,7 +103,7 @@ public final class NestedTopNQuery {
         SelectOnConditionStep<Record> selectOnConditionStep = DSL
                 .select(resultFields)
                 .from(GetArchivedObjectsFilterTable.FILTER_TABLE)
-                .innerJoin(JOURNALDB.LOGFILE)
+                .innerJoin(JOURNALDB.LOGFILE.forceIndex(Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG.getName()))
                 .on(JOURNALDB.LOGFILE.HOST_ID.eq(GetArchivedObjectsFilterTable.host_id).and(JOURNALDB.LOGFILE.LOGTAG.eq(GetArchivedObjectsFilterTable.tag)));
 
         if (streamDBClient.bloomEnabled()) {
