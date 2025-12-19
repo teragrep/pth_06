@@ -53,6 +53,7 @@ import com.teragrep.pth_06.jooq.generated.DefaultCatalog;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +79,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Journaldb extends SchemaImpl {
 
-    private static final long serialVersionUID = -1865582803;
+    private static final long serialVersionUID = -258620961;
 
     /**
      * The reference instance of <code>journaldb</code>
@@ -99,6 +100,11 @@ public class Journaldb extends SchemaImpl {
      * Contains information for log files that have been run through Log Archiver
      */
     public final Logfile LOGFILE = com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.LOGFILE;
+
+    /**
+     * Contains logtag values that are identified using the ID
+     */
+    public final Logtag LOGTAG = com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag.LOGTAG;
 
     /**
      * No further instances allowed
@@ -124,6 +130,7 @@ public class Journaldb extends SchemaImpl {
         return Arrays.<Table<?>>asList(
             Bucket.BUCKET,
             Host.HOST,
-            Logfile.LOGFILE);
+            Logfile.LOGFILE,
+            Logtag.LOGTAG);
     }
 }
