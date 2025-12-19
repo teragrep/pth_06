@@ -206,7 +206,6 @@ public class KafkaQueryProcessor implements KafkaQuery {
         LOGGER.debug("@VisibleForTesting KafkaQueryProcessor");
     }
 
-    @Override
     public Map<TopicPartition, Long> getInitialEndOffsets() {
         if (persistedEndOffsetMap.isEmpty() || continuousProcessing) {
 
@@ -227,7 +226,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
     }
 
     @Override
-    public Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset) {
+    public Map<TopicPartition, Long> endOffsets() {
         if (persistedEndOffsetMap.isEmpty() || continuousProcessing) {
             Map<TopicPartition, Long> topicPartitionEndOffsetMap = new HashMap<>();
 
@@ -247,7 +246,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
     }
 
     @Override
-    public Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset) {
+    public Map<TopicPartition, Long> beginningOffsets() {
         Map<TopicPartition, Long> topicPartitionStartOffsetMap = new HashMap<>();
 
         Map<TopicPartition, Long> beginningOffsets = kafkaConsumer
@@ -260,7 +259,6 @@ public class KafkaQueryProcessor implements KafkaQuery {
         return topicPartitionStartOffsetMap;
     }
 
-    @Override
     public void commit(KafkaOffset offset) {
         // no-op
     }
