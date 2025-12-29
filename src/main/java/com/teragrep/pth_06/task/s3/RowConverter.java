@@ -106,8 +106,6 @@ public final class RowConverter {
 
     final boolean skipNonRFC5424Files;
 
-    final boolean epochMigrationMode;
-
     private InputStream inputStream = null;
 
     public RowConverter(
@@ -119,8 +117,7 @@ public final class RowConverter {
             String directory,
             String stream,
             String host,
-            boolean skipNonRFC5424Files,
-            boolean epochMigrationMode
+            boolean skipNonRFC5424Files
     ) {
         this.auditPlugin = auditPlugin;
 
@@ -141,8 +138,6 @@ public final class RowConverter {
         this.s3client = s3client;
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
-
-        this.epochMigrationMode = epochMigrationMode;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Initialized s3client:" + s3client);
@@ -219,30 +214,23 @@ public final class RowConverter {
         }
 
         boolean rv;
-        // if first event is returned stop reading
-        if (epochMigrationMode && currentOffset > 0) {
-            LOGGER.debug("Epoch migration mode: already returned first event for this object, stopping further events");
-            rv = false;
-        }
-        else {
-            try {
-                rv = rfc5424Frame.next();
-                if (rv) {
-                    this.currentOffset++;
+        try {
+            rv = rfc5424Frame.next();
+            if (rv) {
+                this.currentOffset++;
 
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("<{}> Read event: <[{}]>", currentOffset, rfc5424Frame);
-                    }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("<{}> Read event: <[{}]>", currentOffset, rfc5424Frame);
                 }
             }
-            catch (ParseException parseException) {
-                LOGGER.error("ParseException at object: <[{}]>/<[{}]>", bucket, path);
-                if (skipNonRFC5424Files) {
-                    rv = false;
-                }
-                else {
-                    throw parseException;
-                }
+        }
+        catch (ParseException parseException) {
+            LOGGER.error("ParseException at object: <[{}]>/<[{}]>", bucket, path);
+            if (skipNonRFC5424Files) {
+                rv = false;
+            }
+            else {
+                throw parseException;
             }
         }
         return rv;
@@ -259,55 +247,56 @@ public final class RowConverter {
     }
 
     public InternalRow get() {
+        //System.out.println("RowConverter.get>");
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("RowConverter.get() partition(<{}>):<{}>/<{}> offset(<{}>)", id, bucket, path, currentOffset);
-            LOGGER.debug("Parser syslog event: <{}>", rfc5424Frame.toString());
+            LOGGER
+                    .debug(
+                            "RowConverter.get> Partition (" + this.id + "):" + bucket + "/" + path + " Get("
+                                    + currentOffset + ")"
+                    );
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Parsersyslog event:" + rfc5424Frame.toString());
         }
 
         final long epochMicros = rfc3339ToEpoch(new RFC5424Timestamp(rfc5424Frame.timestamp).toZonedDateTime());
 
+        // input
+        final byte[] source = eventToSource();
+
+        // origin
+        final byte[] origin = eventToOrigin();
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER
                     .trace(
-                            "PARSED epochMicros: <{}>  message: <{}>", epochMicros,
-                            new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
+                            "PARSED  epochMicros: " + epochMicros + "  message: "
+                                    + new String(rfc5424Frame.msg.toBytes(), StandardCharsets.UTF_8)
                     );
         }
-
-        final UTF8String message;
-
-        if (epochMigrationMode) {
-            message = UTF8String.EMPTY_UTF8;
-        }
-        else {
-            message = UTF8String.fromBytes(rfc5424Frame.msg.toBytes());
-        }
-
-        // input
-        final byte[] source = eventToSource();
 
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
         rowWriter.write(0, epochMicros);
-        rowWriter.write(1, message);
-        rowWriter.write(2, directory);
-        rowWriter.write(3, stream);
-        rowWriter.write(4, host);
+        rowWriter.write(1, UTF8String.fromBytes(rfc5424Frame.msg.toBytes()));
+        rowWriter.write(2, this.directory);
+        rowWriter.write(3, this.stream);
+        rowWriter.write(4, this.host);
         rowWriter.write(5, UTF8String.fromBytes(source));
-        rowWriter.write(6, id);
+        rowWriter.write(6, this.id);
         rowWriter.write(7, currentOffset);
-        rowWriter.write(8, UTF8String.fromBytes(eventToOrigin()));
+        rowWriter.write(8, UTF8String.fromBytes(origin));
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Get Event,  row=written");
+        }
 
         auditPlugin
                 .audit(
                         epochMicros, rfc5424Frame.msg.toBytes(), this.directory.getBytes(), this.stream.getBytes(),
                         this.host.getBytes(), source, this.id.toString(), currentOffset
                 );
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Get Event,  row=written");
-        }
-
         return rowWriter.getRow();
 
     }

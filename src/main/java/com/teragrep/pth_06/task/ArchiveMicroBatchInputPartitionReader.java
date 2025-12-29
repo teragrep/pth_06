@@ -88,7 +88,6 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     private final AmazonS3 s3client;
 
     private final boolean skipNonRFC5424Files;
-    private final boolean epochMigrationMode;
     private final MetricRegistry metricRegistry;
 
     public ArchiveMicroBatchInputPartitionReader(
@@ -101,8 +100,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
             String TeragrepAuditReason,
             String TeragrepAuditUser,
             String TeragrepAuditPluginClassName,
-            boolean skipNonRFC5424Files,
-            boolean epochMigrationMode
+            boolean skipNonRFC5424Files
     ) {
         this.taskObjectList = taskObjectList;
 
@@ -126,7 +124,6 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         }
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
-        this.epochMigrationMode = epochMigrationMode;
         this.metricRegistry = metricRegistry;
     }
 
@@ -149,8 +146,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                         taskObjectList.getFirst().directory,
                         taskObjectList.getFirst().stream,
                         taskObjectList.getFirst().host,
-                        skipNonRFC5424Files,
-                        epochMigrationMode
+                        skipNonRFC5424Files
                 );
 
                 metricRegistry.counter("ArchiveCompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
@@ -185,8 +181,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                             taskObjectList.getFirst().directory,
                             taskObjectList.getFirst().stream,
                             taskObjectList.getFirst().host,
-                            skipNonRFC5424Files,
-                            epochMigrationMode
+                            skipNonRFC5424Files
                     );
                     metricRegistry
                             .counter("ArchiveCompressedBytesProcessed")
