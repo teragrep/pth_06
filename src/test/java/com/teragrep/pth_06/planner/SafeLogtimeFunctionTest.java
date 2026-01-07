@@ -111,7 +111,7 @@ public final class SafeLogtimeFunctionTest {
                 .select(fn.asField())
                 .from(DSL.select(DSL.val("this/is/not/a/valid/path").as("path")).asTable())
                 .fetchOne(0, Long.class);
-        Assertions.assertEquals(0L, result);
+        Assertions.assertNull(result);
     }
 
     @Test
@@ -122,7 +122,7 @@ public final class SafeLogtimeFunctionTest {
                 .select(fn.asField())
                 .from(DSL.select(DSL.val((String) null).as("path")).asTable())
                 .fetchOne(0, Long.class);
-        Assertions.assertEquals(0L, result);
+        Assertions.assertNull(result);
     }
 
     @Test
@@ -134,7 +134,7 @@ public final class SafeLogtimeFunctionTest {
                 .select(fn.asField())
                 .from(DSL.select(DSL.val(invalidDatePath).as("path")).asTable())
                 .fetchOne(0, Long.class);
-        Assertions.assertEquals(0L, result);
+        Assertions.assertNull(result);
     }
 
     @Test

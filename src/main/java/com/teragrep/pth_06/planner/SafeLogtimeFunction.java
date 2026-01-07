@@ -56,10 +56,19 @@ import java.util.Objects;
  */
 final class SafeLogtimeFunction {
 
+    private final String regex;
     private final Field<String> pathField;
 
     SafeLogtimeFunction(final Field<String> pathField) {
+        this(
+                pathField,
+                "'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2}).*'"
+        );
+    }
+
+    private SafeLogtimeFunction(final Field<String> pathField, final String regex) {
         this.pathField = pathField;
+        this.regex = regex;
     }
 
     // regex substring to find date from a string path
@@ -67,9 +76,11 @@ final class SafeLogtimeFunction {
     // 2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz
     //
     Field<Long> asField() {
-        final String unixTimestamp = "UNIX_TIMESTAMP(STR_TO_DATE("
-                + "IFNULL(SUBSTRING(REGEXP_SUBSTR({0},'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2})'), -10, 10), '1970010100'), '%Y%m%d%H'))";
-        return DSL.field("COALESCE(" + unixTimestamp + ", 0)", Long.class, pathField);
+        final Field<String> extracted = DSL
+                .field("REGEXP_REPLACE({0}," + regex + ", '\\\\5')", String.class, pathField);
+
+        return DSL
+                .when(extracted.likeRegex("^[0-9]{10}$"), DSL.field("UNIX_TIMESTAMP(STR_TO_DATE({0}, '%Y%m%d%H'))", Long.class, extracted)).otherwise(DSL.val(null, Long.class));
     }
 
     @Override
@@ -81,11 +92,11 @@ final class SafeLogtimeFunction {
             return false;
         }
         final SafeLogtimeFunction that = (SafeLogtimeFunction) o;
-        return Objects.equals(pathField, that.pathField);
+        return Objects.equals(pathField, that.pathField) && Objects.equals(regex, that.regex);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(pathField);
+        return Objects.hash(pathField, regex);
     }
 }
