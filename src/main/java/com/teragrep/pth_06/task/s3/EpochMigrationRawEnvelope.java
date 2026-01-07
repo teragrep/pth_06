@@ -45,18 +45,62 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import com.teragrep.rlo_06.RFC5424Frame;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import org.apache.spark.unsafe.types.UTF8String;
 
-import java.io.IOException;
+final class EpochMigrationRawEnvelope {
 
-public interface RowConverter {
+    private final String bucket;
+    private final String path;
+    private final String id;
 
-    public abstract void open() throws IOException;
+    EpochMigrationRawEnvelope(final String bucket, final String path, final String id) {
+        this.bucket = bucket;
+        this.path = path;
+        this.id = id;
+    }
 
-    public abstract boolean next() throws IOException;
+    UTF8String asJSONFrom(
+            final RFC5424Frame rfc5424Frame,
+            final EpochMicros epochMicros,
+            final long offset,
+            boolean isSyslogFormat
+    ) {
 
-    public abstract InternalRow get();
+        final JsonObjectBuilder rootBuilder = Json
+                .createObjectBuilder()
+                .add("epochMigration", true)
+                .add("format", isSyslogFormat ? "rfc5424" : "non-rfc5424");
 
-    public abstract void close() throws IOException;
+        final JsonObjectBuilder objectBuilder = Json
+                .createObjectBuilder()
+                .add("bucket", bucket)
+                .add("path", path)
+                .add("offset", offset)
+                .add("partition", id);
 
+        rootBuilder.add("object", objectBuilder);
+
+        final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
+        if (isSyslogFormat) {
+            timestampBuilder
+                    .add("original", String.valueOf(rfc5424Frame.timestamp))
+                    .add("epoch", epochMicros.asLong())
+                    .add("source", "syslog");
+        }
+        else {
+            timestampBuilder
+                    .add("original", "unrecognized")
+                    .addNull("epoch") // can not calculate epoch value
+                    .add("source", "non-syslog");
+        }
+        rootBuilder.add("timestamp", timestampBuilder);
+
+        final JsonObject root = rootBuilder.build();
+
+        return UTF8String.fromString(root.toString());
+    }
 }

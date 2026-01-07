@@ -45,18 +45,8 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
-
-public interface RowConverter {
-
-    public abstract void open() throws IOException;
-
-    public abstract boolean next() throws IOException;
-
-    public abstract InternalRow get();
-
-    public abstract void close() throws IOException;
+class EpochMigrationRawEnvelopeTest {
 
 }

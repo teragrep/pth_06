@@ -49,7 +49,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.codahale.metrics.MetricRegistry;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.ArchiveS3ObjectMetadata;
+import com.teragrep.pth_06.task.s3.EpochMigrationRowConverter;
 import com.teragrep.pth_06.task.s3.Pth06S3Client;
+import com.teragrep.pth_06.task.s3.RowConverterImpl;
 import com.teragrep.pth_06.task.s3.RowConverter;
 import com.teragrep.rad_01.AuditPlugin;
 import com.teragrep.rad_01.AuditPluginFactory;
@@ -88,6 +90,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
     private final AmazonS3 s3client;
 
     private final boolean skipNonRFC5424Files;
+    private final boolean epochMigrationMode;
     private final MetricRegistry metricRegistry;
 
     public ArchiveMicroBatchInputPartitionReader(
@@ -100,7 +103,8 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
             String TeragrepAuditReason,
             String TeragrepAuditUser,
             String TeragrepAuditPluginClassName,
-            boolean skipNonRFC5424Files
+            boolean skipNonRFC5424Files,
+            boolean epochMigrationMode
     ) {
         this.taskObjectList = taskObjectList;
 
@@ -124,6 +128,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         }
 
         this.skipNonRFC5424Files = skipNonRFC5424Files;
+        this.epochMigrationMode = epochMigrationMode;
         this.metricRegistry = metricRegistry;
     }
 
@@ -137,17 +142,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
             // loop until all objects are consumed
             if (rowConverter == null) {
                 // initial run
-                rowConverter = new RowConverter(
-                        auditPlugin,
-                        s3client,
-                        taskObjectList.getFirst().id,
-                        taskObjectList.getFirst().bucket,
-                        taskObjectList.getFirst().path,
-                        taskObjectList.getFirst().directory,
-                        taskObjectList.getFirst().stream,
-                        taskObjectList.getFirst().host,
-                        skipNonRFC5424Files
-                );
+                rowConverter = selectedRowConverter();
 
                 metricRegistry.counter("ArchiveCompressedBytesProcessed").inc(taskObjectList.getFirst().compressedSize);
                 metricRegistry.counter("BytesProcessed").inc(taskObjectList.getFirst().uncompressedSize);
@@ -172,17 +167,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
 
                 if (!taskObjectList.isEmpty()) {
                     // new object still available
-                    rowConverter = new RowConverter(
-                            auditPlugin,
-                            s3client,
-                            taskObjectList.getFirst().id,
-                            taskObjectList.getFirst().bucket,
-                            taskObjectList.getFirst().path,
-                            taskObjectList.getFirst().directory,
-                            taskObjectList.getFirst().stream,
-                            taskObjectList.getFirst().host,
-                            skipNonRFC5424Files
-                    );
+                    rowConverter = selectedRowConverter();
                     metricRegistry
                             .counter("ArchiveCompressedBytesProcessed")
                             .inc(taskObjectList.getFirst().compressedSize);
@@ -220,6 +205,35 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
                 new TaskMetric("ArchiveCompressedBytesProcessed", compressedBytesProcessed),
                 new TaskMetric("ArchiveObjectsProcessed", objectsProcessed),
         };
+    }
+
+    public RowConverter selectedRowConverter() {
+        final RowConverter selectedConverter;
+        if (epochMigrationMode) {
+            selectedConverter = new EpochMigrationRowConverter(
+                    s3client,
+                    taskObjectList.getFirst().id,
+                    taskObjectList.getFirst().bucket,
+                    taskObjectList.getFirst().path,
+                    taskObjectList.getFirst().directory,
+                    taskObjectList.getFirst().stream,
+                    taskObjectList.getFirst().host
+            );
+        }
+        else {
+            selectedConverter = new RowConverterImpl(
+                    auditPlugin,
+                    s3client,
+                    taskObjectList.getFirst().id,
+                    taskObjectList.getFirst().bucket,
+                    taskObjectList.getFirst().path,
+                    taskObjectList.getFirst().directory,
+                    taskObjectList.getFirst().stream,
+                    taskObjectList.getFirst().host,
+                    skipNonRFC5424Files
+            );
+        }
+        return selectedConverter;
     }
 
     @Override

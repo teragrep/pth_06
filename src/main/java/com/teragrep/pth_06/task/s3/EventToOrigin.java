@@ -45,18 +45,32 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import com.teragrep.rlo_06.Fragment;
+import com.teragrep.rlo_06.RFC5424Frame;
+import com.teragrep.rlo_06.SDVector;
+import org.apache.spark.unsafe.types.UTF8String;
 
-import java.io.IOException;
+final class EventToOrigin {
 
-public interface RowConverter {
+    private final SDVector originHostname;
 
-    public abstract void open() throws IOException;
+    EventToOrigin() {
+        this.originHostname = new SDVector("origin@48577", "hostname");
+    }
 
-    public abstract boolean next() throws IOException;
+    UTF8String asUTF8StringFrom(RFC5424Frame rfc5424Frame) {
+        return UTF8String.fromBytes(origin(rfc5424Frame));
+    }
 
-    public abstract InternalRow get();
-
-    public abstract void close() throws IOException;
-
+    private byte[] origin(RFC5424Frame rfc5424Frame) {
+        byte[] origin;
+        Fragment originFragment = rfc5424Frame.structuredData.getValue(originHostname);
+        if (!originFragment.isStub) {
+            origin = originFragment.toBytes();
+        }
+        else {
+            origin = new byte[] {};
+        }
+        return origin;
+    }
 }

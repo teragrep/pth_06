@@ -45,18 +45,25 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-public interface RowConverter {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    public abstract void open() throws IOException;
+public class RowConverterImplTests {
 
-    public abstract boolean next() throws IOException;
+    @Test
+    public void rfc3339ToEpochTest() {
+        // String s = "2021-01-28T00:00:00+02:00";
+        Instant instant = Instant.ofEpochSecond(1611784800);
 
-    public abstract InternalRow get();
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Helsinki"));
+        final long epochMicros = RowConverterImpl.rfc3339ToEpoch(zonedDateTime);
 
-    public abstract void close() throws IOException;
+        assertEquals(1611784800000000L, epochMicros);
+    }
 
 }

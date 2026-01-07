@@ -45,25 +45,29 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.junit.jupiter.api.Test;
+import com.teragrep.rlo_06.RFC5424Timestamp;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+public final class EpochMicros {
 
-public class RowConverterTests {
+    private final RFC5424Timestamp rfc5424Timestamp;
+    private final long microsPerSecond;
+    private final long nanosPerMicro;
 
-    @Test
-    public void rfc3339ToEpochTest() {
-        // String s = "2021-01-28T00:00:00+02:00";
-        Instant instant = Instant.ofEpochSecond(1611784800);
-
-        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Helsinki"));
-        final long epochMicros = RowConverter.rfc3339ToEpoch(zonedDateTime);
-
-        assertEquals(1611784800000000L, epochMicros);
+    public EpochMicros(final RFC5424Timestamp rfc5424Timestamp) {
+        this(rfc5424Timestamp, 1000L * 1000L, 1000L);
     }
 
+    private EpochMicros(final RFC5424Timestamp rfc5424Timestamp, long microsPerSecond, long nanosPerMicro) {
+        this.rfc5424Timestamp = rfc5424Timestamp;
+        this.microsPerSecond = microsPerSecond;
+        this.nanosPerMicro = nanosPerMicro;
+    }
+
+    long asLong() {
+        Instant instant = rfc5424Timestamp.toZonedDateTime().toInstant();
+        final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
+        return Math.addExact(sec, instant.getNano() / nanosPerMicro);
+    }
 }
