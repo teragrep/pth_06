@@ -57,6 +57,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -308,6 +309,7 @@ class StreamDBClientTest {
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
      * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
     @Test
     public void epochHourNullTest() {
         // Add test data to logfile table in journaldb.
@@ -352,7 +354,32 @@ class StreamDBClientTest {
     }
 
     @Test
-    public void getNextHourAndSizeFromSliceTableTest() {
+    public void getNextHourAndSizeFromSliceTableEpochTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC.
+        Instant instant = Instant.ofEpochSecond(1696456800L);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696456800L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100423 UTC.
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696456800L + 3600L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-4"));
+        Assertions.assertEquals(2, rows);
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(1696456800L);
+        // Assert that the result for next hour from slice table after 2023-10-4 22:00 UTC is 2023-10-4 23:00 UTC.
+        Assertions.assertEquals(1696456800L + 3600L, nextHourAndSizeFromSliceTable.offset());
+    }
+
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
+    @Test
+    public void getNextHourAndSizeFromSliceTableNullEpochTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
@@ -383,6 +410,48 @@ class StreamDBClientTest {
 
     @Test
     public void weightedOffsetTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+
+        final long baseTime = 1696471200L;
+
+        final long baseMinusOneHour = baseTime - 3600L;
+        final long basePlusOneMinute = baseTime + 60L;
+        final long basePlusOneDay = baseTime + (24 * 3600L);
+
+        final LogfileRecord baseRecord = logfileRecordForEpoch(baseTime, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(baseRecord).execute();
+        final LogfileRecord plusOneMinuteRecord = logfileRecordForEpoch(basePlusOneMinute, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneMinuteRecord).execute();
+        final LogfileRecord plusOneDayRecord = logfileRecordForEpoch(basePlusOneDay, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+
+        // pull baseTime to SliceTable and assert weightedOffset to contain filesize=240 (2 rows) for that hour
+        final int baseTimeRows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(2, baseTimeRows);
+        final WeightedOffset weightedOffsetForBaseTime = sdc.getNextHourAndSizeFromSliceTable(baseMinusOneHour);
+
+        Assertions.assertEquals(baseTime, weightedOffsetForBaseTime.offset());
+        Assertions.assertEquals(240L, weightedOffsetForBaseTime.fileSize());
+
+        // pull baseTime+1day to SliceTable and assert weightedOffset to contain filesize=120 (1 row) for that hour
+        final int plusOneDayRows = sdc.pullToSliceTable(Date.valueOf("2023-10-6"));
+        Assertions.assertEquals(1, plusOneDayRows);
+        final WeightedOffset weightedOffsetForPlusOneDay = sdc.getNextHourAndSizeFromSliceTable(baseTime);
+        Assertions.assertEquals(basePlusOneDay, weightedOffsetForPlusOneDay.offset());
+        Assertions.assertEquals(120L, weightedOffsetForPlusOneDay.fileSize());
+    }
+
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
+    @Test
+    public void weightedOffsetNullEpochTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         final Instant instant = Instant.ofEpochSecond(1696471200L);
@@ -498,6 +567,7 @@ class StreamDBClientTest {
     /**
      * Testing deleteRangeFromSliceTable() method functionality with old logtime implementation.
      */
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
     @Test
     public void deleteRangeFromSliceTableNullEpochTest() {
         // Add test data to logfile table in journaldb.
@@ -530,6 +600,7 @@ class StreamDBClientTest {
     /**
      * Testing IncludeBeforeEpoch functionality with old logtime implementation.
      */
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
     @Test
     public void setIncludeBeforeEpochNullEpochTest() {
 
