@@ -568,6 +568,34 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing deleteRangeFromSliceTable() method functionality with new epoch logtime implementation.
+     */
+    @Test
+    public void deleteRangeFromSliceTableTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(1, rows);
+        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+
+        // Delete rows from slicetable and assert that they are no longer present in the slicetable.
+        sdc.deleteRangeFromSliceTable(instant.minusSeconds(3600).getEpochSecond(), instant.getEpochSecond());
+        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+    }
+
+    /**
      * Testing deleteRangeFromSliceTable() method functionality with old logtime implementation.
      */
     @Disabled("Removed support for old logtime source, only epoch_hour supported.")
