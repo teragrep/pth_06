@@ -601,6 +601,44 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing IncludeBeforeEpoch functionality with new epoch logtime implementation.
+     */
+    @Test
+    public void setIncludeBeforeEpochTest() {
+
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        Instant instant = Instant.ofEpochSecond(1696471200);
+        Instant instantPlusHour = instant.plusSeconds(3600);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Inserting logfile with logtime of 2023-10-05 03:00 UTC.
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.getEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+
+        // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-05 03:00 UTC, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-05 03:00 UTC or newer.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts.put("archive.includeBeforeEpoch", String.valueOf(instantPlusHour.getEpochSecond()));
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+        Assertions.assertEquals(2, rows);
+
+        // find the earliest row and assert that it has correct offset/logtime value
+        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+        Assertions.assertEquals(instant.getEpochSecond(), sdc.getNextHourAndSizeFromSliceTable(0L).offset());
+        // find the next row after earliest and assert that it is stub.
+        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(instant.getEpochSecond()).isStub);
+
+    }
+
+    /**
      * Testing IncludeBeforeEpoch functionality with old logtime implementation.
      */
     @Disabled("Removed support for old logtime source, only epoch_hour supported.")
