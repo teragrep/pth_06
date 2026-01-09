@@ -65,6 +65,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
@@ -125,7 +126,7 @@ class StreamDBClientTest {
         String filename = "example.log-@" + epoch + "-" + year + month + day + hour + ".rfc5424.log.gz";
         String path = year + "/" + month + "-" + day + "/example.tg.dev.test/example/" + filename;
         LogfileRecord logfileRecord = new LogfileRecord(
-                ULong.valueOf(epoch),
+                ULong.valueOf(ThreadLocalRandom.current().nextLong(0L, Long.MAX_VALUE)),
                 Date.valueOf(zonedDateTime.toLocalDate()),
                 Date.valueOf(zonedDateTime.plusYears(1).toLocalDate()),
                 UShort.valueOf(1),
@@ -150,7 +151,7 @@ class StreamDBClientTest {
         );
 
         LogfileRecord nullEpochRecord = new LogfileRecord(
-                ULong.valueOf(epoch),
+                ULong.valueOf(ThreadLocalRandom.current().nextLong(0L, Long.MAX_VALUE)),
                 Date.valueOf(zonedDateTime.toLocalDate()),
                 Date.valueOf(zonedDateTime.plusYears(1).toLocalDate()),
                 UShort.valueOf(1),
@@ -412,13 +413,14 @@ class StreamDBClientTest {
         final long baseTime = 1696471200L;
 
         final long baseMinusOneHour = baseTime - 3600L;
-        final long basePlusOneMinute = baseTime + 60L;
         final long basePlusOneDay = baseTime + (24 * 3600L);
 
         final LogfileRecord baseRecord = logfileRecordForEpoch(baseTime, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(baseRecord).execute();
-        final LogfileRecord plusOneMinuteRecord = logfileRecordForEpoch(basePlusOneMinute, false);
-        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneMinuteRecord).execute();
+        final LogfileRecord secondRecord = logfileRecordForEpoch(baseTime, false);
+        // Set the bucketId to something else to bypass unique key checks.
+        secondRecord.setBucketId(UShort.valueOf(2));
+        ctx.insertInto(JOURNALDB.LOGFILE).set(secondRecord).execute();
         final LogfileRecord plusOneDayRecord = logfileRecordForEpoch(basePlusOneDay, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
 
@@ -454,13 +456,14 @@ class StreamDBClientTest {
 
         final ZonedDateTime baseTime = ZonedDateTime.ofInstant(instant, zoneId);
         final ZonedDateTime baseMinusOneHour = baseTime.minusHours(1);
-        final ZonedDateTime basePlusOneHour = baseTime.plusMinutes(1);
         final ZonedDateTime basePlusOneDay = baseTime.plusDays(1);
 
         final LogfileRecord baseRecord = logfileRecordForEpoch(baseTime.toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(baseRecord).execute();
-        final LogfileRecord plusOneHourRecord = logfileRecordForEpoch(basePlusOneHour.toEpochSecond(), true);
-        ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneHourRecord).execute();
+        final LogfileRecord secondBaseRecord = logfileRecordForEpoch(baseTime.toEpochSecond(), true);
+        // Set the bucketId to something else to bypass unique key checks.
+        secondBaseRecord.setBucketId(UShort.valueOf(2));
+        ctx.insertInto(JOURNALDB.LOGFILE).set(secondBaseRecord).execute();
         final LogfileRecord plusOneDayRecord = logfileRecordForEpoch(basePlusOneDay.toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
 
@@ -916,7 +919,7 @@ class StreamDBClientTest {
         options.put("epochMigrationMode", "true");
         options.put("queryXML", "<index value=\"nonexistent\" operation=\"EQUALS\"/>");
         final Config config = new Config(options);
-        final List<ULong> expectedIDs = Arrays.asList(ULong.valueOf(1696471200), ULong.valueOf(1696474800));
+        final List<ULong> expectedIDs = Arrays.asList(configured.value1(), unconfigured.value1());
         final List<ULong> actualIDs = new ArrayList<>();
         Assertions.assertDoesNotThrow(() -> {
             try (final StreamDBClient client = new StreamDBClient(config)) {
