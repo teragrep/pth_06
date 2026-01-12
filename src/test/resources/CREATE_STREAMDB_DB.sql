@@ -113,12 +113,12 @@ CREATE TABLE `ci` (
                       PRIMARY KEY (`id`),
                       UNIQUE KEY `uix_ci` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains ci values that are identified using the ID';
-CREATE TABLE `logformat` (
-                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for logformat',
-                             `name` varchar(255) NOT NULL COMMENT 'logformat of the logfile records',
-                             PRIMARY KEY (`id`),
-                             UNIQUE KEY `uix_logformat` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains logformat values that are identified using the ID';
+CREATE TABLE `object_format` (
+                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for object_format',
+                                 `name` varchar(255) NOT NULL COMMENT 'object_format of the logfile records',
+                                 PRIMARY KEY (`id`),
+                                 UNIQUE KEY `uix_object_format` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains object_format values that are identified using the ID';
 CREATE TABLE `logfile` (
                            `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
                            `logdate` date NOT NULL COMMENT 'Log file''s date',
@@ -141,7 +141,7 @@ CREATE TABLE `logfile` (
                            `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
                            `logtag_id` bigint(20) unsigned NOT NULL COMMENT 'Log file''s foreign key to logtag',
                            `ci_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to ci table',
-                           `logformat_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logformat table',
+                           `object_format_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to object_format table',
                            PRIMARY KEY (`id`),
                            UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
                            KEY `bucket_id` (`bucket_id`),
@@ -156,8 +156,8 @@ CREATE TABLE `logfile` (
                            KEY `cix_logfile_epoch_hour_host_id_logtag_id` (`epoch_hour`,`host_id`,`logtag_id`),
                            KEY `cix_logfile_logdate_host_id_logtag_id` (`logdate`,`host_id`,`logtag_id`),
                            KEY `fk_logfile__ci_id` (`ci_id`),
-                           KEY `fk_logfile__logformat_id` (`logformat_id`),
-                           CONSTRAINT `fk_logfile__logformat_id` FOREIGN KEY (`logformat_id`) REFERENCES `logformat` (`id`),
+                           KEY `fk_logfile__object_format_id` (`object_format_id`),
+                           CONSTRAINT `fk_logfile__object_format_id` FOREIGN KEY (`object_format_id`) REFERENCES `object_format` (`id`),
                            CONSTRAINT `fk_logfile__ci_id` FOREIGN KEY (`ci_id`) REFERENCES `ci` (`id`),
                            CONSTRAINT `fk_logfile__logtag_id` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`),
                            CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),

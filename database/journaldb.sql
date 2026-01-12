@@ -239,9 +239,9 @@ CREATE TABLE `logfile` (
   `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
   `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
   `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
-  `logtag_id` bigint(20) unsigned NOT NULL COMMENT 'Log file''s foreign key to logtag',
   `ci_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to ci table',
-  `logformat_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logformat table',
+  `logtag_id` bigint(20) unsigned NOT NULL COMMENT 'Log file''s foreign key to logtag',
+  `object_format_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to object_format table',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
   KEY `bucket_id` (`bucket_id`),
@@ -252,14 +252,14 @@ CREATE TABLE `logfile` (
   KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
   KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
   KEY `ix_logfile_epoch_expires` (`epoch_expires`),
+  KEY `fk_logfile__ci_id` (`ci_id`),
   KEY `fk_logfile__logtag_id` (`logtag_id`),
   KEY `cix_logfile_epoch_hour_host_id_logtag_id` (`epoch_hour`,`host_id`,`logtag_id`),
   KEY `cix_logfile_logdate_host_id_logtag_id` (`logdate`,`host_id`,`logtag_id`),
-  KEY `fk_logfile__ci_id` (`ci_id`),
-  KEY `fk_logfile__logformat_id` (`logformat_id`),
-  CONSTRAINT `fk_logfile__logformat_id` FOREIGN KEY (`logformat_id`) REFERENCES `logformat` (`id`),
+  KEY `fk_logfile__object_format_id` (`object_format_id`),
   CONSTRAINT `fk_logfile__ci_id` FOREIGN KEY (`ci_id`) REFERENCES `ci` (`id`),
   CONSTRAINT `fk_logfile__logtag_id` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`),
+  CONSTRAINT `fk_logfile__object_format_id` FOREIGN KEY (`object_format_id`) REFERENCES `object_format` (`id`),
   CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
   CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
   CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
@@ -301,30 +301,6 @@ LOCK TABLES `logtag` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `logformat`
---
-
-DROP TABLE IF EXISTS `logformat`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `logformat` (
-                             `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for logformat',
-                             `name` varchar(255) NOT NULL COMMENT 'logformat of the logfile records',
-                             PRIMARY KEY (`id`),
-                             UNIQUE KEY `uix_logformat` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains logformat values that are identified using the ID';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `logformat`
---
-
-LOCK TABLES `logformat` WRITE;
-/*!40000 ALTER TABLE `logformat` DISABLE KEYS */;
-/*!40000 ALTER TABLE `logformat` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `metadata_value`
 --
 
@@ -349,6 +325,30 @@ CREATE TABLE `metadata_value` (
 LOCK TABLES `metadata_value` WRITE;
 /*!40000 ALTER TABLE `metadata_value` DISABLE KEYS */;
 /*!40000 ALTER TABLE `metadata_value` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `object_format`
+--
+
+DROP TABLE IF EXISTS `object_format`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `object_format` (
+                                 `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID for object_format',
+                                 `name` varchar(255) NOT NULL COMMENT 'object_format of the logfile records',
+                                 PRIMARY KEY (`id`),
+                                 UNIQUE KEY `uix_object_format` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains object_format values that are identified using the ID';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `object_format`
+--
+
+LOCK TABLES `object_format` WRITE;
+/*!40000 ALTER TABLE `object_format` DISABLE KEYS */;
+/*!40000 ALTER TABLE `object_format` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -411,4 +411,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-06 11:56:20
+-- Dump completed on 2026-02-23 14:57:42
