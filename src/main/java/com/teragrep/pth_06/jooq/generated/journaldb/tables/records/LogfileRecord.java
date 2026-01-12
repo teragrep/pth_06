@@ -78,7 +78,7 @@ import org.jooq.types.UShort;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements Record20<ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong> {
 
-    private static final long serialVersionUID = -450105678;
+    private static final long serialVersionUID = -498572737;
 
     /**
      * Setter for <code>journaldb.logfile.id</code>.
@@ -347,16 +347,16 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
     }
 
     /**
-     * Setter for <code>journaldb.logfile.logformat_id</code>. Log file's foreign key to logformat table
+     * Setter for <code>journaldb.logfile.object_format_id</code>. Log file's foreign key to object_format table
      */
-    public void setLogformatId(ULong value) {
+    public void setObjectFormatId(ULong value) {
         set(19, value);
     }
 
     /**
-     * Getter for <code>journaldb.logfile.logformat_id</code>. Log file's foreign key to logformat table
+     * Getter for <code>journaldb.logfile.object_format_id</code>. Log file's foreign key to object_format table
      */
-    public ULong getLogformatId() {
+    public ULong getObjectFormatId() {
         return (ULong) get(19);
     }
 
@@ -480,7 +480,7 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
 
     @Override
     public Field<ULong> field20() {
-        return Logfile.LOGFILE.LOGFORMAT_ID;
+        return Logfile.LOGFILE.OBJECT_FORMAT_ID;
     }
 
     @Override
@@ -580,7 +580,7 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
 
     @Override
     public ULong component20() {
-        return getLogformatId();
+        return getObjectFormatId();
     }
 
     @Override
@@ -680,7 +680,7 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
 
     @Override
     public ULong value20() {
-        return getLogformatId();
+        return getObjectFormatId();
     }
 
     @Override
@@ -799,7 +799,7 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
 
     @Override
     public LogfileRecord value20(ULong value) {
-        setLogformatId(value);
+        setObjectFormatId(value);
         return this;
     }
 
@@ -842,7 +842,7 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
     /**
      * Create a detached, initialised LogfileRecord
      */
-    public LogfileRecord(ULong id, Date logdate, Date expiration, UShort bucketId, String path, String objectKeyHash, UShort hostId, String originalFilename, Timestamp archived, ULong fileSize, String sha256Checksum, String archiveEtag, String logtag, UShort sourceSystemId, UShort categoryId, ULong uncompressedFileSize, ULong epochHour, ULong epochExpires, ULong epochArchived, ULong logformatId) {
+    public LogfileRecord(ULong id, Date logdate, Date expiration, UShort bucketId, String path, String objectKeyHash, UShort hostId, String originalFilename, Timestamp archived, ULong fileSize, String sha256Checksum, String archiveEtag, String logtag, UShort sourceSystemId, UShort categoryId, ULong uncompressedFileSize, ULong epochHour, ULong epochExpires, ULong epochArchived, ULong objectFormatId) {
         super(Logfile.LOGFILE);
 
         set(0, id);
@@ -864,6 +864,6 @@ public class LogfileRecord extends UpdatableRecordImpl<LogfileRecord> implements
         set(16, epochHour);
         set(17, epochExpires);
         set(18, epochArchived);
-        set(19, logformatId);
+        set(19, objectFormatId);
     }
 }
