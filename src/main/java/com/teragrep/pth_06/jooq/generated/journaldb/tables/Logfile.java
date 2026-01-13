@@ -67,7 +67,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row19;
+import org.jooq.Row20;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -91,7 +91,7 @@ import org.jooq.types.UShort;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Logfile extends TableImpl<LogfileRecord> {
 
-    private static final long serialVersionUID = 1844952122;
+    private static final long serialVersionUID = -562200177;
 
     /**
      * The reference instance of <code>journaldb.logfile</code>
@@ -202,6 +202,11 @@ public class Logfile extends TableImpl<LogfileRecord> {
     public final TableField<LogfileRecord, ULong> EPOCH_ARCHIVED = createField(DSL.name("epoch_archived"), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field("NULL", org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, "Log file's  epoch archived");
 
     /**
+     * The column <code>journaldb.logfile.object_format_id</code>. Log file's foreign key to object_format table
+     */
+    public final TableField<LogfileRecord, ULong> OBJECT_FORMAT_ID = createField(DSL.name("object_format_id"), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field("NULL", org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, "Log file's foreign key to object_format table");
+
+    /**
      * Create a <code>journaldb.logfile</code> table reference
      */
     public Logfile() {
@@ -241,7 +246,7 @@ public class Logfile extends TableImpl<LogfileRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);
+        return Arrays.<Index>asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_FK_LOGFILE__OBJECT_FORMAT_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);
     }
 
     @Override
@@ -299,11 +304,11 @@ public class Logfile extends TableImpl<LogfileRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row19 type methods
+    // Row20 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row19<ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong> fieldsRow() {
-        return (Row19) super.fieldsRow();
+    public Row20<ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong> fieldsRow() {
+        return (Row20) super.fieldsRow();
     }
 }

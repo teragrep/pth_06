@@ -142,7 +142,8 @@ class StreamDBClientTest {
                 ULong.valueOf(390L),
                 ULong.valueOf(epoch),
                 ULong.valueOf(epoch + (365 * 24 * 3600)),
-                ULong.valueOf(epoch)
+                ULong.valueOf(epoch),
+                null
         );
 
         LogfileRecord nullEpochRecord = new LogfileRecord(
@@ -162,6 +163,7 @@ class StreamDBClientTest {
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
+                null,
                 null,
                 null,
                 null
