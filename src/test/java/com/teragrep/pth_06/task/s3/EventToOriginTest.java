@@ -45,8 +45,40 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.teragrep.rlo_06.RFC5424Frame;
+import org.apache.spark.unsafe.types.UTF8String;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-class EpochMigrationRawEnvelopeTest {
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
+public final class EventToOriginTest {
+
+    @Test
+    void testOriginPresent() {
+        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - "
+                + "[origin@48577 hostname=\"original.hostname.domain.tld\"] " + "test message";
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
+        });
+        final EventToOrigin eventToOrigin = new EventToOrigin();
+        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
+        Assertions.assertEquals(UTF8String.fromString("original.hostname.domain.tld"), result);
+    }
+
+    @Test
+    void testOriginMissing() {
+        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - - test message";
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
+        });
+        final EventToOrigin eventToOrigin = new EventToOrigin();
+        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
+        Assertions.assertEquals(UTF8String.fromString(""), result, "Missing origin should return empty UTF8String");
+    }
 }

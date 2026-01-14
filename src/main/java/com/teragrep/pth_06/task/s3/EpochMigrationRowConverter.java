@@ -51,6 +51,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.teragrep.rlo_06.ParseException;
 import com.teragrep.rlo_06.RFC5424Frame;
 import com.teragrep.rlo_06.RFC5424Timestamp;
+import jakarta.json.JsonObject;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.catalyst.expressions.codegen.UnsafeRowWriter;
 import org.apache.spark.unsafe.types.UTF8String;
@@ -79,7 +80,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
     private final UTF8String stream;
     private final UTF8String host;
 
-    private final EpochMigrationRawEnvelope jsonEnvelope;
+    private final EventMetadata eventMetadata;
     // Currently handled log event from S3-file
     private final UnsafeRowWriter rowWriter;
 
@@ -100,7 +101,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
             final String stream,
             final String host
     ) {
-        this(s3client, id, bucket, path, directory, stream, host, new EpochMigrationRawEnvelope(bucket, path, id));
+        this(s3client, id, bucket, path, directory, stream, host, new EventMetadata(bucket, path, id));
     }
 
     public EpochMigrationRowConverter(
@@ -111,7 +112,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
             final String directory,
             final String stream,
             final String host,
-            final EpochMigrationRawEnvelope jsonEnvelope
+            final EventMetadata eventMetadata
     ) {
         this.bucket = bucket;
         this.path = path;
@@ -120,7 +121,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
         this.directory = UTF8String.fromString(directory.toLowerCase());
         this.stream = UTF8String.fromString(stream.toLowerCase());
         this.host = UTF8String.fromString(host.toLowerCase());
-        this.jsonEnvelope = jsonEnvelope;
+        this.eventMetadata = eventMetadata;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("RowConverter created with partition <[{}]> path <[{}]>", bucket, path);
@@ -232,8 +233,8 @@ public final class EpochMigrationRowConverter implements RowConverter {
 
         final EpochMicros epochMicros = new EpochMicros(new RFC5424Timestamp(rfc5424Frame.timestamp));
 
-        final UTF8String jsonEnvelopeString = jsonEnvelope
-                .asJSONFrom(rfc5424Frame, epochMicros, currentOffset, isSyslogFormat);
+        final JsonObject jsonEnvelope = eventMetadata.asJSON(rfc5424Frame, epochMicros, currentOffset, isSyslogFormat);
+        final UTF8String jsonEnvelopeString = UTF8String.fromString(jsonEnvelope.toString());
 
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();

@@ -66,7 +66,7 @@ public final class EpochMicros {
     }
 
     long asLong() {
-        Instant instant = rfc5424Timestamp.toZonedDateTime().toInstant();
+        final Instant instant = rfc5424Timestamp.toZonedDateTime().toInstant();
         final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
         return Math.addExact(sec, instant.getNano() / nanosPerMicro);
     }

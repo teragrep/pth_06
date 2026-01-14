@@ -49,21 +49,20 @@ import com.teragrep.rlo_06.RFC5424Frame;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
-import org.apache.spark.unsafe.types.UTF8String;
 
-final class EpochMigrationRawEnvelope {
+final class EventMetadata {
 
     private final String bucket;
     private final String path;
     private final String id;
 
-    EpochMigrationRawEnvelope(final String bucket, final String path, final String id) {
+    EventMetadata(final String bucket, final String path, final String id) {
         this.bucket = bucket;
         this.path = path;
         this.id = id;
     }
 
-    UTF8String asJSONFrom(
+    JsonObject asJSON(
             final RFC5424Frame rfc5424Frame,
             final EpochMicros epochMicros,
             final long offset,
@@ -99,8 +98,6 @@ final class EpochMigrationRawEnvelope {
         }
         rootBuilder.add("timestamp", timestampBuilder);
 
-        final JsonObject root = rootBuilder.build();
-
-        return UTF8String.fromString(root.toString());
+        return rootBuilder.build();
     }
 }
