@@ -50,6 +50,11 @@ import java.util.PriorityQueue;
 
 public final class MockDBRowSource implements TestDataSource {
 
+    /**
+     * Provides a new copy of a PriorityQueue with mock data.
+     * 
+     * @return A new copy of mock data.
+     */
     @Override
     public PriorityQueue<MockDBRow> asPriorityQueue() {
         final PriorityQueue<MockDBRow> mockDBRows = new PriorityQueue<>();
