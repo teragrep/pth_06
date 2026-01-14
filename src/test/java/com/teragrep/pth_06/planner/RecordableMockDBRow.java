@@ -55,9 +55,15 @@ import java.sql.Date;
 
 public final class RecordableMockDBRow implements MockDBRow, Recordable {
 
+    private final DSLContext dslContext;
     private final MockDBRow origin;
 
     public RecordableMockDBRow(final MockDBRow origin) {
+        this(DSL.using(SQLDialect.DEFAULT), origin);
+    }
+
+    public RecordableMockDBRow(final DSLContext dslContext, final MockDBRow origin) {
+        this.dslContext = dslContext;
         this.origin = origin;
     }
 
@@ -118,9 +124,7 @@ public final class RecordableMockDBRow implements MockDBRow, Recordable {
 
     @Override
     public Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> asRecord() {
-        DSLContext create = DSL.using(SQLDialect.DEFAULT);
-
-        Record11<ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong> newRecord = create
+        final Record11<ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong> newRecord = dslContext
                 .newRecord(
                         SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
                         SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
