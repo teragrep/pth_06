@@ -50,6 +50,8 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
+import java.util.Objects;
+
 final class EventMetadata {
 
     private final String bucket;
@@ -99,5 +101,22 @@ final class EventMetadata {
         rootBuilder.add("timestamp", timestampBuilder);
 
         return rootBuilder.build();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final EventMetadata that = (EventMetadata) o;
+        return Objects.equals(bucket, that.bucket) && Objects.equals(path, that.path) && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bucket, path, id);
     }
 }

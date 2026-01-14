@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.task.s3;
 
 import com.teragrep.rlo_06.RFC5424Frame;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.apache.spark.unsafe.types.UTF8String;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -97,5 +98,10 @@ final class EventToSourceTest {
         final EventToSource eventToSource = new EventToSource();
         final UTF8String result = eventToSource.asUTF8StringFrom(frame);
         Assertions.assertEquals(UTF8String.fromString("::"), result);
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(EventToSource.class).verify();
     }
 }

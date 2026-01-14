@@ -51,6 +51,7 @@ import com.teragrep.rlo_06.SDVector;
 import org.apache.spark.unsafe.types.UTF8String;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 final class EventToSource {
 
@@ -160,5 +161,28 @@ final class EventToSource {
 
         return input;
 
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final EventToSource that = (EventToSource) o;
+        return Objects.equals(sourceConcatenationBuffer, that.sourceConcatenationBuffer)
+                && Objects.equals(eventNodeSourceSource, that.eventNodeSourceSource) && Objects.equals(eventNodeRelaySource, that.eventNodeRelaySource) && Objects.equals(eventNodeSourceSourceModule, that.eventNodeSourceSourceModule) && Objects.equals(eventNodeRelaySourceModule, that.eventNodeRelaySourceModule) && Objects.equals(eventNodeSourceHostname, that.eventNodeSourceHostname) && Objects.equals(eventNodeRelayHostname, that.eventNodeRelayHostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(
+                        sourceConcatenationBuffer, eventNodeSourceSource, eventNodeRelaySource,
+                        eventNodeSourceSourceModule, eventNodeRelaySourceModule, eventNodeSourceHostname,
+                        eventNodeRelayHostname
+                );
     }
 }

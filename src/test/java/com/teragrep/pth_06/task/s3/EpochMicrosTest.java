@@ -46,45 +46,47 @@
 package com.teragrep.pth_06.task.s3;
 
 import com.teragrep.rlo_06.RFC5424Frame;
+import com.teragrep.rlo_06.RFC5424Timestamp;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.apache.spark.unsafe.types.UTF8String;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
-public final class EventToOriginTest {
-
-    @Test
-    void testOriginPresent() {
-        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - "
-                + "[origin@48577 hostname=\"original.hostname.domain.tld\"] " + "test message";
-        final RFC5424Frame frame = new RFC5424Frame(true);
-        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
-        Assertions.assertDoesNotThrow(() -> {
-            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
-        });
-        final EventToOrigin eventToOrigin = new EventToOrigin();
-        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
-        Assertions.assertEquals(UTF8String.fromString("original.hostname.domain.tld"), result);
-    }
+public final class EpochMicrosTest {
 
     @Test
-    void testOriginMissing() {
+    void testAsLongValue() {
         final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - - test message";
         final RFC5424Frame frame = new RFC5424Frame(true);
         frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
-        Assertions.assertDoesNotThrow(() -> {
-            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
-        });
-        final EventToOrigin eventToOrigin = new EventToOrigin();
-        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
-        Assertions.assertEquals(UTF8String.fromString(""), result, "Missing origin should return empty UTF8String");
+        Assertions.assertDoesNotThrow(() -> Assertions.assertTrue(frame.next()));
+        final EpochMicros epochMicros = new EpochMicros(new RFC5424Timestamp(frame.timestamp));
+        final ZonedDateTime zdt = ZonedDateTime.parse("2024-01-01T00:00:00Z", DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        final long expected = zdt.toEpochSecond() * 1_000_000L + zdt.getNano() / 1_000L;
+        final long actual = epochMicros.asLong();
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void testCorrectConversionOfNanoSeconds() {
+        final String syslog = "<34>1 2024-01-01T00:00:00.123456789Z host app 1234 - - test message";
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertDoesNotThrow(() -> Assertions.assertTrue(frame.next()));
+        final EpochMicros epochMicros = new EpochMicros(new RFC5424Timestamp(frame.timestamp));
+        final ZonedDateTime zdt = ZonedDateTime
+                .parse("2024-01-01T00:00:00.123456789Z", DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        final long expected = zdt.toEpochSecond() * 1_000_000L + zdt.getNano() / 1_000L; // nanos -> micros
+        final long actual = epochMicros.asLong();
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
     public void testContract() {
-        EqualsVerifier.forClass(EventToOrigin.class).verify();
+        EqualsVerifier.forClass(EpochMicros.class).verify();
     }
 }

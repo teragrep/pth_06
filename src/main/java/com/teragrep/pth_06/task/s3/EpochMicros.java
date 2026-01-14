@@ -48,6 +48,7 @@ package com.teragrep.pth_06.task.s3;
 import com.teragrep.rlo_06.RFC5424Timestamp;
 
 import java.time.Instant;
+import java.util.Objects;
 
 public final class EpochMicros {
 
@@ -69,5 +70,23 @@ public final class EpochMicros {
         final Instant instant = rfc5424Timestamp.toZonedDateTime().toInstant();
         final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
         return Math.addExact(sec, instant.getNano() / nanosPerMicro);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final EpochMicros that = (EpochMicros) o;
+        return microsPerSecond == that.microsPerSecond && nanosPerMicro == that.nanosPerMicro
+                && Objects.equals(rfc5424Timestamp, that.rfc5424Timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rfc5424Timestamp, microsPerSecond, nanosPerMicro);
     }
 }

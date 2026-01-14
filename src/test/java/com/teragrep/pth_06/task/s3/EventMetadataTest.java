@@ -48,6 +48,7 @@ package com.teragrep.pth_06.task.s3;
 import com.teragrep.rlo_06.RFC5424Frame;
 import com.teragrep.rlo_06.RFC5424Timestamp;
 import jakarta.json.JsonObject;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -104,5 +105,10 @@ public final class EventMetadataTest {
         Assertions.assertEquals("non-syslog", timestampJson.getString("source"));
         Assertions.assertEquals("unrecognized", timestampJson.getString("original"));
         Assertions.assertEquals(true, timestampJson.isNull("epoch"));
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(EventMetadata.class).verify();
     }
 }

@@ -50,6 +50,8 @@ import com.teragrep.rlo_06.RFC5424Frame;
 import com.teragrep.rlo_06.SDVector;
 import org.apache.spark.unsafe.types.UTF8String;
 
+import java.util.Objects;
+
 final class EventToOrigin {
 
     private final SDVector originHostname;
@@ -72,5 +74,22 @@ final class EventToOrigin {
             origin = new byte[] {};
         }
         return origin;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        EventToOrigin that = (EventToOrigin) o;
+        return Objects.equals(originHostname, that.originHostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(originHostname);
     }
 }
