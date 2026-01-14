@@ -195,7 +195,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -222,7 +222,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -243,7 +243,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -283,7 +283,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -324,7 +324,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -351,7 +351,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -383,7 +383,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
 
         final Config config = new Config(opts);
@@ -426,7 +426,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(plusOneDayRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
 
         final Config config = new Config(opts);
@@ -463,7 +463,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -493,7 +493,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
@@ -529,7 +529,7 @@ class StreamDBClientTest {
         // Assert StreamDBClient methods work as expected with the test data.
 
         // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-05 03:00 UTC, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-05 03:00 UTC or newer.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts.put("archive.includeBeforeEpoch", String.valueOf(instantPlusHour.getEpochSecond()));
         final Config config = new Config(opts);
@@ -569,7 +569,7 @@ class StreamDBClientTest {
         // Assert StreamDBClient methods work as expected with the test data.
 
         // Set includeBeforeEpoch in ArchiveConfig to an epoch that represents 2023-10-04 23:00 UTC-4, for getNextHourAndSizeFromSliceTable() to ignore records with logtime of 2023-10-04 23:00 UTC-4 or newer.
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts.put("archive.includeBeforeEpoch", String.valueOf(instantPlusHour.toEpochSecond()));
         final Config config = new Config(opts);
@@ -601,7 +601,7 @@ class StreamDBClientTest {
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Create an instance of StreamDBClient using the default server timezone (UTC-4).
-        final Map<String, String> opts = this.opts;
+        final Map<String, String> opts = new HashMap<>(this.opts);
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
