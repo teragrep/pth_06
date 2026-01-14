@@ -45,7 +45,10 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.codahale.metrics.*;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.SettableGauge;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.Record11;
