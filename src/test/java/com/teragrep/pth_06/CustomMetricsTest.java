@@ -172,6 +172,7 @@ public final class CustomMetricsTest {
             return 0; // need to return something, expects scala Unit return value
         });
 
+        final long expectedArchiveRows = 33L;
         // Check that all expected metrics are present
         Assertions
                 .assertTrue(
@@ -191,7 +192,7 @@ public final class CustomMetricsTest {
         // Get minimum and maximum archive offsets, and assert them
         Assertions
                 .assertEquals(
-                        33, metricsValues
+                        expectedArchiveRows, metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.offsets.ArchiveOffsetMetricAggregator")
                                 .size()
                 );
@@ -210,7 +211,7 @@ public final class CustomMetricsTest {
 
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         new HashSet<>(
                                 metricsValues
                                         .get(
@@ -222,7 +223,9 @@ public final class CustomMetricsTest {
         // kafka offsets
         Assertions
                 .assertEquals(
-                        33, metricsValues.get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator").size()
+                        expectedArchiveRows, metricsValues
+                                .get("v2Custom_com.teragrep.pth_06.metrics.offsets.KafkaOffsetMetricAggregator")
+                                .size()
                 );
         // all kafka offsets the same (in unit tests all kafka data is retrieved in first batch from 0->14 offset)
         Assertions
@@ -359,10 +362,13 @@ public final class CustomMetricsTest {
                         "LatestKafkaTimestamp metric not present!"
                 );
 
+        final long expectedArchiveRows = 33L;
+        final long expectedKafkaRows = 14L;
+        final long expectedTotalRows = expectedArchiveRows + expectedKafkaRows;
         // 33 batches, 33 values for each metric
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.bytes.ArchiveCompressedBytesProcessedMetricAggregator"
@@ -371,13 +377,13 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33, metricsValues
+                        expectedArchiveRows, metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesProcessedMetricAggregator")
                                 .size()
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.objects.ArchiveObjectsProcessedMetricAggregator"
@@ -386,14 +392,14 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
                                 .size()
                 );
         Assertions
                 .assertEquals(
-                        47L,
+                        expectedTotalRows,
                         metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsProcessedMetricAggregator")
                                 .stream()
@@ -402,14 +408,14 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.records.RecordsPerSecondMetricAggregator")
                                 .size()
                 );
         Assertions
                 .assertEquals(
-                        33, metricsValues
+                        expectedArchiveRows, metricsValues
                                 .get("v2Custom_com.teragrep.pth_06.metrics.bytes.BytesPerSecondMetricAggregator")
                                 .size()
                 );
@@ -516,9 +522,10 @@ public final class CustomMetricsTest {
                 );
 
         // database latency metrics
+        final long expectedArchiveRows = 33L;
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMaxLatencyMetricAggregator"
@@ -527,7 +534,7 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowAvgLatencyMetricAggregator"
@@ -536,7 +543,7 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowMinLatencyMetricAggregator"
@@ -545,7 +552,7 @@ public final class CustomMetricsTest {
                 );
         Assertions
                 .assertEquals(
-                        33,
+                        expectedArchiveRows,
                         metricsValues
                                 .get(
                                         "v2Custom_com.teragrep.pth_06.metrics.database.ArchiveDatabaseRowCountMetricAggregator"
