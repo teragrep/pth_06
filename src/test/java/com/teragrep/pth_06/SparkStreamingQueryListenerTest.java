@@ -173,6 +173,7 @@ public final class SparkStreamingQueryListenerTest {
             }
         });
 
+        final long expectedRows = 47L;
         Assertions.assertDoesNotThrow(() -> streamingQuery.awaitTermination());
         Assertions.assertEquals(1, triggered[0]);
         Assertions
@@ -180,6 +181,6 @@ public final class SparkStreamingQueryListenerTest {
                         "{\"version\":1,\"archiveOffset\":{\"offset\":1263679200,\"json\":\"1263679200\"},\"kafkaOffset\":{\"serializedKafkaOffset\":{\"testConsumerTopic-0\":14}}}",
                         latestOffset[0]
                 );
-        Assertions.assertEquals(47L, spark.sql("SELECT COUNT(*) FROM MOCKARCHIVEQUERY;").first().getLong(0));
+        Assertions.assertEquals(expectedRows, spark.sql("SELECT COUNT(*) FROM MOCKARCHIVEQUERY;").first().getLong(0));
     }
 }
