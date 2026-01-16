@@ -46,9 +46,14 @@
 package com.teragrep.pth_06.planner;
 
 import java.sql.Date;
+import java.util.Comparator;
 import java.util.Objects;
 
 public final class MockDBRowImpl implements MockDBRow {
+
+    private final static Comparator<MockDBRow> COMPARATOR = Comparator
+            .comparingLong(MockDBRow::logtime)
+            .thenComparingInt(System::identityHashCode);
 
     private final long id;
     private final String directory;
@@ -145,13 +150,7 @@ public final class MockDBRowImpl implements MockDBRow {
 
     @Override
     public int compareTo(final MockDBRow o) {
-        int comparisonResult = Long.compare(logtime, o.logtime());
-        if (comparisonResult == 0) {
-            if (!this.equals(o)) {
-                comparisonResult -= 1;
-            }
-        }
-        return comparisonResult;
+        return COMPARATOR.compare(this, o);
     }
 
     @Override
