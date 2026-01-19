@@ -76,10 +76,18 @@ public final class MockMeteredArchiveQueryProcessor implements ArchiveQuery {
             long startHour,
             long endHour
     ) {
+
         final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime").time();
-        final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> rv = archiveQuery
-                .processBetweenUnixEpochHours(startHour, endHour);
-        final long latencyNs = timerCtx.stop();
+        final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> rv;
+        final long latencyNs;
+
+        try {
+            rv = archiveQuery.processBetweenUnixEpochHours(startHour, endHour);
+        }
+        finally {
+            latencyNs = timerCtx.stop();
+            timerCtx.close();
+        }
 
         if (!rv.isEmpty()) {
             metricRegistry.histogram("mockRowTime").update(latencyNs / rv.size());
