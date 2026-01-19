@@ -86,9 +86,9 @@ public final class MockArchiveQueryProcessor implements ArchiveQuery {
         final PriorityQueue<MockDBRow> slice = sliceableTestDataSource.slice(earliestAvailableStartHour, endHour);
 
         final MockDataProvider provider = ctx -> {
-            // use ordinary jooq api to create an org.jooq.result object.
-            // you can also use ordinary jooq api to load csv files or
-            // other formats, here!
+            /* use ordinary jooq api to create an org.jooq.result object.
+            * you can also use ordinary jooq api to load csv files or
+            * other formats, here! */
             final DSLContext create = DSL.using(SQLDialect.DEFAULT);
             final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = create
                     .newResult(
