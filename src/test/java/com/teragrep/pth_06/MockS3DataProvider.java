@@ -84,7 +84,6 @@ public final class MockS3DataProvider {
         final PriorityQueue<MockDBRow> mockDBRows = testDataSource.asPriorityQueue();
 
         for (final MockDBRow row : mockDBRows) {
-            // id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize
             final String host = row.host();
             final String logtag = row.logtag();
             final String bucket = row.bucket();
@@ -104,7 +103,6 @@ public final class MockS3DataProvider {
                     .withMsg(recordAsJson);
 
             // [event_id@48577 hostname="hostname.domain.tld" uuid="" unixtime="" id_source="source"]
-
             final SDElement event_id_48577 = new SDElement("event_id@48577")
                     .addSDParam("hostname", host)
                     .addSDParam("uuid", UUID.randomUUID().toString())
@@ -114,14 +112,12 @@ public final class MockS3DataProvider {
             syslog = syslog.withSDElement(event_id_48577);
 
             // [event_format@48577 original_format="rfc5424"]
-
             final SDElement event_format_48577 = new SDElement("event_id@48577")
                     .addSDParam("original_format", "rfc5424");
 
             syslog = syslog.withSDElement(event_format_48577);
 
             // [event_node_relay@48577 hostname="relay.domain.tld" source="hostname.domain.tld" source_module="imudp"]
-
             final SDElement event_node_relay_48577 = new SDElement("event_node_relay@48577")
                     .addSDParam("hostname", "relay.domain.tld")
                     .addSDParam("source", host)
@@ -130,7 +126,6 @@ public final class MockS3DataProvider {
             syslog = syslog.withSDElement(event_node_relay_48577);
 
             // [event_version@48577 major="2" minor="2" hostname="relay.domain.tld" version_source="relay"]
-
             final SDElement event_version_48577 = new SDElement("event_version@48577")
                     .addSDParam("major", "2")
                     .addSDParam("minor", "2")
@@ -140,7 +135,6 @@ public final class MockS3DataProvider {
             syslog = syslog.withSDElement(event_version_48577);
 
             // [event_node_router@48577 source="relay.domain.tld" source_module="imrelp" hostname="router.domain.tld"]
-
             final SDElement event_node_router_48577 = new SDElement("event_node_router@48577")
                     .addSDParam("source", "relay.domain.tld")
                     .addSDParam("source_module", "imrelp")
@@ -149,7 +143,6 @@ public final class MockS3DataProvider {
             syslog = syslog.withSDElement(event_node_router_48577);
 
             // [origin@48577 hostname="original.hostname.domain.tld"]
-
             final SDElement origin_48577 = new SDElement("origin@48577")
                     .addSDParam("hostname", "original.hostname.domain.tld");
             syslog = syslog.withSDElement(origin_48577);
