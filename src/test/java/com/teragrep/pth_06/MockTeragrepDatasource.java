@@ -115,7 +115,7 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
         return () -> {
             Config config = new Config(options);
 
-            ArchiveQuery archiveQueryProcessor = new MockArchiveQueryProcessor(
+            ArchiveQuery archiveQueryProcessor = new MockMeteredArchiveQueryProcessor(
                     "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
             );
 

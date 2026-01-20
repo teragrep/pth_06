@@ -45,122 +45,137 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.codahale.metrics.*;
-import com.teragrep.pth_06.metrics.TaskMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import org.jooq.Record11;
-import org.jooq.Result;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+import org.jooq.tools.jdbc.MockConnection;
+import org.jooq.tools.jdbc.MockDataProvider;
+import org.jooq.tools.jdbc.MockResult;
 import org.jooq.types.ULong;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.Date;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.PriorityQueue;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static com.teragrep.pth_06.planner.MockDBData.generateResult;
+public final class MockArchiveQueryProcessor implements ArchiveQuery {
 
-// https://dzone.com/articles/easy-mocking-your-database-0
+    private final String query;
+    private final SliceableTestDataSource sliceableTestDataSource;
+    private final AtomicLong committedOffset;
+    private final AtomicReference<Long> latestOffset;
 
-public class MockArchiveQueryProcessor implements ArchiveQuery {
+    public MockArchiveQueryProcessor(final String query) {
+        this(query, new SliceableMockDBRowSourceImpl(new MockDBRowSource()));
+    }
 
-    final Logger LOGGER = LoggerFactory.getLogger(MockArchiveQueryProcessor.class);
-
-    private final String expectedQuery = "<index operation=\"EQUALS\" value=\"f17_v2\"/>";
-
-    // epoch as key, resultSet as value
-    private final TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap;
-
-    private Long latestOffset = null;
-
-    private final MetricRegistry metricRegistry;
-
-    public MockArchiveQueryProcessor(String query) {
-
-        if (!query.equals(expectedQuery)) {
-            throw new IllegalArgumentException("query not expectedQuery: " + query);
-        }
-
-        MockDBData mockDBData = new MockDBData();
-
-        this.virtualDatabaseMap = mockDBData.getVirtualDatabaseMap();
-
-        this.metricRegistry = new MetricRegistry();
+    public MockArchiveQueryProcessor(final String query, final SliceableTestDataSource sliceableTestDataSource) {
+        this.query = query;
+        this.sliceableTestDataSource = sliceableTestDataSource;
+        this.committedOffset = new AtomicLong(Long.MIN_VALUE);
+        this.latestOffset = new AtomicReference<>();
     }
 
     @Override
     public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
+            final long startHour,
+            final long endHour
     ) {
-        LOGGER.info("MockArchiveQueryProcessor.range> " + startHour + " to " + endHour);
-        // start is inclusive and end is also inclusive
+        final long earliestAvailableStartHour = Math.max(committedOffset.get(), startHour);
+        final PriorityQueue<MockDBRow> slice = sliceableTestDataSource.slice(earliestAvailableStartHour, endHour);
 
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> rv = generateResult(
-                null, null, null, null, null, null, null, null, null, null, null
-        );
+        final MockDataProvider provider = ctx -> {
+            /* use ordinary jooq api to create an org.jooq.result object.
+            * you can also use ordinary jooq api to load csv files or
+            * other formats, here! */
+            final DSLContext create = DSL.using(SQLDialect.DEFAULT);
+            final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = create
+                    .newResult(
+                            SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
+                            SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime,
+                            SliceTable.filesize, SliceTable.uncompressedFilesize
+                    );
 
-        final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime").time();
-        for (long res : virtualDatabaseMap.keySet()) {
-            if (res > startHour && res <= endHour) {
-                rv.addAll(virtualDatabaseMap.get(res));
+            while (!slice.isEmpty()) {
+                result.add(new RecordableMockDBRow(slice.poll()).asRecord());
             }
-        }
-        final long latencyNs = timerCtx.stop();
 
-        if (!rv.isEmpty()) {
-            metricRegistry.histogram("mockRowTime").update(latencyNs / rv.size());
-        }
-        SettableGauge<Long> count = metricRegistry.gauge("mockRowCount");
-        count.setValue((long) rv.size());
-        LOGGER.info("MockArchiveQueryProcessor.range> " + rv.formatCSV());
-        return rv;
-    }
-
-    @Override
-    public void commit(long offset) {
-        // end offset is committed
-        virtualDatabaseMap.keySet().removeIf(hour -> hour <= offset);
-    }
-
-    @Override
-    public Long incrementAndGetLatestOffset() {
-        Optional<Long> offset;
-        if (this.latestOffset == null) {
-            offset = virtualDatabaseMap
-                    .keySet()
-                    .stream()
-                    .filter(x -> !x.equals(getInitialOffset()))
-                    .sorted()
-                    .findFirst();
-        }
-        else {
-            offset = virtualDatabaseMap.keySet().stream().filter(x -> x > this.latestOffset).sorted().findFirst();
-        }
-
-        // always return the last offset if later offset could not be found
-        this.latestOffset = offset.orElseGet(() -> this.latestOffset);
-        return this.latestOffset;
-    }
-
-    @Override
-    public Long mostRecentOffset() {
-        return latestOffset;
-    }
-
-    @Override
-    public CustomTaskMetric[] currentDatabaseMetrics() {
-        final Snapshot snapshot = metricRegistry.histogram("mockRowTime").getSnapshot();
-        return new CustomTaskMetric[] {
-                new TaskMetric("ArchiveDatabaseRowCount", (long) metricRegistry.gauge("mockRowCount").getValue()),
-                new TaskMetric("ArchiveDatabaseRowMaxLatency", snapshot.getMax()),
-                new TaskMetric("ArchiveDatabaseRowAvgLatency", (long) snapshot.getMean()),
-                new TaskMetric("ArchiveDatabaseRowMinLatency", snapshot.getMin()),
+            return new MockResult[] {
+                    new MockResult(result.size(), result)
+            };
         };
+
+        final Connection connection = new MockConnection(provider);
+        final DSLContext create = DSL.using(connection, SQLDialect.DEFAULT);
+        final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result;
+        try (
+                final SelectSelectStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> step = create
+                        .select(
+                                SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host,
+                                SliceTable.logtag, SliceTable.logdate, SliceTable.bucket, SliceTable.path,
+                                SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
+                        )
+        ) {
+            result = step.fetch();
+        }
+        return result;
+    }
+
+    @Override
+    public void commit(final long offset) {
+        committedOffset.set(offset);
     }
 
     @Override
     public Long getInitialOffset() {
-        return 1262296800L;
+        final PriorityQueue<MockDBRow> queue = sliceableTestDataSource.asPriorityQueue();
+
+        final Long initialOffset;
+        if (!queue.isEmpty()) {
+            final MockDBRow firstRow = queue.peek();
+            initialOffset = firstRow.logtime();
+        }
+        else {
+            initialOffset = null;
+        }
+        return initialOffset;
+    }
+
+    @Override
+    public Long incrementAndGetLatestOffset() {
+        final PriorityQueue<MockDBRow> queue = sliceableTestDataSource.asPriorityQueue();
+        final Long newLatestOffset;
+
+        if (queue.isEmpty()) {
+            newLatestOffset = latestOffset.get();
+        }
+        else if (latestOffset.get() == null) {
+            final MockDBRow firstRow = queue.peek();
+            newLatestOffset = firstRow.logtime();
+        }
+        else {
+            Long nextOffset = latestOffset.get();
+            while (!queue.isEmpty()) {
+                MockDBRow row = queue.poll();
+                if (row.logtime() > latestOffset.get()) {
+                    nextOffset = row.logtime();
+                    break;
+                }
+            }
+            newLatestOffset = nextOffset;
+        }
+        latestOffset.set(newLatestOffset);
+        return newLatestOffset;
+    }
+
+    @Override
+    public Long mostRecentOffset() {
+        return latestOffset.get();
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        return new CustomTaskMetric[0];
     }
 }
