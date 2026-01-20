@@ -53,7 +53,16 @@ public final class MockDBRowImpl implements MockDBRow {
 
     private final static Comparator<MockDBRow> COMPARATOR = Comparator
             .comparingLong(MockDBRow::logtime)
-            .thenComparingInt(System::identityHashCode);
+            .thenComparingLong(MockDBRow::id)
+            .thenComparing(MockDBRow::directory)
+            .thenComparing(MockDBRow::stream)
+            .thenComparing(MockDBRow::host)
+            .thenComparing(MockDBRow::logtag)
+            .thenComparing(MockDBRow::logdate)
+            .thenComparing(MockDBRow::bucket)
+            .thenComparing(MockDBRow::path)
+            .thenComparingLong(MockDBRow::filesize)
+            .thenComparingLong(MockDBRow::uncompressedFilesize);
 
     private final long id;
     private final String directory;
