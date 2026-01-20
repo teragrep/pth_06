@@ -23,8 +23,8 @@
 <title>Node2</title>
 <g id="a_Node000002"><a xlink:title=" ">
 <polygon fill="#e0e0e0" stroke="#999999" points="174,-30 14,-30 14,0 174,0 174,-30"/>
-<text text-anchor="start" x="22" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.amazonaws.services.s3.</text>
-<text text-anchor="middle" x="94" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">AmazonS3</text>
+<text text-anchor="start" x="22" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.teragrep.pth_06.planner.</text>
+<text text-anchor="middle" x="94" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">MockDBRowSource</text>
 </a>
 </g>
 </g>

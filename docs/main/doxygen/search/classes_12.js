@@ -11,12 +11,13 @@ var searchData=
   ['teragrepdatasource_8',['TeragrepDatasource',['../classcom_1_1teragrep_1_1pth__06_1_1TeragrepDatasource.html',1,'com::teragrep::pth_06']]],
   ['teragreppartitionreaderfactory_9',['TeragrepPartitionReaderFactory',['../classcom_1_1teragrep_1_1pth__06_1_1task_1_1TeragrepPartitionReaderFactory.html',1,'com::teragrep::pth_06::task']]],
   ['teragrepscan_10',['TeragrepScan',['../classcom_1_1teragrep_1_1pth__06_1_1TeragrepScan.html',1,'com::teragrep::pth_06']]],
-  ['tokenizable_11',['Tokenizable',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokenizable_3c_20string_20_3e_12',['Tokenizable&lt; String &gt;',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokenizable_3c_20token_20_3e_13',['Tokenizable&lt; Token &gt;',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokenizedvalue_14',['TokenizedValue',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokenizedValue.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokenizedvaluetest_15',['TokenizedValueTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokenizedValueTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokensasstrings_16',['TokensAsStrings',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStrings.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['tokensasstringstest_17',['TokensAsStringsTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStringsTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
-  ['type_18',['Type',['../enumcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit_1_1Type.html',1,'com::teragrep::pth_06::scheduler::BatchUnit']]]
+  ['testdatasource_11',['TestDataSource',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1TestDataSource.html',1,'com::teragrep::pth_06::planner']]],
+  ['tokenizable_12',['Tokenizable',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokenizable_3c_20string_20_3e_13',['Tokenizable&lt; String &gt;',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokenizable_3c_20token_20_3e_14',['Tokenizable&lt; Token &gt;',['../interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1Tokenizable.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokenizedvalue_15',['TokenizedValue',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokenizedValue.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokenizedvaluetest_16',['TokenizedValueTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokenizedValueTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokensasstrings_17',['TokensAsStrings',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStrings.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['tokensasstringstest_18',['TokensAsStringsTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TokensAsStringsTest.html',1,'com::teragrep::pth_06::planner::bloomfilter']]],
+  ['type_19',['Type',['../enumcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit_1_1Type.html',1,'com::teragrep::pth_06::scheduler::BatchUnit']]]
 ];

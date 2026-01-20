@@ -1,7 +1,9 @@
 <map id="com.teragrep.pth_06.planner.ArchiveQuery" name="com.teragrep.pth_06.planner.ArchiveQuery">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,37,219,77"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQueryProcessor.html" title=" " alt="" coords="267,5,480,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,40,266,36,267,41,233,45"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html" title=" " alt="" coords="267,69,480,109"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="233,69,267,74,266,79,232,75"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,69,219,109"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQueryProcessor.html" title=" " alt="" coords="291,5,505,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,64,308,43,309,48,216,69"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html" title=" " alt="" coords="291,69,505,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="232,87,291,87,291,92,232,92"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockMeteredArchiveQueryProcessor.html" title=" " alt="" coords="267,133,529,173"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="216,110,309,131,308,136,215,115"/>
 </map>

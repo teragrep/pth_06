@@ -2,7 +2,7 @@ var searchData=
 [
   ['file_5fsize_0',['FILE_SIZE',['../classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#ad83334efb5160df158b7eda34325afbc',1,'com::teragrep::pth_06::jooq::generated::journaldb::tables::Logfile']]],
   ['filecompressionratio_1',['fileCompressionRatio',['../classcom_1_1teragrep_1_1pth__06_1_1config_1_1BatchConfig.html#a5e061b87dc1edd92a6d9d28093538f15',1,'com::teragrep::pth_06::config::BatchConfig']]],
-  ['filesize_2',['filesize',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1SliceTable.html#a3e3947ca3d6cb5c7c5ed132a12ddabfb',1,'com::teragrep::pth_06::planner::SliceTable']]],
+  ['filesize_2',['filesize',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1SliceTable.html#a3e3947ca3d6cb5c7c5ed132a12ddabfb',1,'com.teragrep.pth_06.planner.SliceTable.filesize'],['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRowImpl.html#a7a005b354f9912c356d695e4befe6939',1,'com.teragrep.pth_06.planner.MockDBRowImpl.filesize']]],
   ['filter_5ftable_3',['FILTER_TABLE',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1GetArchivedObjectsFilterTable.html#afa834f5c4f942ef51a5e3db6162d20cc',1,'com::teragrep::pth_06::planner::GetArchivedObjectsFilterTable']]],
   ['filterlesssearch_4',['filterlessSearch',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1ConditionWalker.html#a476472fcdd194f8aeb907dd419444404',1,'com::teragrep::pth_06::planner::walker::ConditionWalker']]],
   ['filters_5',['filters',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1CategoryTableWithFilters.html#af3429a2c4a61d7904428b48c3c855d63',1,'com::teragrep::pth_06::planner::bloomfilter::CategoryTableWithFilters']]],

@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TableFilters.html" target="_top" xlink:title="Filter types of a table that can be inserted into the category table.">
+<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1SearchTermBloomFilter.html" target="_top" xlink:title="Inserts given tokens into configurable filter.">
 <polygon fill="white" stroke="#666666" points="215,-30 0,-30 0,0 215,0 215,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.teragrep.pth_06.planner.bloomfilter.</text>
-<text text-anchor="middle" x="107.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">TableFilters</text>
+<text text-anchor="middle" x="107.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">SearchTermBloomFilter</text>
 </a>
 </g>
 </g>
