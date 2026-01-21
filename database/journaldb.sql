@@ -215,7 +215,7 @@ CREATE TABLE `logfile` (
   `epoch_hour` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch logdate',
   `epoch_expires` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch expiration',
   `epoch_archived` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s  epoch archived',
-  `logtag_id` bigint(20) unsigned DEFAULT NULL COMMENT 'Log file''s foreign key to logtag',
+  `logtag_id` bigint(20) unsigned NOT NULL COMMENT 'Log file''s foreign key to logtag',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uix_logfile_object_hash` (`object_key_hash`),
   KEY `bucket_id` (`bucket_id`),
