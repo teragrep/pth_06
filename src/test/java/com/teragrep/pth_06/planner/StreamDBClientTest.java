@@ -136,14 +136,13 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "example",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
                 ULong.valueOf(epoch),
                 ULong.valueOf(epoch + (365 * 24 * 3600)),
                 ULong.valueOf(epoch),
-                null
+                ULong.valueOf(1)
         );
 
         LogfileRecord nullEpochRecord = new LogfileRecord(
@@ -159,14 +158,13 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "example",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
                 null,
                 null,
                 null,
-                null
+                ULong.valueOf(1)
         );
 
         if (hasNullEpochColumns) {
@@ -227,6 +225,31 @@ class StreamDBClientTest {
         // Both of the rows in the database for logdate of "2023-10-4" should be pulled to the slicetable.
         int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
         Assertions.assertEquals(2, rows);
+    }
+
+    /**
+     * Testing that pullToSliceTable() does not pull any rows from the database when the index value in the queryXML
+     * does not match with logtag.
+     */
+    @Test
+    public void pullToSliceTableInvalidIndexTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts.put("queryXML", "<index value=\"invalidLogtag\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // 0 rows should be pulled to sliceTable
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+        Assertions.assertEquals(0, rows);
     }
 
     /**
@@ -410,6 +433,45 @@ class StreamDBClientTest {
         // find the next row after earliest and assert that it is stub.
         Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
 
+    }
+
+    /**
+     * Testing that normalized logtag is handled properly in the queries.
+     */
+    @Test
+    public void logtagIdTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+        final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        final long latestOffset = nextHourAndSizeFromSliceTable.offset();
+        // Get the record from slicetable
+        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Assert that the resulting logfile record has logtag originating from normalized logtag table instead of old logtag column that should no longer be used by StreamDBClient.
+        Assertions.assertEquals(ULong.valueOf(1), logfileRecord.get("logtag_id"));
+        Assertions.assertEquals("example", hourRange.get(0).get(4, String.class));
     }
 
     @Test

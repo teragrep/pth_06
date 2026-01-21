@@ -207,7 +207,7 @@ public final class StreamDBClient {
         SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
-                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
+                        JOURNALDB.HOST.NAME, JOURNALDB.LOGTAG.LOGTAG_, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
                         JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
                         JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
@@ -217,7 +217,9 @@ public final class StreamDBClient {
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
-                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
+                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
+                .join(JOURNALDB.LOGTAG)
+                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID));
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
