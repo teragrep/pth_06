@@ -201,7 +201,7 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a1332f3ef5003579b251beac15a80eb06" id="r_a1332f3ef5003579b251beac15a80eb06"><td class="memItemLeft" align="right" valign="top">final TableField&lt; LogfileRecord, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a1332f3ef5003579b251beac15a80eb06">EPOCH_ARCHIVED</a> = createField(DSL.name(&quot;epoch_archived&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field(&quot;NULL&quot;, org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, &quot;Log file's epoch archived&quot;)</td></tr>
 <tr class="memdesc:a1332f3ef5003579b251beac15a80eb06"><td class="mdescLeft">&#160;</td><td class="mdescRight">The column <code>journaldb.logfile.epoch_archived</code>.  <br /></td></tr>
 <tr class="separator:a1332f3ef5003579b251beac15a80eb06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d723bca65aab2ea8187649e119c7c30" id="r_a0d723bca65aab2ea8187649e119c7c30"><td class="memItemLeft" align="right" valign="top">final TableField&lt; LogfileRecord, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a0d723bca65aab2ea8187649e119c7c30">LOGTAG_ID</a> = createField(DSL.name(&quot;logtag_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field(&quot;NULL&quot;, org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, &quot;Log file's foreign key to logtag&quot;)</td></tr>
+<tr class="memitem:a0d723bca65aab2ea8187649e119c7c30" id="r_a0d723bca65aab2ea8187649e119c7c30"><td class="memItemLeft" align="right" valign="top">final TableField&lt; LogfileRecord, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a0d723bca65aab2ea8187649e119c7c30">LOGTAG_ID</a> = createField(DSL.name(&quot;logtag_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.nullable(false), this, &quot;Log file's foreign key to logtag&quot;)</td></tr>
 <tr class="memdesc:a0d723bca65aab2ea8187649e119c7c30"><td class="mdescLeft">&#160;</td><td class="mdescRight">The column <code>journaldb.logfile.logtag_id</code>.  <br /></td></tr>
 <tr class="separator:a0d723bca65aab2ea8187649e119c7c30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -220,7 +220,7 @@ Private Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-static-attribs" name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
-<tr class="memitem:a4fe26f96de67f9c0b968456c1b0aa787" id="r_a4fe26f96de67f9c0b968456c1b0aa787"><td class="memItemLeft" align="right" valign="top">static final long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a4fe26f96de67f9c0b968456c1b0aa787">serialVersionUID</a> = 1081606291</td></tr>
+<tr class="memitem:a4fe26f96de67f9c0b968456c1b0aa787" id="r_a4fe26f96de67f9c0b968456c1b0aa787"><td class="memItemLeft" align="right" valign="top">static final long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a4fe26f96de67f9c0b968456c1b0aa787">serialVersionUID</a> = -209761724</td></tr>
 <tr class="separator:a4fe26f96de67f9c0b968456c1b0aa787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -522,7 +522,7 @@ Static Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00248">248</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">  248</span>                                    {</div>
-<div class="line"><span class="lineno">  249</span>        <span class="keywordflow">return</span> Arrays.&lt;Index&gt;asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_LOGTAG_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
+<div class="line"><span class="lineno">  249</span>        <span class="keywordflow">return</span> Arrays.&lt;Index&gt;asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_FK_LOGFILE__LOGTAG_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
 <div class="line"><span class="lineno">  250</span>    }</div>
 </div><!-- fragment -->
 </div>
@@ -1013,7 +1013,7 @@ Static Private Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">final TableField&lt;LogfileRecord, ULong&gt; com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.LOGTAG_ID = createField(DSL.name(&quot;logtag_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field(&quot;NULL&quot;, org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, &quot;Log file's foreign key to logtag&quot;)</td>
+          <td class="memname">final TableField&lt;LogfileRecord, ULong&gt; com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.LOGTAG_ID = createField(DSL.name(&quot;logtag_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.nullable(false), this, &quot;Log file's foreign key to logtag&quot;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1092,7 +1092,7 @@ Static Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">final long com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.serialVersionUID = 1081606291</td>
+          <td class="memname">final long com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.serialVersionUID = -209761724</td>
         </tr>
       </table>
   </td>
