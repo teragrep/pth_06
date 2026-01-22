@@ -226,7 +226,7 @@ CREATE TABLE `logfile` (
   KEY `cix_logfile_host_id_logtag_logdate` (`host_id`,`logtag`,`logdate`),
   KEY `cix_logfile_epoch_hour_host_id_logtag` (`epoch_hour`,`host_id`,`logtag`),
   KEY `ix_logfile_epoch_expires` (`epoch_expires`),
-  KEY `logtag_id` (`logtag_id`),
+  KEY `fk_logfile__logtag_id` (`logtag_id`),
   CONSTRAINT `fk_logfile__logtag_id` FOREIGN KEY (`logtag_id`) REFERENCES `logtag` (`id`),
   CONSTRAINT `fk_logfile__source_system_id` FOREIGN KEY (`source_system_id`) REFERENCES `source_system` (`id`),
   CONSTRAINT `logfile_ibfk_1` FOREIGN KEY (`bucket_id`) REFERENCES `bucket` (`id`),
