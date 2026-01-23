@@ -91,7 +91,7 @@ import org.jooq.types.UShort;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Logfile extends TableImpl<LogfileRecord> {
 
-    private static final long serialVersionUID = -209761724;
+    private static final long serialVersionUID = 946350019;
 
     /**
      * The reference instance of <code>journaldb.logfile</code>
@@ -246,7 +246,7 @@ public class Logfile extends TableImpl<LogfileRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_FK_LOGFILE__LOGTAG_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);
+        return Arrays.<Index>asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_FK_LOGFILE__LOGTAG_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);
     }
 
     @Override
