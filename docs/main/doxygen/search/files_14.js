@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['validelement_2ejava_0',['ValidElement.java',['../ValidElement_8java.html',1,'']]],
-  ['validelementtest_2ejava_1',['ValidElementTest.java',['../ValidElementTest_8java.html',1,'']]]
+  ['weightedoffset_2ejava_0',['WeightedOffset.java',['../WeightedOffset_8java.html',1,'']]],
+  ['withoutfilterscondition_2ejava_1',['WithoutFiltersCondition.java',['../WithoutFiltersCondition_8java.html',1,'']]],
+  ['withoutfiltersconditiontest_2ejava_2',['WithoutFiltersConditionTest.java',['../WithoutFiltersConditionTest_8java.html',1,'']]]
 ];
