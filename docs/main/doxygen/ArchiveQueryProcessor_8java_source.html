@@ -170,7 +170,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>        this.processingSpeed = config.batchConfig.processingSpeed;</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>        this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        System.out.println(<span class="stringliteral">&quot;ArchiveQueryProcessor Incoming: q=&quot;</span> + config.query);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQueryProcessor.html#a571334ad42f9f7a808c77459b4102015">LOGGER</a>.info(<span class="stringliteral">&quot;ArchiveQueryProcessor Incoming: config.query &lt;[{}]&gt;&quot;</span>, config.query);</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        <span class="keywordflow">if</span> (config.query == <span class="keyword">null</span>) {</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="stringliteral">&quot;Query was not provided&quot;</span>);</div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        }</div>
