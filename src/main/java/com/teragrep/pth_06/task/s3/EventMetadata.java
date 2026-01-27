@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.task.s3;
 
 import com.teragrep.rlo_06.RFC5424Frame;
+import com.teragrep.rlo_06.RFC5424Timestamp;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
@@ -66,8 +67,8 @@ final class EventMetadata {
 
     JsonObject asJSON(
             final RFC5424Frame rfc5424Frame,
-            final EpochMicros epochMicros,
-            final long offset,
+            final RFC5424Timestamp rfc5424Timestamp,
+            final PathExtractedTimestamp pathExtractedTimestamp,
             boolean isSyslogFormat
     ) {
 
@@ -80,7 +81,6 @@ final class EventMetadata {
                 .createObjectBuilder()
                 .add("bucket", bucket)
                 .add("path", path)
-                .add("offset", offset)
                 .add("partition", id);
 
         rootBuilder.add("object", objectBuilder);
@@ -89,14 +89,16 @@ final class EventMetadata {
         if (isSyslogFormat) {
             timestampBuilder
                     .add("original", String.valueOf(rfc5424Frame.timestamp))
-                    .add("epoch", epochMicros.asLong())
+                    .add("epoch", new EpochMicros(rfc5424Timestamp).asLong())
+                    .add("path-extracted", new EpochMicros(pathExtractedTimestamp).asLong())
                     .add("source", "syslog");
         }
         else {
             timestampBuilder
                     .add("original", "unrecognized")
                     .addNull("epoch") // can not calculate epoch value
-                    .add("source", "non-syslog");
+                    .add("path-extracted", new EpochMicros(pathExtractedTimestamp).asLong())
+                    .add("source", "object-path");
         }
         rootBuilder.add("timestamp", timestampBuilder);
 

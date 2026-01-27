@@ -54,57 +54,69 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public final class EventMetadataTest {
 
     @Test
     void testSyslogFrameJson() {
-        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 ID47 - test message";
+        final String path = "2024/01-01/sc-99-99-14-110/f17/f17.log";
+        final String syslog = "<34>1 2024-01-01T05:00:00Z host app 1234 ID47 - test message";
         final RFC5424Frame frame = new RFC5424Frame(true);
         frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
         Assertions.assertDoesNotThrow(frame::next);
         final RFC5424Timestamp timestamp = new RFC5424Timestamp(frame.timestamp);
-        final EpochMicros epochMicros = new EpochMicros(timestamp);
-        final EventMetadata metadata = new EventMetadata("bucket", "path/file.gz", "partition-1");
-        final JsonObject json = metadata.asJSON(frame, epochMicros, 1L, true);
+        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
+        final EventMetadata metadata = new EventMetadata("bucket", path, "partition-1");
+        final JsonObject json = metadata.asJSON(frame, timestamp, pathExtractedTimestamp, true);
         Assertions.assertEquals(true, json.getBoolean("epochMigration"));
         Assertions.assertEquals("rfc5424", json.getString("format"));
 
         final JsonObject object = json.getJsonObject("object");
         Assertions.assertEquals("bucket", object.getString("bucket"));
-        Assertions.assertEquals("path/file.gz", object.getString("path"));
-        Assertions.assertEquals(1L, object.getJsonNumber("offset").longValue());
+        Assertions.assertEquals("2024/01-01/sc-99-99-14-110/f17/f17.log", object.getString("path"));
         Assertions.assertEquals("partition-1", object.getString("partition"));
 
         final JsonObject timestampJson = json.getJsonObject("timestamp");
         Assertions.assertEquals("syslog", timestampJson.getString("source"));
-        Assertions.assertEquals(epochMicros.asLong(), timestampJson.getJsonNumber("epoch").longValue());
+        final long expectedEpochMicros = ZonedDateTime.of(2024, 1, 1, 5, 0, 0, 0, ZoneId.of("UTC")).toEpochSecond()
+                * 1000 * 1000;
+        Assertions.assertEquals(expectedEpochMicros, timestampJson.getJsonNumber("epoch").longValue());
+        final long expectedPathDerivedEpoch = ZonedDateTime
+                .of(2024, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"))
+                .toEpochSecond() * 1000 * 1000;
+        Assertions.assertEquals(expectedPathDerivedEpoch, timestampJson.getJsonNumber("path-extracted").longValue());
         Assertions.assertEquals(frame.timestamp.toString(), json.getJsonObject("timestamp").getString("original"));
 
     }
 
     @Test
     void testNonSyslogFrameJson() {
+        final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
         final String nonSyslog = "non syslog event";
         final RFC5424Frame frame = new RFC5424Frame(true);
         frame.load(new ByteArrayInputStream(nonSyslog.getBytes(StandardCharsets.UTF_8)));
         final RFC5424Timestamp timestamp = new RFC5424Timestamp(frame.timestamp);
-        final EpochMicros epochMicros = new EpochMicros(timestamp);
-        final EventMetadata metadata = new EventMetadata("bucket", "path/file.gz", "partition-2");
-        final JsonObject json = metadata.asJSON(frame, epochMicros, 0L, false);
-        Assertions.assertEquals(true, json.getBoolean("epochMigration"));
+        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
+        final EventMetadata metadata = new EventMetadata("bucket", path, "partition-2");
+        final JsonObject json = metadata.asJSON(frame, timestamp, pathExtractedTimestamp, false);
+        Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("non-rfc5424", json.getString("format"));
 
         final JsonObject object = json.getJsonObject("object");
         Assertions.assertEquals("bucket", object.getString("bucket"));
-        Assertions.assertEquals("path/file.gz", object.getString("path"));
-        Assertions.assertEquals(0L, object.getJsonNumber("offset").longValue());
+        Assertions.assertEquals("2007/10-08/sc-99-99-14-110/f17/f17.log", object.getString("path"));
         Assertions.assertEquals("partition-2", object.getString("partition"));
 
         final JsonObject timestampJson = json.getJsonObject("timestamp");
-        Assertions.assertEquals("non-syslog", timestampJson.getString("source"));
+        Assertions.assertEquals("object-path", timestampJson.getString("source"));
         Assertions.assertEquals("unrecognized", timestampJson.getString("original"));
-        Assertions.assertEquals(true, timestampJson.isNull("epoch"));
+        final long expectedEpoch = ZonedDateTime
+                .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"))
+                .toEpochSecond() * 1000 * 1000;
+        Assertions.assertEquals(expectedEpoch, timestampJson.getJsonNumber("path-extracted").longValue());
+        Assertions.assertTrue(timestampJson.isNull("epoch"));
     }
 
     @Test

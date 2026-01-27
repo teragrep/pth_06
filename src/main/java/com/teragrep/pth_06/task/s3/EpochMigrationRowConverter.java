@@ -67,29 +67,18 @@ import java.util.zip.GZIPInputStream;
 public final class EpochMigrationRowConverter implements RowConverter {
 
     private final Logger LOGGER = LoggerFactory.getLogger(EpochMigrationRowConverter.class);
-
-    // offset within the object
-    private long currentOffset;
-
+    private boolean readAttempted;
     private final String bucket;
     private final String path;
-
-    // for rows
     private final UTF8String id;
     private final UTF8String directory;
     private final UTF8String stream;
     private final UTF8String host;
-
     private final EventMetadata eventMetadata;
-    // Currently handled log event from S3-file
     private final UnsafeRowWriter rowWriter;
-
     private final RFC5424Frame rfc5424Frame;
-
     private final AmazonS3 s3client;
-
     private InputStream inputStream = null;
-
     private boolean isSyslogFormat;
 
     public EpochMigrationRowConverter(
@@ -116,31 +105,22 @@ public final class EpochMigrationRowConverter implements RowConverter {
     ) {
         this.bucket = bucket;
         this.path = path;
-
         this.id = UTF8String.fromString(id);
         this.directory = UTF8String.fromString(directory.toLowerCase());
         this.stream = UTF8String.fromString(stream.toLowerCase());
         this.host = UTF8String.fromString(host.toLowerCase());
         this.eventMetadata = eventMetadata;
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("RowConverter created with partition <[{}]> path <[{}]>", bucket, path);
         }
-
         this.rowWriter = new UnsafeRowWriter(11);
-
         this.s3client = s3client;
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.info("Initialized s3client <{}>", s3client);
         }
-
-        // initial status
-        this.currentOffset = 0L;
+        this.readAttempted = false;
         this.isSyslogFormat = false;
-
         this.rfc5424Frame = new RFC5424Frame(true);
-
     }
 
     @Override
@@ -151,7 +131,6 @@ public final class EpochMigrationRowConverter implements RowConverter {
         try {
             LOGGER.debug("Attempting to open file <[{}]>", logName);
             s3object = s3client.getObject(bucket, path);
-
             if (LOGGER.isDebugEnabled()) {
                 LOGGER
                         .debug(
@@ -159,17 +138,13 @@ public final class EpochMigrationRowConverter implements RowConverter {
                                 s3object.getObjectMetadata().getContentLength()
                         );
             }
-            this.inputStream = new BufferedInputStream(s3object.getObjectContent(), 8 * 1024 * 1024);
-            GZIPInputStream gz = new GZIPInputStream(inputStream);
+            inputStream = new BufferedInputStream(s3object.getObjectContent(), 8 * 1024 * 1024);
+            final GZIPInputStream gz = new GZIPInputStream(inputStream);
             rfc5424Frame.load(gz);
-
-            // Set up result
             LOGGER.trace("S3FileHandler.open() Initialized result set with element lists");
-
             LOGGER.info("S3FileHandler.open() Initialized parser for <[{}]>", logName);
         }
         catch (final AmazonServiceException amazonServiceException) {
-
             if (403 == amazonServiceException.getStatusCode()) {
                 LOGGER.error("Skipping file <[{}]> due to errorCode <{}>", logName, 403);
             }
@@ -183,39 +158,34 @@ public final class EpochMigrationRowConverter implements RowConverter {
     @Override
     public boolean next() throws IOException {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("RowConverter.next() called on offset <{}> ", currentOffset);
+            LOGGER.debug("RowConverter.next() called, read attempted before <{}> ", readAttempted);
         }
-
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("<{}>  Read event from S3-file: <[{}]>/<[{}]>", currentOffset, bucket, path);
+            LOGGER.trace("Read event from S3-file: <[{}]>/<[{}]>", bucket, path);
         }
-
-        boolean rv;
-        // first event read
-        if (currentOffset > 0) {
-            rv = false;
+        boolean returnValue;
+        if (!readAttempted) {
+            try {
+                boolean nextResult = rfc5424Frame.next();
+                readAttempted = true;
+                isSyslogFormat = nextResult;
+                returnValue = true;
+            }
+            catch (final ParseException exception) {
+                LOGGER
+                        .error(
+                                "ParseException at object: <[{}]>/<[{}]>\n message: <{}>", bucket, path,
+                                exception.getMessage()
+                        );
+                readAttempted = true;
+                isSyslogFormat = false;
+                returnValue = true;
+            }
         }
         else {
-            try {
-                rv = rfc5424Frame.next();
-                if (rv) {
-                    this.currentOffset++;
-                    this.isSyslogFormat = true;
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("<{}> Read first event: <[{}]>", currentOffset, rfc5424Frame);
-                    }
-                }
-            }
-            // non syslog format, allow to continue once
-            catch (final ParseException parseException) {
-                LOGGER.error("ParseException at object: <[{}]>/<[{}]>", bucket, path);
-                currentOffset++;
-                this.isSyslogFormat = false;
-                rv = true;
-            }
+            returnValue = false;
         }
-        return rv;
+        return returnValue;
     }
 
     @Override
@@ -223,55 +193,52 @@ public final class EpochMigrationRowConverter implements RowConverter {
         if (LOGGER.isDebugEnabled()) {
             LOGGER
                     .debug(
-                            "EpochMigrationRowConverter.get() partition=<[{}]>, bucket=<[{}]> path=<[{}]> offset=<{}>",
-                            id, bucket, path, currentOffset
+                            "EpochMigrationRowConverter.get() partition=<[{}]>, bucket=<[{}]> path=<[{}]> read attempted=<{}>",
+                            id, bucket, path, readAttempted
                     );
         }
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Parser syslog event <[{}]>", rfc5424Frame.toString());
         }
-
-        final EpochMicros epochMicros = new EpochMicros(new RFC5424Timestamp(rfc5424Frame.timestamp));
-
-        final JsonObject jsonEnvelope = eventMetadata.asJSON(rfc5424Frame, epochMicros, currentOffset, isSyslogFormat);
+        final RFC5424Timestamp rfc5424Timestamp = new RFC5424Timestamp(rfc5424Frame.timestamp);
+        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
+        final JsonObject jsonEnvelope = eventMetadata
+                .asJSON(rfc5424Frame, rfc5424Timestamp, pathExtractedTimestamp, isSyslogFormat);
         final UTF8String jsonEnvelopeString = UTF8String.fromString(jsonEnvelope.toString());
-
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
         if (isSyslogFormat) {
-            rowWriter.write(0, epochMicros.asLong());
+            rowWriter.write(0, new EpochMicros(rfc5424Timestamp).asLong());
             rowWriter.write(1, jsonEnvelopeString);
             rowWriter.write(2, this.directory);
             rowWriter.write(3, this.stream);
             rowWriter.write(4, this.host);
             rowWriter.write(5, new EventToSource().asUTF8StringFrom(rfc5424Frame));
             rowWriter.write(6, this.id);
-            rowWriter.write(7, currentOffset);
+            rowWriter.write(7, 0L);
             rowWriter.write(8, new EventToOrigin().asUTF8StringFrom(rfc5424Frame));
         }
         else {
-            rowWriter.write(0, 0L);
+            rowWriter.write(0, new EpochMicros(pathExtractedTimestamp).asLong());
             rowWriter.write(1, jsonEnvelopeString);
             rowWriter.write(2, this.directory);
             rowWriter.write(3, this.stream);
             rowWriter.write(4, this.host);
             rowWriter.write(5, "unknown-source".getBytes(StandardCharsets.UTF_8));
             rowWriter.write(6, this.id);
-            rowWriter.write(7, currentOffset);
+            rowWriter.write(7, 0L);
             rowWriter.write(8, "unknown-origin".getBytes(StandardCharsets.UTF_8));
         }
-
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Get Event,  row=written");
+            LOGGER.debug("Get Event, row=written");
         }
-
         return rowWriter.getRow();
     }
 
     @Override
     public void close() throws IOException {
         final String logName = bucket + "/" + path;
-        LOGGER.info("S3FileHandler.close() on log <{}> on offset <{}>", logName, currentOffset);
+        LOGGER.info("S3FileHandler.close() on log <{}> read attempted <{}>", logName, readAttempted);
         if (inputStream != null) {
             inputStream.close();
         }

@@ -45,61 +45,51 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import com.teragrep.rlo_06.RFC5424Timestamp;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.Objects;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-public final class EpochMicros {
+public final class PathExtractedTimestampTest {
 
-    private final Instant instant;
-    private final String source;
-    private final long microsPerSecond;
-    private final long nanosPerMicro;
+    private final ZoneId assumedZone = ZoneId.of("Europe/Helsinki");
 
-    public EpochMicros(final RFC5424Timestamp rfc5424Timestamp) {
-        this(rfc5424Timestamp.toZonedDateTime().toInstant(), "syslog");
+    @Test
+    void testHourlyValueUsedWhenAvailable() {
+        final String path = "2007/10-08/sc-99-99-14-110/f17/f17.logGLOB-2007100814.log.gz";
+        final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 14, 0, 0, 0, assumedZone);
+        Assertions.assertEquals(expected.toInstant(), instant);
     }
 
-    public EpochMicros(final PathExtractedTimestamp pathExtractedTimestamp) {
-        this(pathExtractedTimestamp.toInstant(), "object-path");
+    @Test
+    void testDateParsedToMidnight() {
+        final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
+        final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 0, 0, 0, 0, assumedZone);
+        Assertions.assertEquals(expected.toInstant(), instant);
     }
 
-    public EpochMicros(final Instant instant, final String source) {
-        this(instant, source, 1000L * 1000L, 1000L);
+    @Test
+    void testAssumedTimeZone() {
+        final String path = "2007/10-08/sc-99-99-14-110/f17/";
+        final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 0, 0, 0, 0, assumedZone);
+        Assertions.assertEquals(expected.toInstant(), instant);
     }
 
-    private EpochMicros(final Instant instant, final String source, long microsPerSecond, long nanosPerMicro) {
-        this.instant = instant;
-        this.source = source;
-        this.microsPerSecond = microsPerSecond;
-        this.nanosPerMicro = nanosPerMicro;
-    }
-
-    long asLong() {
-        final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
-        return Math.addExact(sec, instant.getNano() / nanosPerMicro);
-    }
-
-    String source() {
-        return source;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (getClass() != object.getClass()) {
-            return false;
-        }
-        final EpochMicros that = (EpochMicros) object;
-        return microsPerSecond == that.microsPerSecond && nanosPerMicro == that.nanosPerMicro
-                && Objects.equals(instant, that.instant) && Objects.equals(source, that.source);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(instant, source, microsPerSecond, nanosPerMicro);
+    @Test
+    void testInvalidInputThrows() {
+        final String path = "sc-99-99-14-110/f17/file.log";
+        final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        final IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, timeStamp::toInstant);
+        final String expected = "Path does not contain date information: <sc-99-99-14-110/f17/file.log>";
+        Assertions.assertEquals(expected, exception.getMessage());
     }
 }
