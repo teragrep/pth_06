@@ -1,0 +1,14 @@
+<map id="com.teragrep.pth_06.planner.offset.DatasourceOffset" name="com.teragrep.pth_06.planner.offset.DatasourceOffset">
+<area shape="rect" id="Node000001" title=" " alt="" coords="35,285,290,325"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="38,5,100,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,41,27,59,14,81,9,112,9,154,15,194,25,221,41,241,61,258,106,283,104,288,58,262,37,245,20,224,10,195,4,154,3,112,9,79,23,56,40,38"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1KafkaOffset.html" title=" " alt="" coords="24,80,279,120"/>
+<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="93,38,134,78,130,82,89,42"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="268,5,366,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="333,42,353,87,371,145,375,176,374,207,366,236,351,263,328,278,291,289,289,284,325,273,347,259,361,234,369,206,370,177,366,146,348,89,328,44"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1offset_1_1SerializedDatasourceOffset.html" title=" " alt="" coords="35,183,290,223"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="318,45,311,83,294,121,277,142,257,159,213,185,210,180,253,155,273,138,289,119,306,81,313,44"/>
+<area shape="poly" id="edge7_Node000005_Node000003" title=" " alt="" coords="282,39,192,82,189,78,280,34"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="165,237,165,285,160,285,160,237"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="158,133,163,182,158,183,152,134"/>
+</map>
