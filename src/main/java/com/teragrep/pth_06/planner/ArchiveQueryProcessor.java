@@ -94,7 +94,7 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
         this.processingSpeed = config.batchConfig.processingSpeed;
         this.totalObjectCountLimit = config.batchConfig.totalObjectCountLimit;
 
-        System.out.println("ArchiveQueryProcessor Incoming: q=" + config.query);
+        LOGGER.info("ArchiveQueryProcessor Incoming: config.query <[{}]>", config.query);
         if (config.query == null) {
             throw new IllegalArgumentException("Query was not provided");
         }
