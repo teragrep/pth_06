@@ -51,8 +51,8 @@ import org.jooq.impl.DSL;
 import java.util.Objects;
 
 /**
- * Extracts date string from a path field using regex, converts to date and then to unix timestamp or returns 0 if
- * function can't find date string or convert to date
+ * Extracts a date string from a logfile path using a regex, converts it to a UNIX timestamp, and returns null if the
+ * date cannot be extracted or is invalid.
  */
 final class SafeLogtimeFunction {
 
@@ -60,10 +60,7 @@ final class SafeLogtimeFunction {
     private final Field<String> pathField;
 
     SafeLogtimeFunction(final Field<String> pathField) {
-        this(
-                pathField,
-                "'^\\\\d{4}\\\\/\\\\d{2}-\\\\d{2}\\\\/[\\\\w\\\\.-]+\\\\/([^\\\\p{Z}\\\\p{C}]+?)\\\\/([^\\\\p{Z}\\\\p{C}]+)(-@)?(\\\\d+|)-(\\\\d{4}\\\\d{2}\\\\d{2}\\\\d{2}).*'"
-        );
+        this(pathField, "^(?>.*-)([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})(?>\\\\..*)$");
     }
 
     private SafeLogtimeFunction(final Field<String> pathField, final String regex) {
@@ -71,16 +68,23 @@ final class SafeLogtimeFunction {
         this.regex = regex;
     }
 
-    // regex substring to find date from a string path
-    // example path:
-    // 2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz
-    //
+    /**
+     * Extracts a timestamp from a logfile path and converts it to a UNIX epoch value.
+     * <p>
+     * Example path: 2010/01-08/sc-99-99-14-40/f17_v2/f17_v2.logGLOB-2010010801.log.gz
+     * <p>
+     * The regex captures the following groups from the filename portion after the last dash: 1 = YYYY, 2 = MM, 3 = DD,
+     * 4 = HH
+     *
+     * @return a jOOQ Field representing the extracted UNIX epoch time, or null if the date cannot be extracted
+     */
     Field<Long> asField() {
+        // convert YYYYMMDD -> YYYY-MM-DDTHH
         final Field<String> extracted = DSL
-                .field("REGEXP_REPLACE({0}," + regex + ", '\\\\5')", String.class, pathField);
+                .field("REGEXP_REPLACE({0}, '" + regex + "', '\\\\1-\\\\2-\\\\3T\\\\4')", String.class, pathField);
 
         return DSL
-                .when(extracted.likeRegex("^[0-9]{10}$"), DSL.field("UNIX_TIMESTAMP(STR_TO_DATE({0}, '%Y%m%d%H'))", Long.class, extracted)).otherwise(DSL.val(null, Long.class));
+                .when(extracted.likeRegex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}$"), DSL.field("UNIX_TIMESTAMP(STR_TO_DATE({0}, '%Y-%m-%dT%H'))", Long.class, extracted)).otherwise(DSL.val(null, Long.class));
     }
 
     @Override
