@@ -45,18 +45,61 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import com.teragrep.rlo_06.RFC5424Timestamp;
 
-import java.io.IOException;
+import java.time.Instant;
+import java.util.Objects;
 
-public interface RowConverter {
+public final class EpochMicros {
 
-    public abstract void open() throws IOException;
+    private final Instant instant;
+    private final String source;
+    private final long microsPerSecond;
+    private final long nanosPerMicro;
 
-    public abstract boolean next() throws IOException;
+    public EpochMicros(final RFC5424Timestamp rfc5424Timestamp) {
+        this(rfc5424Timestamp.toZonedDateTime().toInstant(), "syslog");
+    }
 
-    public abstract InternalRow get();
+    public EpochMicros(final PathExtractedTimestamp pathExtractedTimestamp) {
+        this(pathExtractedTimestamp.toZonedDateTime().toInstant(), "object-path");
+    }
 
-    public abstract void close() throws IOException;
+    public EpochMicros(final Instant instant, final String source) {
+        this(instant, source, 1000L * 1000L, 1000L);
+    }
 
+    private EpochMicros(final Instant instant, final String source, long microsPerSecond, long nanosPerMicro) {
+        this.instant = instant;
+        this.source = source;
+        this.microsPerSecond = microsPerSecond;
+        this.nanosPerMicro = nanosPerMicro;
+    }
+
+    long asLong() {
+        final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
+        return Math.addExact(sec, instant.getNano() / nanosPerMicro);
+    }
+
+    String source() {
+        return source;
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        final EpochMicros that = (EpochMicros) object;
+        return microsPerSecond == that.microsPerSecond && nanosPerMicro == that.nanosPerMicro
+                && Objects.equals(instant, that.instant) && Objects.equals(source, that.source);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(instant, source, microsPerSecond, nanosPerMicro);
+    }
 }

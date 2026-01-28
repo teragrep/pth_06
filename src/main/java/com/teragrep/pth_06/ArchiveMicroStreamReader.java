@@ -264,7 +264,8 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
                                         config.auditConfig.reason,
                                         config.auditConfig.user,
                                         config.auditConfig.pluginClassName,
-                                        config.archiveConfig.skipNonRFC5424Files
+                                        config.archiveConfig.skipNonRFC5424Files,
+                                        config.archiveConfig.epochMigrationMode
                                 )
                         );
             }

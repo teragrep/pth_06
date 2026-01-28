@@ -101,7 +101,8 @@ public final class TeragrepPartitionReaderFactory implements PartitionReaderFact
                     aip.TeragrepAuditReason,
                     aip.TeragrepAuditUser,
                     aip.TeragrepAuditPluginClassName,
-                    aip.skipNonRFC5424Files
+                    aip.skipNonRFC5424Files,
+                    aip.epochMigrationMode
             );
         }
         else if (inputPartition instanceof KafkaMicroBatchInputPartition) {

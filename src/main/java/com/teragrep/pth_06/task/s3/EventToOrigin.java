@@ -45,18 +45,51 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import org.apache.spark.sql.catalyst.InternalRow;
+import com.teragrep.rlo_06.Fragment;
+import com.teragrep.rlo_06.RFC5424Frame;
+import com.teragrep.rlo_06.SDVector;
+import org.apache.spark.unsafe.types.UTF8String;
 
-import java.io.IOException;
+import java.util.Objects;
 
-public interface RowConverter {
+final class EventToOrigin {
 
-    public abstract void open() throws IOException;
+    private final SDVector originHostname;
 
-    public abstract boolean next() throws IOException;
+    EventToOrigin() {
+        this.originHostname = new SDVector("origin@48577", "hostname");
+    }
 
-    public abstract InternalRow get();
+    UTF8String asUTF8StringFrom(RFC5424Frame rfc5424Frame) {
+        return UTF8String.fromBytes(origin(rfc5424Frame));
+    }
 
-    public abstract void close() throws IOException;
+    private byte[] origin(RFC5424Frame rfc5424Frame) {
+        byte[] origin;
+        Fragment originFragment = rfc5424Frame.structuredData.getValue(originHostname);
+        if (!originFragment.isStub) {
+            origin = originFragment.toBytes();
+        }
+        else {
+            origin = new byte[] {};
+        }
+        return origin;
+    }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        EventToOrigin that = (EventToOrigin) o;
+        return Objects.equals(originHostname, that.originHostname);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(originHostname);
+    }
 }
