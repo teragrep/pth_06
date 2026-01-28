@@ -64,6 +64,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.io.StringReader;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -193,8 +194,9 @@ public final class EpochMigrationTest {
                     jsonTimestamp.isNull("epoch");
                     Assertions.assertTrue(jsonTimestamp.isNull("epoch"));
                 }
-                final long pathExtractedEpoch = jsonTimestamp.getJsonNumber("path-extracted").longValue();
-                Assertions.assertEquals(epochMillis * 1000 * 1000, pathExtractedEpoch);
+                final ZonedDateTime zonedDateTime = Assertions
+                        .assertDoesNotThrow(() -> ZonedDateTime.parse(jsonTimestamp.getString("path-extracted")), "path extracted value should be parseable by ZonedDateTim");
+                Assertions.assertEquals(epochMillis, zonedDateTime.toEpochSecond());
             }
 
             // Fields that should have values from the mock data

@@ -87,18 +87,20 @@ final class EventMetadata {
 
         final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
         if (isSyslogFormat) {
+            final EpochMicros epochMicros = new EpochMicros(rfc5424Timestamp);
             timestampBuilder
                     .add("original", String.valueOf(rfc5424Frame.timestamp))
-                    .add("epoch", new EpochMicros(rfc5424Timestamp).asLong())
-                    .add("path-extracted", new EpochMicros(pathExtractedTimestamp).asLong())
-                    .add("source", "syslog");
+                    .add("epoch", epochMicros.asLong())
+                    .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                    .add("source", epochMicros.source());
         }
         else {
+            final EpochMicros epochMicros = new EpochMicros(pathExtractedTimestamp);
             timestampBuilder
                     .add("original", "unrecognized")
                     .addNull("epoch") // can not calculate epoch value
-                    .add("path-extracted", new EpochMicros(pathExtractedTimestamp).asLong())
-                    .add("source", "object-path");
+                    .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                    .add("source", epochMicros.source());
         }
         rootBuilder.add("timestamp", timestampBuilder);
 
@@ -106,14 +108,14 @@ final class EventMetadata {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
+    public boolean equals(final Object object) {
+        if (object == null) {
             return false;
         }
-        if (getClass() != o.getClass()) {
+        if (getClass() != object.getClass()) {
             return false;
         }
-        final EventMetadata that = (EventMetadata) o;
+        final EventMetadata that = (EventMetadata) object;
         return Objects.equals(bucket, that.bucket) && Objects.equals(path, that.path) && Objects.equals(id, that.id);
     }
 

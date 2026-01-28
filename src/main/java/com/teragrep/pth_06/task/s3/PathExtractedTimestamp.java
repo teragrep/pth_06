@@ -45,7 +45,6 @@
  */
 package com.teragrep.pth_06.task.s3;
 
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
@@ -83,18 +82,18 @@ final class PathExtractedTimestamp {
         this.datePattern = datePattern;
     }
 
-    public Instant toInstant() {
-        final Instant result;
+    public ZonedDateTime toZonedDateTime() {
+        final ZonedDateTime zonedDateTime;
         if (hasHourlyData()) {
-            result = deriveFromHour();
+            zonedDateTime = deriveFromHour();
         }
         else if (hasDateData()) {
-            result = deriveFromDate();
+            zonedDateTime = deriveFromDate();
         }
         else {
             throw new IllegalStateException("Path does not contain date information: <" + path + ">");
         }
-        return result;
+        return zonedDateTime;
     }
 
     private boolean hasHourlyData() {
@@ -105,7 +104,7 @@ final class PathExtractedTimestamp {
         return datePattern.matcher(path).matches();
     }
 
-    private Instant deriveFromHour() {
+    private ZonedDateTime deriveFromHour() {
         final Matcher matcher = hourPattern.matcher(path);
         if (!matcher.matches()) {
             throw new IllegalStateException("Hour pattern did not match: <" + path + ">");
@@ -114,11 +113,10 @@ final class PathExtractedTimestamp {
         final int month = Integer.parseInt(matcher.group("month"));
         final int day = Integer.parseInt(matcher.group("day"));
         final int hour = Integer.parseInt(matcher.group("hour"));
-        final ZonedDateTime dateTime = ZonedDateTime.of(year, month, day, hour, 0, 0, 0, zoneId);
-        return dateTime.toInstant();
+        return ZonedDateTime.of(year, month, day, hour, 0, 0, 0, zoneId);
     }
 
-    private Instant deriveFromDate() {
+    private ZonedDateTime deriveFromDate() {
         final Matcher matcher = datePattern.matcher(path);
         if (!matcher.matches()) {
             throw new IllegalStateException("Date pattern did not match: <" + path + ">");
@@ -126,7 +124,6 @@ final class PathExtractedTimestamp {
         final int year = Integer.parseInt(matcher.group("year"));
         final int month = Integer.parseInt(matcher.group("month"));
         final int day = Integer.parseInt(matcher.group("day"));
-        final ZonedDateTime dateTime = ZonedDateTime.of(year, month, day, 0, 0, 0, 0, zoneId);
-        return dateTime.toInstant();
+        return ZonedDateTime.of(year, month, day, 0, 0, 0, 0, zoneId);
     }
 }

@@ -70,7 +70,7 @@ public final class EventMetadataTest {
         final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         final EventMetadata metadata = new EventMetadata("bucket", path, "partition-1");
         final JsonObject json = metadata.asJSON(frame, timestamp, pathExtractedTimestamp, true);
-        Assertions.assertEquals(true, json.getBoolean("epochMigration"));
+        Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("rfc5424", json.getString("format"));
 
         final JsonObject object = json.getJsonObject("object");
@@ -83,10 +83,9 @@ public final class EventMetadataTest {
         final long expectedEpochMicros = ZonedDateTime.of(2024, 1, 1, 5, 0, 0, 0, ZoneId.of("UTC")).toEpochSecond()
                 * 1000 * 1000;
         Assertions.assertEquals(expectedEpochMicros, timestampJson.getJsonNumber("epoch").longValue());
-        final long expectedPathDerivedEpoch = ZonedDateTime
-                .of(2024, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"))
-                .toEpochSecond() * 1000 * 1000;
-        Assertions.assertEquals(expectedPathDerivedEpoch, timestampJson.getJsonNumber("path-extracted").longValue());
+        final ZonedDateTime expectedPathDerived = ZonedDateTime
+                .of(2024, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
+        Assertions.assertEquals(expectedPathDerived, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
         Assertions.assertEquals(frame.timestamp.toString(), json.getJsonObject("timestamp").getString("original"));
 
     }
@@ -112,10 +111,9 @@ public final class EventMetadataTest {
         final JsonObject timestampJson = json.getJsonObject("timestamp");
         Assertions.assertEquals("object-path", timestampJson.getString("source"));
         Assertions.assertEquals("unrecognized", timestampJson.getString("original"));
-        final long expectedEpoch = ZonedDateTime
-                .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"))
-                .toEpochSecond() * 1000 * 1000;
-        Assertions.assertEquals(expectedEpoch, timestampJson.getJsonNumber("path-extracted").longValue());
+        final ZonedDateTime expectedPathExtracted = ZonedDateTime
+                .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
+        Assertions.assertEquals(expectedPathExtracted, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
         Assertions.assertTrue(timestampJson.isNull("epoch"));
     }
 

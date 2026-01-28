@@ -48,7 +48,6 @@ package com.teragrep.pth_06.task.s3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -60,27 +59,27 @@ public final class PathExtractedTimestampTest {
     void testHourlyValueUsedWhenAvailable() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.logGLOB-2007100814.log.gz";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
-        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime zonedDateTime = timeStamp.toZonedDateTime();
         final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 14, 0, 0, 0, assumedZone);
-        Assertions.assertEquals(expected.toInstant(), instant);
+        Assertions.assertEquals(expected, zonedDateTime);
     }
 
     @Test
     void testDateParsedToMidnight() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
-        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime zonedDateTime = timeStamp.toZonedDateTime();
         final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 0, 0, 0, 0, assumedZone);
-        Assertions.assertEquals(expected.toInstant(), instant);
+        Assertions.assertEquals(expected, zonedDateTime);
     }
 
     @Test
     void testAssumedTimeZone() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
-        final Instant instant = timeStamp.toInstant();
+        final ZonedDateTime zonedDateTime = timeStamp.toZonedDateTime();
         final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 0, 0, 0, 0, assumedZone);
-        Assertions.assertEquals(expected.toInstant(), instant);
+        Assertions.assertEquals(expected, zonedDateTime);
     }
 
     @Test
@@ -88,7 +87,7 @@ public final class PathExtractedTimestampTest {
         final String path = "sc-99-99-14-110/f17/file.log";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
         final IllegalStateException exception = Assertions
-                .assertThrows(IllegalStateException.class, timeStamp::toInstant);
+                .assertThrows(IllegalStateException.class, timeStamp::toZonedDateTime);
         final String expected = "Path does not contain date information: <sc-99-99-14-110/f17/file.log>";
         Assertions.assertEquals(expected, exception.getMessage());
     }

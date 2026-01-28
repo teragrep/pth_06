@@ -62,7 +62,7 @@ public final class EpochMicros {
     }
 
     public EpochMicros(final PathExtractedTimestamp pathExtractedTimestamp) {
-        this(pathExtractedTimestamp.toInstant(), "object-path");
+        this(pathExtractedTimestamp.toZonedDateTime().toInstant(), "object-path");
     }
 
     public EpochMicros(final Instant instant, final String source) {
