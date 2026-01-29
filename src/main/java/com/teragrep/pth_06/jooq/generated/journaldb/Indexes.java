@@ -86,7 +86,6 @@ public class Indexes {
     public static final Index LOGFILE_CATEGORY_ID = Indexes0.LOGFILE_CATEGORY_ID;
     public static final Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG = Indexes0.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG;
     public static final Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID = Indexes0.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID;
-    public static final Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE = Indexes0.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE;
     public static final Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE = Indexes0.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE;
     public static final Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG = Indexes0.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG;
     public static final Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Indexes0.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID;
@@ -112,7 +111,6 @@ public class Indexes {
         public static Index LOGFILE_CATEGORY_ID = Internal.createIndex("category_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.CATEGORY_ID }, false);
         public static Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG = Internal.createIndex("cix_logfile_epoch_hour_host_id_logtag", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_HOUR, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG }, false);
         public static Index LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID = Internal.createIndex("cix_logfile_epoch_hour_host_id_logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_HOUR, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID }, false);
-        public static Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_ID_LOGDATE = Internal.createIndex("cix_logfile_host_id_logtag_id_logdate", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID, Logfile.LOGFILE.LOGDATE }, false);
         public static Index LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE = Internal.createIndex("cix_logfile_host_id_logtag_logdate", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG, Logfile.LOGFILE.LOGDATE }, false);
         public static Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG = Internal.createIndex("cix_logfile_logdate_host_id_logtag", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGDATE, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG }, false);
         public static Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Internal.createIndex("cix_logfile_logdate_host_id_logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGDATE, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID }, false);
