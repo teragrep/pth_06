@@ -43,33 +43,27 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.task.s3;
 
-import java.sql.Date;
+import org.junit.jupiter.api.Test;
 
-public interface MockDBRow extends Comparable<MockDBRow> {
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
-    long id();
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    String directory();
+public class RowConverterImplTests {
 
-    String stream();
+    @Test
+    public void rfc3339ToEpochTest() {
+        // String s = "2021-01-28T00:00:00+02:00";
+        Instant instant = Instant.ofEpochSecond(1611784800);
 
-    String host();
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Helsinki"));
+        final long epochMicros = RowConverterImpl.rfc3339ToEpoch(zonedDateTime);
 
-    String logtag();
+        assertEquals(1611784800000000L, epochMicros);
+    }
 
-    Date logdate();
-
-    String bucket();
-
-    String path();
-
-    long logtime();
-
-    long filesize();
-
-    Long uncompressedFilesize();
-
-    boolean isSyslog();
 }

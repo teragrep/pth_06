@@ -45,31 +45,18 @@
  */
 package com.teragrep.pth_06.planner;
 
-import java.sql.Date;
+import java.util.PriorityQueue;
 
-public interface MockDBRow extends Comparable<MockDBRow> {
+public final class MockDBNonSyslogRowSource implements TestDataSource {
 
-    long id();
+    @Override
+    public PriorityQueue<MockDBRow> asPriorityQueue() {
+        final PriorityQueue<MockDBRow> baseQueue = new MockDBRowSource().asPriorityQueue();
+        final PriorityQueue<MockDBRow> nonSyslogQueue = new PriorityQueue<>();
+        for (final MockDBRow row : baseQueue) {
+            nonSyslogQueue.add(new MockDBNonSyslogRowImpl(row));
+        }
 
-    String directory();
-
-    String stream();
-
-    String host();
-
-    String logtag();
-
-    Date logdate();
-
-    String bucket();
-
-    String path();
-
-    long logtime();
-
-    long filesize();
-
-    Long uncompressedFilesize();
-
-    boolean isSyslog();
+        return nonSyslogQueue;
+    }
 }

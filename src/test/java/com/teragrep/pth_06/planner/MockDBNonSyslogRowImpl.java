@@ -45,25 +45,31 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.jooq.DSLContext;
-import org.jooq.Record11;
-import org.jooq.SQLDialect;
-import org.jooq.impl.DSL;
-import org.jooq.types.ULong;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
+import java.util.Comparator;
 
-public final class RecordableMockDBRow implements MockDBRow, Recordable {
+/**
+ * Wrapper to change isSyslog() to true
+ */
+public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
-    private final DSLContext dslContext;
     private final MockDBRow origin;
+    private final static Comparator<MockDBRow> COMPARATOR = Comparator
+            .comparingLong(MockDBRow::logtime)
+            .thenComparingLong(MockDBRow::id)
+            .thenComparing(MockDBRow::directory)
+            .thenComparing(MockDBRow::stream)
+            .thenComparing(MockDBRow::host)
+            .thenComparing(MockDBRow::logtag)
+            .thenComparing(MockDBRow::logdate)
+            .thenComparing(MockDBRow::bucket)
+            .thenComparing(MockDBRow::path)
+            .thenComparingLong(MockDBRow::filesize)
+            .thenComparingLong(MockDBRow::uncompressedFilesize);
 
-    public RecordableMockDBRow(final MockDBRow origin) {
-        this(DSL.using(SQLDialect.DEFAULT), origin);
-    }
-
-    public RecordableMockDBRow(final DSLContext dslContext, final MockDBRow origin) {
-        this.dslContext = dslContext;
+    public MockDBNonSyslogRowImpl(final MockDBRow origin) {
         this.origin = origin;
     }
 
@@ -124,39 +130,11 @@ public final class RecordableMockDBRow implements MockDBRow, Recordable {
 
     @Override
     public boolean isSyslog() {
-        return origin.isSyslog();
+        return false;
     }
 
     @Override
-    public Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> asRecord() {
-        final Record11<ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong> newRecord = dslContext
-                .newRecord(
-                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
-                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
-                        SliceTable.uncompressedFilesize
-                );
-
-        newRecord.set(SliceTable.id, ULong.valueOf(origin.id()));
-        newRecord.set(SliceTable.directory, origin.directory());
-        newRecord.set(SliceTable.stream, origin.stream());
-        newRecord.set(SliceTable.host, origin.host());
-        newRecord.set(SliceTable.logtag, origin.logtag());
-        newRecord.set(SliceTable.logdate, origin.logdate());
-        newRecord.set(SliceTable.bucket, origin.bucket());
-        newRecord.set(SliceTable.path, origin.path());
-        newRecord.set(SliceTable.logtime, origin.logtime());
-        newRecord.set(SliceTable.filesize, ULong.valueOf(origin.filesize()));
-        newRecord
-                .set(
-                        SliceTable.uncompressedFilesize,
-                        origin.uncompressedFilesize() != null ? ULong.valueOf(origin.uncompressedFilesize()) : null
-                );
-
-        return newRecord;
-    }
-
-    @Override
-    public int compareTo(final MockDBRow o) {
-        return origin.compareTo(o);
+    public int compareTo(@NotNull MockDBRow o) {
+        return COMPARATOR.compare(this, o);
     }
 }

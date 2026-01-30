@@ -158,6 +158,11 @@ public final class MockDBRowImpl implements MockDBRow {
     }
 
     @Override
+    public boolean isSyslog() {
+        return true;
+    }
+
+    @Override
     public int compareTo(final MockDBRow o) {
         return COMPARATOR.compare(this, o);
     }

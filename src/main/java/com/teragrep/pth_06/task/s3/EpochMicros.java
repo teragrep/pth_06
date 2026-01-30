@@ -43,33 +43,63 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.task.s3;
 
-import java.sql.Date;
+import com.teragrep.rlo_06.RFC5424Timestamp;
 
-public interface MockDBRow extends Comparable<MockDBRow> {
+import java.time.Instant;
+import java.util.Objects;
 
-    long id();
+public final class EpochMicros {
 
-    String directory();
+    private final Instant instant;
+    private final String source;
+    private final long microsPerSecond;
+    private final long nanosPerMicro;
 
-    String stream();
+    public EpochMicros(final RFC5424Timestamp rfc5424Timestamp) {
+        this(rfc5424Timestamp.toZonedDateTime().toInstant(), "syslog");
+    }
 
-    String host();
+    public EpochMicros(final PathExtractedTimestamp pathExtractedTimestamp) {
+        this(pathExtractedTimestamp.toZonedDateTime().toInstant(), "object-path");
+    }
 
-    String logtag();
+    public EpochMicros(final Instant instant, final String source) {
+        this(instant, source, 1000L * 1000L, 1000L);
+    }
 
-    Date logdate();
+    private EpochMicros(final Instant instant, final String source, long microsPerSecond, long nanosPerMicro) {
+        this.instant = instant;
+        this.source = source;
+        this.microsPerSecond = microsPerSecond;
+        this.nanosPerMicro = nanosPerMicro;
+    }
 
-    String bucket();
+    long asLong() {
+        final long sec = Math.multiplyExact(instant.getEpochSecond(), microsPerSecond);
+        return Math.addExact(sec, instant.getNano() / nanosPerMicro);
+    }
 
-    String path();
+    String source() {
+        return source;
+    }
 
-    long logtime();
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        final EpochMicros that = (EpochMicros) object;
+        return microsPerSecond == that.microsPerSecond && nanosPerMicro == that.nanosPerMicro
+                && Objects.equals(instant, that.instant) && Objects.equals(source, that.source);
+    }
 
-    long filesize();
-
-    Long uncompressedFilesize();
-
-    boolean isSyslog();
+    @Override
+    public int hashCode() {
+        return Objects.hash(instant, source, microsPerSecond, nanosPerMicro);
+    }
 }
