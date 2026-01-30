@@ -47,6 +47,7 @@ package com.teragrep.pth_06.task.s3;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,5 +126,23 @@ final class PathExtractedTimestamp {
         final int month = Integer.parseInt(matcher.group("month"));
         final int day = Integer.parseInt(matcher.group("day"));
         return ZonedDateTime.of(year, month, day, 0, 0, 0, 0, zoneId);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        final PathExtractedTimestamp that = (PathExtractedTimestamp) o;
+        return Objects.equals(path, that.path) && Objects.equals(zoneId, that.zoneId)
+                && Objects.equals(hourPattern, that.hourPattern) && Objects.equals(datePattern, that.datePattern);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, zoneId, hourPattern, datePattern);
     }
 }

@@ -101,7 +101,7 @@ final class EventToSource {
         return UTF8String.fromBytes(source(rfc5424Frame));
     }
 
-    byte[] source(final RFC5424Frame rfc5424Frame) {
+    private byte[] source(final RFC5424Frame rfc5424Frame) {
         //input is produced from SD element event_node_source@48577 by
         // concatenating "source_module:hostname:source". in case
         //if event_node_source@48577 is not available use event_node_relay@48577.

@@ -207,7 +207,7 @@ class ArchiveMicroBatchInputPartitionReader implements PartitionReader<InternalR
         };
     }
 
-    public RowConverter selectedRowConverter() {
+    private RowConverter selectedRowConverter() {
         final RowConverter selectedConverter;
         if (epochMigrationMode) {
             selectedConverter = new EpochMigrationRowConverter(

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.task.s3;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -90,5 +91,10 @@ public final class PathExtractedTimestampTest {
                 .assertThrows(IllegalStateException.class, timeStamp::toZonedDateTime);
         final String expected = "Path does not contain date information: <sc-99-99-14-110/f17/file.log>";
         Assertions.assertEquals(expected, exception.getMessage());
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(PathExtractedTimestamp.class).verify();
     }
 }
