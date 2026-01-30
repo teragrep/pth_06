@@ -171,7 +171,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
                 isSyslogFormat = nextResult;
                 returnValue = true;
             }
-            catch (final ParseException exception) {
+            catch (final ParseException | IOException exception) {
                 LOGGER
                         .error(
                                 "ParseException at object: <[{}]>/<[{}]>\n message: <{}>", bucket, path,

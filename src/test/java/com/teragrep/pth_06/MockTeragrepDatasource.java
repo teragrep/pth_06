@@ -71,6 +71,7 @@ import java.util.stream.Stream;
 public class MockTeragrepDatasource implements DataSourceRegister, TableProvider, Table, SupportsRead {
 
     private final String name = "teragrep";
+    private final String query = "<index operation=\"EQUALS\" value=\"f17_v2\"/>";
 
     private final Logger LOGGER = LoggerFactory.getLogger(MockTeragrepDatasource.class);
     private final StructType schema = new StructType(new StructField[] {
@@ -115,9 +116,20 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
         return () -> {
             Config config = new Config(options);
 
-            ArchiveQuery archiveQueryProcessor = new MockMeteredArchiveQueryProcessor(
-                    "<index operation=\"EQUALS\" value=\"f17_v2\"/>"
-            );
+            final boolean useNonSyslogData = options
+                    .getOrDefault("useMockNonSyslogRowSource", "false")
+                    .equalsIgnoreCase("true");
+
+            final ArchiveQuery archiveQuery;
+            if (useNonSyslogData) {
+                archiveQuery = new MockArchiveQueryProcessor(
+                        query,
+                        new SliceableMockDBRowSourceImpl(new MockDBNonSyslogRowSource())
+                );
+            }
+            else {
+                archiveQuery = new MockMeteredArchiveQueryProcessor(query);
+            }
 
             KafkaQuery kafkaQueryProcessor;
             if (config.isKafkaEnabled) {
@@ -129,11 +141,7 @@ public class MockTeragrepDatasource implements DataSourceRegister, TableProvider
                 kafkaQueryProcessor = null;
             }
 
-            ArchiveMicroStreamReader stream = new ArchiveMicroStreamReader(
-                    archiveQueryProcessor,
-                    kafkaQueryProcessor,
-                    config
-            );
+            ArchiveMicroStreamReader stream = new ArchiveMicroStreamReader(archiveQuery, kafkaQueryProcessor, config);
             return new TeragrepScan(schema, stream);
         };
     }
