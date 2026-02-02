@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.task.s3;
 
 import com.teragrep.rlo_06.RFC5424Frame;
-import com.teragrep.rlo_06.RFC5424Timestamp;
 import jakarta.json.JsonObject;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.jupiter.api.Assertions;
@@ -66,10 +65,9 @@ public final class EventMetadataTest {
         final RFC5424Frame frame = new RFC5424Frame(true);
         frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
         Assertions.assertDoesNotThrow(frame::next);
-        final RFC5424Timestamp timestamp = new RFC5424Timestamp(frame.timestamp);
         final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         final EventMetadata metadata = new EventMetadata("bucket", path, "partition-1");
-        final JsonObject json = metadata.asJSON(frame, timestamp, pathExtractedTimestamp, true);
+        final JsonObject json = metadata.asJSONFromSyslog(frame, pathExtractedTimestamp);
         Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("rfc5424", json.getString("format"));
 
@@ -86,20 +84,16 @@ public final class EventMetadataTest {
         final ZonedDateTime expectedPathDerived = ZonedDateTime
                 .of(2024, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
         Assertions.assertEquals(expectedPathDerived, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
-        Assertions.assertEquals(frame.timestamp.toString(), timestampJson.getString("original"));
+        Assertions.assertEquals(frame.timestamp.toString(), timestampJson.getString("rfc5242timestamp"));
 
     }
 
     @Test
     void testNonSyslogFrameJson() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
-        final String nonSyslog = "non syslog event";
-        final RFC5424Frame frame = new RFC5424Frame(true);
-        frame.load(new ByteArrayInputStream(nonSyslog.getBytes(StandardCharsets.UTF_8)));
-        final RFC5424Timestamp timestamp = new RFC5424Timestamp(frame.timestamp);
         final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         final EventMetadata metadata = new EventMetadata("bucket", path, "partition-2");
-        final JsonObject json = metadata.asJSON(frame, timestamp, pathExtractedTimestamp, false);
+        final JsonObject json = metadata.asJSONFromPath(pathExtractedTimestamp);
         Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("non-rfc5424", json.getString("format"));
 
@@ -110,7 +104,7 @@ public final class EventMetadataTest {
 
         final JsonObject timestampJson = json.getJsonObject("timestamp");
         Assertions.assertEquals("object-path", timestampJson.getString("source"));
-        Assertions.assertEquals("unrecognized", timestampJson.getString("original"));
+        Assertions.assertEquals("unrecognized", timestampJson.getString("rfc5242timestamp"));
         final ZonedDateTime expectedPathExtracted = ZonedDateTime
                 .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
         Assertions.assertEquals(expectedPathExtracted, ZonedDateTime.parse(timestampJson.getString("path-extracted")));

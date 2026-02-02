@@ -65,17 +65,13 @@ final class EventMetadata {
         this.id = id;
     }
 
-    JsonObject asJSON(
-            final RFC5424Frame rfc5424Frame,
-            final RFC5424Timestamp rfc5424Timestamp,
-            final PathExtractedTimestamp pathExtractedTimestamp,
-            boolean isSyslogFormat
-    ) {
+    JsonObject asJSONFromSyslog(final RFC5424Frame rfc5424Frame, final PathExtractedTimestamp pathExtractedTimestamp) {
 
+        final RFC5424Timestamp rfc5424Timestamp = new RFC5424Timestamp(rfc5424Frame.timestamp);
         final JsonObjectBuilder rootBuilder = Json
                 .createObjectBuilder()
                 .add("epochMigration", true)
-                .add("format", isSyslogFormat ? "rfc5424" : "non-rfc5424");
+                .add("format", "rfc5424");
 
         final JsonObjectBuilder objectBuilder = Json
                 .createObjectBuilder()
@@ -86,22 +82,41 @@ final class EventMetadata {
         rootBuilder.add("object", objectBuilder);
 
         final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
-        if (isSyslogFormat) {
-            final EpochMicros epochMicros = new EpochMicros(rfc5424Timestamp);
-            timestampBuilder
-                    .add("original", String.valueOf(rfc5424Frame.timestamp))
-                    .add("epoch", epochMicros.asLong())
-                    .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
-                    .add("source", epochMicros.source());
-        }
-        else {
-            final EpochMicros epochMicros = new EpochMicros(pathExtractedTimestamp);
-            timestampBuilder
-                    .add("original", "unrecognized")
-                    .addNull("epoch") // can not calculate epoch value
-                    .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
-                    .add("source", epochMicros.source());
-        }
+
+        final EpochMicros epochMicros = new EpochMicros(rfc5424Timestamp);
+        timestampBuilder
+                .add("rfc5242timestamp", String.valueOf(rfc5424Frame.timestamp))
+                .add("epoch", epochMicros.asLong())
+                .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                .add("source", epochMicros.source());
+
+        rootBuilder.add("timestamp", timestampBuilder);
+
+        return rootBuilder.build();
+    }
+
+    JsonObject asJSONFromPath(final PathExtractedTimestamp pathExtractedTimestamp) {
+
+        final JsonObjectBuilder rootBuilder = Json
+                .createObjectBuilder()
+                .add("epochMigration", true)
+                .add("format", "non-rfc5424");
+
+        final JsonObjectBuilder objectBuilder = Json
+                .createObjectBuilder()
+                .add("bucket", bucket)
+                .add("path", path)
+                .add("partition", id);
+
+        rootBuilder.add("object", objectBuilder);
+
+        final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
+        final EpochMicros epochMicros = new EpochMicros(pathExtractedTimestamp);
+        timestampBuilder
+                .add("rfc5242timestamp", "unrecognized")
+                .addNull("epoch") // can not calculate epoch value
+                .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                .add("source", epochMicros.source());
         rootBuilder.add("timestamp", timestampBuilder);
 
         return rootBuilder.build();
