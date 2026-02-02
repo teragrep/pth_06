@@ -57,7 +57,8 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
     private final MockDBRow origin;
     private final static Comparator<MockDBRow> COMPARATOR = Comparator
-            .comparingLong(MockDBRow::logtime)
+            .comparing(MockDBRow::isSyslog)
+            .thenComparingLong(MockDBRow::logtime)
             .thenComparingLong(MockDBRow::id)
             .thenComparing(MockDBRow::directory)
             .thenComparing(MockDBRow::stream)

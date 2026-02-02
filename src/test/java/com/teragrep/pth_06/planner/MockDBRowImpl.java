@@ -52,7 +52,8 @@ import java.util.Objects;
 public final class MockDBRowImpl implements MockDBRow {
 
     private final static Comparator<MockDBRow> COMPARATOR = Comparator
-            .comparingLong(MockDBRow::logtime)
+            .comparing(MockDBRow::isSyslog)
+            .thenComparingLong(MockDBRow::logtime)
             .thenComparingLong(MockDBRow::id)
             .thenComparing(MockDBRow::directory)
             .thenComparing(MockDBRow::stream)
