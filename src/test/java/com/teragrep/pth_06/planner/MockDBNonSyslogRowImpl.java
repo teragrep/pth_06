@@ -49,9 +49,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
- * Wrapper to change isSyslog() to true
+ * Wrapper around MockDBRow where isSyslog() returns false
  */
 public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
@@ -138,5 +139,31 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
     @Override
     public int compareTo(@NotNull MockDBRow o) {
         return COMPARATOR.compare(this, o);
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        final MockDBNonSyslogRowImpl mockDBNonSyslogRow = (MockDBNonSyslogRowImpl) object;
+        return Objects.equals(origin, mockDBNonSyslogRow.origin) && isSyslog == mockDBNonSyslogRow.isSyslog;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(origin, isSyslog);
+    }
+
+    @Override
+    public String toString() {
+        return "MockDBNonSyslogRowImpl{" + "id=" + origin.id() + ", directory='" + origin.directory() + '\''
+                + ", stream='" + origin.stream() + '\'' + ", host='" + origin.host() + '\'' + ", logtag='"
+                + origin.logtag() + '\'' + ", logdate=" + origin.logdate() + ", bucket='" + origin.bucket() + '\''
+                + ", path='" + origin.path() + '\'' + ", logtime=" + origin.logtime() + ", filesize="
+                + origin.filesize() + ", uncompressedFilesize=" + origin.uncompressedFilesize() + '}';
     }
 }
