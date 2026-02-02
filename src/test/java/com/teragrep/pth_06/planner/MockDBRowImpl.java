@@ -65,6 +65,8 @@ public final class MockDBRowImpl implements MockDBRow {
             .thenComparingLong(MockDBRow::filesize)
             .thenComparingLong(MockDBRow::uncompressedFilesize);
 
+    private final static boolean isSyslog = true;
+
     private final long id;
     private final String directory;
     private final String stream;
@@ -160,7 +162,7 @@ public final class MockDBRowImpl implements MockDBRow {
 
     @Override
     public boolean isSyslog() {
-        return true;
+        return isSyslog;
     }
 
     @Override
@@ -174,10 +176,10 @@ public final class MockDBRowImpl implements MockDBRow {
             return false;
         }
         final MockDBRowImpl mockDBRow = (MockDBRowImpl) o;
-        return id == mockDBRow.id
-                && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
-                        .equals(directory, mockDBRow.directory)
-                && Objects.equals(stream, mockDBRow.stream) && Objects.equals(host, mockDBRow.host) && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize);
+        return id == mockDBRow.id && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
+                .equals(directory, mockDBRow.directory) && Objects.equals(stream, mockDBRow.stream) && Objects
+                        .equals(host, mockDBRow.host)
+                && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize) && this.isSyslog == mockDBRow.isSyslog;
     }
 
     @Override
@@ -185,7 +187,7 @@ public final class MockDBRowImpl implements MockDBRow {
         return Objects
                 .hash(
                         id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
-                        uncompressedFilesize
+                        uncompressedFilesize, isSyslog
                 );
     }
 

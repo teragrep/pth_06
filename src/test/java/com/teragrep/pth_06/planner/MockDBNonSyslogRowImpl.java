@@ -55,7 +55,6 @@ import java.util.Comparator;
  */
 public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
-    private final MockDBRow origin;
     private final static Comparator<MockDBRow> COMPARATOR = Comparator
             .comparing(MockDBRow::isSyslog)
             .thenComparingLong(MockDBRow::logtime)
@@ -69,6 +68,8 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
             .thenComparing(MockDBRow::path)
             .thenComparingLong(MockDBRow::filesize)
             .thenComparingLong(MockDBRow::uncompressedFilesize);
+    private final static boolean isSyslog = false;
+    private final MockDBRow origin;
 
     public MockDBNonSyslogRowImpl(final MockDBRow origin) {
         this.origin = origin;
@@ -131,7 +132,7 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
     @Override
     public boolean isSyslog() {
-        return false;
+        return isSyslog;
     }
 
     @Override
