@@ -65,8 +65,7 @@ public final class MockDBRowImpl implements MockDBRow {
             .thenComparingLong(MockDBRow::filesize)
             .thenComparingLong(MockDBRow::uncompressedFilesize);
 
-    private final static boolean isSyslog = true;
-
+    private final boolean isSyslog;
     private final long id;
     private final String directory;
     private final String stream;
@@ -92,6 +91,23 @@ public final class MockDBRowImpl implements MockDBRow {
             final long filesize,
             final Long uncompressedFilesize
     ) {
+        this(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize, true);
+    }
+
+    private MockDBRowImpl(
+            final long id,
+            final String directory,
+            final String stream,
+            final String host,
+            final String logtag,
+            final Date logdate,
+            final String bucket,
+            final String path,
+            final long logtime,
+            final long filesize,
+            final Long uncompressedFilesize,
+            final boolean isSyslog
+    ) {
         this.id = id;
         this.directory = directory;
         this.stream = stream;
@@ -103,6 +119,7 @@ public final class MockDBRowImpl implements MockDBRow {
         this.logtime = logtime;
         this.filesize = filesize;
         this.uncompressedFilesize = uncompressedFilesize;
+        this.isSyslog = isSyslog;
     }
 
     @Override
@@ -176,26 +193,26 @@ public final class MockDBRowImpl implements MockDBRow {
             return false;
         }
         final MockDBRowImpl mockDBRow = (MockDBRowImpl) o;
-        return id == mockDBRow.id && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
-                .equals(directory, mockDBRow.directory) && Objects.equals(stream, mockDBRow.stream) && Objects
-                        .equals(host, mockDBRow.host)
-                && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize) && this.isSyslog == mockDBRow.isSyslog;
+        return Objects.equals(isSyslog, mockDBRow.isSyslog)
+                && id == mockDBRow.id && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
+                        .equals(directory, mockDBRow.directory)
+                && Objects.equals(stream, mockDBRow.stream) && Objects.equals(host, mockDBRow.host) && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize);
     }
 
     @Override
     public int hashCode() {
         return Objects
                 .hash(
-                        id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
+                        isSyslog, id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
                         uncompressedFilesize, isSyslog
                 );
     }
 
     @Override
     public String toString() {
-        return "MockDBRowImpl{" + "id=" + id + ", directory='" + directory + '\'' + ", stream='" + stream + '\''
-                + ", host='" + host + '\'' + ", logtag='" + logtag + '\'' + ", logdate=" + logdate + ", bucket='"
-                + bucket + '\'' + ", path='" + path + '\'' + ", logtime=" + logtime + ", filesize=" + filesize
-                + ", uncompressedFilesize=" + uncompressedFilesize + '}';
+        return "MockDBRowImpl{isSyslog=" + isSyslog + ", id=" + id + ", directory='" + directory + '\'' + ", stream='"
+                + stream + '\'' + ", host='" + host + '\'' + ", logtag='" + logtag + '\'' + ", logdate=" + logdate
+                + ", bucket='" + bucket + '\'' + ", path='" + path + '\'' + ", logtime=" + logtime + ", filesize="
+                + filesize + ", uncompressedFilesize=" + uncompressedFilesize + '}';
     }
 }

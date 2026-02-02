@@ -69,11 +69,16 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
             .thenComparing(MockDBRow::path)
             .thenComparingLong(MockDBRow::filesize)
             .thenComparingLong(MockDBRow::uncompressedFilesize);
-    private final static boolean isSyslog = false;
+    private final boolean isSyslog;
     private final MockDBRow origin;
 
     public MockDBNonSyslogRowImpl(final MockDBRow origin) {
+        this(origin, false);
+    }
+
+    private MockDBNonSyslogRowImpl(final MockDBRow origin, final boolean isSyslog) {
         this.origin = origin;
+        this.isSyslog = isSyslog;
     }
 
     @Override
@@ -150,7 +155,8 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
             return false;
         }
         final MockDBNonSyslogRowImpl mockDBNonSyslogRow = (MockDBNonSyslogRowImpl) object;
-        return Objects.equals(origin, mockDBNonSyslogRow.origin) && isSyslog == mockDBNonSyslogRow.isSyslog;
+        return Objects.equals(isSyslog, mockDBNonSyslogRow.isSyslog)
+                && Objects.equals(origin, mockDBNonSyslogRow.origin);
     }
 
     @Override
@@ -160,10 +166,10 @@ public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
     @Override
     public String toString() {
-        return "MockDBNonSyslogRowImpl{" + "id=" + origin.id() + ", directory='" + origin.directory() + '\''
-                + ", stream='" + origin.stream() + '\'' + ", host='" + origin.host() + '\'' + ", logtag='"
-                + origin.logtag() + '\'' + ", logdate=" + origin.logdate() + ", bucket='" + origin.bucket() + '\''
-                + ", path='" + origin.path() + '\'' + ", logtime=" + origin.logtime() + ", filesize="
-                + origin.filesize() + ", uncompressedFilesize=" + origin.uncompressedFilesize() + '}';
+        return "MockDBNonSyslogRowImpl{isSyslog=" + isSyslog + ", id=" + origin.id() + ", directory='"
+                + origin.directory() + '\'' + ", stream='" + origin.stream() + '\'' + ", host='" + origin.host() + '\''
+                + ", logtag='" + origin.logtag() + '\'' + ", logdate=" + origin.logdate() + ", bucket='"
+                + origin.bucket() + '\'' + ", path='" + origin.path() + '\'' + ", logtime=" + origin.logtime()
+                + ", filesize=" + origin.filesize() + ", uncompressedFilesize=" + origin.uncompressedFilesize() + '}';
     }
 }
