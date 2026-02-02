@@ -65,9 +65,8 @@ public final class EventMetadataTest {
         final RFC5424Frame frame = new RFC5424Frame(true);
         frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
         Assertions.assertDoesNotThrow(frame::next);
-        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         final EventMetadata metadata = new EventMetadata("bucket", path, "partition-1");
-        final JsonObject json = metadata.asJSONFromSyslog(frame, pathExtractedTimestamp);
+        final JsonObject json = metadata.toJSONWithSyslogTimestamp(frame);
         Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("rfc5424", json.getString("format"));
 
@@ -91,9 +90,8 @@ public final class EventMetadataTest {
     @Test
     void testNonSyslogFrameJson() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
-        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         final EventMetadata metadata = new EventMetadata("bucket", path, "partition-2");
-        final JsonObject json = metadata.asJSONFromPath(pathExtractedTimestamp);
+        final JsonObject json = metadata.toJSONWithPathExtractedTimestamp();
         Assertions.assertTrue(json.getBoolean("epochMigration"));
         Assertions.assertEquals("non-rfc5424", json.getString("format"));
 
@@ -104,11 +102,9 @@ public final class EventMetadataTest {
 
         final JsonObject timestampJson = json.getJsonObject("timestamp");
         Assertions.assertEquals("object-path", timestampJson.getString("source"));
-        Assertions.assertEquals("unrecognized", timestampJson.getString("rfc5242timestamp"));
         final ZonedDateTime expectedPathExtracted = ZonedDateTime
                 .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
         Assertions.assertEquals(expectedPathExtracted, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
-        Assertions.assertTrue(timestampJson.isNull("epoch"));
     }
 
     @Test

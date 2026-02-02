@@ -296,7 +296,6 @@ public final class EpochMigrationTest {
                 final JsonObject jsonTimestamp = json.getJsonObject("timestamp");
                 final String timestampSource = jsonTimestamp.getString("source");
 
-                Assertions.assertTrue(jsonTimestamp.isNull("epoch"));
                 Assertions.assertEquals("object-path", timestampSource);
                 final ZonedDateTime zonedDateTime = Assertions
                         .assertDoesNotThrow(() -> ZonedDateTime.parse(jsonTimestamp.getString("path-extracted")), "path extracted value should be parseable by ZonedDateTim");

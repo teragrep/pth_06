@@ -198,13 +198,12 @@ public final class EpochMigrationRowConverter implements RowConverter {
             LOGGER.debug("Parser syslog event <[{}]>", rfc5424Frame.toString());
         }
 
-        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         rowWriter.reset();
         rowWriter.zeroOutNullBytes();
 
         if (isSyslogFormat) {
             final RFC5424Timestamp rfc5424Timestamp = new RFC5424Timestamp(rfc5424Frame.timestamp);
-            final JsonObject jsonEnvelope = eventMetadata.asJSONFromSyslog(rfc5424Frame, pathExtractedTimestamp);
+            final JsonObject jsonEnvelope = eventMetadata.toJSONWithSyslogTimestamp(rfc5424Frame);
             rowWriter.write(0, new EpochMicros(rfc5424Timestamp).asLong());
             rowWriter.write(1, UTF8String.fromString(jsonEnvelope.toString()));
             rowWriter.write(2, this.directory);
@@ -216,8 +215,8 @@ public final class EpochMigrationRowConverter implements RowConverter {
             rowWriter.write(8, new EventToOrigin().asUTF8StringFrom(rfc5424Frame));
         }
         else {
-            final JsonObject jsonEnvelope = eventMetadata.asJSONFromPath(pathExtractedTimestamp);
-            rowWriter.write(0, new EpochMicros(pathExtractedTimestamp).asLong());
+            final JsonObject jsonEnvelope = eventMetadata.toJSONWithPathExtractedTimestamp();
+            rowWriter.write(0, new EpochMicros(new PathExtractedTimestamp(path)).asLong());
             rowWriter.write(1, UTF8String.fromString(jsonEnvelope.toString()));
             rowWriter.write(2, this.directory);
             rowWriter.write(3, this.stream);

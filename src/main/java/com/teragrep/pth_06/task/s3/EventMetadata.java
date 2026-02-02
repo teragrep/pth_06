@@ -65,8 +65,7 @@ final class EventMetadata {
         this.id = id;
     }
 
-    JsonObject asJSONFromSyslog(final RFC5424Frame rfc5424Frame, final PathExtractedTimestamp pathExtractedTimestamp) {
-
+    JsonObject toJSONWithSyslogTimestamp(final RFC5424Frame rfc5424Frame) {
         final RFC5424Timestamp rfc5424Timestamp = new RFC5424Timestamp(rfc5424Frame.timestamp);
         final JsonObjectBuilder rootBuilder = Json
                 .createObjectBuilder()
@@ -84,6 +83,7 @@ final class EventMetadata {
         final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
 
         final EpochMicros epochMicros = new EpochMicros(rfc5424Timestamp);
+        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         timestampBuilder
                 .add("rfc5242timestamp", String.valueOf(rfc5424Frame.timestamp))
                 .add("epoch", epochMicros.asLong())
@@ -95,8 +95,7 @@ final class EventMetadata {
         return rootBuilder.build();
     }
 
-    JsonObject asJSONFromPath(final PathExtractedTimestamp pathExtractedTimestamp) {
-
+    JsonObject toJSONWithPathExtractedTimestamp() {
         final JsonObjectBuilder rootBuilder = Json
                 .createObjectBuilder()
                 .add("epochMigration", true)
@@ -111,11 +110,9 @@ final class EventMetadata {
         rootBuilder.add("object", objectBuilder);
 
         final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
-        final EpochMicros epochMicros = new EpochMicros(pathExtractedTimestamp);
+        final EpochMicros epochMicros = new EpochMicros(path);
         timestampBuilder
-                .add("rfc5242timestamp", "unrecognized")
-                .addNull("epoch") // can not calculate epoch value
-                .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                .add("path-extracted", new PathExtractedTimestamp(path).toZonedDateTime().toString())
                 .add("source", epochMicros.source());
         rootBuilder.add("timestamp", timestampBuilder);
 

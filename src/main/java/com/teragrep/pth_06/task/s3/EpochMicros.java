@@ -61,6 +61,10 @@ public final class EpochMicros {
         this(rfc5424Timestamp.toZonedDateTime().toInstant(), "syslog");
     }
 
+    public EpochMicros(final String path) {
+        this(new PathExtractedTimestamp(path));
+    }
+
     public EpochMicros(final PathExtractedTimestamp pathExtractedTimestamp) {
         this(pathExtractedTimestamp.toZonedDateTime().toInstant(), "object-path");
     }
