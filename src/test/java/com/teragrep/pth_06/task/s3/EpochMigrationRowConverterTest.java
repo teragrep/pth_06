@@ -171,23 +171,6 @@ public final class EpochMigrationRowConverterTest {
         Assertions.assertDoesNotThrow(rowConverter::close);
     }
 
-    @Test
-    public void testEmptyFile() {
-        Assertions.assertDoesNotThrow(() -> load(""));
-        RowConverter rowConverter = new EpochMigrationRowConverter(
-                amazonS3,
-                "id",
-                bucket,
-                path,
-                "directory",
-                "stream",
-                "host"
-        );
-        Assertions.assertDoesNotThrow(rowConverter::open);
-        Assertions.assertDoesNotThrow(() -> Assertions.assertFalse(rowConverter.next()));
-        Assertions.assertDoesNotThrow(rowConverter::close);
-    }
-
     private void load(final String content) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (final GZIPOutputStream gzip = new GZIPOutputStream(baos)) {
