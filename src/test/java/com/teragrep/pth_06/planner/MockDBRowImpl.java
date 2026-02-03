@@ -193,7 +193,7 @@ public final class MockDBRowImpl implements MockDBRow {
             return false;
         }
         final MockDBRowImpl mockDBRow = (MockDBRowImpl) o;
-        return Objects.equals(isSyslog, mockDBRow.isSyslog)
+        return isSyslog == mockDBRow.isSyslog
                 && id == mockDBRow.id && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
                         .equals(directory, mockDBRow.directory)
                 && Objects.equals(stream, mockDBRow.stream) && Objects.equals(host, mockDBRow.host) && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize);
@@ -204,7 +204,7 @@ public final class MockDBRowImpl implements MockDBRow {
         return Objects
                 .hash(
                         isSyslog, id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
-                        uncompressedFilesize, isSyslog
+                        uncompressedFilesize
                 );
     }
 
