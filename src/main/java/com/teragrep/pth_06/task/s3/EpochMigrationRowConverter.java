@@ -168,18 +168,17 @@ public final class EpochMigrationRowConverter implements RowConverter {
         if (!readAttempted) {
             readAttempted = true;
             try {
-                hasRow = rfc5424Frame.next();
-                isSyslogFormat = hasRow;
+                isSyslogFormat = rfc5424Frame.next();
             }
-            catch (final ParseException | IOException exception) {
+            catch (final ParseException exception) {
                 LOGGER
                         .error(
                                 "ParseException at object: <[{}]>/<[{}]> - exception message: <{}>", bucket, path,
                                 exception.getMessage()
                         );
                 isSyslogFormat = false;
-                hasRow = true;
             }
+            hasRow = true;
         }
         else {
             hasRow = false;
