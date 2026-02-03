@@ -120,7 +120,7 @@ public final class EpochMigrationRowConverterTest {
         Assertions.assertEquals(1403255647123450L, time);
 
         final String raw = internalRow.getString(1);
-        final String expectedRaw = "{\"epochMigration\":true,\"format\":\"rfc5424\",\"object\":{\"bucket\":\"bucket\",\"path\":\"2007/10-08/epoch/migration/test.logGLOB-2007100814.log.gz\",\"partition\":\"id\"},\"timestamp\":{\"rfc5242timestamp\":\"2014-06-20T09:14:07.12345+00:00\",\"epoch\":1403255647123450,\"path-extracted\":\"2007-10-08T14:00+03:00[Europe/Helsinki]\",\"source\":\"syslog\"}}";
+        final String expectedRaw = "{\"epochMigration\":true,\"format\":\"rfc5424\",\"object\":{\"bucket\":\"bucket\",\"path\":\"2007/10-08/epoch/migration/test.logGLOB-2007100814.log.gz\",\"partition\":\"id\"},\"timestamp\":{\"rfc5242timestamp\":\"2014-06-20T09:14:07.12345+00:00\",\"epoch\":1403255647123450,\"path-extracted\":\"2007-10-08T14:00+03:00[Europe/Helsinki]\",\"path-extracted-precision\":\"hourly\",\"source\":\"syslog\"}}";
         Assertions.assertEquals(expectedRaw, raw);
 
         Assertions
@@ -160,7 +160,7 @@ public final class EpochMigrationRowConverterTest {
         Assertions.assertEquals(expectedEpochSeconds * 1000 * 1000, time);
 
         final String raw = internalRow.getString(1);
-        final String expectedRaw = "{\"epochMigration\":true,\"format\":\"non-rfc5424\",\"object\":{\"bucket\":\"bucket\",\"path\":\"2007/10-08/epoch/migration/test.logGLOB-2007100814.log.gz\",\"partition\":\"id\"},\"timestamp\":{\"path-extracted\":\"2007-10-08T14:00+03:00[Europe/Helsinki]\",\"source\":\"object-path\"}}";
+        final String expectedRaw = "{\"epochMigration\":true,\"format\":\"non-rfc5424\",\"object\":{\"bucket\":\"bucket\",\"path\":\"2007/10-08/epoch/migration/test.logGLOB-2007100814.log.gz\",\"partition\":\"id\"},\"timestamp\":{\"path-extracted\":\"2007-10-08T14:00+03:00[Europe/Helsinki]\",\"path-extracted-precision\":\"hourly\",\"source\":\"object-path\"}}";
         Assertions.assertEquals(expectedRaw, raw);
 
         Assertions

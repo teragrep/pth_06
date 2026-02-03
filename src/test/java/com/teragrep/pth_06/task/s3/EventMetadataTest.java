@@ -84,6 +84,7 @@ public final class EventMetadataTest {
                 .of(2024, 1, 1, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
         Assertions.assertEquals(expectedPathDerived, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
         Assertions.assertEquals(frame.timestamp.toString(), timestampJson.getString("rfc5242timestamp"));
+        Assertions.assertEquals("daily", timestampJson.getString("path-extracted-precision"));
 
     }
 
@@ -105,6 +106,7 @@ public final class EventMetadataTest {
         final ZonedDateTime expectedPathExtracted = ZonedDateTime
                 .of(2007, 10, 8, 0, 0, 0, 0, ZoneId.of("Europe/Helsinki"));
         Assertions.assertEquals(expectedPathExtracted, ZonedDateTime.parse(timestampJson.getString("path-extracted")));
+        Assertions.assertEquals("daily", timestampJson.getString("path-extracted-precision"));
     }
 
     @Test

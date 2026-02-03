@@ -88,6 +88,7 @@ final class EventMetadata {
                 .add("rfc5242timestamp", String.valueOf(rfc5424Frame.timestamp))
                 .add("epoch", epochMicros.asLong())
                 .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                .add("path-extracted-precision", pathExtractedTimestamp.hasHourlyData() ? "hourly" : "daily")
                 .add("source", epochMicros.source());
 
         rootBuilder.add("timestamp", timestampBuilder);
@@ -110,9 +111,11 @@ final class EventMetadata {
         rootBuilder.add("object", objectBuilder);
 
         final JsonObjectBuilder timestampBuilder = Json.createObjectBuilder();
-        final EpochMicros epochMicros = new EpochMicros(path);
+        final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
+        final EpochMicros epochMicros = new EpochMicros(pathExtractedTimestamp);
         timestampBuilder
-                .add("path-extracted", new PathExtractedTimestamp(path).toZonedDateTime().toString())
+                .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
+                .add("path-extracted-precision", pathExtractedTimestamp.hasHourlyData() ? "hourly" : "daily")
                 .add("source", epochMicros.source());
         rootBuilder.add("timestamp", timestampBuilder);
 

@@ -97,11 +97,11 @@ final class PathExtractedTimestamp {
         return zonedDateTime;
     }
 
-    private boolean hasHourlyData() {
+    public boolean hasHourlyData() {
         return hourPattern.matcher(path).matches();
     }
 
-    private boolean hasDateData() {
+    public boolean hasDateData() {
         return datePattern.matcher(path).matches();
     }
 

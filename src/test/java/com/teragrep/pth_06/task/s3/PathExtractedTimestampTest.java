@@ -60,6 +60,8 @@ public final class PathExtractedTimestampTest {
     void testHourlyValueUsedWhenAvailable() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.logGLOB-2007100814.log.gz";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        Assertions.assertTrue(timeStamp.hasDateData());
+        Assertions.assertTrue(timeStamp.hasHourlyData());
         final ZonedDateTime zonedDateTime = timeStamp.toZonedDateTime();
         final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 14, 0, 0, 0, assumedZone);
         Assertions.assertEquals(expected, zonedDateTime);
@@ -69,6 +71,8 @@ public final class PathExtractedTimestampTest {
     void testDateParsedToMidnight() {
         final String path = "2007/10-08/sc-99-99-14-110/f17/f17.log";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        Assertions.assertTrue(timeStamp.hasDateData());
+        Assertions.assertFalse(timeStamp.hasHourlyData());
         final ZonedDateTime zonedDateTime = timeStamp.toZonedDateTime();
         final ZonedDateTime expected = ZonedDateTime.of(2007, 10, 8, 0, 0, 0, 0, assumedZone);
         Assertions.assertEquals(expected, zonedDateTime);
@@ -87,6 +91,8 @@ public final class PathExtractedTimestampTest {
     void testInvalidInputThrows() {
         final String path = "sc-99-99-14-110/f17/file.log";
         final PathExtractedTimestamp timeStamp = new PathExtractedTimestamp(path);
+        Assertions.assertFalse(timeStamp.hasDateData());
+        Assertions.assertFalse(timeStamp.hasHourlyData());
         final IllegalStateException exception = Assertions
                 .assertThrows(IllegalStateException.class, timeStamp::toZonedDateTime);
         final String expected = "Path does not contain date information: <sc-99-99-14-110/f17/file.log>";
