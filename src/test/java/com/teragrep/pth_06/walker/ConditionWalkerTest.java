@@ -109,7 +109,7 @@ public class ConditionWalkerTest {
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
                     + "    `filter`         longblob            NOT NULL)";
-            String ip192 = "CREATE TABLE `pattern_test_uuid`("
+            String uuid = "CREATE TABLE `pattern_test_uuid`("
                     + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
@@ -117,7 +117,7 @@ public class ConditionWalkerTest {
             conn.prepareStatement(filtertype).execute();
             conn.prepareStatement(ip).execute();
             conn.prepareStatement(ip255).execute();
-            conn.prepareStatement(ip192).execute();
+            conn.prepareStatement(uuid).execute();
             String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
             int id = 1;
             for (String pattern : patternList) {
