@@ -45,25 +45,46 @@
  */
 package com.teragrep.pth_06.task.s3;
 
+import com.teragrep.rlo_06.RFC5424Frame;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.apache.spark.unsafe.types.UTF8String;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-public class RowConverterTests {
+public final class EventToOriginTest {
 
     @Test
-    public void rfc3339ToEpochTest() {
-        // String s = "2021-01-28T00:00:00+02:00";
-        Instant instant = Instant.ofEpochSecond(1611784800);
-
-        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Europe/Helsinki"));
-        final long epochMicros = RowConverter.rfc3339ToEpoch(zonedDateTime);
-
-        assertEquals(1611784800000000L, epochMicros);
+    void testOriginPresent() {
+        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - "
+                + "[origin@48577 hostname=\"original.hostname.domain.tld\"] " + "test message";
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
+        });
+        final EventToOrigin eventToOrigin = new EventToOrigin();
+        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
+        Assertions.assertEquals(UTF8String.fromString("original.hostname.domain.tld"), result);
     }
 
+    @Test
+    void testOriginMissing() {
+        final String syslog = "<34>1 2024-01-01T00:00:00Z host app 1234 - - test message";
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        frame.load(new ByteArrayInputStream(syslog.getBytes(StandardCharsets.UTF_8)));
+        Assertions.assertDoesNotThrow(() -> {
+            Assertions.assertTrue(frame.next(), "Expected one RFC5424 event");
+        });
+        final EventToOrigin eventToOrigin = new EventToOrigin();
+        final UTF8String result = eventToOrigin.asUTF8StringFrom(frame);
+        Assertions.assertEquals(UTF8String.fromString(""), result, "Missing origin should return empty UTF8String");
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(EventToOrigin.class).verify();
+    }
 }

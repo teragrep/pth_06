@@ -45,11 +45,16 @@
  */
 package com.teragrep.pth_06.planner;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.Date;
 import java.util.Comparator;
 import java.util.Objects;
 
-public final class MockDBRowImpl implements MockDBRow {
+/**
+ * Wrapper around MockDBRow where isSyslog() returns false
+ */
+public final class MockDBNonSyslogRowImpl implements MockDBRow {
 
     private final static Comparator<MockDBRow> COMPARATOR = Comparator
             .comparing(MockDBRow::isSyslog)
@@ -64,117 +69,71 @@ public final class MockDBRowImpl implements MockDBRow {
             .thenComparing(MockDBRow::path)
             .thenComparingLong(MockDBRow::filesize)
             .thenComparingLong(MockDBRow::uncompressedFilesize);
-
     private final boolean isSyslog;
-    private final long id;
-    private final String directory;
-    private final String stream;
-    private final String host;
-    private final String logtag;
-    private final Date logdate;
-    private final String bucket;
-    private final String path;
-    private final long logtime;
-    private final long filesize;
-    private final Long uncompressedFilesize;
+    private final MockDBRow origin;
 
-    public MockDBRowImpl(
-            final long id,
-            final String directory,
-            final String stream,
-            final String host,
-            final String logtag,
-            final Date logdate,
-            final String bucket,
-            final String path,
-            final long logtime,
-            final long filesize,
-            final Long uncompressedFilesize
-    ) {
-        this(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize, true);
+    public MockDBNonSyslogRowImpl(final MockDBRow origin) {
+        this(origin, false);
     }
 
-    private MockDBRowImpl(
-            final long id,
-            final String directory,
-            final String stream,
-            final String host,
-            final String logtag,
-            final Date logdate,
-            final String bucket,
-            final String path,
-            final long logtime,
-            final long filesize,
-            final Long uncompressedFilesize,
-            final boolean isSyslog
-    ) {
-        this.id = id;
-        this.directory = directory;
-        this.stream = stream;
-        this.host = host;
-        this.logtag = logtag;
-        this.logdate = logdate;
-        this.bucket = bucket;
-        this.path = path;
-        this.logtime = logtime;
-        this.filesize = filesize;
-        this.uncompressedFilesize = uncompressedFilesize;
+    private MockDBNonSyslogRowImpl(final MockDBRow origin, final boolean isSyslog) {
+        this.origin = origin;
         this.isSyslog = isSyslog;
     }
 
     @Override
     public long id() {
-        return id;
+        return origin.id();
     }
 
     @Override
     public String directory() {
-        return directory;
+        return origin.directory();
     }
 
     @Override
     public String stream() {
-        return stream;
+        return origin.stream();
     }
 
     @Override
     public String host() {
-        return host;
+        return origin.host();
     }
 
     @Override
     public String logtag() {
-        return logtag;
+        return origin.logtag();
     }
 
     @Override
     public Date logdate() {
-        return logdate;
+        return origin.logdate();
     }
 
     @Override
     public String bucket() {
-        return bucket;
+        return origin.bucket();
     }
 
     @Override
     public String path() {
-        return path;
+        return origin.path();
     }
 
     @Override
     public long logtime() {
-        return logtime;
+        return origin.logtime();
     }
 
     @Override
     public long filesize() {
-        return filesize;
+        return origin.filesize();
     }
 
     @Override
     public Long uncompressedFilesize() {
-        return uncompressedFilesize;
+        return origin.uncompressedFilesize();
     }
 
     @Override
@@ -183,36 +142,34 @@ public final class MockDBRowImpl implements MockDBRow {
     }
 
     @Override
-    public int compareTo(final MockDBRow o) {
+    public int compareTo(@NotNull MockDBRow o) {
         return COMPARATOR.compare(this, o);
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (o == null || getClass() != o.getClass()) {
+    public boolean equals(final Object object) {
+        if (object == null) {
             return false;
         }
-        final MockDBRowImpl mockDBRow = (MockDBRowImpl) o;
-        return isSyslog == mockDBRow.isSyslog
-                && id == mockDBRow.id && logtime == mockDBRow.logtime && filesize == mockDBRow.filesize && Objects
-                        .equals(directory, mockDBRow.directory)
-                && Objects.equals(stream, mockDBRow.stream) && Objects.equals(host, mockDBRow.host) && Objects.equals(logtag, mockDBRow.logtag) && Objects.equals(logdate, mockDBRow.logdate) && Objects.equals(bucket, mockDBRow.bucket) && Objects.equals(path, mockDBRow.path) && Objects.equals(uncompressedFilesize, mockDBRow.uncompressedFilesize);
+        if (getClass() != object.getClass()) {
+            return false;
+        }
+        final MockDBNonSyslogRowImpl mockDBNonSyslogRow = (MockDBNonSyslogRowImpl) object;
+        return Objects.equals(isSyslog, mockDBNonSyslogRow.isSyslog)
+                && Objects.equals(origin, mockDBNonSyslogRow.origin);
     }
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(
-                        isSyslog, id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize,
-                        uncompressedFilesize
-                );
+        return Objects.hash(origin, isSyslog);
     }
 
     @Override
     public String toString() {
-        return "MockDBRowImpl{isSyslog=" + isSyslog + ", id=" + id + ", directory='" + directory + '\'' + ", stream='"
-                + stream + '\'' + ", host='" + host + '\'' + ", logtag='" + logtag + '\'' + ", logdate=" + logdate
-                + ", bucket='" + bucket + '\'' + ", path='" + path + '\'' + ", logtime=" + logtime + ", filesize="
-                + filesize + ", uncompressedFilesize=" + uncompressedFilesize + '}';
+        return "MockDBNonSyslogRowImpl{isSyslog=" + isSyslog + ", id=" + origin.id() + ", directory='"
+                + origin.directory() + '\'' + ", stream='" + origin.stream() + '\'' + ", host='" + origin.host() + '\''
+                + ", logtag='" + origin.logtag() + '\'' + ", logdate=" + origin.logdate() + ", bucket='"
+                + origin.bucket() + '\'' + ", path='" + origin.path() + '\'' + ", logtime=" + origin.logtime()
+                + ", filesize=" + origin.filesize() + ", uncompressedFilesize=" + origin.uncompressedFilesize() + '}';
     }
 }

@@ -123,6 +123,11 @@ public final class RecordableMockDBRow implements MockDBRow, Recordable {
     }
 
     @Override
+    public boolean isSyslog() {
+        return origin.isSyslog();
+    }
+
+    @Override
     public Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> asRecord() {
         final Record11<ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong> newRecord = dslContext
                 .newRecord(

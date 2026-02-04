@@ -43,33 +43,53 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.task.s3;
 
-import java.sql.Date;
+import com.teragrep.rlo_06.Fragment;
+import com.teragrep.rlo_06.RFC5424Frame;
+import com.teragrep.rlo_06.SDVector;
+import org.apache.spark.unsafe.types.UTF8String;
 
-public interface MockDBRow extends Comparable<MockDBRow> {
+import java.util.Objects;
 
-    long id();
+final class EventToOrigin {
 
-    String directory();
+    private final SDVector originHostname;
 
-    String stream();
+    EventToOrigin() {
+        this.originHostname = new SDVector("origin@48577", "hostname");
+    }
 
-    String host();
+    UTF8String asUTF8StringFrom(RFC5424Frame rfc5424Frame) {
+        return UTF8String.fromBytes(origin(rfc5424Frame));
+    }
 
-    String logtag();
+    private byte[] origin(RFC5424Frame rfc5424Frame) {
+        byte[] origin;
+        Fragment originFragment = rfc5424Frame.structuredData.getValue(originHostname);
+        if (!originFragment.isStub) {
+            origin = originFragment.toBytes();
+        }
+        else {
+            origin = new byte[] {};
+        }
+        return origin;
+    }
 
-    Date logdate();
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+        EventToOrigin that = (EventToOrigin) o;
+        return Objects.equals(originHostname, that.originHostname);
+    }
 
-    String bucket();
-
-    String path();
-
-    long logtime();
-
-    long filesize();
-
-    Long uncompressedFilesize();
-
-    boolean isSyslog();
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(originHostname);
+    }
 }

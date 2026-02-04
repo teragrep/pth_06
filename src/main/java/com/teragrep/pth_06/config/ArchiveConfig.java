@@ -61,6 +61,7 @@ public final class ArchiveConfig {
     public final String s3Credential;
 
     public final boolean skipNonRFC5424Files;
+    public final boolean epochMigrationMode;
 
     public final long archiveIncludeBeforeEpoch;
 
@@ -89,6 +90,7 @@ public final class ArchiveConfig {
 
         // skip not rfc5424 parseable files
         skipNonRFC5424Files = opts.getOrDefault("skipNonRFC5424Files", "false").equalsIgnoreCase("true");
+        epochMigrationMode = opts.getOrDefault("epochMigrationMode", "false").equalsIgnoreCase("true");
 
         archiveIncludeBeforeEpoch = Long
                 .parseLong(opts.getOrDefault("archive.includeBeforeEpoch", String.valueOf(Long.MAX_VALUE)));
@@ -113,6 +115,7 @@ public final class ArchiveConfig {
         bloomDbName = "";
 
         skipNonRFC5424Files = false;
+        epochMigrationMode = false;
 
         archiveIncludeBeforeEpoch = 0L;
 
