@@ -679,6 +679,27 @@ public class ConditionWalkerTest {
         Assertions.assertEquals(expected, condition.toString());
     }
 
+    @Test
+    public void testMultiIndexStatementConditionBloomEnabled() {
+        final ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        final String query = "<OR>" + "<indexstatement operation=\"EQUALS\" value = \"192.168.1.1\"/>"
+                + "<indexstatement operation=\"EQUALS\" value = \"nomatch\"/>" + "</OR>";
+        final Condition condition = Assertions.assertDoesNotThrow(() -> walker.fromString(query, false));
+        final Set<Table<?>> tables = walker.conditionRequiredTables();
+        Assertions.assertEquals(1, tables.size());
+        final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
+        final List<String> expectedTableNames = Arrays.asList("pattern_test_ip");
+        Assertions.assertEquals(expectedTableNames, tableNames);
+        final String expected = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
+                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
+                + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
+                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  or true\n" + ")";
+        Assertions.assertEquals(expected, condition.toString());
+    }
+
     private void writeFilter(String tableName, int filterId) {
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
