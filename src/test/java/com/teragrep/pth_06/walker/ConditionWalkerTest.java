@@ -50,6 +50,8 @@ import com.teragrep.pth_06.planner.walker.FilterlessSearchImpl;
 import org.apache.spark.util.sketch.BloomFilter;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Named;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.*;
 
@@ -59,11 +61,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.
  * inherited from QueryPart
- * 
+ *
  * @see org.jooq.QueryPart
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -76,7 +80,8 @@ public class ConditionWalkerTest {
     final String ipRegex = "(\\b25[0-5]|\\b2[0-4][0-9]|\\b[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     // matches IPv4 starting with 255.
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
-    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255));
+    final String uuidPattern = "[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}";
+    final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, uuidPattern));
     final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
 
     @BeforeAll
@@ -87,6 +92,7 @@ public class ConditionWalkerTest {
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip192").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
@@ -103,9 +109,15 @@ public class ConditionWalkerTest {
                     + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
                     + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
                     + "    `filter`         longblob            NOT NULL)";
+            String ip192 = "CREATE TABLE `pattern_test_uuid`("
+                    + "    `id`             bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,"
+                    + "    `partition_id`   bigint(20) unsigned NOT NULL UNIQUE,"
+                    + "    `filter_type_id` bigint(20) unsigned NOT NULL,"
+                    + "    `filter`         longblob            NOT NULL)";
             conn.prepareStatement(filtertype).execute();
             conn.prepareStatement(ip).execute();
             conn.prepareStatement(ip255).execute();
+            conn.prepareStatement(ip192).execute();
             String typeSQL = "INSERT INTO `filtertype` (`id`,`expectedElements`, `targetFpp`, `pattern`) VALUES (?,?,?,?)";
             int id = 1;
             for (String pattern : patternList) {
@@ -119,6 +131,7 @@ public class ConditionWalkerTest {
             }
             writeFilter("pattern_test_ip", 1);
             writeFilter("pattern_test_ip255", 2);
+            writeFilter("pattern_test_uuid", 3);
         });
     }
 
@@ -526,6 +539,61 @@ public class ConditionWalkerTest {
             Assertions.assertEquals(1, loops);
             result2.close();
         });
+    }
+
+    @Test
+    public void testTwoIndexStatementsMatchDifferentBloomTablesWithAnd() {
+        final ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        final String query = "<AND>" + "<indexstatement operation=\"EQUALS\" value = \"192.168.1.1\"/>"
+                + "<indexstatement operation=\"EQUALS\" value = \"123e4567-e89b-12d3-a456-426655440000\"/>" + "</AND>";
+        final Condition condition = Assertions.assertDoesNotThrow(() -> walker.fromString(query, false));
+        final Set<Table<?>> tables = walker.conditionRequiredTables();
+        Assertions.assertEquals(2, tables.size());
+        final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
+        final List<String> expectedTableNames = Arrays.asList("pattern_test_ip", "pattern_test_uuid");
+        Assertions.assertEquals(expectedTableNames, tableNames);
+        final String expected = "(\n" + "  (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
+                + "          select \"term_0_pattern_test_ip\".\"filter\"\n"
+                + "          from \"term_0_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 0\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
+                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + "  and (\n" + "    (\n"
+                + "      bloommatch(\n" + "        (\n" + "          select \"term_1_pattern_test_uuid\".\"filter\"\n"
+                + "          from \"term_1_pattern_test_uuid\"\n" + "          where (\n" + "            term_id = 1\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" + "    )\n"
+                + "    or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" + "  )\n" + ")";
+        Assertions.assertEquals(expected, condition.toString());
+    }
+
+    @Test
+    public void testTwoIndexStatementsMatchDifferentBloomTablesWithOr() {
+        final ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        final String query = "<OR>" + "<indexstatement operation=\"EQUALS\" value = \"192.168.1.1\"/>"
+                + "<indexstatement operation=\"EQUALS\" value = \"123e4567-e89b-12d3-a456-426655440000\"/>" + "</OR>";
+        final Condition condition = Assertions.assertDoesNotThrow(() -> walker.fromString(query, false));
+        final Set<Table<?>> tables = walker.conditionRequiredTables();
+        Assertions.assertEquals(2, tables.size());
+        final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
+        final List<String> expectedTableNames = Arrays.asList("pattern_test_ip", "pattern_test_uuid");
+        Assertions.assertEquals(expectedTableNames, tableNames);
+        final String expected = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
+                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
+                + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
+                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  or (\n" + "    bloommatch(\n"
+                + "      (\n" + "        select \"term_1_pattern_test_uuid\".\"filter\"\n"
+                + "        from \"term_1_pattern_test_uuid\"\n" + "        where (\n" + "          term_id = 1\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" + "  )\n"
+                + "  or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" + ")";
+
+        Assertions.assertEquals(expected, condition.toString());
     }
 
     private void writeFilter(String tableName, int filterId) {
