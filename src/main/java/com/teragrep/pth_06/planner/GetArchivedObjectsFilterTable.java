@@ -136,7 +136,7 @@ public final class GetArchivedObjectsFilterTable {
                         //.on(FILTER_TABLE, directory, host_id, tag, stream).execute(); // FIXME this happens only on dev kube due to old mariadb: Index column size too large. The maximum column size is 767 bytes.
                         .on(
                                 GetArchivedObjectsFilterTable.FILTER_TABLE, GetArchivedObjectsFilterTable.host_id,
-                                GetArchivedObjectsFilterTable.tag
+                                GetArchivedObjectsFilterTable.tag_id
                         )
         ) {
             if (isLogSQL) {
