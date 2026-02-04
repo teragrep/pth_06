@@ -144,7 +144,8 @@ public class ConditionWalkerTest {
     void bloomNoMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><indexstatement operation=\"EQUALS\" value=\"nomatch\"/></AND>";
-        String e = "\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'";
+        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" + "  and true\n"
+                + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(0, walker.conditionRequiredTables().size());
@@ -349,13 +350,13 @@ public class ConditionWalkerTest {
     void multipleSearchTermTestOneMatchTest() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><indexstatement operation=\"EQUALS\" value=\"nomatch\"/><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND>";
-        String e = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_1_pattern_test_ip\".\"filter\"\n" + "        from \"term_1_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 1\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + ")";
+        String e = "(\n" + "  true\n" + "  and (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
+                + "          select \"term_1_pattern_test_ip\".\"filter\"\n"
+                + "          from \"term_1_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 1\n"
+                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
+                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
+                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
+                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -593,6 +594,27 @@ public class ConditionWalkerTest {
                 + "    and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" + "  )\n"
                 + "  or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" + ")";
 
+        Assertions.assertEquals(expected, condition.toString());
+    }
+
+    @Test
+    public void testMultiIndexStatementConditionBloomEnabled() {
+        final ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
+        final String query = "<OR>" + "<indexstatement operation=\"EQUALS\" value = \"192.168.1.1\"/>"
+                + "<indexstatement operation=\"EQUALS\" value = \"nomatch\"/>" + "</OR>";
+        final Condition condition = Assertions.assertDoesNotThrow(() -> walker.fromString(query, false));
+        final Set<Table<?>> tables = walker.conditionRequiredTables();
+        Assertions.assertEquals(1, tables.size());
+        final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
+        final List<String> expectedTableNames = Arrays.asList("pattern_test_ip");
+        Assertions.assertEquals(expectedTableNames, tableNames);
+        final String expected = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
+                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
+                + "        where (\n" + "          term_id = 0\n"
+                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
+                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
+                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
+                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  or true\n" + ")";
         Assertions.assertEquals(expected, condition.toString());
     }
 
