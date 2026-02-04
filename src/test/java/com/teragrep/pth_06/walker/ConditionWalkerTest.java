@@ -92,7 +92,7 @@ public class ConditionWalkerTest {
             conn.prepareStatement("DROP TABLE IF EXISTS filtertype").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip").execute();
             conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip255").execute();
-            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_ip192").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS pattern_test_uuid").execute();
             String filtertype = "CREATE TABLE`filtertype`" + "("
                     + "    `id`               bigint(20) unsigned   NOT NULL AUTO_INCREMENT PRIMARY KEY,"
                     + "    `expectedElements` bigint(20) unsigned NOT NULL,"
