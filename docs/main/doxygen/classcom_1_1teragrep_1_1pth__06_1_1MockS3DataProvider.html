@@ -75,6 +75,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">com.teragrep.pth_06.MockS3DataProvider Class Reference</div></div>
@@ -92,6 +93,13 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af9abc2258ea1f1a53bca12364e197dd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16ca34984e1534cf3cf37df12f1a6937" id="r_a16ca34984e1534cf3cf37df12f1a6937"><td class="memItemLeft" align="right" valign="top">long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a16ca34984e1534cf3cf37df12f1a6937">preloadS3Data</a> ()  throws IOException </td></tr>
 <tr class="separator:a16ca34984e1534cf3cf37df12f1a6937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
+Private Member Functions</h2></td></tr>
+<tr class="memitem:a678bdb58aa18842b7d44115254cfde8b" id="r_a678bdb58aa18842b7d44115254cfde8b"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a678bdb58aa18842b7d44115254cfde8b">syslogMessageFromRow</a> (final MockDBRow row)</td></tr>
+<tr class="separator:a678bdb58aa18842b7d44115254cfde8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9baacfb5e74040d3677b1efb7a521a98" id="r_a9baacfb5e74040d3677b1efb7a521a98"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a9baacfb5e74040d3677b1efb7a521a98">ensureBucketExists</a> (final AmazonS3 amazonS3, final String bucket)</td></tr>
+<tr class="separator:a9baacfb5e74040d3677b1efb7a521a98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -141,6 +149,61 @@ Private Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9baacfb5e74040d3677b1efb7a521a98" name="a9baacfb5e74040d3677b1efb7a521a98"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9baacfb5e74040d3677b1efb7a521a98">&#9670;&#160;</a></span>ensureBucketExists()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.MockS3DataProvider.ensureBucketExists </td>
+          <td>(</td>
+          <td class="paramtype">final AmazonS3&#160;</td>
+          <td class="paramname"><em>amazonS3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>bucket</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="MockS3DataProvider_8java_source.html#l00172">172</a> of file <a class="el" href="MockS3DataProvider_8java_source.html">MockS3DataProvider.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  172</span>                                                                                  {</div>
+<div class="line"><span class="lineno">  173</span>        <span class="keywordtype">boolean</span> bucketExists = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  174</span>        <span class="keywordflow">for</span> (Bucket existingBucket : amazonS3.listBuckets()) {</div>
+<div class="line"><span class="lineno">  175</span>            <span class="keywordflow">if</span> (existingBucket.getName().equals(bucket)) {</div>
+<div class="line"><span class="lineno">  176</span>                bucketExists = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">  177</span>                <span class="keywordflow">break</span>;</div>
+<div class="line"><span class="lineno">  178</span>            }</div>
+<div class="line"><span class="lineno">  179</span>        }</div>
+<div class="line"><span class="lineno">  180</span>        <span class="keywordflow">if</span> (!bucketExists) {</div>
+<div class="line"><span class="lineno">  181</span>            amazonS3.createBucket(bucket);</div>
+<div class="line"><span class="lineno">  182</span>        }</div>
+<div class="line"><span class="lineno">  183</span>    }</div>
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_a9baacfb5e74040d3677b1efb7a521a98_icgraph.svg" width="826" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
+</div>
+</div>
 <a id="a16ca34984e1534cf3cf37df12f1a6937" name="a16ca34984e1534cf3cf37df12f1a6937"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a16ca34984e1534cf3cf37df12f1a6937">&#9670;&#160;</a></span>preloadS3Data()</h2>
 
@@ -164,109 +227,140 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   80</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a80398bf0baff3350e747b8e63b53c657">mockS3Configuration</a>.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html#a30cb7fe42e45472b40a5fcf267c6215f">s3identity</a>(),</div>
 <div class="line"><span class="lineno">   81</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a80398bf0baff3350e747b8e63b53c657">mockS3Configuration</a>.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html#aaca868bb87b5d74496bb41379ab3fca4">s3credential</a>()</div>
 <div class="line"><span class="lineno">   82</span>        ).build();</div>
-<div class="line"><span class="lineno">   83</span> </div>
-<div class="line"><span class="lineno">   84</span>        <span class="keyword">final</span> PriorityQueue&lt;MockDBRow&gt; mockDBRows = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a81be9a8974a34cd507a613e6ca5b0dc3">testDataSource</a>.asPriorityQueue();</div>
-<div class="line"><span class="lineno">   85</span> </div>
-<div class="line"><span class="lineno">   86</span>        <span class="keywordflow">for</span> (<span class="keyword">final</span> MockDBRow row : mockDBRows) {</div>
-<div class="line"><span class="lineno">   87</span>            <span class="keyword">final</span> String host = row.host();</div>
-<div class="line"><span class="lineno">   88</span>            <span class="keyword">final</span> String logtag = row.logtag();</div>
-<div class="line"><span class="lineno">   89</span>            <span class="keyword">final</span> String bucket = row.bucket();</div>
-<div class="line"><span class="lineno">   90</span>            <span class="keyword">final</span> String path = row.path();</div>
-<div class="line"><span class="lineno">   91</span>            <span class="keyword">final</span> <span class="keywordtype">long</span> logtime = row.logtime();</div>
-<div class="line"><span class="lineno">   92</span> </div>
-<div class="line"><span class="lineno">   93</span>            <span class="keyword">final</span> String recordAsJson = <span class="keyword">new</span> RecordableMockDBRow(row).asRecord().formatJSON();</div>
+<div class="line"><span class="lineno">   83</span>        <span class="keyword">final</span> PriorityQueue&lt;MockDBRow&gt; mockDBRows = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a81be9a8974a34cd507a613e6ca5b0dc3">testDataSource</a>.asPriorityQueue();</div>
+<div class="line"><span class="lineno">   84</span>        <span class="keywordflow">for</span> (<span class="keyword">final</span> MockDBRow row : mockDBRows) {</div>
+<div class="line"><span class="lineno">   85</span>            <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a9baacfb5e74040d3677b1efb7a521a98">ensureBucketExists</a>(amazonS3, row.bucket());</div>
+<div class="line"><span class="lineno">   86</span>            <span class="keyword">final</span> String message;</div>
+<div class="line"><span class="lineno">   87</span> </div>
+<div class="line"><span class="lineno">   88</span>            <span class="keywordflow">if</span> (row.isSyslog()) {</div>
+<div class="line"><span class="lineno">   89</span>                message = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a678bdb58aa18842b7d44115254cfde8b">syslogMessageFromRow</a>(row);</div>
+<div class="line"><span class="lineno">   90</span>            }</div>
+<div class="line"><span class="lineno">   91</span>            <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">   92</span>                message = <span class="stringliteral">&quot;/non/syslog/event - row-id:&quot;</span> + row.id();</div>
+<div class="line"><span class="lineno">   93</span>            }</div>
 <div class="line"><span class="lineno">   94</span> </div>
-<div class="line"><span class="lineno">   95</span>            <span class="comment">// &lt;46&gt;1 2010-01-01T12:34:56.123456+02:00 hostname.domain.tld pstats - -</span></div>
-<div class="line"><span class="lineno">   96</span>            SyslogMessage syslog = <span class="keyword">new</span> SyslogMessage();</div>
-<div class="line"><span class="lineno">   97</span>            syslog = syslog</div>
-<div class="line"><span class="lineno">   98</span>                    .withFacility(Facility.USER)</div>
-<div class="line"><span class="lineno">   99</span>                    .withSeverity(Severity.WARNING)</div>
-<div class="line"><span class="lineno">  100</span>                    .withTimestamp(logtime)</div>
-<div class="line"><span class="lineno">  101</span>                    .withHostname(host)</div>
-<div class="line"><span class="lineno">  102</span>                    .withAppName(logtag)</div>
-<div class="line"><span class="lineno">  103</span>                    .withMsg(recordAsJson);</div>
-<div class="line"><span class="lineno">  104</span> </div>
-<div class="line"><span class="lineno">  105</span>            <span class="comment">// [event_id@48577 hostname=&quot;hostname.domain.tld&quot; uuid=&quot;&quot; unixtime=&quot;&quot; id_source=&quot;source&quot;]</span></div>
-<div class="line"><span class="lineno">  106</span>            <span class="keyword">final</span> SDElement event_id_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_id@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  107</span>                    .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, host)</div>
-<div class="line"><span class="lineno">  108</span>                    .addSDParam(<span class="stringliteral">&quot;uuid&quot;</span>, UUID.randomUUID().toString())</div>
-<div class="line"><span class="lineno">  109</span>                    .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, <span class="stringliteral">&quot;source&quot;</span>)</div>
-<div class="line"><span class="lineno">  110</span>                    .addSDParam(<span class="stringliteral">&quot;unixtime&quot;</span>, Long.toString(System.currentTimeMillis()));</div>
-<div class="line"><span class="lineno">  111</span> </div>
-<div class="line"><span class="lineno">  112</span>            syslog = syslog.withSDElement(event_id_48577);</div>
-<div class="line"><span class="lineno">  113</span> </div>
-<div class="line"><span class="lineno">  114</span>            <span class="comment">// [event_format@48577 original_format=&quot;rfc5424&quot;]</span></div>
-<div class="line"><span class="lineno">  115</span>            <span class="keyword">final</span> SDElement event_format_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_id@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  116</span>                    .addSDParam(<span class="stringliteral">&quot;original_format&quot;</span>, <span class="stringliteral">&quot;rfc5424&quot;</span>);</div>
-<div class="line"><span class="lineno">  117</span> </div>
-<div class="line"><span class="lineno">  118</span>            syslog = syslog.withSDElement(event_format_48577);</div>
-<div class="line"><span class="lineno">  119</span> </div>
-<div class="line"><span class="lineno">  120</span>            <span class="comment">// [event_node_relay@48577 hostname=&quot;relay.domain.tld&quot; source=&quot;hostname.domain.tld&quot; source_module=&quot;imudp&quot;]</span></div>
-<div class="line"><span class="lineno">  121</span>            <span class="keyword">final</span> SDElement event_node_relay_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_node_relay@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  122</span>                    .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
-<div class="line"><span class="lineno">  123</span>                    .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, host)</div>
-<div class="line"><span class="lineno">  124</span>                    .addSDParam(<span class="stringliteral">&quot;source_module&quot;</span>, <span class="stringliteral">&quot;imudp&quot;</span>);</div>
-<div class="line"><span class="lineno">  125</span> </div>
-<div class="line"><span class="lineno">  126</span>            syslog = syslog.withSDElement(event_node_relay_48577);</div>
-<div class="line"><span class="lineno">  127</span> </div>
-<div class="line"><span class="lineno">  128</span>            <span class="comment">// [event_version@48577 major=&quot;2&quot; minor=&quot;2&quot; hostname=&quot;relay.domain.tld&quot; version_source=&quot;relay&quot;]</span></div>
-<div class="line"><span class="lineno">  129</span>            <span class="keyword">final</span> SDElement event_version_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_version@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  130</span>                    .addSDParam(<span class="stringliteral">&quot;major&quot;</span>, <span class="stringliteral">&quot;2&quot;</span>)</div>
-<div class="line"><span class="lineno">  131</span>                    .addSDParam(<span class="stringliteral">&quot;minor&quot;</span>, <span class="stringliteral">&quot;2&quot;</span>)</div>
-<div class="line"><span class="lineno">  132</span>                    .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
-<div class="line"><span class="lineno">  133</span>                    .addSDParam(<span class="stringliteral">&quot;version_source&quot;</span>, <span class="stringliteral">&quot;relay&quot;</span>);</div>
-<div class="line"><span class="lineno">  134</span> </div>
-<div class="line"><span class="lineno">  135</span>            syslog = syslog.withSDElement(event_version_48577);</div>
-<div class="line"><span class="lineno">  136</span> </div>
-<div class="line"><span class="lineno">  137</span>            <span class="comment">// [event_node_router@48577 source=&quot;relay.domain.tld&quot; source_module=&quot;imrelp&quot; hostname=&quot;router.domain.tld&quot;]</span></div>
-<div class="line"><span class="lineno">  138</span>            <span class="keyword">final</span> SDElement event_node_router_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_node_router@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  139</span>                    .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
-<div class="line"><span class="lineno">  140</span>                    .addSDParam(<span class="stringliteral">&quot;source_module&quot;</span>, <span class="stringliteral">&quot;imrelp&quot;</span>)</div>
-<div class="line"><span class="lineno">  141</span>                    .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;router.domain.tld&quot;</span>);</div>
-<div class="line"><span class="lineno">  142</span> </div>
-<div class="line"><span class="lineno">  143</span>            syslog = syslog.withSDElement(event_node_router_48577);</div>
-<div class="line"><span class="lineno">  144</span> </div>
-<div class="line"><span class="lineno">  145</span>            <span class="comment">// [origin@48577 hostname=&quot;original.hostname.domain.tld&quot;]</span></div>
-<div class="line"><span class="lineno">  146</span>            <span class="keyword">final</span> SDElement origin_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;origin@48577&quot;</span>)</div>
-<div class="line"><span class="lineno">  147</span>                    .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;original.hostname.domain.tld&quot;</span>);</div>
-<div class="line"><span class="lineno">  148</span>            syslog = syslog.withSDElement(origin_48577);</div>
-<div class="line"><span class="lineno">  149</span> </div>
-<div class="line"><span class="lineno">  150</span>            <span class="comment">// check if this bucket exists</span></div>
-<div class="line"><span class="lineno">  151</span>            <span class="keywordtype">boolean</span> bucketExists = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  152</span>            <span class="keywordflow">for</span> (Bucket existingBucket : amazonS3.listBuckets()) {</div>
-<div class="line"><span class="lineno">  153</span>                <span class="keywordflow">if</span> (existingBucket.getName().equals(bucket)) {</div>
-<div class="line"><span class="lineno">  154</span>                    bucketExists = <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">  155</span>                    <span class="keywordflow">break</span>;</div>
-<div class="line"><span class="lineno">  156</span>                }</div>
-<div class="line"><span class="lineno">  157</span>            }</div>
-<div class="line"><span class="lineno">  158</span>            <span class="keywordflow">if</span> (!bucketExists) {</div>
-<div class="line"><span class="lineno">  159</span>                amazonS3.createBucket(bucket);</div>
-<div class="line"><span class="lineno">  160</span>            }</div>
-<div class="line"><span class="lineno">  161</span> </div>
-<div class="line"><span class="lineno">  162</span>            <span class="comment">// compress the message</span></div>
-<div class="line"><span class="lineno">  163</span>            <span class="keyword">final</span> String syslogMessage = syslog.toRfc5424SyslogMessage();</div>
-<div class="line"><span class="lineno">  164</span> </div>
-<div class="line"><span class="lineno">  165</span>            <span class="keyword">final</span> ByteArrayOutputStream outStream = <span class="keyword">new</span> ByteArrayOutputStream(syslogMessage.length());</div>
-<div class="line"><span class="lineno">  166</span>            <span class="keyword">final</span> GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(outStream);</div>
-<div class="line"><span class="lineno">  167</span>            gzip.write(syslogMessage.getBytes());</div>
-<div class="line"><span class="lineno">  168</span>            gzip.close();</div>
-<div class="line"><span class="lineno">  169</span> </div>
-<div class="line"><span class="lineno">  170</span>            <span class="keyword">final</span> ByteArrayInputStream inStream = <span class="keyword">new</span> ByteArrayInputStream(outStream.toByteArray());</div>
-<div class="line"><span class="lineno">  171</span> </div>
-<div class="line"><span class="lineno">  172</span>            <span class="comment">// upload as file</span></div>
-<div class="line"><span class="lineno">  173</span>            amazonS3.putObject(bucket, path, inStream, <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  174</span>            rows++;</div>
-<div class="line"><span class="lineno">  175</span>        }</div>
-<div class="line"><span class="lineno">  176</span> </div>
-<div class="line"><span class="lineno">  177</span>        <span class="keywordflow">return</span> rows;</div>
-<div class="line"><span class="lineno">  178</span>    }</div>
+<div class="line"><span class="lineno">   95</span>            <span class="comment">// compress the message</span></div>
+<div class="line"><span class="lineno">   96</span>            <span class="keyword">final</span> ByteArrayOutputStream outStream = <span class="keyword">new</span> ByteArrayOutputStream(message.length());</div>
+<div class="line"><span class="lineno">   97</span>            <span class="keyword">final</span> GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(outStream);</div>
+<div class="line"><span class="lineno">   98</span>            gzip.write(message.getBytes());</div>
+<div class="line"><span class="lineno">   99</span>            gzip.close();</div>
+<div class="line"><span class="lineno">  100</span>            <span class="keyword">final</span> ByteArrayInputStream inStream = <span class="keyword">new</span> ByteArrayInputStream(outStream.toByteArray());</div>
+<div class="line"><span class="lineno">  101</span>            <span class="comment">// upload as file</span></div>
+<div class="line"><span class="lineno">  102</span>            amazonS3.putObject(row.bucket(), row.path(), inStream, <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  103</span>            rows++;</div>
+<div class="line"><span class="lineno">  104</span>        }</div>
+<div class="line"><span class="lineno">  105</span> </div>
+<div class="line"><span class="lineno">  106</span>        <span class="keywordflow">return</span> rows;</div>
+<div class="line"><span class="lineno">  107</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1MockS3Configuration_html_a30cb7fe42e45472b40a5fcf267c6215f"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html#a30cb7fe42e45472b40a5fcf267c6215f">com.teragrep.pth_06.MockS3Configuration.s3identity</a></div><div class="ttdeci">final String s3identity</div><div class="ttdef"><b>Definition</b> <a href="MockS3Configuration_8java_source.html#l00051">MockS3Configuration.java:51</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1MockS3Configuration_html_aa4ff190a3d9e40b452fc6c5fd0adab2a"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html#aa4ff190a3d9e40b452fc6c5fd0adab2a">com.teragrep.pth_06.MockS3Configuration.s3endpoint</a></div><div class="ttdeci">final String s3endpoint</div><div class="ttdef"><b>Definition</b> <a href="MockS3Configuration_8java_source.html#l00050">MockS3Configuration.java:50</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1MockS3Configuration_html_aaca868bb87b5d74496bb41379ab3fca4"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html#aaca868bb87b5d74496bb41379ab3fca4">com.teragrep.pth_06.MockS3Configuration.s3credential</a></div><div class="ttdeci">final String s3credential</div><div class="ttdef"><b>Definition</b> <a href="MockS3Configuration_8java_source.html#l00052">MockS3Configuration.java:52</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_html_a678bdb58aa18842b7d44115254cfde8b"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a678bdb58aa18842b7d44115254cfde8b">com.teragrep.pth_06.MockS3DataProvider.syslogMessageFromRow</a></div><div class="ttdeci">String syslogMessageFromRow(final MockDBRow row)</div><div class="ttdef"><b>Definition</b> <a href="MockS3DataProvider_8java_source.html#l00109">MockS3DataProvider.java:109</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_html_a9baacfb5e74040d3677b1efb7a521a98"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a9baacfb5e74040d3677b1efb7a521a98">com.teragrep.pth_06.MockS3DataProvider.ensureBucketExists</a></div><div class="ttdeci">void ensureBucketExists(final AmazonS3 amazonS3, final String bucket)</div><div class="ttdef"><b>Definition</b> <a href="MockS3DataProvider_8java_source.html#l00172">MockS3DataProvider.java:172</a></div></div>
 </div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_a16ca34984e1534cf3cf37df12f1a6937_cgraph.svg" width="535" height="131"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+<div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_a16ca34984e1534cf3cf37df12f1a6937_icgraph.svg" width="524" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
+</div>
+</div>
+<a id="a678bdb58aa18842b7d44115254cfde8b" name="a678bdb58aa18842b7d44115254cfde8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a678bdb58aa18842b7d44115254cfde8b">&#9670;&#160;</a></span>syslogMessageFromRow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">String com.teragrep.pth_06.MockS3DataProvider.syslogMessageFromRow </td>
+          <td>(</td>
+          <td class="paramtype">final MockDBRow&#160;</td>
+          <td class="paramname"><em>row</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="MockS3DataProvider_8java_source.html#l00109">109</a> of file <a class="el" href="MockS3DataProvider_8java_source.html">MockS3DataProvider.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  109</span>                                                             {</div>
+<div class="line"><span class="lineno">  110</span>        <span class="keyword">final</span> String host = row.host();</div>
+<div class="line"><span class="lineno">  111</span>        <span class="keyword">final</span> String logtag = row.logtag();</div>
+<div class="line"><span class="lineno">  112</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> logtime = row.logtime();</div>
+<div class="line"><span class="lineno">  113</span>        <span class="keyword">final</span> String recordAsJson = <span class="keyword">new</span> RecordableMockDBRow(row).asRecord().formatJSON();</div>
+<div class="line"><span class="lineno">  114</span> </div>
+<div class="line"><span class="lineno">  115</span>        <span class="comment">// &lt;46&gt;1 2010-01-01T12:34:56.123456+02:00 hostname.domain.tld pstats - -</span></div>
+<div class="line"><span class="lineno">  116</span>        SyslogMessage syslog = <span class="keyword">new</span> SyslogMessage();</div>
+<div class="line"><span class="lineno">  117</span>        syslog = syslog</div>
+<div class="line"><span class="lineno">  118</span>                .withFacility(Facility.USER)</div>
+<div class="line"><span class="lineno">  119</span>                .withSeverity(Severity.WARNING)</div>
+<div class="line"><span class="lineno">  120</span>                .withTimestamp(logtime)</div>
+<div class="line"><span class="lineno">  121</span>                .withHostname(host)</div>
+<div class="line"><span class="lineno">  122</span>                .withAppName(logtag)</div>
+<div class="line"><span class="lineno">  123</span>                .withMsg(recordAsJson);</div>
+<div class="line"><span class="lineno">  124</span> </div>
+<div class="line"><span class="lineno">  125</span>        <span class="comment">// [event_id@48577 hostname=&quot;hostname.domain.tld&quot; uuid=&quot;&quot; unixtime=&quot;&quot; id_source=&quot;source&quot;]</span></div>
+<div class="line"><span class="lineno">  126</span>        <span class="keyword">final</span> SDElement event_id_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_id@48577&quot;</span>)</div>
+<div class="line"><span class="lineno">  127</span>                .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, host)</div>
+<div class="line"><span class="lineno">  128</span>                .addSDParam(<span class="stringliteral">&quot;uuid&quot;</span>, UUID.randomUUID().toString())</div>
+<div class="line"><span class="lineno">  129</span>                .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, <span class="stringliteral">&quot;source&quot;</span>)</div>
+<div class="line"><span class="lineno">  130</span>                .addSDParam(<span class="stringliteral">&quot;unixtime&quot;</span>, Long.toString(System.currentTimeMillis()));</div>
+<div class="line"><span class="lineno">  131</span> </div>
+<div class="line"><span class="lineno">  132</span>        syslog = syslog.withSDElement(event_id_48577);</div>
+<div class="line"><span class="lineno">  133</span> </div>
+<div class="line"><span class="lineno">  134</span>        <span class="comment">// [event_format@48577 original_format=&quot;rfc5424&quot;]</span></div>
+<div class="line"><span class="lineno">  135</span>        <span class="keyword">final</span> SDElement event_format_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_id@48577&quot;</span>).addSDParam(<span class="stringliteral">&quot;original_format&quot;</span>, <span class="stringliteral">&quot;rfc5424&quot;</span>);</div>
+<div class="line"><span class="lineno">  136</span> </div>
+<div class="line"><span class="lineno">  137</span>        syslog = syslog.withSDElement(event_format_48577);</div>
+<div class="line"><span class="lineno">  138</span> </div>
+<div class="line"><span class="lineno">  139</span>        <span class="comment">// [event_node_relay@48577 hostname=&quot;relay.domain.tld&quot; source=&quot;hostname.domain.tld&quot; source_module=&quot;imudp&quot;]</span></div>
+<div class="line"><span class="lineno">  140</span>        <span class="keyword">final</span> SDElement event_node_relay_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_node_relay@48577&quot;</span>)</div>
+<div class="line"><span class="lineno">  141</span>                .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
+<div class="line"><span class="lineno">  142</span>                .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, host)</div>
+<div class="line"><span class="lineno">  143</span>                .addSDParam(<span class="stringliteral">&quot;source_module&quot;</span>, <span class="stringliteral">&quot;imudp&quot;</span>);</div>
+<div class="line"><span class="lineno">  144</span> </div>
+<div class="line"><span class="lineno">  145</span>        syslog = syslog.withSDElement(event_node_relay_48577);</div>
+<div class="line"><span class="lineno">  146</span> </div>
+<div class="line"><span class="lineno">  147</span>        <span class="comment">// [event_version@48577 major=&quot;2&quot; minor=&quot;2&quot; hostname=&quot;relay.domain.tld&quot; version_source=&quot;relay&quot;]</span></div>
+<div class="line"><span class="lineno">  148</span>        <span class="keyword">final</span> SDElement event_version_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_version@48577&quot;</span>)</div>
+<div class="line"><span class="lineno">  149</span>                .addSDParam(<span class="stringliteral">&quot;major&quot;</span>, <span class="stringliteral">&quot;2&quot;</span>)</div>
+<div class="line"><span class="lineno">  150</span>                .addSDParam(<span class="stringliteral">&quot;minor&quot;</span>, <span class="stringliteral">&quot;2&quot;</span>)</div>
+<div class="line"><span class="lineno">  151</span>                .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
+<div class="line"><span class="lineno">  152</span>                .addSDParam(<span class="stringliteral">&quot;version_source&quot;</span>, <span class="stringliteral">&quot;relay&quot;</span>);</div>
+<div class="line"><span class="lineno">  153</span> </div>
+<div class="line"><span class="lineno">  154</span>        syslog = syslog.withSDElement(event_version_48577);</div>
+<div class="line"><span class="lineno">  155</span> </div>
+<div class="line"><span class="lineno">  156</span>        <span class="comment">// [event_node_router@48577 source=&quot;relay.domain.tld&quot; source_module=&quot;imrelp&quot; hostname=&quot;router.domain.tld&quot;]</span></div>
+<div class="line"><span class="lineno">  157</span>        <span class="keyword">final</span> SDElement event_node_router_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;event_node_router@48577&quot;</span>)</div>
+<div class="line"><span class="lineno">  158</span>                .addSDParam(<span class="stringliteral">&quot;source&quot;</span>, <span class="stringliteral">&quot;relay.domain.tld&quot;</span>)</div>
+<div class="line"><span class="lineno">  159</span>                .addSDParam(<span class="stringliteral">&quot;source_module&quot;</span>, <span class="stringliteral">&quot;imrelp&quot;</span>)</div>
+<div class="line"><span class="lineno">  160</span>                .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;router.domain.tld&quot;</span>);</div>
+<div class="line"><span class="lineno">  161</span> </div>
+<div class="line"><span class="lineno">  162</span>        syslog = syslog.withSDElement(event_node_router_48577);</div>
+<div class="line"><span class="lineno">  163</span> </div>
+<div class="line"><span class="lineno">  164</span>        <span class="comment">// [origin@48577 hostname=&quot;original.hostname.domain.tld&quot;]</span></div>
+<div class="line"><span class="lineno">  165</span>        <span class="keyword">final</span> SDElement origin_48577 = <span class="keyword">new</span> SDElement(<span class="stringliteral">&quot;origin@48577&quot;</span>)</div>
+<div class="line"><span class="lineno">  166</span>                .addSDParam(<span class="stringliteral">&quot;hostname&quot;</span>, <span class="stringliteral">&quot;original.hostname.domain.tld&quot;</span>);</div>
+<div class="line"><span class="lineno">  167</span>        syslog = syslog.withSDElement(origin_48577);</div>
+<div class="line"><span class="lineno">  168</span> </div>
+<div class="line"><span class="lineno">  169</span>        <span class="keywordflow">return</span> syslog.toRfc5424SyslogMessage();</div>
+<div class="line"><span class="lineno">  170</span>    }</div>
+</div><!-- fragment --><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider_a678bdb58aa18842b7d44115254cfde8b_icgraph.svg" width="799" height="66"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 
 </div>

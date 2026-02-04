@@ -201,28 +201,29 @@ Static Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">  101</span>                    aip.TeragrepAuditReason,</div>
 <div class="line"><span class="lineno">  102</span>                    aip.TeragrepAuditUser,</div>
 <div class="line"><span class="lineno">  103</span>                    aip.TeragrepAuditPluginClassName,</div>
-<div class="line"><span class="lineno">  104</span>                    aip.skipNonRFC5424Files</div>
-<div class="line"><span class="lineno">  105</span>            );</div>
-<div class="line"><span class="lineno">  106</span>        }</div>
-<div class="line"><span class="lineno">  107</span>        <span class="keywordflow">else</span> <span class="keywordflow">if</span> (inputPartition instanceof KafkaMicroBatchInputPartition) {</div>
-<div class="line"><span class="lineno">  108</span>            KafkaMicroBatchInputPartition kip = (KafkaMicroBatchInputPartition) inputPartition;</div>
-<div class="line"><span class="lineno">  109</span>            <span class="keywordflow">return</span> <span class="keyword">new</span> KafkaMicroBatchInputPartitionReader(</div>
-<div class="line"><span class="lineno">  110</span>                    <span class="keyword">new</span> MetricRegistry(),</div>
-<div class="line"><span class="lineno">  111</span>                    kip.executorKafkaProperties,</div>
-<div class="line"><span class="lineno">  112</span>                    kip.topicPartition,</div>
-<div class="line"><span class="lineno">  113</span>                    kip.startOffset,</div>
-<div class="line"><span class="lineno">  114</span>                    kip.endOffset,</div>
-<div class="line"><span class="lineno">  115</span>                    kip.executorConfig,</div>
-<div class="line"><span class="lineno">  116</span>                    kip.skipNonRFC5424Records</div>
-<div class="line"><span class="lineno">  117</span>            );</div>
-<div class="line"><span class="lineno">  118</span>        }</div>
-<div class="line"><span class="lineno">  119</span> </div>
-<div class="line"><span class="lineno">  120</span>        <span class="comment">// inputPartition is neither Archive nor Kafka type</span></div>
-<div class="line"><span class="lineno">  121</span>        <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(</div>
-<div class="line"><span class="lineno">  122</span>                <span class="stringliteral">&quot;Invalid input partition type provided to ArchivePartitionReaderFactory: &quot;</span></div>
-<div class="line"><span class="lineno">  123</span>                        + inputPartition.getClass().getName()</div>
-<div class="line"><span class="lineno">  124</span>        );</div>
-<div class="line"><span class="lineno">  125</span>    }</div>
+<div class="line"><span class="lineno">  104</span>                    aip.skipNonRFC5424Files,</div>
+<div class="line"><span class="lineno">  105</span>                    aip.epochMigrationMode</div>
+<div class="line"><span class="lineno">  106</span>            );</div>
+<div class="line"><span class="lineno">  107</span>        }</div>
+<div class="line"><span class="lineno">  108</span>        <span class="keywordflow">else</span> <span class="keywordflow">if</span> (inputPartition instanceof KafkaMicroBatchInputPartition) {</div>
+<div class="line"><span class="lineno">  109</span>            KafkaMicroBatchInputPartition kip = (KafkaMicroBatchInputPartition) inputPartition;</div>
+<div class="line"><span class="lineno">  110</span>            <span class="keywordflow">return</span> <span class="keyword">new</span> KafkaMicroBatchInputPartitionReader(</div>
+<div class="line"><span class="lineno">  111</span>                    <span class="keyword">new</span> MetricRegistry(),</div>
+<div class="line"><span class="lineno">  112</span>                    kip.executorKafkaProperties,</div>
+<div class="line"><span class="lineno">  113</span>                    kip.topicPartition,</div>
+<div class="line"><span class="lineno">  114</span>                    kip.startOffset,</div>
+<div class="line"><span class="lineno">  115</span>                    kip.endOffset,</div>
+<div class="line"><span class="lineno">  116</span>                    kip.executorConfig,</div>
+<div class="line"><span class="lineno">  117</span>                    kip.skipNonRFC5424Records</div>
+<div class="line"><span class="lineno">  118</span>            );</div>
+<div class="line"><span class="lineno">  119</span>        }</div>
+<div class="line"><span class="lineno">  120</span> </div>
+<div class="line"><span class="lineno">  121</span>        <span class="comment">// inputPartition is neither Archive nor Kafka type</span></div>
+<div class="line"><span class="lineno">  122</span>        <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(</div>
+<div class="line"><span class="lineno">  123</span>                <span class="stringliteral">&quot;Invalid input partition type provided to ArchivePartitionReaderFactory: &quot;</span></div>
+<div class="line"><span class="lineno">  124</span>                        + inputPartition.getClass().getName()</div>
+<div class="line"><span class="lineno">  125</span>        );</div>
+<div class="line"><span class="lineno">  126</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>

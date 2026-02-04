@@ -1,5 +1,9 @@
 <map id="com.teragrep.pth_06.InstantiationTest.prepareEnv" name="com.teragrep.pth_06.InstantiationTest.prepareEnv">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,248,45"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a16ca34984e1534cf3cf37df12f1a6937" title=" " alt="" coords="296,5,519,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="248,23,282,23,282,28,248,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,41,248,81"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a16ca34984e1534cf3cf37df12f1a6937" title=" " alt="" coords="296,41,519,81"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="248,59,282,59,282,64,248,64"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a9baacfb5e74040d3677b1efb7a521a98" title=" " alt="" coords="567,5,820,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="519,45,553,40,553,46,519,50"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html#a678bdb58aa18842b7d44115254cfde8b" title=" " alt="" coords="580,70,807,125"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="519,73,566,79,566,84,519,78"/>
 </map>

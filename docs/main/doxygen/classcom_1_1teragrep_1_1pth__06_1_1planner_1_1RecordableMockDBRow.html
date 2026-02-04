@@ -119,6 +119,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8f4d18e59efacd48eae9aa5d6b06716d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34b1513d8cffaa3b3790a5fd8b361334" id="r_a34b1513d8cffaa3b3790a5fd8b361334"><td class="memItemLeft" align="right" valign="top">Long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a34b1513d8cffaa3b3790a5fd8b361334">uncompressedFilesize</a> ()</td></tr>
 <tr class="separator:a34b1513d8cffaa3b3790a5fd8b361334"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cb546b91f4e947f62921362015398fd" id="r_a5cb546b91f4e947f62921362015398fd"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a5cb546b91f4e947f62921362015398fd">isSyslog</a> ()</td></tr>
+<tr class="separator:a5cb546b91f4e947f62921362015398fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d01e7e5a34afbe40f547160e6cfe0cb" id="r_a5d01e7e5a34afbe40f547160e6cfe0cb"><td class="memItemLeft" align="right" valign="top">Record11&lt; ULong, String, String, String, String, Date, String, String, Long, ULong, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a5d01e7e5a34afbe40f547160e6cfe0cb">asRecord</a> ()</td></tr>
 <tr class="separator:a5d01e7e5a34afbe40f547160e6cfe0cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab09701e13905dacc5d787287b23399a2" id="r_ab09701e13905dacc5d787287b23399a2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#ab09701e13905dacc5d787287b23399a2">compareTo</a> (final <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html">MockDBRow</a> o)</td></tr>
@@ -212,33 +214,33 @@ Private Attributes</h2></td></tr>
 
 <p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1Recordable.html#a56a6ed20682b2b01e0f8e2b1db6643ff">com.teragrep.pth_06.planner.Recordable</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="RecordableMockDBRow_8java_source.html#l00126">126</a> of file <a class="el" href="RecordableMockDBRow_8java_source.html">RecordableMockDBRow.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  126</span>                                                                                                                {</div>
-<div class="line"><span class="lineno">  127</span>        <span class="keyword">final</span> Record11&lt;ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong&gt; newRecord = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a83b9a7081ff3b790aa02e0a6e79b8a00">dslContext</a></div>
-<div class="line"><span class="lineno">  128</span>                .newRecord(</div>
-<div class="line"><span class="lineno">  129</span>                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,</div>
-<div class="line"><span class="lineno">  130</span>                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,</div>
-<div class="line"><span class="lineno">  131</span>                        SliceTable.uncompressedFilesize</div>
-<div class="line"><span class="lineno">  132</span>                );</div>
-<div class="line"><span class="lineno">  133</span> </div>
-<div class="line"><span class="lineno">  134</span>        newRecord.set(SliceTable.id, ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a0774864816bfa4ed24d7037daa10b3b2">id</a>()));</div>
-<div class="line"><span class="lineno">  135</span>        newRecord.set(SliceTable.directory, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a72b0def5bf253cb3babc246462187ead">directory</a>());</div>
-<div class="line"><span class="lineno">  136</span>        newRecord.set(SliceTable.stream, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a092b8e42025da6f3c6ad5ea92a1a273f">stream</a>());</div>
-<div class="line"><span class="lineno">  137</span>        newRecord.set(SliceTable.host, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#aa8ad21bb5a8f9b0594938f79c167ea8a">host</a>());</div>
-<div class="line"><span class="lineno">  138</span>        newRecord.set(SliceTable.logtag, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#afc6e92c8736a723c8e3c6673593b63c6">logtag</a>());</div>
-<div class="line"><span class="lineno">  139</span>        newRecord.set(SliceTable.logdate, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ad6525054bcae052f479a03b2e4ca3bf7">logdate</a>());</div>
-<div class="line"><span class="lineno">  140</span>        newRecord.set(SliceTable.bucket, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ad44471477954593511cbdb304a0ded76">bucket</a>());</div>
-<div class="line"><span class="lineno">  141</span>        newRecord.set(SliceTable.path, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ab614cd7a7083bbae02e6cb864d5aea64">path</a>());</div>
-<div class="line"><span class="lineno">  142</span>        newRecord.set(SliceTable.logtime, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#abbdec5d031093faa980c5b0e86dbaa7e">logtime</a>());</div>
-<div class="line"><span class="lineno">  143</span>        newRecord.set(SliceTable.filesize, ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a74ca25ad9ccc26eca93b3a20d359bd4a">filesize</a>()));</div>
-<div class="line"><span class="lineno">  144</span>        newRecord</div>
-<div class="line"><span class="lineno">  145</span>                .set(</div>
-<div class="line"><span class="lineno">  146</span>                        SliceTable.uncompressedFilesize,</div>
-<div class="line"><span class="lineno">  147</span>                        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a530a3c1472c332aacad872702a077e48">uncompressedFilesize</a>() != <span class="keyword">null</span> ? ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a530a3c1472c332aacad872702a077e48">uncompressedFilesize</a>()) : null</div>
-<div class="line"><span class="lineno">  148</span>                );</div>
-<div class="line"><span class="lineno">  149</span> </div>
-<div class="line"><span class="lineno">  150</span>        <span class="keywordflow">return</span> newRecord;</div>
-<div class="line"><span class="lineno">  151</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="RecordableMockDBRow_8java_source.html#l00131">131</a> of file <a class="el" href="RecordableMockDBRow_8java_source.html">RecordableMockDBRow.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  131</span>                                                                                                                {</div>
+<div class="line"><span class="lineno">  132</span>        <span class="keyword">final</span> Record11&lt;ULong, String, String, String, String, java.sql.Date, String, String, Long, ULong, ULong&gt; newRecord = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a83b9a7081ff3b790aa02e0a6e79b8a00">dslContext</a></div>
+<div class="line"><span class="lineno">  133</span>                .newRecord(</div>
+<div class="line"><span class="lineno">  134</span>                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,</div>
+<div class="line"><span class="lineno">  135</span>                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,</div>
+<div class="line"><span class="lineno">  136</span>                        SliceTable.uncompressedFilesize</div>
+<div class="line"><span class="lineno">  137</span>                );</div>
+<div class="line"><span class="lineno">  138</span> </div>
+<div class="line"><span class="lineno">  139</span>        newRecord.set(SliceTable.id, ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a0774864816bfa4ed24d7037daa10b3b2">id</a>()));</div>
+<div class="line"><span class="lineno">  140</span>        newRecord.set(SliceTable.directory, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a72b0def5bf253cb3babc246462187ead">directory</a>());</div>
+<div class="line"><span class="lineno">  141</span>        newRecord.set(SliceTable.stream, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a092b8e42025da6f3c6ad5ea92a1a273f">stream</a>());</div>
+<div class="line"><span class="lineno">  142</span>        newRecord.set(SliceTable.host, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#aa8ad21bb5a8f9b0594938f79c167ea8a">host</a>());</div>
+<div class="line"><span class="lineno">  143</span>        newRecord.set(SliceTable.logtag, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#afc6e92c8736a723c8e3c6673593b63c6">logtag</a>());</div>
+<div class="line"><span class="lineno">  144</span>        newRecord.set(SliceTable.logdate, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ad6525054bcae052f479a03b2e4ca3bf7">logdate</a>());</div>
+<div class="line"><span class="lineno">  145</span>        newRecord.set(SliceTable.bucket, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ad44471477954593511cbdb304a0ded76">bucket</a>());</div>
+<div class="line"><span class="lineno">  146</span>        newRecord.set(SliceTable.path, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ab614cd7a7083bbae02e6cb864d5aea64">path</a>());</div>
+<div class="line"><span class="lineno">  147</span>        newRecord.set(SliceTable.logtime, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#abbdec5d031093faa980c5b0e86dbaa7e">logtime</a>());</div>
+<div class="line"><span class="lineno">  148</span>        newRecord.set(SliceTable.filesize, ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a74ca25ad9ccc26eca93b3a20d359bd4a">filesize</a>()));</div>
+<div class="line"><span class="lineno">  149</span>        newRecord</div>
+<div class="line"><span class="lineno">  150</span>                .set(</div>
+<div class="line"><span class="lineno">  151</span>                        SliceTable.uncompressedFilesize,</div>
+<div class="line"><span class="lineno">  152</span>                        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a530a3c1472c332aacad872702a077e48">uncompressedFilesize</a>() != <span class="keyword">null</span> ? ULong.valueOf(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a530a3c1472c332aacad872702a077e48">uncompressedFilesize</a>()) : null</div>
+<div class="line"><span class="lineno">  153</span>                );</div>
+<div class="line"><span class="lineno">  154</span> </div>
+<div class="line"><span class="lineno">  155</span>        <span class="keywordflow">return</span> newRecord;</div>
+<div class="line"><span class="lineno">  156</span>    }</div>
 <div class="ttc" id="ainterfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow_html_a0774864816bfa4ed24d7037daa10b3b2"><div class="ttname"><a href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a0774864816bfa4ed24d7037daa10b3b2">com.teragrep.pth_06.planner.MockDBRow.id</a></div><div class="ttdeci">long id()</div></div>
 <div class="ttc" id="ainterfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow_html_a092b8e42025da6f3c6ad5ea92a1a273f"><div class="ttname"><a href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a092b8e42025da6f3c6ad5ea92a1a273f">com.teragrep.pth_06.planner.MockDBRow.stream</a></div><div class="ttdeci">String stream()</div></div>
 <div class="ttc" id="ainterfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow_html_a530a3c1472c332aacad872702a077e48"><div class="ttname"><a href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#a530a3c1472c332aacad872702a077e48">com.teragrep.pth_06.planner.MockDBRow.uncompressedFilesize</a></div><div class="ttdeci">Long uncompressedFilesize()</div></div>
@@ -308,10 +310,10 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="RecordableMockDBRow_8java_source.html#l00154">154</a> of file <a class="el" href="RecordableMockDBRow_8java_source.html">RecordableMockDBRow.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  154</span>                                            {</div>
-<div class="line"><span class="lineno">  155</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.compareTo(o);</div>
-<div class="line"><span class="lineno">  156</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="RecordableMockDBRow_8java_source.html#l00159">159</a> of file <a class="el" href="RecordableMockDBRow_8java_source.html">RecordableMockDBRow.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  159</span>                                            {</div>
+<div class="line"><span class="lineno">  160</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.compareTo(o);</div>
+<div class="line"><span class="lineno">  161</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -427,6 +429,36 @@ Here is the call graph for this function:</div>
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow_a2813e29c3243dd81f46a5f9d7a89fdc7_cgraph.svg" width="486" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
+</div>
+</div>
+<a id="a5cb546b91f4e947f62921362015398fd" name="a5cb546b91f4e947f62921362015398fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cb546b91f4e947f62921362015398fd">&#9670;&#160;</a></span>isSyslog()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">boolean com.teragrep.pth_06.planner.RecordableMockDBRow.isSyslog </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Implements <a class="el" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ac5f458eab75dfd8dbd9c5f9d207dce05">com.teragrep.pth_06.planner.MockDBRow</a>.</p>
+
+<p class="definition">Definition at line <a class="el" href="RecordableMockDBRow_8java_source.html#l00126">126</a> of file <a class="el" href="RecordableMockDBRow_8java_source.html">RecordableMockDBRow.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  126</span>                              {</div>
+<div class="line"><span class="lineno">  127</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow.html#a8ecf7221ea8a0303da479c1bf9fdb878">origin</a>.<a class="code hl_function" href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ac5f458eab75dfd8dbd9c5f9d207dce05">isSyslog</a>();</div>
+<div class="line"><span class="lineno">  128</span>    }</div>
+<div class="ttc" id="ainterfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow_html_ac5f458eab75dfd8dbd9c5f9d207dce05"><div class="ttname"><a href="interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html#ac5f458eab75dfd8dbd9c5f9d207dce05">com.teragrep.pth_06.planner.MockDBRow.isSyslog</a></div><div class="ttdeci">boolean isSyslog()</div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1RecordableMockDBRow_a5cb546b91f4e947f62921362015398fd_cgraph.svg" width="507" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 
 </div>

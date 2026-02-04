@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classcom_1_1teragrep_1_1pth__06_1_1SparkStreamingQueryListenerTest.html" title=" " alt="" coords="5,5,212,45"/>
+<area shape="rect" id="Node000000" href="$interfacecom_1_1teragrep_1_1pth__06_1_1scheduler_1_1RangeProcessor.html" title=" " alt="" coords="5,37,232,77"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveRangeProcessor.html" title=" " alt="" coords="280,5,507,45"/>
+<area shape="poly" id="edge40_Node000000_Node000001" title=" " alt="" coords="245,40,279,36,280,41,246,45"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1KafkaRangeProcessor.html" title=" " alt="" coords="280,69,507,109"/>
+<area shape="poly" id="edge41_Node000000_Node000002" title=" " alt="" coords="246,69,280,73,279,79,245,75"/>
 </map>

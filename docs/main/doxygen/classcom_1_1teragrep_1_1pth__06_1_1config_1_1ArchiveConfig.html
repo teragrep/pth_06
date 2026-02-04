@@ -109,6 +109,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a5f4c429dd9b3dd450161d4f3af1030e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe60bbe97410edcadd1639df863c430b" id="r_afe60bbe97410edcadd1639df863c430b"><td class="memItemLeft" align="right" valign="top">final boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#afe60bbe97410edcadd1639df863c430b">skipNonRFC5424Files</a></td></tr>
 <tr class="separator:afe60bbe97410edcadd1639df863c430b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6afb71071e724125aad176c20aa1e73c" id="r_a6afb71071e724125aad176c20aa1e73c"><td class="memItemLeft" align="right" valign="top">final boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a6afb71071e724125aad176c20aa1e73c">epochMigrationMode</a></td></tr>
+<tr class="separator:a6afb71071e724125aad176c20aa1e73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a686625050a090d2858135a20be9a353c" id="r_a686625050a090d2858135a20be9a353c"><td class="memItemLeft" align="right" valign="top">final long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">archiveIncludeBeforeEpoch</a></td></tr>
 <tr class="separator:a686625050a090d2858135a20be9a353c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab88df8cef42953ff94c469ee24d97edb" id="r_ab88df8cef42953ff94c469ee24d97edb"><td class="memItemLeft" align="right" valign="top">final boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">bloomEnabled</a></td></tr>
@@ -147,42 +149,44 @@ Private Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00075">75</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   75</span>                                                   {</div>
-<div class="line"><span class="lineno">   76</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a4d67e3fcde5afd17fc4cec5c2428cdec">s3EndPoint</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3endPoint&quot;</span>);</div>
-<div class="line"><span class="lineno">   77</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acd3a475f7c33d3d71d9abd103067839f">s3Identity</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3identity&quot;</span>);</div>
-<div class="line"><span class="lineno">   78</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a5f4c429dd9b3dd450161d4f3af1030e5">s3Credential</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3credential&quot;</span>);</div>
-<div class="line"><span class="lineno">   79</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a0d09ce30ffed8aca081eb6349586cb7f">dbUsername</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBusername&quot;</span>);</div>
-<div class="line"><span class="lineno">   80</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab64f0df1466d769aad3ffcaf3c1c793c">dbPassword</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBpassword&quot;</span>);</div>
-<div class="line"><span class="lineno">   81</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#af1030da52b940ed26c74672e1308fed0">dbUrl</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBurl&quot;</span>);</div>
-<div class="line"><span class="lineno">   82</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">bloomEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">   83</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">withoutFilters</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.withoutFilters&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">   84</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">withoutFiltersPattern</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.withoutFiltersPattern&quot;</span>, <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><span class="lineno">   85</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">bloomDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBbloomdbname&quot;</span>, <span class="stringliteral">&quot;bloomdb&quot;</span>);</div>
-<div class="line"><span class="lineno">   86</span> </div>
-<div class="line"><span class="lineno">   87</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acafd5279fec4f878b6c850d09ef56254">dbJournalDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBjournaldbname&quot;</span>, <span class="stringliteral">&quot;journaldb&quot;</span>);</div>
-<div class="line"><span class="lineno">   88</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a2717b78c7b90ad625c8bac84012af1d3">dbStreamDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBstreamdbname&quot;</span>, <span class="stringliteral">&quot;streamdb&quot;</span>);</div>
-<div class="line"><span class="lineno">   89</span> </div>
-<div class="line"><span class="lineno">   90</span>        <span class="comment">// skip not rfc5424 parseable files</span></div>
-<div class="line"><span class="lineno">   91</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#afe60bbe97410edcadd1639df863c430b">skipNonRFC5424Files</a> = opts.getOrDefault(<span class="stringliteral">&quot;skipNonRFC5424Files&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
-<div class="line"><span class="lineno">   92</span> </div>
-<div class="line"><span class="lineno">   93</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">archiveIncludeBeforeEpoch</a> = Long</div>
-<div class="line"><span class="lineno">   94</span>                .parseLong(opts.getOrDefault(<span class="stringliteral">&quot;archive.includeBeforeEpoch&quot;</span>, String.valueOf(Long.MAX_VALUE)));</div>
-<div class="line"><span class="lineno">   95</span> </div>
-<div class="line"><span class="lineno">   96</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">isStub</a> = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">   97</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00076">76</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   76</span>                                                   {</div>
+<div class="line"><span class="lineno">   77</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a4d67e3fcde5afd17fc4cec5c2428cdec">s3EndPoint</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3endPoint&quot;</span>);</div>
+<div class="line"><span class="lineno">   78</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acd3a475f7c33d3d71d9abd103067839f">s3Identity</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3identity&quot;</span>);</div>
+<div class="line"><span class="lineno">   79</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a5f4c429dd9b3dd450161d4f3af1030e5">s3Credential</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;S3credential&quot;</span>);</div>
+<div class="line"><span class="lineno">   80</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a0d09ce30ffed8aca081eb6349586cb7f">dbUsername</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBusername&quot;</span>);</div>
+<div class="line"><span class="lineno">   81</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab64f0df1466d769aad3ffcaf3c1c793c">dbPassword</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBpassword&quot;</span>);</div>
+<div class="line"><span class="lineno">   82</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#af1030da52b940ed26c74672e1308fed0">dbUrl</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">getOrThrow</a>(opts, <span class="stringliteral">&quot;DBurl&quot;</span>);</div>
+<div class="line"><span class="lineno">   83</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">bloomEnabled</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.enabled&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   84</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">withoutFilters</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.withoutFilters&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   85</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">withoutFiltersPattern</a> = opts.getOrDefault(<span class="stringliteral">&quot;bloom.withoutFiltersPattern&quot;</span>, <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><span class="lineno">   86</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">bloomDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBbloomdbname&quot;</span>, <span class="stringliteral">&quot;bloomdb&quot;</span>);</div>
+<div class="line"><span class="lineno">   87</span> </div>
+<div class="line"><span class="lineno">   88</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acafd5279fec4f878b6c850d09ef56254">dbJournalDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBjournaldbname&quot;</span>, <span class="stringliteral">&quot;journaldb&quot;</span>);</div>
+<div class="line"><span class="lineno">   89</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a2717b78c7b90ad625c8bac84012af1d3">dbStreamDbName</a> = opts.getOrDefault(<span class="stringliteral">&quot;DBstreamdbname&quot;</span>, <span class="stringliteral">&quot;streamdb&quot;</span>);</div>
+<div class="line"><span class="lineno">   90</span> </div>
+<div class="line"><span class="lineno">   91</span>        <span class="comment">// skip not rfc5424 parseable files</span></div>
+<div class="line"><span class="lineno">   92</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#afe60bbe97410edcadd1639df863c430b">skipNonRFC5424Files</a> = opts.getOrDefault(<span class="stringliteral">&quot;skipNonRFC5424Files&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   93</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a6afb71071e724125aad176c20aa1e73c">epochMigrationMode</a> = opts.getOrDefault(<span class="stringliteral">&quot;epochMigrationMode&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>).equalsIgnoreCase(<span class="stringliteral">&quot;true&quot;</span>);</div>
+<div class="line"><span class="lineno">   94</span> </div>
+<div class="line"><span class="lineno">   95</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">archiveIncludeBeforeEpoch</a> = Long</div>
+<div class="line"><span class="lineno">   96</span>                .parseLong(opts.getOrDefault(<span class="stringliteral">&quot;archive.includeBeforeEpoch&quot;</span>, String.valueOf(Long.MAX_VALUE)));</div>
+<div class="line"><span class="lineno">   97</span> </div>
+<div class="line"><span class="lineno">   98</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">isStub</a> = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">   99</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a0d09ce30ffed8aca081eb6349586cb7f"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a0d09ce30ffed8aca081eb6349586cb7f">com.teragrep.pth_06.config.ArchiveConfig.dbUsername</a></div><div class="ttdeci">final String dbUsername</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00052">ArchiveConfig.java:52</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a2717b78c7b90ad625c8bac84012af1d3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a2717b78c7b90ad625c8bac84012af1d3">com.teragrep.pth_06.config.ArchiveConfig.dbStreamDbName</a></div><div class="ttdeci">final String dbStreamDbName</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00056">ArchiveConfig.java:56</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a36edce462b51f183b6381349cc002f0b"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">com.teragrep.pth_06.config.ArchiveConfig.isStub</a></div><div class="ttdeci">final boolean isStub</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00073">ArchiveConfig.java:73</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a36edce462b51f183b6381349cc002f0b"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">com.teragrep.pth_06.config.ArchiveConfig.isStub</a></div><div class="ttdeci">final boolean isStub</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00074">ArchiveConfig.java:74</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a4d67e3fcde5afd17fc4cec5c2428cdec"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a4d67e3fcde5afd17fc4cec5c2428cdec">com.teragrep.pth_06.config.ArchiveConfig.s3EndPoint</a></div><div class="ttdeci">final String s3EndPoint</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00059">ArchiveConfig.java:59</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a5f4c429dd9b3dd450161d4f3af1030e5"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a5f4c429dd9b3dd450161d4f3af1030e5">com.teragrep.pth_06.config.ArchiveConfig.s3Credential</a></div><div class="ttdeci">final String s3Credential</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00061">ArchiveConfig.java:61</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a686625050a090d2858135a20be9a353c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">com.teragrep.pth_06.config.ArchiveConfig.archiveIncludeBeforeEpoch</a></div><div class="ttdeci">final long archiveIncludeBeforeEpoch</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00065">ArchiveConfig.java:65</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_aa8d5c46dc86abd31de9b121d615c9cfb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">com.teragrep.pth_06.config.ArchiveConfig.withoutFiltersPattern</a></div><div class="ttdeci">final String withoutFiltersPattern</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00070">ArchiveConfig.java:70</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab244e24dd3b40766b51ca84ec5053d6d"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">com.teragrep.pth_06.config.ArchiveConfig.getOrThrow</a></div><div class="ttdeci">String getOrThrow(Map&lt; String, String &gt; opts, String key)</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00122">ArchiveConfig.java:122</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab3d0bb835be6e0d19b3f3d76623f6cfb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">com.teragrep.pth_06.config.ArchiveConfig.withoutFilters</a></div><div class="ttdeci">final boolean withoutFilters</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00069">ArchiveConfig.java:69</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab62811343f2cde6482ca8a6ed8936cc3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">com.teragrep.pth_06.config.ArchiveConfig.bloomDbName</a></div><div class="ttdeci">final String bloomDbName</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00071">ArchiveConfig.java:71</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a686625050a090d2858135a20be9a353c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">com.teragrep.pth_06.config.ArchiveConfig.archiveIncludeBeforeEpoch</a></div><div class="ttdeci">final long archiveIncludeBeforeEpoch</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00066">ArchiveConfig.java:66</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_a6afb71071e724125aad176c20aa1e73c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a6afb71071e724125aad176c20aa1e73c">com.teragrep.pth_06.config.ArchiveConfig.epochMigrationMode</a></div><div class="ttdeci">final boolean epochMigrationMode</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00064">ArchiveConfig.java:64</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_aa8d5c46dc86abd31de9b121d615c9cfb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">com.teragrep.pth_06.config.ArchiveConfig.withoutFiltersPattern</a></div><div class="ttdeci">final String withoutFiltersPattern</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00071">ArchiveConfig.java:71</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab244e24dd3b40766b51ca84ec5053d6d"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab244e24dd3b40766b51ca84ec5053d6d">com.teragrep.pth_06.config.ArchiveConfig.getOrThrow</a></div><div class="ttdeci">String getOrThrow(Map&lt; String, String &gt; opts, String key)</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00125">ArchiveConfig.java:125</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab3d0bb835be6e0d19b3f3d76623f6cfb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">com.teragrep.pth_06.config.ArchiveConfig.withoutFilters</a></div><div class="ttdeci">final boolean withoutFilters</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00070">ArchiveConfig.java:70</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab62811343f2cde6482ca8a6ed8936cc3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">com.teragrep.pth_06.config.ArchiveConfig.bloomDbName</a></div><div class="ttdeci">final String bloomDbName</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00072">ArchiveConfig.java:72</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab64f0df1466d769aad3ffcaf3c1c793c"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab64f0df1466d769aad3ffcaf3c1c793c">com.teragrep.pth_06.config.ArchiveConfig.dbPassword</a></div><div class="ttdeci">final String dbPassword</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00053">ArchiveConfig.java:53</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab88df8cef42953ff94c469ee24d97edb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">com.teragrep.pth_06.config.ArchiveConfig.bloomEnabled</a></div><div class="ttdeci">final boolean bloomEnabled</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00068">ArchiveConfig.java:68</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_ab88df8cef42953ff94c469ee24d97edb"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">com.teragrep.pth_06.config.ArchiveConfig.bloomEnabled</a></div><div class="ttdeci">final boolean bloomEnabled</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00069">ArchiveConfig.java:69</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_acafd5279fec4f878b6c850d09ef56254"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acafd5279fec4f878b6c850d09ef56254">com.teragrep.pth_06.config.ArchiveConfig.dbJournalDbName</a></div><div class="ttdeci">final String dbJournalDbName</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00055">ArchiveConfig.java:55</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_acd3a475f7c33d3d71d9abd103067839f"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acd3a475f7c33d3d71d9abd103067839f">com.teragrep.pth_06.config.ArchiveConfig.s3Identity</a></div><div class="ttdeci">final String s3Identity</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00060">ArchiveConfig.java:60</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig_html_af1030da52b940ed26c74672e1308fed0"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#af1030da52b940ed26c74672e1308fed0">com.teragrep.pth_06.config.ArchiveConfig.dbUrl</a></div><div class="ttdeci">final String dbUrl</div><div class="ttdef"><b>Definition</b> <a href="ArchiveConfig_8java_source.html#l00054">ArchiveConfig.java:54</a></div></div>
@@ -210,29 +214,30 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00099">99</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   99</span>                           {</div>
-<div class="line"><span class="lineno">  100</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a4d67e3fcde5afd17fc4cec5c2428cdec">s3EndPoint</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  101</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acd3a475f7c33d3d71d9abd103067839f">s3Identity</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  102</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a5f4c429dd9b3dd450161d4f3af1030e5">s3Credential</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  103</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a0d09ce30ffed8aca081eb6349586cb7f">dbUsername</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  104</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab64f0df1466d769aad3ffcaf3c1c793c">dbPassword</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  105</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#af1030da52b940ed26c74672e1308fed0">dbUrl</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  106</span> </div>
-<div class="line"><span class="lineno">  107</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acafd5279fec4f878b6c850d09ef56254">dbJournalDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  108</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a2717b78c7b90ad625c8bac84012af1d3">dbStreamDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  109</span> </div>
-<div class="line"><span class="lineno">  110</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">bloomEnabled</a> = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  111</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">withoutFilters</a> = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  112</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">withoutFiltersPattern</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  113</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">bloomDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  114</span> </div>
-<div class="line"><span class="lineno">  115</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#afe60bbe97410edcadd1639df863c430b">skipNonRFC5424Files</a> = <span class="keyword">false</span>;</div>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00101">101</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  101</span>                           {</div>
+<div class="line"><span class="lineno">  102</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a4d67e3fcde5afd17fc4cec5c2428cdec">s3EndPoint</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  103</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acd3a475f7c33d3d71d9abd103067839f">s3Identity</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  104</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a5f4c429dd9b3dd450161d4f3af1030e5">s3Credential</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  105</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a0d09ce30ffed8aca081eb6349586cb7f">dbUsername</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  106</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab64f0df1466d769aad3ffcaf3c1c793c">dbPassword</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  107</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#af1030da52b940ed26c74672e1308fed0">dbUrl</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  108</span> </div>
+<div class="line"><span class="lineno">  109</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#acafd5279fec4f878b6c850d09ef56254">dbJournalDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  110</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a2717b78c7b90ad625c8bac84012af1d3">dbStreamDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  111</span> </div>
+<div class="line"><span class="lineno">  112</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab88df8cef42953ff94c469ee24d97edb">bloomEnabled</a> = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  113</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab3d0bb835be6e0d19b3f3d76623f6cfb">withoutFilters</a> = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  114</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#aa8d5c46dc86abd31de9b121d615c9cfb">withoutFiltersPattern</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  115</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#ab62811343f2cde6482ca8a6ed8936cc3">bloomDbName</a> = <span class="stringliteral">&quot;&quot;</span>;</div>
 <div class="line"><span class="lineno">  116</span> </div>
-<div class="line"><span class="lineno">  117</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">archiveIncludeBeforeEpoch</a> = 0L;</div>
-<div class="line"><span class="lineno">  118</span> </div>
-<div class="line"><span class="lineno">  119</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">isStub</a> = <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">  120</span>    }</div>
+<div class="line"><span class="lineno">  117</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#afe60bbe97410edcadd1639df863c430b">skipNonRFC5424Files</a> = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  118</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a6afb71071e724125aad176c20aa1e73c">epochMigrationMode</a> = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  119</span> </div>
+<div class="line"><span class="lineno">  120</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a686625050a090d2858135a20be9a353c">archiveIncludeBeforeEpoch</a> = 0L;</div>
+<div class="line"><span class="lineno">  121</span> </div>
+<div class="line"><span class="lineno">  122</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1config_1_1ArchiveConfig.html#a36edce462b51f183b6381349cc002f0b">isStub</a> = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">  123</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -271,14 +276,14 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00122">122</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  122</span>                                                                    {</div>
-<div class="line"><span class="lineno">  123</span>        String value = opts.get(key);</div>
-<div class="line"><span class="lineno">  124</span>        <span class="keywordflow">if</span> (value == <span class="keyword">null</span>) {</div>
-<div class="line"><span class="lineno">  125</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="stringliteral">&quot;Configuration item &#39;&quot;</span> + key + <span class="stringliteral">&quot;&#39; was null!&quot;</span>);</div>
-<div class="line"><span class="lineno">  126</span>        }</div>
-<div class="line"><span class="lineno">  127</span>        <span class="keywordflow">return</span> value;</div>
-<div class="line"><span class="lineno">  128</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00125">125</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  125</span>                                                                    {</div>
+<div class="line"><span class="lineno">  126</span>        String value = opts.get(key);</div>
+<div class="line"><span class="lineno">  127</span>        <span class="keywordflow">if</span> (value == <span class="keyword">null</span>) {</div>
+<div class="line"><span class="lineno">  128</span>            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="stringliteral">&quot;Configuration item &#39;&quot;</span> + key + <span class="stringliteral">&quot;&#39; was null!&quot;</span>);</div>
+<div class="line"><span class="lineno">  129</span>        }</div>
+<div class="line"><span class="lineno">  130</span>        <span class="keywordflow">return</span> value;</div>
+<div class="line"><span class="lineno">  131</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -300,7 +305,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00065">65</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00066">66</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
@@ -316,7 +321,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00071">71</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00072">72</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
@@ -332,7 +337,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00068">68</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00069">69</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
@@ -416,6 +421,22 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
+<a id="a6afb71071e724125aad176c20aa1e73c" name="a6afb71071e724125aad176c20aa1e73c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6afb71071e724125aad176c20aa1e73c">&#9670;&#160;</a></span>epochMigrationMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">final boolean com.teragrep.pth_06.config.ArchiveConfig.epochMigrationMode</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00064">64</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+
+</div>
+</div>
 <a id="a36edce462b51f183b6381349cc002f0b" name="a36edce462b51f183b6381349cc002f0b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36edce462b51f183b6381349cc002f0b">&#9670;&#160;</a></span>isStub</h2>
 
@@ -428,7 +449,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00073">73</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00074">74</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
@@ -508,7 +529,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00069">69</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00070">70</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
@@ -524,7 +545,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00070">70</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ArchiveConfig_8java_source.html#l00071">71</a> of file <a class="el" href="ArchiveConfig_8java_source.html">ArchiveConfig.java</a>.</p>
 
 </div>
 </div>
