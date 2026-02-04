@@ -1,0 +1,6 @@
+<map id="com.teragrep.pth_06.planner.KafkaQueryProcessor.handleTopicAuthorizationException" name="com.teragrep.pth_06.planner.KafkaQueryProcessor.handleTopicAuthorizationException">
+<area shape="rect" id="Node000001" title=" " alt="" coords="356,29,597,84"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="531,19,511,11,477,8,448,10,429,15,420,21,421,29,415,29,416,19,427,10,447,5,477,3,512,6,533,14"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1KafkaQueryProcessor.html#a87decab6e0809b8509eaa1d7679afc53" title=" " alt="" coords="5,37,308,77"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="342,59,308,59,308,54,342,54"/>
+</map>

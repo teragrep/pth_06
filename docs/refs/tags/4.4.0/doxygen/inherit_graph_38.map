@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQuery.html" title=" " alt="" coords="5,69,219,109"/>
+<area shape="rect" id="Node000001" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQueryProcessor.html" title=" " alt="" coords="291,5,505,45"/>
+<area shape="poly" id="edge4_Node000000_Node000001" title=" " alt="" coords="215,64,308,43,309,48,216,69"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockArchiveQueryProcessor.html" title=" " alt="" coords="291,69,505,109"/>
+<area shape="poly" id="edge5_Node000000_Node000002" title=" " alt="" coords="232,87,291,87,291,92,232,92"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockMeteredArchiveQueryProcessor.html" title=" " alt="" coords="267,133,529,173"/>
+<area shape="poly" id="edge6_Node000000_Node000003" title=" " alt="" coords="216,110,309,131,308,136,215,115"/>
+</map>

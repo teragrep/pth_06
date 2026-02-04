@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.planner.bloomfilter.CategoryTableImpl" name="com.teragrep.pth_06.planner.bloomfilter.CategoryTableImpl">
+<area shape="rect" id="Node000001" title="Class to create a temp table of current search term and origin filter size filter types." alt="" coords="879,37,1165,77"/>
+<area shape="rect" id="Node000002" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1CategoryTable.html" title=" " alt="" coords="467,5,753,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="767,35,879,44,878,49,767,40"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TableFilters.html" title="Filter types of a table that can be inserted into the category table." alt="" coords="467,69,753,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="767,75,878,66,879,71,767,80"/>
+<area shape="rect" id="Node000004" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1TableRecords.html" title=" " alt="" coords="5,69,292,109"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="306,87,467,87,467,92,306,92"/>
+</map>
