@@ -137,7 +137,7 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
 
     @Override
     public Condition condition() {
-        Condition result;
+        final Condition result;
         if (config.streamQuery()) {
             result = conditionForStreamQuery();
         }
