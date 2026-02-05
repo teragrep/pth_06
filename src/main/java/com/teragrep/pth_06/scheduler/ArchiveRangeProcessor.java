@@ -50,7 +50,7 @@ import com.teragrep.pth_06.planner.ArchiveQuery;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.jooq.Record;
-import org.jooq.Record11;
+import org.jooq.Record10;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public final class ArchiveRangeProcessor implements RangeProcessor {
 
         List<BatchUnit> batchUnits = new ArrayList<>();
 
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result = aq
                 .processBetweenUnixEpochHours(
                         ((DatasourceOffset) start).getArchiveOffset().offset(),
                         ((DatasourceOffset) end).getArchiveOffset().offset()
@@ -84,19 +84,19 @@ public final class ArchiveRangeProcessor implements RangeProcessor {
         for (Record r : result) {
             // uncompressed size can be null
             long uncompressedSize = -1L;
-            if (r.get(10) != null) {
-                uncompressedSize = r.get(10, Long.class);
+            if (r.get(9) != null) {
+                uncompressedSize = r.get(9, Long.class);
             }
 
             batchUnits
                     .add(new BatchUnit(new ArchiveS3ObjectMetadata(r.get(0, String.class), // id
-                            r.get(6, String.class), // bucket
-                            r.get(7, String.class), // path
+                            r.get(5, String.class), // bucket
+                            r.get(6, String.class), // path
                             r.get(1, String.class), // directory
                             r.get(2, String.class), // stream
                             r.get(3, String.class), // host
-                            r.get(8, Long.class), // logtime
-                            r.get(9, Long.class), // compressedSize
+                            r.get(7, Long.class), // logtime
+                            r.get(8, Long.class), // compressedSize
                             uncompressedSize // uncompressedSize
                     )));
         }

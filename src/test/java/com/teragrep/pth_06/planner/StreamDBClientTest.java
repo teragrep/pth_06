@@ -287,14 +287,14 @@ class StreamDBClientTest {
         long latestOffset = nextHourAndSizeFromSliceTable.offset();
         // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
         Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), latestOffset);
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
-        long logtime = hourRange.get(0).get(8, Long.class);
+        long logtime = hourRange.get(0).get(7, Long.class);
         Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), logtime);
         // Assert that the resulting logfile metadata is as expected for logdate.
-        Assertions.assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(5, Date.class));
+        Assertions.assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(4, Date.class));
     }
 
     @Test
@@ -453,6 +453,8 @@ class StreamDBClientTest {
         // Assert StreamDBClient methods work as expected with the test data.
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set queryXML to search for logfiles with logtag of example, which is used for new normalized logtag in the inserted logfiles.
+        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
@@ -467,13 +469,39 @@ class StreamDBClientTest {
         WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         final long latestOffset = nextHourAndSizeFromSliceTable.offset();
-        // Get the record from slicetable
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        // Get the record from slicetable and assert that it was found with the queryXML condition.
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
-        // Assert that the resulting logfile record has logtag originating from normalized logtag table instead of old logtag column that should no longer be used by StreamDBClient.
-        Assertions.assertEquals(ULong.valueOf(1), logfileRecord.get("logtag_id"));
-        Assertions.assertEquals("example", hourRange.get(0).get(4, String.class));
+    }
+
+    /**
+     * Testing that the old logtag column is not used in the queries.
+     */
+    @Test
+    public void logtagTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set queryXML to search for logfiles with logtag of oldExample, which is used for old logtag column in the inserted logfiles.
+        opts.put("queryXML", "<index value=\"oldExample\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+        // Assert that no rows were pulled to slicetable because of queryXML condition.
+        Assertions.assertEquals(0, rows);
     }
 
     @Test

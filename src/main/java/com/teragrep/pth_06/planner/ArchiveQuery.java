@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import org.jooq.Record11;
+import org.jooq.Record10;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 
@@ -60,7 +60,7 @@ import java.sql.Date;
  */
 public interface ArchiveQuery {
 
-    public abstract Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    public abstract Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,
             long endHour
     );

@@ -67,7 +67,6 @@ public final class SliceTable {
     public static final Field<String> directory = DSL.field(DSL.name(sliceTableName, "directory"), String.class);
     public static final Field<String> stream = DSL.field(DSL.name(sliceTableName, "stream"), String.class);
     public static final Field<String> host = DSL.field(DSL.name(sliceTableName, "host"), String.class);
-    public static final Field<String> logtag = DSL.field(DSL.name(sliceTableName, "logtag"), String.class);
     public static final Field<Date> logdate = DSL.field(DSL.name(sliceTableName, "logdate"), Date.class);
     public static final Field<String> bucket = DSL.field(DSL.name(sliceTableName, "bucket"), String.class);
     public static final Field<String> path = DSL.field(DSL.name(sliceTableName, "path"), String.class);
@@ -95,7 +94,7 @@ public final class SliceTable {
             dropTableStep.execute();
         }
         try (
-                final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logtag, logdate, bucket, path, logtime, filesize, uncompressedFilesize)
+                final CreateTableColumnStep createTableStep = ctx.createTemporaryTable(SLICE_TABLE).columns(id, directory, stream, host, logdate, bucket, path, logtime, filesize, uncompressedFilesize)
         ) {
             if (isLogSQL) {
                 LOGGER
