@@ -553,19 +553,45 @@ public class ConditionWalkerTest {
         final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
         final List<String> expectedTableNames = Arrays.asList("pattern_test_ip", "pattern_test_uuid");
         Assertions.assertEquals(expectedTableNames, tableNames);
-        final String expected = "(\n" + "  (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
-                + "          select \"term_0_pattern_test_ip\".\"filter\"\n"
-                + "          from \"term_0_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 0\n"
-                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
-                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
-                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
-                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + "  and (\n" + "    (\n"
-                + "      bloommatch(\n" + "        (\n" + "          select \"term_1_pattern_test_uuid\".\"filter\"\n"
-                + "          from \"term_1_pattern_test_uuid\"\n" + "          where (\n" + "            term_id = 1\n"
-                + "            and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" + "          )\n"
-                + "        ),\n" + "        \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" + "      ) = true\n"
-                + "      and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" + "    )\n"
-                + "    or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" + "  )\n" + ")";
+        // spotless:off
+        final String expected =
+                "(\n" +
+                        "  (\n" +
+                        "    (\n" +
+                        "      bloommatch(\n" +
+                        "        (\n" +
+                        "          select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                        "          from \"term_0_pattern_test_ip\"\n" +
+                        "          where (\n" +
+                        "            term_id = 0\n" +
+                        "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                        "          )\n" +
+                        "        ),\n" +
+                        "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                        "      ) = true\n" +
+                        "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                        "    )\n" +
+                        "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                        "  )\n" +
+                        "  and (\n" +
+                        "    (\n" +
+                        "      bloommatch(\n" +
+                        "        (\n" +
+                        "          select \"term_1_pattern_test_uuid\".\"filter\"\n" +
+                        "          from \"term_1_pattern_test_uuid\"\n" +
+                        "          where (\n" +
+                        "            term_id = 1\n" +
+                        "            and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" +
+                        "          )\n" +
+                        "        ),\n" +
+                        "        \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" +
+                        "      ) = true\n" +
+                        "      and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" +
+                        "    )\n" +
+                        "    or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" +
+                        "  )\n" +
+                        ")";
+        // spotless:on
         Assertions.assertEquals(expected, condition.toString());
     }
 
@@ -580,20 +606,41 @@ public class ConditionWalkerTest {
         final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
         final List<String> expectedTableNames = Arrays.asList("pattern_test_ip", "pattern_test_uuid");
         Assertions.assertEquals(expectedTableNames, tableNames);
-        final String expected = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  or (\n" + "    bloommatch(\n"
-                + "      (\n" + "        select \"term_1_pattern_test_uuid\".\"filter\"\n"
-                + "        from \"term_1_pattern_test_uuid\"\n" + "        where (\n" + "          term_id = 1\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" + ")";
-
+        // spotless:off
+        final String expected =
+                "(\n" +
+                        "  (\n" +
+                        "    bloommatch(\n" +
+                        "      (\n" +
+                        "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                        "        from \"term_0_pattern_test_ip\"\n" +
+                        "        where (\n" +
+                        "          term_id = 0\n" +
+                        "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                        "        )\n" +
+                        "      ),\n" +
+                        "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                        "    ) = true\n" +
+                        "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                        "  )\n" +
+                        "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                        "  or (\n" +
+                        "    bloommatch(\n" +
+                        "      (\n" +
+                        "        select \"term_1_pattern_test_uuid\".\"filter\"\n" +
+                        "        from \"term_1_pattern_test_uuid\"\n" +
+                        "        where (\n" +
+                        "          term_id = 1\n" +
+                        "          and type_id = \"bloomdb\".\"pattern_test_uuid\".\"filter_type_id\"\n" +
+                        "        )\n" +
+                        "      ),\n" +
+                        "      \"bloomdb\".\"pattern_test_uuid\".\"filter\"\n" +
+                        "    ) = true\n" +
+                        "    and \"bloomdb\".\"pattern_test_uuid\".\"filter\" is not null\n" +
+                        "  )\n" +
+                        "  or \"bloomdb\".\"pattern_test_uuid\".\"filter\" is null\n" +
+                        ")";
+        // spotless:on
         Assertions.assertEquals(expected, condition.toString());
     }
 
@@ -608,13 +655,27 @@ public class ConditionWalkerTest {
         final List<String> tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());
         final List<String> expectedTableNames = Arrays.asList("pattern_test_ip");
         Assertions.assertEquals(expectedTableNames, tableNames);
-        final String expected = "(\n" + "  (\n" + "    bloommatch(\n" + "      (\n"
-                + "        select \"term_0_pattern_test_ip\".\"filter\"\n" + "        from \"term_0_pattern_test_ip\"\n"
-                + "        where (\n" + "          term_id = 0\n"
-                + "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "        )\n"
-                + "      ),\n" + "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "    ) = true\n"
-                + "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "  )\n"
-                + "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  or true\n" + ")";
+        // spotless:off
+        final String expected =
+                "(\n" +
+                        "  (\n" +
+                        "    bloommatch(\n" +
+                        "      (\n" +
+                        "        select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                        "        from \"term_0_pattern_test_ip\"\n" +
+                        "        where (\n" +
+                        "          term_id = 0\n" +
+                        "          and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                        "        )\n" +
+                        "      ),\n" +
+                        "      \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                        "    ) = true\n" +
+                        "    and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                        "  )\n" +
+                        "  or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                        "  or true\n" +
+                        ")";
+        // spotless:on
         Assertions.assertEquals(expected, condition.toString());
     }
 
