@@ -67,7 +67,6 @@ public final class GetArchivedObjectsFilterTable {
     public static final Table<Record> FILTER_TABLE = DSL.table(DSL.name(tmpTableName));
     public static final Field<UShort> host_id = DSL.field(DSL.name(tmpTableName, "host_id"), UShort.class);
     public static final Field<String> host = DSL.field(DSL.name(tmpTableName, "host"), String.class);
-    public static final Field<String> tag = DSL.field(DSL.name(tmpTableName, "tag"), String.class);
     public static final Field<ULong> tag_id = DSL.field(DSL.name(tmpTableName, "tag_id"), ULong.class);
     public static final Field<String> directory = DSL.field(DSL.name(tmpTableName, "directory"), String.class);
     public static final Field<String> stream = DSL.field(DSL.name(tmpTableName, "stream"), String.class);
@@ -107,7 +106,6 @@ public final class GetArchivedObjectsFilterTable {
                                 STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
                         )
                                 .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
-                                .select(JOURNALDB.LOGTAG.LOGTAG_.as(GetArchivedObjectsFilterTable.tag))
                                 .select(JOURNALDB.LOGTAG.ID.as(GetArchivedObjectsFilterTable.tag_id))
                                 .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
                                 .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
