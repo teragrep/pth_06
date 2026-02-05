@@ -141,7 +141,13 @@ public final class StreamDBClient {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         final Connection connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL, config.archiveConfig.excludeMatchingPattern, config.archiveConfig.withoutFiltersPattern);
+        this.filterTable = new GetArchivedObjectsFilterTable(
+                ctx,
+                isDebugEnabled,
+                isLogSQL,
+                config.archiveConfig.excludeMatchingPattern,
+                config.archiveConfig.withoutFiltersPattern
+        );
         this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
         this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 

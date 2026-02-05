@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
-import com.teragrep.pth_06.config.ArchiveConfig;
 import com.teragrep.pth_06.planner.bloomfilter.ConditionMatchBloomDBTables;
 import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
 import com.teragrep.pth_06.planner.walker.conditions.StringEqualsCondition;
@@ -129,7 +128,6 @@ public final class GetArchivedObjectsFilterTable {
                 .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
                 .innerJoin(JOURNALDB.HOST)
                 .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME));
-
 
         final SelectConditionStep<Record> selectStep;
         if (excludePatternMode) {
