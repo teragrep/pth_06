@@ -46,18 +46,24 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
+import com.teragrep.pth_06.config.ArchiveConfig;
+import com.teragrep.pth_06.planner.bloomfilter.ConditionMatchBloomDBTables;
+import com.teragrep.pth_06.planner.walker.conditions.QueryCondition;
+import com.teragrep.pth_06.planner.walker.conditions.StringEqualsCondition;
+import com.teragrep.pth_06.planner.walker.conditions.WithoutPatternCondition;
 import org.jooq.*;
 import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
 import org.jooq.types.UShort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+import static com.teragrep.pth_06.jooq.generated.bloomdb.Bloomdb.BLOOMDB;
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
-import static org.jooq.impl.DSL.select;
 
 public final class GetArchivedObjectsFilterTable {
 
@@ -74,13 +80,23 @@ public final class GetArchivedObjectsFilterTable {
     private final ConfiguredLogger logger;
     private static final Logger classLogger = LoggerFactory.getLogger(GetArchivedObjectsFilterTable.class);
     private final DSLContext ctx;
+    private final boolean excludePatternMode;
+    private final String excludePattern;
 
     private final boolean isLogSQL;
 
-    public GetArchivedObjectsFilterTable(final DSLContext ctx, final boolean isDebug, final boolean isLogSQL) {
+    public GetArchivedObjectsFilterTable(
+            final DSLContext ctx,
+            final boolean isDebug,
+            final boolean isLogSQL,
+            final boolean excludePatternMode,
+            final String excludePattern
+    ) {
         this.ctx = ctx;
         this.logger = new ConfiguredLogger(classLogger, isDebug);
         this.isLogSQL = isLogSQL;
+        this.excludePatternMode = excludePatternMode;
+        this.excludePattern = excludePattern;
     }
 
     public void create(final Condition streamdbCondition) {
@@ -97,27 +113,60 @@ public final class GetArchivedObjectsFilterTable {
 
         dropQuery.execute();
 
+        SelectOnConditionStep<Record> selectOnConditionStep = ctx
+                .select(
+                        // these are hardcoded for the procedure execution
+                        STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
+                )
+                .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
+                .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))
+                .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
+                .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
+                .from(STREAMDB.STREAM)
+                .innerJoin(STREAMDB.LOG_GROUP)
+                .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))
+                .innerJoin(STREAMDB.HOST)
+                .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
+                .innerJoin(JOURNALDB.HOST)
+                .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME));
+
+
+        final SelectConditionStep<Record> selectStep;
+        if (excludePatternMode) {
+            if (isLogSQL) {
+                logger.info("Using exclude matching pattern mode with pattern <[{}]>", excludePattern);
+            }
+            if (excludePattern.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "without filters pattern <[" + excludePattern
+                                + "]> was empty when using exclude matching pattern mode"
+                );
+            }
+            final QueryCondition patternEqualsCondition = new StringEqualsCondition(
+                    excludePattern,
+                    BLOOMDB.FILTERTYPE.PATTERN
+            );
+            final ConditionMatchBloomDBTables conditionMatchBloomDBTables = new ConditionMatchBloomDBTables(
+                    ctx,
+                    patternEqualsCondition
+            );
+            for (Table<?> table : conditionMatchBloomDBTables.tables()) {
+                selectOnConditionStep = selectOnConditionStep
+                        .leftJoin(table)
+                        .on(JOURNALDB.LOGFILE.ID.eq(table.field("logfile_id", ULong.class)))
+                        .leftJoin(BLOOMDB.FILTERTYPE)
+                        .on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filtertype_id", ULong.class)));
+            }
+            WithoutPatternCondition withoutPatternCondition = new WithoutPatternCondition(ctx, excludePattern);
+            selectStep = selectOnConditionStep.where(streamdbCondition.and(withoutPatternCondition.condition()));
+        }
+        else {
+            selectStep = selectOnConditionStep.where(streamdbCondition);
+        }
+
         CreateTableWithDataStep query = ctx
                 .createTemporaryTable(GetArchivedObjectsFilterTable.FILTER_TABLE)
-                .as(
-                        select(
-                                // these are hardcoded for the procedure execution
-                                STREAMDB.STREAM.DIRECTORY.as(GetArchivedObjectsFilterTable.directory)
-                        )
-                                .select(STREAMDB.STREAM.STREAM_.as(GetArchivedObjectsFilterTable.stream))
-                                .select(STREAMDB.STREAM.TAG.as(GetArchivedObjectsFilterTable.tag))
-                                .select((JOURNALDB.HOST.NAME.as(GetArchivedObjectsFilterTable.host)))
-                                .select((JOURNALDB.HOST.ID.as(GetArchivedObjectsFilterTable.host_id)))
-                                .from(STREAMDB.STREAM)
-                                .innerJoin(STREAMDB.LOG_GROUP)
-                                .on((STREAMDB.STREAM.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                .innerJoin(STREAMDB.HOST)
-                                .on((STREAMDB.HOST.GID).eq(STREAMDB.LOG_GROUP.ID))
-                                .innerJoin(JOURNALDB.HOST)
-                                .on((STREAMDB.HOST.NAME).eq(JOURNALDB.HOST.NAME))
-                                // following change
-                                .where(streamdbCondition)
-                );
+                .as(selectStep);
 
         if (isLogSQL) {
             logger.info("{SQL} GetArchivedObjectsFilterTable.create query <\n{}\n>", query.getSQL(ParamType.INLINED));
