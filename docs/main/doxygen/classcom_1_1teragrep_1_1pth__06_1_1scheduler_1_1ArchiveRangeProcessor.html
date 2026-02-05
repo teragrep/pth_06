@@ -169,7 +169,7 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   75</span> </div>
 <div class="line"><span class="lineno">   76</span>        List&lt;BatchUnit&gt; batchUnits = <span class="keyword">new</span> ArrayList&lt;&gt;();</div>
 <div class="line"><span class="lineno">   77</span> </div>
-<div class="line"><span class="lineno">   78</span>        Result&lt;Record11&lt;ULong, String, String, String, String, Date, String, String, Long, ULong, ULong&gt;&gt; result = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveRangeProcessor.html#a1f4e36b20929975a4eb4e86dfa2569c7">aq</a></div>
+<div class="line"><span class="lineno">   78</span>        Result&lt;Record10&lt;ULong, String, String, String, Date, String, String, Long, ULong, ULong&gt;&gt; result = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveRangeProcessor.html#a1f4e36b20929975a4eb4e86dfa2569c7">aq</a></div>
 <div class="line"><span class="lineno">   79</span>                .processBetweenUnixEpochHours(</div>
 <div class="line"><span class="lineno">   80</span>                        ((DatasourceOffset) start).getArchiveOffset().offset(),</div>
 <div class="line"><span class="lineno">   81</span>                        ((DatasourceOffset) end).getArchiveOffset().offset()</div>
@@ -178,19 +178,19 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   84</span>        <span class="keywordflow">for</span> (Record r : result) {</div>
 <div class="line"><span class="lineno">   85</span>            <span class="comment">// uncompressed size can be null</span></div>
 <div class="line"><span class="lineno">   86</span>            <span class="keywordtype">long</span> uncompressedSize = -1L;</div>
-<div class="line"><span class="lineno">   87</span>            <span class="keywordflow">if</span> (r.get(10) != <span class="keyword">null</span>) {</div>
-<div class="line"><span class="lineno">   88</span>                uncompressedSize = r.get(10, Long.class);</div>
+<div class="line"><span class="lineno">   87</span>            <span class="keywordflow">if</span> (r.get(9) != <span class="keyword">null</span>) {</div>
+<div class="line"><span class="lineno">   88</span>                uncompressedSize = r.get(9, Long.class);</div>
 <div class="line"><span class="lineno">   89</span>            }</div>
 <div class="line"><span class="lineno">   90</span> </div>
 <div class="line"><span class="lineno">   91</span>            batchUnits</div>
 <div class="line"><span class="lineno">   92</span>                    .add(<span class="keyword">new</span> BatchUnit(<span class="keyword">new</span> ArchiveS3ObjectMetadata(r.get(0, String.class), <span class="comment">// id</span></div>
-<div class="line"><span class="lineno">   93</span>                            r.get(6, String.class), <span class="comment">// bucket</span></div>
-<div class="line"><span class="lineno">   94</span>                            r.get(7, String.class), <span class="comment">// path</span></div>
+<div class="line"><span class="lineno">   93</span>                            r.get(5, String.class), <span class="comment">// bucket</span></div>
+<div class="line"><span class="lineno">   94</span>                            r.get(6, String.class), <span class="comment">// path</span></div>
 <div class="line"><span class="lineno">   95</span>                            r.get(1, String.class), <span class="comment">// directory</span></div>
 <div class="line"><span class="lineno">   96</span>                            r.get(2, String.class), <span class="comment">// stream</span></div>
 <div class="line"><span class="lineno">   97</span>                            r.get(3, String.class), <span class="comment">// host</span></div>
-<div class="line"><span class="lineno">   98</span>                            r.get(8, Long.class), <span class="comment">// logtime</span></div>
-<div class="line"><span class="lineno">   99</span>                            r.get(9, Long.class), <span class="comment">// compressedSize</span></div>
+<div class="line"><span class="lineno">   98</span>                            r.get(7, Long.class), <span class="comment">// logtime</span></div>
+<div class="line"><span class="lineno">   99</span>                            r.get(8, Long.class), <span class="comment">// compressedSize</span></div>
 <div class="line"><span class="lineno">  100</span>                            uncompressedSize <span class="comment">// uncompressedSize</span></div>
 <div class="line"><span class="lineno">  101</span>                    )));</div>
 <div class="line"><span class="lineno">  102</span>        }</div>

@@ -133,7 +133,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">import</span> com.teragrep.pth_06.planner.offset.DatasourceOffset;</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="keyword">import</span> org.apache.spark.sql.connector.read.streaming.Offset;</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">import</span> org.jooq.Record;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">import</span> org.jooq.Record11;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">import</span> org.jooq.Record10;</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">import</span> org.jooq.Result;</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">import</span> org.jooq.types.ULong;</div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="keyword">import</span> org.slf4j.Logger;</div>
@@ -162,7 +162,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        List&lt;BatchUnit&gt; batchUnits = <span class="keyword">new</span> ArrayList&lt;&gt;();</div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        Result&lt;Record11&lt;ULong, String, String, String, String, Date, String, String, Long, ULong, ULong&gt;&gt; result = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveRangeProcessor.html#a1f4e36b20929975a4eb4e86dfa2569c7">aq</a></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        Result&lt;Record10&lt;ULong, String, String, String, Date, String, String, Long, ULong, ULong&gt;&gt; result = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1ArchiveRangeProcessor.html#a1f4e36b20929975a4eb4e86dfa2569c7">aq</a></div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>                .processBetweenUnixEpochHours(</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>                        ((DatasourceOffset) start).getArchiveOffset().offset(),</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>                        ((DatasourceOffset) end).getArchiveOffset().offset()</div>
@@ -171,19 +171,19 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        <span class="keywordflow">for</span> (Record r : result) {</div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>            <span class="comment">// uncompressed size can be null</span></div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>            <span class="keywordtype">long</span> uncompressedSize = -1L;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            <span class="keywordflow">if</span> (r.get(10) != <span class="keyword">null</span>) {</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>                uncompressedSize = r.get(10, Long.class);</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>            <span class="keywordflow">if</span> (r.get(9) != <span class="keyword">null</span>) {</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>                uncompressedSize = r.get(9, Long.class);</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>            }</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            batchUnits</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>                    .add(<span class="keyword">new</span> <a class="code hl_class" href="classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit.html">BatchUnit</a>(<span class="keyword">new</span> <a class="code hl_class" href="classcom_1_1teragrep_1_1pth__06_1_1ArchiveS3ObjectMetadata.html">ArchiveS3ObjectMetadata</a>(r.get(0, String.class), <span class="comment">// id</span></div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>                            r.get(6, String.class), <span class="comment">// bucket</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>                            r.get(7, String.class), <span class="comment">// path</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>                            r.get(5, String.class), <span class="comment">// bucket</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>                            r.get(6, String.class), <span class="comment">// path</span></div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>                            r.get(1, String.class), <span class="comment">// directory</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>                            r.get(2, String.class), <span class="comment">// stream</span></div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>                            r.get(3, String.class), <span class="comment">// host</span></div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>                            r.get(8, Long.class), <span class="comment">// logtime</span></div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                            r.get(9, Long.class), <span class="comment">// compressedSize</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>                            r.get(7, Long.class), <span class="comment">// logtime</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                            r.get(8, Long.class), <span class="comment">// compressedSize</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>                            uncompressedSize <span class="comment">// uncompressedSize</span></div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>                    )));</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        }</div>
