@@ -78,7 +78,7 @@ public final class MockArchiveQueryProcessor implements ArchiveQuery {
     }
 
     @Override
-    public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    public Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             final long startHour,
             final long endHour
     ) {
@@ -90,11 +90,11 @@ public final class MockArchiveQueryProcessor implements ArchiveQuery {
             * you can also use ordinary jooq api to load csv files or
             * other formats, here! */
             final DSLContext create = DSL.using(SQLDialect.DEFAULT);
-            final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = create
+            final Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result = create
                     .newResult(
-                            SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
-                            SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime,
-                            SliceTable.filesize, SliceTable.uncompressedFilesize
+                            SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logdate,
+                            SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
+                            SliceTable.uncompressedFilesize
                     );
 
             while (!slice.isEmpty()) {
@@ -108,13 +108,13 @@ public final class MockArchiveQueryProcessor implements ArchiveQuery {
 
         final Connection connection = new MockConnection(provider);
         final DSLContext create = DSL.using(connection, SQLDialect.DEFAULT);
-        final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result;
+        final Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result;
         try (
-                final SelectSelectStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> step = create
+                final SelectSelectStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> step = create
                         .select(
                                 SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host,
-                                SliceTable.logtag, SliceTable.logdate, SliceTable.bucket, SliceTable.path,
-                                SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
+                                SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime,
+                                SliceTable.filesize, SliceTable.uncompressedFilesize
                         )
         ) {
             result = step.fetch();

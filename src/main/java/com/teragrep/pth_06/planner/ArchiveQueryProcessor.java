@@ -145,7 +145,7 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
      * @return Data between start hour and end hour.
      */
     @Override
-    public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    public Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,
             long endHour
     ) {

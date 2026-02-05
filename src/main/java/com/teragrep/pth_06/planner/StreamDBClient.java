@@ -204,12 +204,11 @@ public final class StreamDBClient {
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
 
-        SelectOnConditionStep<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+        SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
-                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGTAG, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME,
-                        JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
-                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
+                        nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
@@ -217,7 +216,9 @@ public final class StreamDBClient {
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
-                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
+                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
+                .join(JOURNALDB.LOGTAG)
+                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID));
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
@@ -290,7 +291,7 @@ public final class StreamDBClient {
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable exit");
     }
 
-    Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
+    Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
             long excludedStartHour,
             long includedEndHour
     ) {
@@ -299,10 +300,10 @@ public final class StreamDBClient {
                         "StreamDBClient.getHourRange called excludedStartHour <{}> includedEndHour <{}>",
                         excludedStartHour, includedEndHour
                 );
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result = ctx
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result = ctx
                 .select(
-                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logtag,
-                        SliceTable.logdate, SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logdate,
+                        SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
                         SliceTable.uncompressedFilesize
                 )
                 .from(SliceTable.SLICE_TABLE)

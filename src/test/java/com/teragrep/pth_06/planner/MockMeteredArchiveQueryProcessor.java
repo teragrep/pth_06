@@ -51,7 +51,7 @@ import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.SettableGauge;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import org.jooq.Record11;
+import org.jooq.Record10;
 import org.jooq.Result;
 import org.jooq.types.ULong;
 
@@ -72,13 +72,13 @@ public final class MockMeteredArchiveQueryProcessor implements ArchiveQuery {
     }
 
     @Override
-    public Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+    public Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,
             long endHour
     ) {
 
         final Timer.Context timerCtx = metricRegistry.timer("mockRowsTime").time();
-        final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> rv;
+        final Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> rv;
         final long latencyNs;
 
         try {

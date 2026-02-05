@@ -136,7 +136,7 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "example",
+                "oldExample",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
@@ -159,7 +159,7 @@ class StreamDBClientTest {
                 ULong.valueOf(120L),
                 "sha256 checksum 1",
                 "archive tag 1",
-                "example",
+                "oldExample",
                 UShort.valueOf(2),
                 UShort.valueOf(1),
                 ULong.valueOf(390L),
@@ -230,6 +230,31 @@ class StreamDBClientTest {
     }
 
     /**
+     * Testing that pullToSliceTable() does not pull any rows from the database when the index value in the queryXML
+     * does not match with logtag.
+     */
+    @Test
+    public void pullToSliceTableInvalidIndexTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts.put("queryXML", "<index value=\"invalidLogtag\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // 0 rows should be pulled to sliceTable
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+        Assertions.assertEquals(0, rows);
+    }
+
+    /**
      * Testing situation where logfile record hasn't been migrated to use epoch columns. Will use old logdate and
      * synthetic logtime fields instead as a fallback which will trigger the session timezone to affect logtime results.
      */
@@ -262,14 +287,14 @@ class StreamDBClientTest {
         long latestOffset = nextHourAndSizeFromSliceTable.offset();
         // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
         Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), latestOffset);
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
-        long logtime = hourRange.get(0).get(8, Long.class);
+        long logtime = hourRange.get(0).get(7, Long.class);
         Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), logtime);
         // Assert that the resulting logfile metadata is as expected for logdate.
-        Assertions.assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(5, Date.class));
+        Assertions.assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(4, Date.class));
     }
 
     @Test
@@ -410,6 +435,73 @@ class StreamDBClientTest {
         // find the next row after earliest and assert that it is stub.
         Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
 
+    }
+
+    /**
+     * Testing that normalized logtag is handled properly in the queries.
+     */
+    @Test
+    public void logtagIdTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set queryXML to search for logfiles with logtag of example, which is used for new normalized logtag in the inserted logfiles.
+        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+        final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+        final long latestOffset = nextHourAndSizeFromSliceTable.offset();
+        // Get the record from slicetable and assert that it was found with the queryXML condition.
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, latestOffset);
+        Assertions.assertEquals(1, hourRange.size());
+    }
+
+    /**
+     * Testing that the old logtag column is not used in the queries.
+     */
+    @Test
+    public void logtagTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Assert StreamDBClient methods work as expected with the test data.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set queryXML to search for logfiles with logtag of oldExample, which is used for old logtag column in the inserted logfiles.
+        opts.put("queryXML", "<index value=\"oldExample\" operation=\"EQUALS\"/>");
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+        // Assert that no rows were pulled to slicetable because of queryXML condition.
+        Assertions.assertEquals(0, rows);
     }
 
     @Test
