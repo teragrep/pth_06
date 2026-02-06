@@ -72,7 +72,7 @@ public class KafkaWalkerTest {
     void fromStringAndNotEquals() throws Exception {
         String q = "<AND>" + "<index value=\"haproxy\" operation=\"NOT_EQUALS\"/>"
                 + "<index value=\"zongprox*\" operation=\"EQUALS\"/>" + "</AND>";
-        String e = "^zongprox.*$";
+        String e = "^\\Qzongprox\\E[^/]*$";
         String result = kafkaWalker.fromString(q);//.toString();
         LOGGER.debug("Query   =" + q);
         LOGGER.debug("Expected=" + e);
@@ -84,7 +84,7 @@ public class KafkaWalkerTest {
     void fromStringOrTest() throws Exception {
         String q = "<OR>" + "<index value=\"nanprox*\" operation=\"EQUALS\"/>"
                 + "<index value=\"zongprox*\" operation=\"EQUALS\"/>" + "</OR>";
-        String e = "(^nanprox.*$|^zongprox.*$)";
+        String e = "(^\\Qnanprox\\E[^/]*$|^\\Qzongprox\\E[^/]*$)";
         String result = kafkaWalker.fromString(q);//.toString();
         LOGGER.debug("Query   =" + q);
         LOGGER.debug("Expected=" + e);
@@ -96,7 +96,7 @@ public class KafkaWalkerTest {
     void fromStringOrNotEquals() throws Exception {
         String q = "<OR>" + "<index value=\"nanprox*\" operation=\"NOT_EQUALS\"/>"
                 + "<index value=\"zongprox*\" operation=\"EQUALS\"/>" + "</OR>";
-        String e = "^zongprox.*$";
+        String e = "^\\Qzongprox\\E[^/]*$";
         String result = kafkaWalker.fromString(q);//.toString();
         LOGGER.debug("Query   =" + q);
         LOGGER.debug("Expected=" + e);
@@ -122,7 +122,7 @@ public class KafkaWalkerTest {
                 + "<sourcetype value=\"sauce*\" operation=\"EQUALS\"/>" + "</AND>" + "<AND>"
                 + "<sourcetype value=\"innersauce*\" operation=\"EQUALS\"/>"
                 + "<index value=\"innerzong*\" operation=\"EQUALS\"/>" + "</AND>" + "</OR>";
-        String e = "(^nanprox.*$|^innerzong.*$)";
+        String e = "(^\\Qnanprox\\E[^/]*$|^\\Qinnerzong\\E[^/]*$)";
         String result = kafkaWalker.fromString(q);//.toString();
         LOGGER.debug("Query   =" + q);
         LOGGER.debug("Expected=" + e);
@@ -136,7 +136,7 @@ public class KafkaWalkerTest {
         String q = "<OR>" + "<AND>" + "<index operation=\"EQUALS\" value=\"cpu\"/>"
                 + "<sourcetype operation=\"EQUALS\" value=\"log:cpu:0\"/>" + "</AND>" + "<NOT>"
                 + "<indexstatement operation=\"EQUALS\" value=\"src\"/>" + "</NOT>" + "</OR>";
-        String e = "^cpu$";
+        String e = "^\\Qcpu\\E$";
         String result = kafkaWalker.fromString(q);//.toString();
         LOGGER.debug("Query   =" + q);
         LOGGER.debug("Expected=" + e);
