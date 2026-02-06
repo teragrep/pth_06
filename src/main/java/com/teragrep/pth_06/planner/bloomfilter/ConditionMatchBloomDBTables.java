@@ -120,10 +120,10 @@ public final class ConditionMatchBloomDBTables implements DatabaseTables {
             // select id from each of the tables from the first row, then join to 'filtertype' via the filter_type_id, to access the pattern so that we know if the table is relevant for the query
 
             SelectLimitPercentStep<Record1<ULong>> selectQuery = ctx
-                    .select((Field<ULong>) t.field("id"))
+                    .select(t.field("id", ULong.class))
                     .from(t)
                     .leftJoin(BLOOMDB.FILTERTYPE)// join filtertype to access patterns
-                    .on(BLOOMDB.FILTERTYPE.ID.eq((Field<ULong>) t.field("filter_type_id")))
+                    .on(BLOOMDB.FILTERTYPE.ID.eq(t.field("filter_type_id", ULong.class)))
                     .where(condition.condition())// select tables that match the condition
                     .limit(1); // limit 1 since we are checking only if the table is not empty
 

@@ -70,7 +70,8 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
     public TableFilterTypesFromMetadata(DSLContext ctx, Table<?> table, long bloomTermId) {
         this(
                 ctx,
-                table.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filter_type_id").cast(ULong.class))), DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName()))).getName()
+                table.join(BLOOMDB.FILTERTYPE).on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filter_type_id", ULong.class))),
+                DSL.table(DSL.name(("term_" + bloomTermId + "_" + table.getName()))).getName()
         );
     }
 
@@ -97,7 +98,7 @@ public final class TableFilterTypesFromMetadata implements TableRecords {
         this.expectedField = expectedField;
         this.fppField = fppField;
         this.patternField = patternField;
-        this.filterTypeIdField = table.field("filter_type_id").cast(ULong.class);
+        this.filterTypeIdField = table.field("filter_type_id", ULong.class);
     }
 
     public Result<Record> toResult() {
