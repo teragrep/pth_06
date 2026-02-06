@@ -37,7 +37,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <revision>0.0.2</revision>
     <sha1></sha1>
-    <teragrep.jue_01.version>0.4.3</teragrep.jue_01.version>
+    <teragrep.glb_01.version>1.0.0</teragrep.glb_01.version>
     <teragrep.rad_01.version>1.0.1</teragrep.rad_01.version>
     <teragrep.rlo_06.version>9.0.1</teragrep.rlo_06.version>
   </properties>
@@ -96,8 +96,8 @@
     <!-- java unix extensions -->
     <dependency>
       <groupId>com.teragrep</groupId>
-      <artifactId>jue_01</artifactId>
-      <version>${teragrep.jue_01.version}</version>
+      <artifactId>glb_01</artifactId>
+      <version>${teragrep.glb_01.version}</version>
     </dependency>
     <!-- spark -->
     <dependency>

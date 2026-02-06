@@ -45,7 +45,8 @@
  */
 package com.teragrep.pth_06.planner.walker;
 
-import com.teragrep.jue_01.GlobToRegEx;
+import com.teragrep.glb_01.Glob;
+import com.teragrep.glb_01.GlobImpl;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -66,14 +67,15 @@ public class KafkaWalker extends XmlWalker<String> {
         String value = current.getAttribute("value");
         String operation = current.getAttribute("operation");
 
-        String queryCondition = null;
+        String indexValue = null;
         // only index equals supported
         if ("index".equalsIgnoreCase(tag)) {
             if ("EQUALS".equalsIgnoreCase(operation)) {
-                queryCondition = GlobToRegEx.regexify(value);
+                Glob glob = new GlobImpl(value);
+                indexValue = glob.asRegex();
             }
         }
-        return queryCondition;
+        return indexValue;
     }
 
     public String fromString(String inXml) throws ParserConfigurationException, IOException, SAXException {
