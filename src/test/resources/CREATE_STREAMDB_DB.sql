@@ -147,6 +147,11 @@ CREATE TABLE `logfile` (
                            CONSTRAINT `logfile_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `host` (`id`),
                            CONSTRAINT `logfile_ibfk_4` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=289 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains information for log files that have been run through Log Archiver';
+CREATE TABLE `corrupted_archive` (
+                                     `logfile_id` bigint(20) unsigned NOT NULL COMMENT 'The logfile that is the corrupted archive (references logfile.id).',
+                                     PRIMARY KEY (`logfile_id`),
+                                     CONSTRAINT `corrupted_archive_ibfk_1` FOREIGN KEY (`logfile_id`) REFERENCES `logfile` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Contains logfiles that are both archives and detected to be corrupted.';
 INSERT INTO logtag (id, logtag) VALUES (1, 'example');
 INSERT INTO host (id, name) VALUES (1, 'testHost1');
 INSERT INTO bucket (id, name) VALUES (1, 'bucket1');
