@@ -144,9 +144,7 @@ public final class StreamDBClient {
         this.filterTable = new GetArchivedObjectsFilterTable(
                 ctx,
                 isDebugEnabled,
-                isLogSQL,
-                config.archiveConfig.excludeMatchingPattern,
-                config.archiveConfig.withoutFiltersPattern
+                isLogSQL
         );
         this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
         this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
