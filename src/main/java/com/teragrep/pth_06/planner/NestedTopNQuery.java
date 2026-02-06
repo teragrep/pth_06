@@ -142,9 +142,9 @@ public final class NestedTopNQuery {
             for (final Table<?> table : matchBloomDBTables.tables()) {
                 selectOnConditionStep = selectOnConditionStep
                         .leftJoin(table)
-                        .on(JOURNALDB.LOGFILE.ID.eq(table.field("logfile_id", ULong.class)))
+                        .on(JOURNALDB.LOGFILE.ID.eq(table.field("partition_id", ULong.class)))
                         .leftJoin(BLOOMDB.FILTERTYPE)
-                        .on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filtertype_id", ULong.class)).and(BLOOMDB.FILTERTYPE.PATTERN.eq(excludePattern)));
+                        .on(BLOOMDB.FILTERTYPE.ID.eq(table.field("filter_type_id", ULong.class)).and(BLOOMDB.FILTERTYPE.PATTERN.eq(excludePattern)));
                 journaldbConditionArg = journaldbConditionArg.and(BLOOMDB.FILTERTYPE.ID.isNull());
             }
         }
