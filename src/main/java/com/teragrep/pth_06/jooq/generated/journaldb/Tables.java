@@ -50,6 +50,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
@@ -74,6 +75,11 @@ public class Tables {
      * Buckets in object storage
      */
     public static final Bucket BUCKET = Bucket.BUCKET;
+
+    /**
+     * Contains logfiles that are both archives and detected to be corrupted.
+     */
+    public static final CorruptedArchive CORRUPTED_ARCHIVE = CorruptedArchive.CORRUPTED_ARCHIVE;
 
     /**
      * Host names

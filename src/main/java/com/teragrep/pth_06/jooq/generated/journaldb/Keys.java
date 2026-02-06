@@ -50,10 +50,12 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.BucketRecord;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.CorruptedArchiveRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.HostRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogtagRecord;
@@ -97,6 +99,7 @@ public class Keys {
 
     public static final UniqueKey<BucketRecord> KEY_BUCKET_PRIMARY = UniqueKeys0.KEY_BUCKET_PRIMARY;
     public static final UniqueKey<BucketRecord> KEY_BUCKET_UIX_BUCKET_NAME = UniqueKeys0.KEY_BUCKET_UIX_BUCKET_NAME;
+    public static final UniqueKey<CorruptedArchiveRecord> KEY_CORRUPTED_ARCHIVE_PRIMARY = UniqueKeys0.KEY_CORRUPTED_ARCHIVE_PRIMARY;
     public static final UniqueKey<HostRecord> KEY_HOST_PRIMARY = UniqueKeys0.KEY_HOST_PRIMARY;
     public static final UniqueKey<HostRecord> KEY_HOST_UIX_HOST_NAME = UniqueKeys0.KEY_HOST_UIX_HOST_NAME;
     public static final UniqueKey<LogfileRecord> KEY_LOGFILE_PRIMARY = UniqueKeys0.KEY_LOGFILE_PRIMARY;
@@ -108,6 +111,7 @@ public class Keys {
     // FOREIGN KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final ForeignKey<CorruptedArchiveRecord, LogfileRecord> CORRUPTED_ARCHIVE_IBFK_1 = ForeignKeys0.CORRUPTED_ARCHIVE_IBFK_1;
     public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = ForeignKeys0.LOGFILE_IBFK_1;
     public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = ForeignKeys0.LOGFILE_IBFK_2;
     public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = ForeignKeys0.FK_LOGFILE__LOGTAG_ID;
@@ -126,6 +130,7 @@ public class Keys {
     private static class UniqueKeys0 {
         public static final UniqueKey<BucketRecord> KEY_BUCKET_PRIMARY = Internal.createUniqueKey(Bucket.BUCKET, "KEY_bucket_PRIMARY", Bucket.BUCKET.ID);
         public static final UniqueKey<BucketRecord> KEY_BUCKET_UIX_BUCKET_NAME = Internal.createUniqueKey(Bucket.BUCKET, "KEY_bucket_uix_bucket_name", Bucket.BUCKET.NAME);
+        public static final UniqueKey<CorruptedArchiveRecord> KEY_CORRUPTED_ARCHIVE_PRIMARY = Internal.createUniqueKey(CorruptedArchive.CORRUPTED_ARCHIVE, "KEY_corrupted_archive_PRIMARY", CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID);
         public static final UniqueKey<HostRecord> KEY_HOST_PRIMARY = Internal.createUniqueKey(Host.HOST, "KEY_host_PRIMARY", Host.HOST.ID);
         public static final UniqueKey<HostRecord> KEY_HOST_UIX_HOST_NAME = Internal.createUniqueKey(Host.HOST, "KEY_host_uix_host_name", Host.HOST.NAME);
         public static final UniqueKey<LogfileRecord> KEY_LOGFILE_PRIMARY = Internal.createUniqueKey(Logfile.LOGFILE, "KEY_logfile_PRIMARY", Logfile.LOGFILE.ID);
@@ -135,6 +140,7 @@ public class Keys {
     }
 
     private static class ForeignKeys0 {
+        public static final ForeignKey<CorruptedArchiveRecord, LogfileRecord> CORRUPTED_ARCHIVE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGFILE_PRIMARY, CorruptedArchive.CORRUPTED_ARCHIVE, "corrupted_archive_ibfk_1", CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID);
         public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_BUCKET_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_1", Logfile.LOGFILE.BUCKET_ID);
         public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_HOST_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_2", Logfile.LOGFILE.HOST_ID);
         public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "fk_logfile__logtag_id", Logfile.LOGFILE.LOGTAG_ID);

@@ -50,6 +50,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
@@ -80,6 +81,7 @@ public class Indexes {
 
     public static final Index BUCKET_PRIMARY = Indexes0.BUCKET_PRIMARY;
     public static final Index BUCKET_UIX_BUCKET_NAME = Indexes0.BUCKET_UIX_BUCKET_NAME;
+    public static final Index CORRUPTED_ARCHIVE_PRIMARY = Indexes0.CORRUPTED_ARCHIVE_PRIMARY;
     public static final Index HOST_PRIMARY = Indexes0.HOST_PRIMARY;
     public static final Index HOST_UIX_HOST_NAME = Indexes0.HOST_UIX_HOST_NAME;
     public static final Index LOGFILE_BUCKET_ID = Indexes0.LOGFILE_BUCKET_ID;
@@ -105,6 +107,7 @@ public class Indexes {
     private static class Indexes0 {
         public static Index BUCKET_PRIMARY = Internal.createIndex("PRIMARY", Bucket.BUCKET, new OrderField[] { Bucket.BUCKET.ID }, true);
         public static Index BUCKET_UIX_BUCKET_NAME = Internal.createIndex("uix_bucket_name", Bucket.BUCKET, new OrderField[] { Bucket.BUCKET.NAME }, true);
+        public static Index CORRUPTED_ARCHIVE_PRIMARY = Internal.createIndex("PRIMARY", CorruptedArchive.CORRUPTED_ARCHIVE, new OrderField[] { CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID }, true);
         public static Index HOST_PRIMARY = Internal.createIndex("PRIMARY", Host.HOST, new OrderField[] { Host.HOST.ID }, true);
         public static Index HOST_UIX_HOST_NAME = Internal.createIndex("uix_host_name", Host.HOST, new OrderField[] { Host.HOST.NAME }, true);
         public static Index LOGFILE_BUCKET_ID = Internal.createIndex("bucket_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.BUCKET_ID }, false);
