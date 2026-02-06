@@ -218,7 +218,8 @@ public final class StreamDBClient {
                 .join(JOURNALDB.HOST)
                 .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
                 .join(JOURNALDB.LOGTAG)
-                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID));
+                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
+                .andNotExists(select(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID).from(JOURNALDB.CORRUPTED_ARCHIVE).where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID)));
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
