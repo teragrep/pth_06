@@ -141,12 +141,13 @@ public final class StreamDBClient {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         final Connection connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        this.filterTable = new GetArchivedObjectsFilterTable(
-                ctx,
+        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
+        this.nestedTopNQuery = new NestedTopNQuery(
+                this,
                 isDebugEnabled,
-                isLogSQL
+                config.archiveConfig.excludeMatchingPattern,
+                withoutFiltersPattern
         );
-        this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
         this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
         if (isSQLThrowExceptionsNone) {
@@ -314,6 +315,10 @@ public final class StreamDBClient {
 
         LOGGER.debug("StreamDBClient.getHourRange returns <{}> records", result.size());
         return result;
+    }
+
+    DSLContext ctx() {
+        return this.ctx;
     }
 
     ConditionWalker walker() {
