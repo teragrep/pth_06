@@ -367,6 +367,25 @@ class StreamDBClientTest {
         Assertions.assertEquals(120L, weightedOffsetForPlusOneDay.fileSize());
     }
 
+    @Test
+    public void deleteRangeRemovesNullLogtimeRows() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        final ZonedDateTime zdt = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, ZoneId.of("UTC"));
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(zdt.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> localOpts = opts;
+        localOpts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(localOpts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        final int pulledRows = sdc.pullToSliceTable(Date.valueOf(zdt.toLocalDate()));
+        Assertions.assertEquals(1, pulledRows);
+        final WeightedOffset firstOffset = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertFalse(firstOffset.isStub);
+        sdc.deleteRangeFromSliceTable(zdt.minusHours(1).toEpochSecond(), zdt.toEpochSecond());
+        final WeightedOffset afterDeleteOffset = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertTrue(afterDeleteOffset.isStub); // no data left after delete
+    }
+
     /**
      * Testing deleteRangeFromSliceTable() method functionality with old logtime implementation.
      */

@@ -275,9 +275,10 @@ public final class StreamDBClient {
     void deleteRangeFromSliceTable(long start, long end) {
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable called  start <{}> end <{}>", start, end);
 
-        DeleteConditionStep<Record> deleteRangeStep = ctx
+        final Condition rangeCondition = SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end));
+        final DeleteConditionStep<Record> deleteRangeStep = ctx
                 .deleteFrom(SliceTable.SLICE_TABLE)
-                .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)));
+                .where(rangeCondition.or(SliceTable.logtime.isNull()));
 
         if (isLogSQL) {
             LOGGER
