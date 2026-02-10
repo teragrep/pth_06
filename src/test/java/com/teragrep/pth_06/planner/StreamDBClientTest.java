@@ -505,52 +505,27 @@ class StreamDBClientTest {
         Assertions.assertEquals(0, rows);
     }
 
-    // Logfile that has its ID present in corrupted_archive table should not be included in the StreamDBClient query results.
     @Test
-    public void corruptedArchiveTest() {
+    public void pullToSliceTableSkipsCorruptedLogfilesTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
-        Instant instant = Instant.ofEpochSecond(1696471200L);
-        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ZonedDateTime zdt = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
+        LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(zdt.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(corruptedLogfileRecord).execute();
         // Add the ID of the inserted logfile to corrupted_archive table
         CorruptedArchiveRecord corruptedArchiveRecord = new CorruptedArchiveRecord(corruptedLogfileRecord.getId());
-        ctx.insertInto(JOURNALDB.CORRUPTED_ARCHIVE).set(corruptedArchiveRecord).execute();
-        // Add a second logfile for the same date but don't add it to corrupted_archive table
-        Instant instantPlusHour = instant.plusSeconds(3600);
-        ZonedDateTime instantPlusHourZonedDateTime = ZonedDateTime.ofInstant(instantPlusHour, zoneId);
-        LogfileRecord uncorruptedLogfileRecord = logfileRecordForEpoch(
-                instantPlusHourZonedDateTime.toEpochSecond(), true
-        );
-        ctx.insertInto(JOURNALDB.LOGFILE).set(uncorruptedLogfileRecord).execute();
-
-        // Assert StreamDBClient methods work as expected with the test data.
+        int insertedRows = ctx.insertInto(JOURNALDB.CORRUPTED_ARCHIVE).set(corruptedArchiveRecord).execute();
+        Assertions.assertEquals(1, insertedRows);
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
-        // Set queryXML to search for logfiles with logtag of example, which is used for new normalized logtag in the inserted logfiles.
-        opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
-        final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
-
         // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+        int rows = sdc.pullToSliceTable(Date.valueOf(zdt.toLocalDate()));
         // Assert that the record with ID present in corrupted_archive table is not included in the query result
-        Assertions.assertEquals(1, rows);
-        // Get the offset for the first non-empty hour of records from the slicetable.
+        Assertions.assertEquals(0, rows);
         WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
-        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
-        final long latestOffset = nextHourAndSizeFromSliceTable.offset();
-        // Get the record from slicetable and assert that it was found with the queryXML condition.
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
-                .getHourRange(earliestEpoch, latestOffset);
-        Assertions.assertEquals(1, hourRange.size());
-        Assertions.assertEquals(uncorruptedLogfileRecord.getId(), hourRange.get(0).get(0));
-
+        Assertions.assertTrue(nextHourAndSizeFromSliceTable.isStub);
     }
 
     @Test

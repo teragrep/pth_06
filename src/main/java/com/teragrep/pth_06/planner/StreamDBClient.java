@@ -204,6 +204,9 @@ public final class StreamDBClient {
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
 
+        SelectConditionStep<Record1<ULong>> corruptedLogfilesField = select(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID)
+                .from(JOURNALDB.CORRUPTED_ARCHIVE)
+                .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
         SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
@@ -219,7 +222,7 @@ public final class StreamDBClient {
                 .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
                 .join(JOURNALDB.LOGTAG)
                 .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
-                .andNotExists(select(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID).from(JOURNALDB.CORRUPTED_ARCHIVE).where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID)));
+                .andNotExists(corruptedLogfilesField);
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
