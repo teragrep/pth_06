@@ -253,10 +253,13 @@ class StreamDBClientTest {
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts.put("queryXML", "<index value=\"invalidLogtag\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        // 0 rows should be pulled to sliceTable
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(0, rows);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // 0 rows should be pulled to sliceTable
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(0, rows);
+            }
+        });
     }
 
     /**
@@ -475,23 +478,26 @@ class StreamDBClientTest {
         // Set queryXML to search for logfiles with logtag of example, which is used for new normalized logtag in the inserted logfiles.
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
-        final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+                final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(1, rows);
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(1, rows);
 
-        // Get the offset for the first non-empty hour of records from the slicetable.
-        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
-        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
-        final long latestOffset = nextHourAndSizeFromSliceTable.offset();
-        // Get the record from slicetable and assert that it was found with the queryXML condition.
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
-                .getHourRange(earliestEpoch, latestOffset);
-        Assertions.assertEquals(1, hourRange.size());
+                // Get the offset for the first non-empty hour of records from the slicetable.
+                WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+                Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+                final long latestOffset = nextHourAndSizeFromSliceTable.offset();
+                // Get the record from slicetable and assert that it was found with the queryXML condition.
+                Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                        .getHourRange(earliestEpoch, latestOffset);
+                Assertions.assertEquals(1, hourRange.size());
+            }
+        });
     }
 
     /**
@@ -513,14 +519,17 @@ class StreamDBClientTest {
         // Set queryXML to search for logfiles with logtag of oldExample, which is used for old logtag column in the inserted logfiles.
         opts.put("queryXML", "<index value=\"oldExample\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
-        // Assert that no rows were pulled to slicetable because of queryXML condition.
-        Assertions.assertEquals(0, rows);
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                // Assert that no rows were pulled to slicetable because of queryXML condition.
+                Assertions.assertEquals(0, rows);
+            }
+        });
     }
 
     @Test
