@@ -73,7 +73,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
-import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.selectOne;
 
 // https://stackoverflow.com/questions/33657391/qualifying-a-temporary-table-column-name-in-jooq
 // https://www.jooq.org/doc/latest/manual/sql-building/dynamic-sql/
@@ -204,7 +204,7 @@ public final class StreamDBClient {
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
 
-        SelectConditionStep<Record1<ULong>> corruptedLogfilesField = select(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID)
+        SelectConditionStep<Record1<Integer>> corruptedLogfilesField = selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
                 .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
         SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
