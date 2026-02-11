@@ -162,8 +162,8 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
      */
     @Override
     public void commit(long offset) {
-        LOGGER.debug("ArchiveQueryProcessor.commit>");
-        sdc.deleteRangeFromSliceTable(Long.MIN_VALUE, offset);
+        final int deletedRows = sdc.deleteRangeFromSliceTable(Long.MIN_VALUE, offset);
+        LOGGER.debug("ArchiveQueryProcessor.commit() deleted <{}> commited rows from slice table", deletedRows);
     }
 
     /**
