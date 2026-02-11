@@ -377,16 +377,18 @@ class StreamDBClientTest {
         final ZonedDateTime outRangeZdt = inRangeZdt.plusDays(1);
         final LogfileRecord outOfRangeRecord = logfileRecordForEpoch(outRangeZdt.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(outOfRangeRecord).execute();
-        Map<String, String> localOpts = new HashMap<>(opts);
+        final Map<String, String> localOpts = new HashMap<>(opts);
         localOpts.put("DBurl", mariadb.getJdbcUrl());
-        Config config = new Config(localOpts);
-        StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        sdc.pullToSliceTable(Date.valueOf(inRangeZdt.toLocalDate()));
-        sdc.pullToSliceTable(Date.valueOf(outRangeZdt.toLocalDate()));
-        int deletedRows = sdc
+        final Config config = new Config(localOpts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        final int pulledInRange = sdc.pullToSliceTable(Date.valueOf(inRangeZdt.toLocalDate()));
+        final int pulledOutOfRange = sdc.pullToSliceTable(Date.valueOf(outRangeZdt.toLocalDate()));
+        Assertions.assertEquals(1, pulledInRange);
+        Assertions.assertEquals(1, pulledOutOfRange);
+        final int deletedRows = sdc
                 .deleteRangeFromSliceTable(inRangeZdt.minusHours(1).toEpochSecond(), inRangeZdt.toEpochSecond());
         Assertions.assertEquals(1, deletedRows, "in range logfile should be deleted from slice table");
-        WeightedOffset remaining = sdc.getNextHourAndSizeFromSliceTable(0L);
+        final WeightedOffset remaining = sdc.getNextHourAndSizeFromSliceTable(0L);
         Assertions.assertFalse(remaining.isStub, "out of range logfile should remain in slice table");
     }
 
