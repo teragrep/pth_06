@@ -50,6 +50,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.Ci;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
@@ -81,6 +82,8 @@ public class Indexes {
 
     public static final Index BUCKET_PRIMARY = Indexes0.BUCKET_PRIMARY;
     public static final Index BUCKET_UIX_BUCKET_NAME = Indexes0.BUCKET_UIX_BUCKET_NAME;
+    public static final Index CI_PRIMARY = Indexes0.CI_PRIMARY;
+    public static final Index CI_UIX_CI = Indexes0.CI_UIX_CI;
     public static final Index CORRUPTED_ARCHIVE_PRIMARY = Indexes0.CORRUPTED_ARCHIVE_PRIMARY;
     public static final Index HOST_PRIMARY = Indexes0.HOST_PRIMARY;
     public static final Index HOST_UIX_HOST_NAME = Indexes0.HOST_UIX_HOST_NAME;
@@ -108,6 +111,8 @@ public class Indexes {
     private static class Indexes0 {
         public static Index BUCKET_PRIMARY = Internal.createIndex("PRIMARY", Bucket.BUCKET, new OrderField[] { Bucket.BUCKET.ID }, true);
         public static Index BUCKET_UIX_BUCKET_NAME = Internal.createIndex("uix_bucket_name", Bucket.BUCKET, new OrderField[] { Bucket.BUCKET.NAME }, true);
+        public static Index CI_PRIMARY = Internal.createIndex("PRIMARY", Ci.CI, new OrderField[] { Ci.CI.ID }, true);
+        public static Index CI_UIX_CI = Internal.createIndex("uix_ci", Ci.CI, new OrderField[] { Ci.CI.NAME }, true);
         public static Index CORRUPTED_ARCHIVE_PRIMARY = Internal.createIndex("PRIMARY", CorruptedArchive.CORRUPTED_ARCHIVE, new OrderField[] { CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID }, true);
         public static Index HOST_PRIMARY = Internal.createIndex("PRIMARY", Host.HOST, new OrderField[] { Host.HOST.ID }, true);
         public static Index HOST_UIX_HOST_NAME = Internal.createIndex("uix_host_name", Host.HOST, new OrderField[] { Host.HOST.NAME }, true);

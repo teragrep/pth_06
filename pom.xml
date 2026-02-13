@@ -387,7 +387,7 @@
               </jdbc>
               <generator>
                 <database>
-                  <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile|journaldb.logtag|journaldb.corrupted_archive|bloomdb.filtertype</includes>
+                  <includes>streamdb.log_group|streamdb.host|streamdb.stream|journaldb.host|journaldb.bucket|journaldb.logfile|journaldb.logtag|journaldb.corrupted_archive|journaldb.ci|bloomdb.filtertype</includes>
                 </database>
                 <target>
                   <packageName>com.teragrep.pth_06.jooq.generated</packageName>
