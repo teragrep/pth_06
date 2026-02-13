@@ -276,12 +276,13 @@ public final class StreamDBClient implements AutoCloseable {
 
     }
 
-    void deleteRangeFromSliceTable(long start, long end) {
+    int deleteRangeFromSliceTable(long start, long end) {
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable called  start <{}> end <{}>", start, end);
 
-        DeleteConditionStep<Record> deleteRangeStep = ctx
+        final Condition rangeCondition = SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end));
+        final DeleteConditionStep<Record> deleteRangeStep = ctx
                 .deleteFrom(SliceTable.SLICE_TABLE)
-                .where(SliceTable.logtime.greaterThan(start).and(SliceTable.logtime.lessOrEqual(end)));
+                .where(rangeCondition.or(SliceTable.logtime.isNull()));
 
         if (isLogSQL) {
             LOGGER
@@ -290,9 +291,10 @@ public final class StreamDBClient implements AutoCloseable {
                             deleteRangeStep.getSQL(ParamType.INLINED)
                     );
         }
-        deleteRangeStep.execute();
+        final int deletedRowsCount = deleteRangeStep.execute();
 
         LOGGER.debug("StreamDBClient.deleteRangeFromSliceTable exit");
+        return deletedRowsCount;
     }
 
     Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(

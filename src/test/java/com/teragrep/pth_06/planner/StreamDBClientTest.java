@@ -388,6 +388,73 @@ class StreamDBClientTest {
         });
     }
 
+    @Test
+    public void deleteRangeRemovesRowsInRange() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // insert two logfiles, one inside range and one outside
+        final ZonedDateTime inRangeZdt = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, ZoneId.of("UTC"));
+        final LogfileRecord inRangeRecord = logfileRecordForEpoch(inRangeZdt.toEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(inRangeRecord).execute();
+        final ZonedDateTime outRangeZdt = inRangeZdt.plusDays(1);
+        final LogfileRecord outOfRangeRecord = logfileRecordForEpoch(outRangeZdt.toEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(outOfRangeRecord).execute();
+        final Map<String, String> localOpts = new HashMap<>(opts);
+        localOpts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(localOpts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        final int pulledInRange = sdc.pullToSliceTable(Date.valueOf(inRangeZdt.toLocalDate()));
+        final int pulledOutOfRange = sdc.pullToSliceTable(Date.valueOf(outRangeZdt.toLocalDate()));
+        Assertions.assertEquals(1, pulledInRange);
+        Assertions.assertEquals(1, pulledOutOfRange);
+        final int deletedRows = sdc
+                .deleteRangeFromSliceTable(inRangeZdt.minusHours(1).toEpochSecond(), inRangeZdt.toEpochSecond());
+        Assertions.assertEquals(1, deletedRows, "in range logfile should be deleted from slice table");
+        final WeightedOffset remaining = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertFalse(remaining.isStub, "out of range logfile should remain in slice table");
+    }
+
+    @Test
+    public void deleteRangeRemovesNullLogtimeRowsOutsideOfRange() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        final ZonedDateTime recordZdt = ZonedDateTime.of(2020, 1, 2, 3, 4, 0, 0, zoneId);
+        final long recordEpochSeconds = recordZdt.toEpochSecond();
+        final LogfileRecord logfileRecord = new LogfileRecord(
+                ULong.valueOf(recordEpochSeconds),
+                Date.valueOf(recordZdt.toLocalDate()),
+                Date.valueOf(recordZdt.plusYears(1).toLocalDate()),
+                UShort.valueOf(1),
+                "invalid/path",
+                null,
+                UShort.valueOf(1),
+                "filename",
+                new Timestamp(recordEpochSeconds),
+                ULong.valueOf(120L),
+                "sha256 checksum 1",
+                "archive tag 1",
+                "oldExample",
+                UShort.valueOf(2),
+                UShort.valueOf(1),
+                ULong.valueOf(390L),
+                null,
+                null,
+                null,
+                ULong.valueOf(1)
+        );
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> localOpts = new HashMap<>(opts);
+        localOpts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(localOpts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        int pulled = sdc.pullToSliceTable(Date.valueOf(recordZdt.toLocalDate()));
+        final ZonedDateTime baseTime = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, ZoneId.of("UTC"));
+        Assertions.assertEquals(1, pulled, "row should be pulled to slice table");
+        final int deleted = sdc
+                .deleteRangeFromSliceTable(baseTime.minusHours(1).toEpochSecond(), baseTime.toEpochSecond());
+        Assertions.assertEquals(1, deleted, "row should be deleted even when it is outside of range");
+        Assertions
+                .assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub, "slice table should be empty after delete");
+    }
+
     /**
      * Testing deleteRangeFromSliceTable() method functionality with old logtime implementation.
      */
