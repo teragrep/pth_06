@@ -60,5 +60,8 @@ jobs:
     - name: Inject licenses to generated files
       run: bash add_headers_to_generated.sh
 
+    - name: enable podman
+      run: systemctl --user start podman.socket
+
     - name: Run CI
       run: mvn -Pbuild-nogenerate --batch-mode clean verify
