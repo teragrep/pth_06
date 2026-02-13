@@ -89,12 +89,13 @@ import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
  * @author Motoko Kusanagi
  * @author Ville Manninen
  */
-public final class StreamDBClient {
+public final class StreamDBClient implements AutoCloseable {
 
     private static final Logger classLogger = LoggerFactory.getLogger(StreamDBClient.class);
     private final ConfiguredLogger LOGGER;
 
     private final MetricRegistry metricRegistry;
+    private final Connection connection;
     private final DSLContext ctx;
     private final long includeBeforeEpoch;
     private final boolean bloomEnabled;
@@ -137,7 +138,7 @@ public final class StreamDBClient {
         }
 
         System.getProperties().setProperty("org.jooq.no-logo", "true");
-        final Connection connection = DriverManager.getConnection(url, userName, password);
+        this.connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
         this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
@@ -325,6 +326,19 @@ public final class StreamDBClient {
     }
 
     @Override
+    public void close() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                LOGGER.debug("Closed JDBC connection");
+            }
+        }
+        catch (final SQLException e) {
+            LOGGER.warn("Error closing JDBC connection: <{}>", e.getMessage());
+        }
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
@@ -333,15 +347,15 @@ public final class StreamDBClient {
         return includeBeforeEpoch == that.includeBeforeEpoch
                 && bloomEnabled == that.bloomEnabled && isDebugEnabled == that.isDebugEnabled && Objects
                         .equals(LOGGER, that.LOGGER)
-                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
+                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
     }
 
     @Override
     public int hashCode() {
         return Objects
                 .hash(
-                        LOGGER, metricRegistry, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition, walker,
-                        isDebugEnabled, filterTable, sliceTable, isLogSQL
+                        LOGGER, metricRegistry, connection, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition,
+                        walker, isDebugEnabled, filterTable, sliceTable, isLogSQL
                 );
     }
 }

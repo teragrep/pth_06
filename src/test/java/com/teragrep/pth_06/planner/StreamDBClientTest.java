@@ -123,7 +123,6 @@ class StreamDBClientTest {
 
         String filename = "example.log-@" + epoch + "-" + year + month + day + hour + ".log.gz";
         String path = year + "/" + month + "-" + day + "/example.tg.dev.test/example/" + filename;
-        System.out.println("path: " + path);
         LogfileRecord logfileRecord = new LogfileRecord(
                 ULong.valueOf(epoch),
                 Date.valueOf(zonedDateTime.toLocalDate()),
@@ -197,10 +196,13 @@ class StreamDBClientTest {
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        // Only the row with logdate of "2023-10-4" should be pulled to slicetable.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(1, rows);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // Only the row with logdate of "2023-10-4" should be pulled to slicetable.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(1, rows);
+            }
+        });
     }
 
     /**
@@ -224,10 +226,13 @@ class StreamDBClientTest {
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        // Both of the rows in the database for logdate of "2023-10-4" should be pulled to the slicetable.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(2, rows);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // Both of the rows in the database for logdate of "2023-10-4" should be pulled to the slicetable.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(2, rows);
+            }
+        });
     }
 
     /**
@@ -249,10 +254,13 @@ class StreamDBClientTest {
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts.put("queryXML", "<index value=\"invalidLogtag\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        // 0 rows should be pulled to sliceTable
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(0, rows);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // 0 rows should be pulled to sliceTable
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(0, rows);
+            }
+        });
     }
 
     /**
@@ -273,29 +281,33 @@ class StreamDBClientTest {
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
-        long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+                long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(1, rows);
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(1, rows);
 
-        // Get the offset for the first non-empty hour of records from the slicetable.
-        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
-        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
-        long latestOffset = nextHourAndSizeFromSliceTable.offset();
-        // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
-        Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), latestOffset);
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
-                .getHourRange(earliestEpoch, latestOffset);
-        Assertions.assertEquals(1, hourRange.size());
-        // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
-        long logtime = hourRange.get(0).get(7, Long.class);
-        Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), logtime);
-        // Assert that the resulting logfile metadata is as expected for logdate.
-        Assertions.assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(4, Date.class));
+                // Get the offset for the first non-empty hour of records from the slicetable.
+                WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+                Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+                long latestOffset = nextHourAndSizeFromSliceTable.offset();
+                // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
+                Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), latestOffset);
+                Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                        .getHourRange(earliestEpoch, latestOffset);
+                Assertions.assertEquals(1, hourRange.size());
+                // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
+                long logtime = hourRange.get(0).get(7, Long.class);
+                Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), logtime);
+                // Assert that the resulting logfile metadata is as expected for logdate.
+                Assertions
+                        .assertEquals(Date.valueOf(instantZonedDateTime.toLocalDate()), hourRange.get(0).get(4, Date.class));
+            }
+        });
     }
 
     @Test
@@ -316,13 +328,16 @@ class StreamDBClientTest {
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(2, rows);
-        WeightedOffset nextHourAndSizeFromSliceTable = sdc
-                .getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond());
-        // Assert that the result for next hour from slice table after 2023-10-4 22:00 UTC-4 is 2023-10-4 23:00 UTC-4.
-        Assertions.assertEquals(instantPlusHour.toEpochSecond(), nextHourAndSizeFromSliceTable.offset());
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(2, rows);
+                WeightedOffset nextHourAndSizeFromSliceTable = sdc
+                        .getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond());
+                // Assert that the result for next hour from slice table after 2023-10-4 22:00 UTC-4 is 2023-10-4 23:00 UTC-4.
+                Assertions.assertEquals(instantPlusHour.toEpochSecond(), nextHourAndSizeFromSliceTable.offset());
+            }
+        });
     }
 
     @Test
@@ -348,24 +363,27 @@ class StreamDBClientTest {
         opts.put("DBurl", mariadb.getJdbcUrl());
 
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
 
-        // pull baseTime to SliceTable and assert weightedOffset to contain filesize=240 (2 rows) for that hour
-        final int baseTimeRows = sdc.pullToSliceTable(Date.valueOf(baseTime.toLocalDate()));
-        Assertions.assertEquals(2, baseTimeRows);
-        final WeightedOffset weightedOffsetForBaseTime = sdc
-                .getNextHourAndSizeFromSliceTable(baseMinusOneHour.toEpochSecond());
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // pull baseTime to SliceTable and assert weightedOffset to contain filesize=240 (2 rows) for that hour
+                final int baseTimeRows = sdc.pullToSliceTable(Date.valueOf(baseTime.toLocalDate()));
+                Assertions.assertEquals(2, baseTimeRows);
+                final WeightedOffset weightedOffsetForBaseTime = sdc
+                        .getNextHourAndSizeFromSliceTable(baseMinusOneHour.toEpochSecond());
 
-        Assertions.assertEquals(baseTime.toEpochSecond(), weightedOffsetForBaseTime.offset());
-        Assertions.assertEquals(240L, weightedOffsetForBaseTime.fileSize());
+                Assertions.assertEquals(baseTime.toEpochSecond(), weightedOffsetForBaseTime.offset());
+                Assertions.assertEquals(240L, weightedOffsetForBaseTime.fileSize());
 
-        // pull baseTime+1day to SliceTable and assert weightedOffset to contain filesize=120 (1 row) for that hour
-        final int plusOneDayRows = sdc.pullToSliceTable(Date.valueOf(basePlusOneDay.toLocalDate()));
-        Assertions.assertEquals(1, plusOneDayRows);
-        final WeightedOffset weightedOffsetForPlusOneDay = sdc
-                .getNextHourAndSizeFromSliceTable(baseTime.toEpochSecond());
-        Assertions.assertEquals(basePlusOneDay.toEpochSecond(), weightedOffsetForPlusOneDay.offset());
-        Assertions.assertEquals(120L, weightedOffsetForPlusOneDay.fileSize());
+                // pull baseTime+1day to SliceTable and assert weightedOffset to contain filesize=120 (1 row) for that hour
+                final int plusOneDayRows = sdc.pullToSliceTable(Date.valueOf(basePlusOneDay.toLocalDate()));
+                Assertions.assertEquals(1, plusOneDayRows);
+                final WeightedOffset weightedOffsetForPlusOneDay = sdc
+                        .getNextHourAndSizeFromSliceTable(baseTime.toEpochSecond());
+                Assertions.assertEquals(basePlusOneDay.toEpochSecond(), weightedOffsetForPlusOneDay.offset());
+                Assertions.assertEquals(120L, weightedOffsetForPlusOneDay.fileSize());
+            }
+        });
     }
 
     /**
@@ -385,17 +403,19 @@ class StreamDBClientTest {
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(1, rows);
+                Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(1, rows);
-        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
-
-        // Delete rows from slicetable and assert that they are no longer present in the slicetable.
-        sdc
-                .deleteRangeFromSliceTable(instantZonedDateTime.minusHours(1).toEpochSecond(), instantZonedDateTime.toEpochSecond());
-        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+                // Delete rows from slicetable and assert that they are no longer present in the slicetable.
+                sdc
+                        .deleteRangeFromSliceTable(instantZonedDateTime.minusHours(1).toEpochSecond(), instantZonedDateTime.toEpochSecond());
+                Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+            }
+        });
     }
 
     /**
@@ -423,19 +443,21 @@ class StreamDBClientTest {
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts.put("archive.includeBeforeEpoch", String.valueOf(instantPlusHour.toEpochSecond()));
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(2, rows);
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(2, rows);
-
-        // find the earliest row and assert that it has correct offset/logtime value
-        Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
-        Assertions
-                .assertEquals(instantZonedDateTime.toEpochSecond(), sdc.getNextHourAndSizeFromSliceTable(0L).offset());
-        // find the next row after earliest and assert that it is stub.
-        Assertions.assertTrue(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
-
+                // find the earliest row and assert that it has correct offset/logtime value
+                Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+                Assertions
+                        .assertEquals(instantZonedDateTime.toEpochSecond(), sdc.getNextHourAndSizeFromSliceTable(0L).offset());
+                // find the next row after earliest and assert that it is stub.
+                Assertions
+                        .assertTrue(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
+            }
+        });
     }
 
     /**
@@ -457,23 +479,26 @@ class StreamDBClientTest {
         // Set queryXML to search for logfiles with logtag of example, which is used for new normalized logtag in the inserted logfiles.
         opts.put("queryXML", "<index value=\"example\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
-        final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+                final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
-        Assertions.assertEquals(1, rows);
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(1, rows);
 
-        // Get the offset for the first non-empty hour of records from the slicetable.
-        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
-        Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
-        final long latestOffset = nextHourAndSizeFromSliceTable.offset();
-        // Get the record from slicetable and assert that it was found with the queryXML condition.
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
-                .getHourRange(earliestEpoch, latestOffset);
-        Assertions.assertEquals(1, hourRange.size());
+                // Get the offset for the first non-empty hour of records from the slicetable.
+                WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+                Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
+                final long latestOffset = nextHourAndSizeFromSliceTable.offset();
+                // Get the record from slicetable and assert that it was found with the queryXML condition.
+                Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                        .getHourRange(earliestEpoch, latestOffset);
+                Assertions.assertEquals(1, hourRange.size());
+            }
+        });
     }
 
     /**
@@ -495,14 +520,17 @@ class StreamDBClientTest {
         // Set queryXML to search for logfiles with logtag of oldExample, which is used for old logtag column in the inserted logfiles.
         opts.put("queryXML", "<index value=\"oldExample\" operation=\"EQUALS\"/>");
         final Config config = new Config(opts);
-        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
-        Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-        ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
+                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
 
-        // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
-        // Assert that no rows were pulled to slicetable because of queryXML condition.
-        Assertions.assertEquals(0, rows);
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                // Assert that no rows were pulled to slicetable because of queryXML condition.
+                Assertions.assertEquals(0, rows);
+            }
+        });
     }
 
     @Test
