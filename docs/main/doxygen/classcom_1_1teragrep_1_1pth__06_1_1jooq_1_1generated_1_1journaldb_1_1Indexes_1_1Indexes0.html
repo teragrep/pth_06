@@ -86,6 +86,8 @@ Static Public Attributes</h2></td></tr>
 <tr class="separator:a35f1c74ab13f7eb17fc985efdf23c33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b17b96ee719a69d24655830bd9e44f6" id="r_a7b17b96ee719a69d24655830bd9e44f6"><td class="memItemLeft" align="right" valign="top">static Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1Indexes_1_1Indexes0.html#a7b17b96ee719a69d24655830bd9e44f6">BUCKET_UIX_BUCKET_NAME</a> = Internal.createIndex(&quot;uix_bucket_name&quot;, Bucket.BUCKET, new OrderField[] { Bucket.BUCKET.NAME }, true)</td></tr>
 <tr class="separator:a7b17b96ee719a69d24655830bd9e44f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a218609bada38ae78142a7ffce9ef82da" id="r_a218609bada38ae78142a7ffce9ef82da"><td class="memItemLeft" align="right" valign="top">static Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1Indexes_1_1Indexes0.html#a218609bada38ae78142a7ffce9ef82da">CORRUPTED_ARCHIVE_PRIMARY</a> = Internal.createIndex(&quot;PRIMARY&quot;, CorruptedArchive.CORRUPTED_ARCHIVE, new OrderField[] { CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID }, true)</td></tr>
+<tr class="separator:a218609bada38ae78142a7ffce9ef82da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84296d9b2bf0ac0525945e6541286510" id="r_a84296d9b2bf0ac0525945e6541286510"><td class="memItemLeft" align="right" valign="top">static Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1Indexes_1_1Indexes0.html#a84296d9b2bf0ac0525945e6541286510">HOST_PRIMARY</a> = Internal.createIndex(&quot;PRIMARY&quot;, Host.HOST, new OrderField[] { Host.HOST.ID }, true)</td></tr>
 <tr class="separator:a84296d9b2bf0ac0525945e6541286510"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c3eb9e24854e939f7b705ce24ada6d9" id="r_a1c3eb9e24854e939f7b705ce24ada6d9"><td class="memItemLeft" align="right" valign="top">static Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1Indexes_1_1Indexes0.html#a1c3eb9e24854e939f7b705ce24ada6d9">HOST_UIX_HOST_NAME</a> = Internal.createIndex(&quot;uix_host_name&quot;, Host.HOST, new OrderField[] { Host.HOST.NAME }, true)</td></tr>
@@ -123,7 +125,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00105">105</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00107">107</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a35f1c74ab13f7eb17fc985efdf23c33d" name="a35f1c74ab13f7eb17fc985efdf23c33d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a35f1c74ab13f7eb17fc985efdf23c33d">&#9670;&#160;</a></span>BUCKET_PRIMARY</h2>
@@ -145,7 +147,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00106">106</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00108">108</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -169,7 +171,31 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00107">107</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00109">109</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+
+</div>
+</div>
+<a id="a218609bada38ae78142a7ffce9ef82da" name="a218609bada38ae78142a7ffce9ef82da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a218609bada38ae78142a7ffce9ef82da">&#9670;&#160;</a></span>CORRUPTED_ARCHIVE_PRIMARY</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Index com.teragrep.pth_06.jooq.generated.journaldb.Indexes.Indexes0.CORRUPTED_ARCHIVE_PRIMARY = Internal.createIndex(&quot;PRIMARY&quot;, CorruptedArchive.CORRUPTED_ARCHIVE, new OrderField[] { CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID }, true)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00110">110</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -193,7 +219,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00108">108</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00111">111</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -217,7 +243,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00109">109</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00112">112</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -241,7 +267,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00110">110</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00113">113</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -265,7 +291,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00111">111</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00114">114</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -289,7 +315,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00112">112</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00115">115</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -313,7 +339,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00113">113</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00116">116</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -337,7 +363,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00114">114</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00117">117</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -361,7 +387,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00115">115</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00118">118</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -385,7 +411,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00116">116</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00119">119</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -409,7 +435,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00117">117</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00120">120</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -433,7 +459,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00120">120</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00123">123</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -457,7 +483,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00118">118</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00121">121</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -481,7 +507,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00119">119</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00122">122</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -505,7 +531,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00121">121</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00124">124</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -529,7 +555,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00122">122</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00125">125</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -553,7 +579,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00123">123</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00126">126</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
@@ -577,7 +603,7 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00124">124</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="journaldb_2Indexes_8java_source.html#l00127">127</a> of file <a class="el" href="journaldb_2Indexes_8java_source.html">Indexes.java</a>.</p>
 
 </div>
 </div>
