@@ -71,7 +71,7 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
         this.config = config;
     }
 
-    private Condition conditionForStreamQuery() {
+    private Condition conditionForStreamDBQuery() {
         final String tag = element.tag();
         final String value = element.value();
         final String operation = element.operation();
@@ -89,12 +89,12 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
             condition = host.condition();
         }
         else {
-            throw new IllegalStateException("Unsupported streaming query element tag <" + tag + ">");
+            throw new IllegalStateException("Unsupported StreamDB query element tag <" + tag + ">");
         }
         return condition;
     }
 
-    private Condition conditionForNormalQuery() {
+    private Condition conditionForJournalDBQuery() {
         final String tag = element.tag();
         final String value = element.value();
         final String operation = element.operation();
@@ -119,7 +119,9 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
             QueryCondition latest = new LatestCondition(value);
             condition = latest.condition();
         }
-        else if ("indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && config.bloomEnabled()) {
+        else if (
+            "indexstatement".equalsIgnoreCase(tag) && "EQUALS".equalsIgnoreCase(operation) && config.bloomEnabled()
+        ) {
             QueryCondition indexStatement = new IndexStatementCondition(value, config);
             condition = indexStatement.condition();
         }
@@ -130,7 +132,7 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
             condition = DSL.noCondition();
         }
         else {
-            throw new IllegalStateException("Unsupported query element tag <" + tag + ">");
+            throw new IllegalStateException("Unsupported JournalDB query element tag <" + tag + ">");
         }
         return condition;
     }
@@ -139,10 +141,10 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
     public Condition condition() {
         final Condition result;
         if (config.streamQuery()) {
-            result = conditionForStreamQuery();
+            result = conditionForStreamDBQuery();
         }
         else {
-            result = conditionForNormalQuery();
+            result = conditionForJournalDBQuery();
         }
 
         return result;
@@ -152,7 +154,7 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
     public boolean isBloomSearchCondition() {
         final String tag = element.tag();
         final String operation = element.operation();
-        return "indexstatement".equalsIgnoreCase(tag) && "EQUALS".equals(operation) && !config.streamQuery()
+        return "indexstatement".equalsIgnoreCase(tag) && "EQUALS".equalsIgnoreCase(operation) && !config.streamQuery()
                 && config.bloomEnabled();
     }
 

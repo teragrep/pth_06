@@ -66,7 +66,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * 
  * @see org.jooq.QueryPart
  */
-public class ElementConditionTest {
+public final class ElementConditionTest {
 
     final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final Document document = Assertions.assertDoesNotThrow(() -> factory.newDocumentBuilder().newDocument());
@@ -258,6 +258,26 @@ public class ElementConditionTest {
         ElementCondition notEq = new ElementCondition(element2, config);
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
+    }
+
+    @Test
+    public void testUnsupportedStreamDBTagMessage() {
+        final Element element = document.createElement("earliest");
+        element.setAttribute("value", "1000");
+        element.setAttribute("operation", "EQUALS");
+        final IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, streamConfig).condition());
+        Assertions.assertEquals("Unsupported StreamDB query element tag <earliest>", exception.getMessage());
+    }
+
+    @Test
+    public void testUnsupportedJournalDBTagMessage() {
+        final Element element = document.createElement("invalidtag");
+        element.setAttribute("value", "1000");
+        element.setAttribute("operation", "EQUALS");
+        final IllegalStateException exception = Assertions
+                .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, config).condition());
+        Assertions.assertEquals("Unsupported JournalDB query element tag <invalidtag>", exception.getMessage());
     }
 
     @Test
