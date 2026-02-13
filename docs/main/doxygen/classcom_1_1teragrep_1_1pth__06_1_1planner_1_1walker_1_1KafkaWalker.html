@@ -118,7 +118,7 @@ Additional Inherited Members</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>Mikko Kortelainen </dd></dl>
 <dl class="section since"><dt>Since</dt><dd>08/06/2022 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00061">61</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00062">62</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac23dbd2118cab6ab05b0c660b802f2e8" name="ac23dbd2118cab6ab05b0c660b802f2e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac23dbd2118cab6ab05b0c660b802f2e8">&#9670;&#160;</a></span>emitLogicalOperation()</h2>
@@ -152,22 +152,22 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00084">84</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   84</span>                                                                                                   {</div>
-<div class="line"><span class="lineno">   85</span>        String left = (String) l;</div>
-<div class="line"><span class="lineno">   86</span>        String right = (String) r;</div>
-<div class="line"><span class="lineno">   87</span> </div>
-<div class="line"><span class="lineno">   88</span>        String rv = <span class="keyword">null</span>;</div>
-<div class="line"><span class="lineno">   89</span>        <span class="comment">/*</span></div>
-<div class="line"><span class="lineno">   90</span><span class="comment">        index can not have two values at the same go therefore &quot;AND&quot;.equals(op)</span></div>
-<div class="line"><span class="lineno">   91</span><span class="comment">        is not implemented</span></div>
-<div class="line"><span class="lineno">   92</span><span class="comment">         */</span></div>
-<div class="line"><span class="lineno">   93</span>        <span class="keywordflow">if</span> (<span class="stringliteral">&quot;OR&quot;</span>.equals(op)) {</div>
-<div class="line"><span class="lineno">   94</span>            rv = <span class="stringliteral">&quot;(&quot;</span> + left + <span class="stringliteral">&quot;|&quot;</span> + right + <span class="stringliteral">&quot;)&quot;</span>;</div>
-<div class="line"><span class="lineno">   95</span>        }</div>
-<div class="line"><span class="lineno">   96</span> </div>
-<div class="line"><span class="lineno">   97</span>        <span class="keywordflow">return</span> rv;</div>
-<div class="line"><span class="lineno">   98</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00086">86</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   86</span>                                                                                                   {</div>
+<div class="line"><span class="lineno">   87</span>        String left = (String) l;</div>
+<div class="line"><span class="lineno">   88</span>        String right = (String) r;</div>
+<div class="line"><span class="lineno">   89</span> </div>
+<div class="line"><span class="lineno">   90</span>        String rv = <span class="keyword">null</span>;</div>
+<div class="line"><span class="lineno">   91</span>        <span class="comment">/*</span></div>
+<div class="line"><span class="lineno">   92</span><span class="comment">        index can not have two values at the same go therefore &quot;AND&quot;.equals(op)</span></div>
+<div class="line"><span class="lineno">   93</span><span class="comment">        is not implemented</span></div>
+<div class="line"><span class="lineno">   94</span><span class="comment">         */</span></div>
+<div class="line"><span class="lineno">   95</span>        <span class="keywordflow">if</span> (<span class="stringliteral">&quot;OR&quot;</span>.equals(op)) {</div>
+<div class="line"><span class="lineno">   96</span>            rv = <span class="stringliteral">&quot;(&quot;</span> + left + <span class="stringliteral">&quot;|&quot;</span> + right + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><span class="lineno">   97</span>        }</div>
+<div class="line"><span class="lineno">   98</span> </div>
+<div class="line"><span class="lineno">   99</span>        <span class="keywordflow">return</span> rv;</div>
+<div class="line"><span class="lineno">  100</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -187,10 +187,10 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00079">79</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   79</span>                                                                                                          {</div>
-<div class="line"><span class="lineno">   80</span>        <span class="keywordflow">return</span> super.fromString(inXml);</div>
-<div class="line"><span class="lineno">   81</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="KafkaWalker_8java_source.html#l00081">81</a> of file <a class="el" href="KafkaWalker_8java_source.html">KafkaWalker.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   81</span>                                                                                                          {</div>
+<div class="line"><span class="lineno">   82</span>        <span class="keywordflow">return</span> super.fromString(inXml);</div>
+<div class="line"><span class="lineno">   83</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
