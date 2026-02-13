@@ -50,11 +50,13 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.Ci;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.BucketRecord;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.CiRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.CorruptedArchiveRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.HostRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord;
@@ -89,6 +91,7 @@ public class Keys {
     // -------------------------------------------------------------------------
 
     public static final Identity<BucketRecord, UShort> IDENTITY_BUCKET = Identities0.IDENTITY_BUCKET;
+    public static final Identity<CiRecord, ULong> IDENTITY_CI = Identities0.IDENTITY_CI;
     public static final Identity<HostRecord, UShort> IDENTITY_HOST = Identities0.IDENTITY_HOST;
     public static final Identity<LogfileRecord, ULong> IDENTITY_LOGFILE = Identities0.IDENTITY_LOGFILE;
     public static final Identity<LogtagRecord, ULong> IDENTITY_LOGTAG = Identities0.IDENTITY_LOGTAG;
@@ -99,6 +102,8 @@ public class Keys {
 
     public static final UniqueKey<BucketRecord> KEY_BUCKET_PRIMARY = UniqueKeys0.KEY_BUCKET_PRIMARY;
     public static final UniqueKey<BucketRecord> KEY_BUCKET_UIX_BUCKET_NAME = UniqueKeys0.KEY_BUCKET_UIX_BUCKET_NAME;
+    public static final UniqueKey<CiRecord> KEY_CI_PRIMARY = UniqueKeys0.KEY_CI_PRIMARY;
+    public static final UniqueKey<CiRecord> KEY_CI_UIX_CI = UniqueKeys0.KEY_CI_UIX_CI;
     public static final UniqueKey<CorruptedArchiveRecord> KEY_CORRUPTED_ARCHIVE_PRIMARY = UniqueKeys0.KEY_CORRUPTED_ARCHIVE_PRIMARY;
     public static final UniqueKey<HostRecord> KEY_HOST_PRIMARY = UniqueKeys0.KEY_HOST_PRIMARY;
     public static final UniqueKey<HostRecord> KEY_HOST_UIX_HOST_NAME = UniqueKeys0.KEY_HOST_UIX_HOST_NAME;
@@ -115,6 +120,7 @@ public class Keys {
     public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = ForeignKeys0.LOGFILE_IBFK_1;
     public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = ForeignKeys0.LOGFILE_IBFK_2;
     public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = ForeignKeys0.FK_LOGFILE__LOGTAG_ID;
+    public static final ForeignKey<LogfileRecord, CiRecord> FK_LOGFILE__CI_ID = ForeignKeys0.FK_LOGFILE__CI_ID;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
@@ -122,6 +128,7 @@ public class Keys {
 
     private static class Identities0 {
         public static Identity<BucketRecord, UShort> IDENTITY_BUCKET = Internal.createIdentity(Bucket.BUCKET, Bucket.BUCKET.ID);
+        public static Identity<CiRecord, ULong> IDENTITY_CI = Internal.createIdentity(Ci.CI, Ci.CI.ID);
         public static Identity<HostRecord, UShort> IDENTITY_HOST = Internal.createIdentity(Host.HOST, Host.HOST.ID);
         public static Identity<LogfileRecord, ULong> IDENTITY_LOGFILE = Internal.createIdentity(Logfile.LOGFILE, Logfile.LOGFILE.ID);
         public static Identity<LogtagRecord, ULong> IDENTITY_LOGTAG = Internal.createIdentity(Logtag.LOGTAG, Logtag.LOGTAG.ID);
@@ -130,6 +137,8 @@ public class Keys {
     private static class UniqueKeys0 {
         public static final UniqueKey<BucketRecord> KEY_BUCKET_PRIMARY = Internal.createUniqueKey(Bucket.BUCKET, "KEY_bucket_PRIMARY", Bucket.BUCKET.ID);
         public static final UniqueKey<BucketRecord> KEY_BUCKET_UIX_BUCKET_NAME = Internal.createUniqueKey(Bucket.BUCKET, "KEY_bucket_uix_bucket_name", Bucket.BUCKET.NAME);
+        public static final UniqueKey<CiRecord> KEY_CI_PRIMARY = Internal.createUniqueKey(Ci.CI, "KEY_ci_PRIMARY", Ci.CI.ID);
+        public static final UniqueKey<CiRecord> KEY_CI_UIX_CI = Internal.createUniqueKey(Ci.CI, "KEY_ci_uix_ci", Ci.CI.NAME);
         public static final UniqueKey<CorruptedArchiveRecord> KEY_CORRUPTED_ARCHIVE_PRIMARY = Internal.createUniqueKey(CorruptedArchive.CORRUPTED_ARCHIVE, "KEY_corrupted_archive_PRIMARY", CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID);
         public static final UniqueKey<HostRecord> KEY_HOST_PRIMARY = Internal.createUniqueKey(Host.HOST, "KEY_host_PRIMARY", Host.HOST.ID);
         public static final UniqueKey<HostRecord> KEY_HOST_UIX_HOST_NAME = Internal.createUniqueKey(Host.HOST, "KEY_host_uix_host_name", Host.HOST.NAME);
@@ -144,5 +153,6 @@ public class Keys {
         public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_BUCKET_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_1", Logfile.LOGFILE.BUCKET_ID);
         public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_HOST_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_2", Logfile.LOGFILE.HOST_ID);
         public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "fk_logfile__logtag_id", Logfile.LOGFILE.LOGTAG_ID);
+        public static final ForeignKey<LogfileRecord, CiRecord> FK_LOGFILE__CI_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_CI_PRIMARY, Logfile.LOGFILE, "fk_logfile__ci_id", Logfile.LOGFILE.CI_ID);
     }
 }
