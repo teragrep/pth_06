@@ -1,20 +1,23 @@
 <map id="com.teragrep.pth_06.planner.NestedTopNQuery" name="com.teragrep.pth_06.planner.NestedTopNQuery">
-<area shape="rect" id="Node000001" title=" " alt="" coords="1060,47,1273,87"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html" title=" " alt="" coords="5,184,236,224"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,173,189,143,234,111,286,82,342,60,438,38,537,24,637,17,735,16,916,27,1060,45,1059,50,915,32,735,22,637,22,537,29,439,43,343,65,289,87,237,116,192,148,156,177"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html" title=" " alt="" coords="679,163,892,203"/>
-<area shape="poly" id="edge4_Node000003_Node000002" title=" " alt="" coords="250,198,561,189,678,185,678,190,561,195,250,204"/>
-<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1GetArchivedObjectsFilterTable.html" title=" " alt="" coords="343,252,561,292"/>
-<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="215,225,261,235,343,251,342,256,259,240,214,230"/>
-<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1NestedTopNQuery.html" title=" " alt="" coords="1060,208,1273,248"/>
-<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="168,229,248,269,295,288,343,301,449,318,557,323,665,320,770,310,868,296,958,279,1097,245,1098,251,959,284,869,301,770,316,665,325,557,328,448,323,342,307,293,293,246,274,165,233"/>
-<area shape="rect" id="Node000007" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1SliceTable.html" title=" " alt="" coords="345,75,559,115"/>
-<area shape="poly" id="edge11_Node000007_Node000002" title=" " alt="" coords="191,177,342,125,383,112,385,117,343,131,192,182"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="864,156,1099,84,1101,89,866,161"/>
-<area shape="poly" id="edge9_Node000006_Node000003" title=" " alt="" coords="844,205,879,218,916,227,989,234,1060,234,1060,239,988,239,916,232,878,223,842,210"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="394,139,510,165"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="524,156,679,170,678,176,523,161"/>
-<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="574,253,654,235,700,219,742,200,744,205,702,224,655,240,575,258"/>
-<area shape="poly" id="edge7_Node000003_Node000006" title=" " alt="" coords="1046,216,1036,215,892,198,893,192,1036,209,1047,211"/>
-<area shape="poly" id="edge10_Node000003_Node000007" title=" " alt="" coords="543,116,655,145,710,160,709,165,654,151,542,121"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="1060,5,1273,45"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html" title=" " alt="" coords="5,192,236,232"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="180,184,273,146,396,102,535,59,678,25,744,16,797,14,916,16,1036,16,1060,17,1060,22,1036,21,916,21,797,20,745,22,679,31,537,64,398,107,275,151,182,189"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html" title=" " alt="" coords="679,220,892,260"/>
+<area shape="poly" id="edge4_Node000003_Node000002" title=" " alt="" coords="250,215,678,233,678,238,249,220"/>
+<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1GetArchivedObjectsFilterTable.html" title=" " alt="" coords="343,311,561,351"/>
+<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="185,235,344,295,384,308,382,313,342,300,183,240"/>
+<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1NestedTopNQuery.html" title=" " alt="" coords="1060,157,1273,197"/>
+<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="249,199,260,199,588,184,916,177,1060,175,1060,181,916,183,588,190,260,204,250,205"/>
+<area shape="rect" id="Node000008" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1SliceTable.html" title=" " alt="" coords="345,375,559,415"/>
+<area shape="poly" id="edge12_Node000008_Node000002" title=" " alt="" coords="157,238,239,300,290,332,344,360,374,372,372,377,342,365,288,337,236,304,154,243"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="841,212,948,160,1035,115,1091,78,1138,44,1141,48,1094,83,1037,120,950,165,843,216"/>
+<area shape="poly" id="edge9_Node000006_Node000003" title=" " alt="" coords="905,218,1059,192,1060,197,906,223"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="394,261,510,286"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="523,264,678,248,679,253,524,269"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="550,305,654,277,721,257,722,263,655,283,551,310"/>
+<area shape="poly" id="edge7_Node000003_Node000006" title=" " alt="" coords="1122,207,1082,226,1037,241,964,251,892,252,892,247,963,246,1035,236,1080,221,1120,202"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="679,40,892,80"/>
+<area shape="poly" id="edge13_Node000001_Node000007" title=" " alt="" coords="906,46,1060,32,1060,38,906,52"/>
+<area shape="poly" id="edge10_Node000006_Node000007" title=" " alt="" coords="906,67,972,79,1037,98,1093,125,1140,155,1137,159,1091,129,1035,102,970,84,905,72"/>
+<area shape="poly" id="edge11_Node000003_Node000008" title=" " alt="" coords="538,368,560,360,615,336,668,309,753,258,755,262,671,313,617,341,562,365,540,373"/>
 </map>
