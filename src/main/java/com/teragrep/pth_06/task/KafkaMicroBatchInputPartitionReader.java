@@ -45,9 +45,13 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.DefaultSettableGauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SettableGauge;
 import com.google.common.annotations.VisibleForTesting;
+import com.teragrep.pth_06.metrics.MetricValue;
+import com.teragrep.pth_06.metrics.MetricValueImpl;
+import com.teragrep.pth_06.metrics.MetricValueStub;
 import com.teragrep.pth_06.metrics.TaskMetric;
 import com.teragrep.pth_06.task.kafka.KafkaRecordConverter;
 import com.teragrep.pth_06.planner.MockKafkaConsumerFactory;
@@ -68,9 +72,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <h1>Kafka Micro Batch Input Partition Reader</h1> Micro batch reader for kafka partition data source.
@@ -206,8 +208,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
             metricRegistry.counter("BytesProcessed").inc(consumerRecord.serializedValueSize());
             metricRegistry.meter("BytesPerSecond").mark();
             metricRegistry.meter("RecordsPerSecond").mark();
-            final SettableGauge<Long> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
-            kafkaTsGauge.setValue(consumerRecord.timestamp());
+            final SettableGauge<MetricValue<Long>> kafkaTsGauge = metricRegistry.gauge("LatestKafkaTimestamp");
+            kafkaTsGauge.setValue(new MetricValueImpl<>(consumerRecord.timestamp()));
 
             try {
                 currentRow = convertToRow(consumerRecord);
@@ -269,19 +271,26 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
     public CustomTaskMetric[] currentMetricsValues() {
         final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
         metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
+
         final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
-        final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
+
+        final SettableGauge<MetricValue<Long>> latestKafkaTimestamp = metricRegistry
+                .gauge("LatestKafkaTimestamp", () -> new DefaultSettableGauge<>(new MetricValueStub<>()));
+
         final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
         metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
         final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
 
-        return new CustomTaskMetric[] {
-                new TaskMetric("RecordsProcessed", recordsProcessed),
-                new TaskMetric("RecordsPerSecond", (long) recordsPerSecond),
-                new TaskMetric("BytesProcessed", bytesProcessed),
-                new TaskMetric("BytesPerSecond", (long) bytesPerSecond),
-                new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue())
-        };
+        final List<CustomTaskMetric> customTaskMetrics = new ArrayList<>();
+        customTaskMetrics.add(new TaskMetric("RecordsProcessed", recordsProcessed));
+        customTaskMetrics.add(new TaskMetric("RecordsPerSecond", (long) recordsPerSecond));
+        customTaskMetrics.add(new TaskMetric("BytesProcessed", bytesProcessed));
+        customTaskMetrics.add(new TaskMetric("BytesPerSecond", (long) bytesPerSecond));
+        if (!latestKafkaTimestamp.getValue().isStub()) {
+            customTaskMetrics.add(new TaskMetric("LatestKafkaTimestamp", latestKafkaTimestamp.getValue().value()));
+        }
+
+        return customTaskMetrics.toArray(new CustomTaskMetric[0]);
     }
 
     @Override
