@@ -1,7 +1,7 @@
 <map id="com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord" name="com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord">
-<area shape="rect" id="Node000001" title="Contains information for log files that have been run through Log Archiver." alt="" coords="332,52,756,92"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="63,5,226,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="240,34,373,49,372,55,240,39"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="5,69,284,168"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="297,98,372,89,373,95,298,103"/>
+<area shape="rect" id="Node000001" title="Contains information for log files that have been run through Log Archiver." alt="" coords="380,52,804,92"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="87,5,250,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="264,33,410,49,410,55,263,38"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,69,332,168"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="345,97,410,89,410,95,346,102"/>
 </map>

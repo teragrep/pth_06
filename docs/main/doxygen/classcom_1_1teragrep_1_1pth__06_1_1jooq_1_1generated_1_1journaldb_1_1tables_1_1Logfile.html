@@ -139,8 +139,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acae30c54cd687d6ecb38341b9f877681" id="r_acae30c54cd687d6ecb38341b9f877681"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html">Logfile</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#acae30c54cd687d6ecb38341b9f877681">rename</a> (Name name)</td></tr>
 <tr class="memdesc:acae30c54cd687d6ecb38341b9f877681"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rename this table.  <br /></td></tr>
 <tr class="separator:acae30c54cd687d6ecb38341b9f877681"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45a18ef9c99da8f701b62fa1437e3628" id="r_a45a18ef9c99da8f701b62fa1437e3628"><td class="memItemLeft" align="right" valign="top">Row20&lt; ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a45a18ef9c99da8f701b62fa1437e3628">fieldsRow</a> ()</td></tr>
-<tr class="separator:a45a18ef9c99da8f701b62fa1437e3628"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad40f819b11521e68eefcba1e04e1acba" id="r_ad40f819b11521e68eefcba1e04e1acba"><td class="memItemLeft" align="right" valign="top">Row21&lt; ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#ad40f819b11521e68eefcba1e04e1acba">fieldsRow</a> ()</td></tr>
+<tr class="separator:ad40f819b11521e68eefcba1e04e1acba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -204,6 +204,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a0d723bca65aab2ea8187649e119c7c30" id="r_a0d723bca65aab2ea8187649e119c7c30"><td class="memItemLeft" align="right" valign="top">final TableField&lt; LogfileRecord, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a0d723bca65aab2ea8187649e119c7c30">LOGTAG_ID</a> = createField(DSL.name(&quot;logtag_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.nullable(false), this, &quot;Log file's foreign key to logtag&quot;)</td></tr>
 <tr class="memdesc:a0d723bca65aab2ea8187649e119c7c30"><td class="mdescLeft">&#160;</td><td class="mdescRight">The column <code>journaldb.logfile.logtag_id</code>.  <br /></td></tr>
 <tr class="separator:a0d723bca65aab2ea8187649e119c7c30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8ee4645a27ec6e1074cfc2911eaf999" id="r_ae8ee4645a27ec6e1074cfc2911eaf999"><td class="memItemLeft" align="right" valign="top">final TableField&lt; LogfileRecord, ULong &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#ae8ee4645a27ec6e1074cfc2911eaf999">CI_ID</a> = createField(DSL.name(&quot;ci_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field(&quot;NULL&quot;, org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, &quot;Log file's foreign key to ci table&quot;)</td></tr>
+<tr class="memdesc:ae8ee4645a27ec6e1074cfc2911eaf999"><td class="mdescLeft">&#160;</td><td class="mdescRight">The column <code>journaldb.logfile.ci_id</code>.  <br /></td></tr>
+<tr class="separator:ae8ee4645a27ec6e1074cfc2911eaf999"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
@@ -220,7 +223,7 @@ Private Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-static-attribs" name="pri-static-attribs"></a>
 Static Private Attributes</h2></td></tr>
-<tr class="memitem:a4fe26f96de67f9c0b968456c1b0aa787" id="r_a4fe26f96de67f9c0b968456c1b0aa787"><td class="memItemLeft" align="right" valign="top">static final long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a4fe26f96de67f9c0b968456c1b0aa787">serialVersionUID</a> = -375133312</td></tr>
+<tr class="memitem:a4fe26f96de67f9c0b968456c1b0aa787" id="r_a4fe26f96de67f9c0b968456c1b0aa787"><td class="memItemLeft" align="right" valign="top">static final long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a4fe26f96de67f9c0b968456c1b0aa787">serialVersionUID</a> = -995962561</td></tr>
 <tr class="separator:a4fe26f96de67f9c0b968456c1b0aa787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -245,10 +248,10 @@ Static Private Attributes</h2></td></tr>
 
 <p>Create a <code>journaldb.logfile</code> table reference. </p>
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00212">212</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  212</span>                     {</div>
-<div class="line"><span class="lineno">  213</span>        <span class="keyword">this</span>(DSL.name(<span class="stringliteral">&quot;logfile&quot;</span>), <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  214</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00217">217</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  217</span>                     {</div>
+<div class="line"><span class="lineno">  218</span>        <span class="keyword">this</span>(DSL.name(<span class="stringliteral">&quot;logfile&quot;</span>), <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  219</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -270,10 +273,10 @@ Static Private Attributes</h2></td></tr>
 
 <p>Create an aliased <code>journaldb.logfile</code> table reference. </p>
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00219">219</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  219</span>                                 {</div>
-<div class="line"><span class="lineno">  220</span>        <span class="keyword">this</span>(DSL.name(alias), <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8c644d4aa0c311316c89df4157037114">LOGFILE</a>);</div>
-<div class="line"><span class="lineno">  221</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00224">224</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  224</span>                                 {</div>
+<div class="line"><span class="lineno">  225</span>        <span class="keyword">this</span>(DSL.name(alias), <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8c644d4aa0c311316c89df4157037114">LOGFILE</a>);</div>
+<div class="line"><span class="lineno">  226</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile_html_a8c644d4aa0c311316c89df4157037114"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8c644d4aa0c311316c89df4157037114">com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.LOGFILE</a></div><div class="ttdeci">static final Logfile LOGFILE</div><div class="ttdoc">The reference instance of journaldb.logfile</div><div class="ttdef"><b>Definition</b> <a href="Logfile_8java_source.html#l00099">Logfile.java:99</a></div></div>
 </div><!-- fragment -->
 </div>
@@ -296,10 +299,10 @@ Static Private Attributes</h2></td></tr>
 
 <p>Create an aliased <code>journaldb.logfile</code> table reference. </p>
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00226">226</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  226</span>                               {</div>
-<div class="line"><span class="lineno">  227</span>        <span class="keyword">this</span>(alias, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8c644d4aa0c311316c89df4157037114">LOGFILE</a>);</div>
-<div class="line"><span class="lineno">  228</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00231">231</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  231</span>                               {</div>
+<div class="line"><span class="lineno">  232</span>        <span class="keyword">this</span>(alias, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8c644d4aa0c311316c89df4157037114">LOGFILE</a>);</div>
+<div class="line"><span class="lineno">  233</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -337,10 +340,10 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00230">230</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  230</span>                                                              {</div>
-<div class="line"><span class="lineno">  231</span>        <span class="keyword">this</span>(alias, aliased, <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  232</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00235">235</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  235</span>                                                              {</div>
+<div class="line"><span class="lineno">  236</span>        <span class="keyword">this</span>(alias, aliased, <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  237</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -384,10 +387,10 @@ Static Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00234">234</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  234</span>                                                                                     {</div>
-<div class="line"><span class="lineno">  235</span>        super(alias, <span class="keyword">null</span>, aliased, parameters, DSL.comment(<span class="stringliteral">&quot;Contains information for log files that have been run through Log Archiver&quot;</span>));</div>
-<div class="line"><span class="lineno">  236</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00239">239</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  239</span>                                                                                     {</div>
+<div class="line"><span class="lineno">  240</span>        super(alias, <span class="keyword">null</span>, aliased, parameters, DSL.comment(<span class="stringliteral">&quot;Contains information for log files that have been run through Log Archiver&quot;</span>));</div>
+<div class="line"><span class="lineno">  241</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -408,11 +411,11 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00290">290</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  290</span>                                  {</div>
-<div class="line"><span class="lineno">  291</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(alias, <span class="keyword">this</span>);</div>
-<div class="line"><span class="lineno">  292</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile_html_a8bb9df2a457b158ffd55be970f581966"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.Logfile</a></div><div class="ttdeci">Logfile()</div><div class="ttdoc">Create a journaldb.logfile table reference.</div><div class="ttdef"><b>Definition</b> <a href="Logfile_8java_source.html#l00212">Logfile.java:212</a></div></div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00295">295</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  295</span>                                  {</div>
+<div class="line"><span class="lineno">  296</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(alias, <span class="keyword">this</span>);</div>
+<div class="line"><span class="lineno">  297</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile_html_a8bb9df2a457b158ffd55be970f581966"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.Logfile</a></div><div class="ttdeci">Logfile()</div><div class="ttdoc">Create a journaldb.logfile table reference.</div><div class="ttdef"><b>Definition</b> <a href="Logfile_8java_source.html#l00217">Logfile.java:217</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -432,10 +435,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00285">285</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  285</span>                                    {</div>
-<div class="line"><span class="lineno">  286</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(DSL.name(alias), <span class="keyword">this</span>);</div>
-<div class="line"><span class="lineno">  287</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00290">290</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  290</span>                                    {</div>
+<div class="line"><span class="lineno">  291</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(DSL.name(alias), <span class="keyword">this</span>);</div>
+<div class="line"><span class="lineno">  292</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -454,21 +457,21 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00272">272</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  272</span>                           {</div>
-<div class="line"><span class="lineno">  273</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Bucket(<span class="keyword">this</span>, Keys.LOGFILE_IBFK_1);</div>
-<div class="line"><span class="lineno">  274</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00277">277</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  277</span>                           {</div>
+<div class="line"><span class="lineno">  278</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Bucket(<span class="keyword">this</span>, Keys.LOGFILE_IBFK_1);</div>
+<div class="line"><span class="lineno">  279</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a45a18ef9c99da8f701b62fa1437e3628" name="a45a18ef9c99da8f701b62fa1437e3628"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45a18ef9c99da8f701b62fa1437e3628">&#9670;&#160;</a></span>fieldsRow()</h2>
+<a id="ad40f819b11521e68eefcba1e04e1acba" name="ad40f819b11521e68eefcba1e04e1acba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad40f819b11521e68eefcba1e04e1acba">&#9670;&#160;</a></span>fieldsRow()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Row20&lt; ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong &gt; com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.fieldsRow </td>
+          <td class="memname">Row21&lt; ULong, Date, Date, UShort, String, String, UShort, String, Timestamp, ULong, String, String, String, UShort, UShort, ULong, ULong, ULong, ULong, ULong, ULong &gt; com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.fieldsRow </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -476,10 +479,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00315">315</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  315</span>                                                                                                                                                                                     {</div>
-<div class="line"><span class="lineno">  316</span>        <span class="keywordflow">return</span> (Row20) super.fieldsRow();</div>
-<div class="line"><span class="lineno">  317</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00320">320</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  320</span>                                                                                                                                                                                            {</div>
+<div class="line"><span class="lineno">  321</span>        <span class="keywordflow">return</span> (Row21) super.fieldsRow();</div>
+<div class="line"><span class="lineno">  322</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -498,10 +501,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00253">253</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  253</span>                                                        {</div>
-<div class="line"><span class="lineno">  254</span>        <span class="keywordflow">return</span> Keys.IDENTITY_LOGFILE;</div>
-<div class="line"><span class="lineno">  255</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00258">258</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  258</span>                                                        {</div>
+<div class="line"><span class="lineno">  259</span>        <span class="keywordflow">return</span> Keys.IDENTITY_LOGFILE;</div>
+<div class="line"><span class="lineno">  260</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -520,10 +523,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00248">248</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  248</span>                                    {</div>
-<div class="line"><span class="lineno">  249</span>        <span class="keywordflow">return</span> Arrays.&lt;Index&gt;asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_FK_LOGFILE__LOGTAG_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
-<div class="line"><span class="lineno">  250</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00253">253</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  253</span>                                    {</div>
+<div class="line"><span class="lineno">  254</span>        <span class="keywordflow">return</span> Arrays.&lt;Index&gt;asList(Indexes.LOGFILE_BUCKET_ID, Indexes.LOGFILE_CATEGORY_ID, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_EPOCH_HOUR_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_CIX_LOGFILE_HOST_ID_LOGTAG_LOGDATE, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG, Indexes.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID, Indexes.LOGFILE_FK_LOGFILE__CI_ID, Indexes.LOGFILE_FK_LOGFILE__LOGTAG_ID, Indexes.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES, Indexes.LOGFILE_IX_LOGFILE_EXPIRATION, Indexes.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID, Indexes.LOGFILE_PRIMARY, Indexes.LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
+<div class="line"><span class="lineno">  255</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -542,10 +545,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00263">263</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  263</span>                                                    {</div>
-<div class="line"><span class="lineno">  264</span>        <span class="keywordflow">return</span> Arrays.&lt;UniqueKey&lt;LogfileRecord&gt;&gt;asList(Keys.KEY_LOGFILE_PRIMARY, Keys.KEY_LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
-<div class="line"><span class="lineno">  265</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00268">268</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  268</span>                                                    {</div>
+<div class="line"><span class="lineno">  269</span>        <span class="keywordflow">return</span> Arrays.&lt;UniqueKey&lt;LogfileRecord&gt;&gt;asList(Keys.KEY_LOGFILE_PRIMARY, Keys.KEY_LOGFILE_UIX_LOGFILE_OBJECT_HASH);</div>
+<div class="line"><span class="lineno">  270</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -564,10 +567,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00258">258</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  258</span>                                                    {</div>
-<div class="line"><span class="lineno">  259</span>        <span class="keywordflow">return</span> Keys.KEY_LOGFILE_PRIMARY;</div>
-<div class="line"><span class="lineno">  260</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00263">263</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  263</span>                                                    {</div>
+<div class="line"><span class="lineno">  264</span>        <span class="keywordflow">return</span> Keys.KEY_LOGFILE_PRIMARY;</div>
+<div class="line"><span class="lineno">  265</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -610,10 +613,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00268">268</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  268</span>                                                              {</div>
-<div class="line"><span class="lineno">  269</span>        <span class="keywordflow">return</span> Arrays.&lt;ForeignKey&lt;LogfileRecord, ?&gt;&gt;asList(Keys.LOGFILE_IBFK_1, Keys.LOGFILE_IBFK_2, Keys.FK_LOGFILE__LOGTAG_ID);</div>
-<div class="line"><span class="lineno">  270</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00273">273</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  273</span>                                                              {</div>
+<div class="line"><span class="lineno">  274</span>        <span class="keywordflow">return</span> Arrays.&lt;ForeignKey&lt;LogfileRecord, ?&gt;&gt;asList(Keys.LOGFILE_IBFK_1, Keys.LOGFILE_IBFK_2, Keys.FK_LOGFILE__LOGTAG_ID);</div>
+<div class="line"><span class="lineno">  275</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -632,10 +635,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00243">243</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  243</span>                              {</div>
-<div class="line"><span class="lineno">  244</span>        <span class="keywordflow">return</span> Journaldb.JOURNALDB;</div>
-<div class="line"><span class="lineno">  245</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00248">248</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  248</span>                              {</div>
+<div class="line"><span class="lineno">  249</span>        <span class="keywordflow">return</span> Journaldb.JOURNALDB;</div>
+<div class="line"><span class="lineno">  250</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -654,10 +657,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00276">276</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  276</span>                       {</div>
-<div class="line"><span class="lineno">  277</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Host(<span class="keyword">this</span>, Keys.LOGFILE_IBFK_2);</div>
-<div class="line"><span class="lineno">  278</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00281">281</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  281</span>                       {</div>
+<div class="line"><span class="lineno">  282</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Host(<span class="keyword">this</span>, Keys.LOGFILE_IBFK_2);</div>
+<div class="line"><span class="lineno">  283</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -676,10 +679,10 @@ Static Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00280">280</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  280</span>                           {</div>
-<div class="line"><span class="lineno">  281</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Logtag(<span class="keyword">this</span>, Keys.FK_LOGFILE__LOGTAG_ID);</div>
-<div class="line"><span class="lineno">  282</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00285">285</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  285</span>                           {</div>
+<div class="line"><span class="lineno">  286</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> Logtag(<span class="keyword">this</span>, Keys.FK_LOGFILE__LOGTAG_ID);</div>
+<div class="line"><span class="lineno">  287</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -701,10 +704,10 @@ Static Private Attributes</h2></td></tr>
 
 <p>Rename this table. </p>
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00306">306</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  306</span>                                     {</div>
-<div class="line"><span class="lineno">  307</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(name, <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  308</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00311">311</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  311</span>                                     {</div>
+<div class="line"><span class="lineno">  312</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(name, <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  313</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -726,10 +729,10 @@ Static Private Attributes</h2></td></tr>
 
 <p>Rename this table. </p>
 
-<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00298">298</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  298</span>                                       {</div>
-<div class="line"><span class="lineno">  299</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(DSL.name(name), <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  300</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00303">303</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  303</span>                                       {</div>
+<div class="line"><span class="lineno">  304</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1Logfile.html#a8bb9df2a457b158ffd55be970f581966">Logfile</a>(DSL.name(name), <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  305</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -807,6 +810,25 @@ Static Private Attributes</h2></td></tr>
 <p>Log file's category (references category.id) </p>
 
 <p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00182">182</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
+
+</div>
+</div>
+<a id="ae8ee4645a27ec6e1074cfc2911eaf999" name="ae8ee4645a27ec6e1074cfc2911eaf999"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8ee4645a27ec6e1074cfc2911eaf999">&#9670;&#160;</a></span>CI_ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">final TableField&lt;LogfileRecord, ULong&gt; com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.CI_ID = createField(DSL.name(&quot;ci_id&quot;), org.jooq.impl.SQLDataType.BIGINTUNSIGNED.defaultValue(org.jooq.impl.DSL.field(&quot;NULL&quot;, org.jooq.impl.SQLDataType.BIGINTUNSIGNED)), this, &quot;Log file's foreign key to ci table&quot;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The column <code>journaldb.logfile.ci_id</code>. </p>
+<p>Log file's foreign key to ci table </p>
+
+<p class="definition">Definition at line <a class="el" href="Logfile_8java_source.html#l00212">212</a> of file <a class="el" href="Logfile_8java_source.html">Logfile.java</a>.</p>
 
 </div>
 </div>
@@ -1092,7 +1114,7 @@ Static Private Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">final long com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.serialVersionUID = -375133312</td>
+          <td class="memname">final long com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile.serialVersionUID = -995962561</td>
         </tr>
       </table>
   </td>
