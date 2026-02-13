@@ -51,6 +51,7 @@ package com.teragrep.pth_06.jooq.generated.journaldb;
 
 import com.teragrep.pth_06.jooq.generated.DefaultCatalog;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Host;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logfile;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.Logtag;
@@ -79,7 +80,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Journaldb extends SchemaImpl {
 
-    private static final long serialVersionUID = -258620961;
+    private static final long serialVersionUID = -1637734407;
 
     /**
      * The reference instance of <code>journaldb</code>
@@ -90,6 +91,11 @@ public class Journaldb extends SchemaImpl {
      * Buckets in object storage
      */
     public final Bucket BUCKET = com.teragrep.pth_06.jooq.generated.journaldb.tables.Bucket.BUCKET;
+
+    /**
+     * Contains logfiles that are both archives and detected to be corrupted.
+     */
+    public final CorruptedArchive CORRUPTED_ARCHIVE = com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive.CORRUPTED_ARCHIVE;
 
     /**
      * Host names
@@ -129,6 +135,7 @@ public class Journaldb extends SchemaImpl {
     private final List<Table<?>> getTables0() {
         return Arrays.<Table<?>>asList(
             Bucket.BUCKET,
+            CorruptedArchive.CORRUPTED_ARCHIVE,
             Host.HOST,
             Logfile.LOGFILE,
             Logtag.LOGTAG);

@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.CorruptedArchiveRecord;
 import com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogfileRecord;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.*;
@@ -502,6 +503,29 @@ class StreamDBClientTest {
         int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
         // Assert that no rows were pulled to slicetable because of queryXML condition.
         Assertions.assertEquals(0, rows);
+    }
+
+    @Test
+    public void pullToSliceTableSkipsCorruptedLogfilesTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        ZonedDateTime zdt = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
+        LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(zdt.toEpochSecond(), false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(corruptedLogfileRecord).execute();
+        // Add the ID of the inserted logfile to corrupted_archive table
+        CorruptedArchiveRecord corruptedArchiveRecord = new CorruptedArchiveRecord(corruptedLogfileRecord.getId());
+        int insertedRows = ctx.insertInto(JOURNALDB.CORRUPTED_ARCHIVE).set(corruptedArchiveRecord).execute();
+        Assertions.assertEquals(1, insertedRows);
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+        // Pull the records from a specific logdate to the slicetable for further processing.
+        int rows = sdc.pullToSliceTable(Date.valueOf(zdt.toLocalDate()));
+        // Assert that the record with ID present in corrupted_archive table is not included in the query result
+        Assertions.assertEquals(0, rows);
+        WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
+        Assertions.assertTrue(nextHourAndSizeFromSliceTable.isStub);
     }
 
     @Test
