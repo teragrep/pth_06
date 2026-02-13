@@ -438,7 +438,8 @@ class StreamDBClientTest {
                 null,
                 null,
                 null,
-                ULong.valueOf(1)
+                ULong.valueOf(1),
+                null
         );
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
         final Map<String, String> localOpts = new HashMap<>(opts);
