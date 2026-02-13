@@ -49,5 +49,5 @@ import com.teragrep.pth_06.Stubable;
 
 public interface MetricValue<T> extends Stubable {
 
-    T value();
+    public abstract T value();
 }
