@@ -167,10 +167,10 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">  120</span>            <span class="comment">// select id from each of the tables from the first row, then join to &#39;filtertype&#39; via the filter_type_id, to access the pattern so that we know if the table is relevant for the query</span></div>
 <div class="line"><span class="lineno">  121</span> </div>
 <div class="line"><span class="lineno">  122</span>            SelectLimitPercentStep&lt;Record1&lt;ULong&gt;&gt; selectQuery = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1ConditionMatchBloomDBTables_1_1TablesWithMatchingRegexAndNotEmpty.html#acd27994586e95c66ee30f479250d9715">ctx</a></div>
-<div class="line"><span class="lineno">  123</span>                    .select((Field&lt;ULong&gt;) t.field(<span class="stringliteral">&quot;id&quot;</span>))</div>
+<div class="line"><span class="lineno">  123</span>                    .select(t.field(<span class="stringliteral">&quot;id&quot;</span>, ULong.class))</div>
 <div class="line"><span class="lineno">  124</span>                    .from(t)</div>
 <div class="line"><span class="lineno">  125</span>                    .leftJoin(BLOOMDB.FILTERTYPE)<span class="comment">// join filtertype to access patterns</span></div>
-<div class="line"><span class="lineno">  126</span>                    .on(BLOOMDB.FILTERTYPE.ID.eq((Field&lt;ULong&gt;) t.field(<span class="stringliteral">&quot;filter_type_id&quot;</span>)))</div>
+<div class="line"><span class="lineno">  126</span>                    .on(BLOOMDB.FILTERTYPE.ID.eq(t.field(<span class="stringliteral">&quot;filter_type_id&quot;</span>, ULong.class)))</div>
 <div class="line"><span class="lineno">  127</span>                    .where(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1bloomfilter_1_1ConditionMatchBloomDBTables_1_1TablesWithMatchingRegexAndNotEmpty.html#a19b3b724402f588a402bafec1d95aa12">condition</a>.condition())<span class="comment">// select tables that match the condition</span></div>
 <div class="line"><span class="lineno">  128</span>                    .limit(1); <span class="comment">// limit 1 since we are checking only if the table is not empty</span></div>
 <div class="line"><span class="lineno">  129</span> </div>
