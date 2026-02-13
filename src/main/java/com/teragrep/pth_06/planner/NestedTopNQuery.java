@@ -111,7 +111,7 @@ public final class NestedTopNQuery {
                     }
                     selectOnConditionStep = selectOnConditionStep
                             .leftJoin(table)
-                            .on(JOURNALDB.LOGFILE.ID.eq((Field<ULong>) table.field("partition_id")));
+                            .on(JOURNALDB.LOGFILE.ID.eq(table.field("partition_id", ULong.class)));
                 }
             }
         }
