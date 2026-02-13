@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.task;
 
+import com.codahale.metrics.DefaultSettableGauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SettableGauge;
 import com.google.common.annotations.VisibleForTesting;
@@ -270,7 +271,8 @@ public class KafkaMicroBatchInputPartitionReader implements PartitionReader<Inte
         final long recordsProcessed = metricRegistry.counter("RecordsProcessed").getCount();
         metricRegistry.meter("RecordsPerSecond").mark(recordsProcessed);
         final double recordsPerSecond = metricRegistry.meter("RecordsPerSecond").getMeanRate();
-        final SettableGauge<Long> latestKafkaTimestamp = metricRegistry.gauge("LatestKafkaTimestamp");
+        final SettableGauge<Long> latestKafkaTimestamp = metricRegistry
+                .gauge("LatestKafkaTimestamp", () -> new DefaultSettableGauge<>(0L));
         final long bytesProcessed = metricRegistry.counter("BytesProcessed").getCount();
         metricRegistry.meter("BytesPerSecond").mark(bytesProcessed);
         final double bytesPerSecond = metricRegistry.meter("BytesPerSecond").getMeanRate();
