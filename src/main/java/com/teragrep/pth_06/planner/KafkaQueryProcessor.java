@@ -267,7 +267,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
 
     @Override
     public void close() {
-        LOGGER.info("close() called unsubscribing and closing consumer");
+        LOGGER.debug("close() called unsubscribing and closing consumer");
         kafkaConsumer.unsubscribe();
         kafkaConsumer.close(Duration.ofSeconds(30));
     }
