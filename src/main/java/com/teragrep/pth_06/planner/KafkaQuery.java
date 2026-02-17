@@ -56,7 +56,7 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public interface KafkaQuery {
+public interface KafkaQuery extends AutoCloseable {
 
     public abstract Map<TopicPartition, Long> getInitialEndOffsets();
 

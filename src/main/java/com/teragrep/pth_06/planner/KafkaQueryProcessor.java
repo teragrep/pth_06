@@ -264,4 +264,10 @@ public class KafkaQueryProcessor implements KafkaQuery {
     public void commit(KafkaOffset offset) {
         // no-op
     }
+
+    @Override
+    public void close() throws Exception {
+        kafkaConsumer.unsubscribe();
+        kafkaConsumer.close(Duration.ofSeconds(30));
+    }
 }

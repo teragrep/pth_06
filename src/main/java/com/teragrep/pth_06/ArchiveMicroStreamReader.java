@@ -193,6 +193,15 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
     @Override
     public void stop() {
         LOGGER.debug("ArchiveMicroStreamReader.stop called");
+        if (this.config.isKafkaEnabled) {
+            try {
+                kq.close();
+            }
+            catch (final Exception e) {
+                // spark does not expect to encounter any exceptions in stop()
+                LOGGER.warn("stop() call failed to close Kafka query: " + e.getMessage());
+            }
+        }
     }
 
     /**
