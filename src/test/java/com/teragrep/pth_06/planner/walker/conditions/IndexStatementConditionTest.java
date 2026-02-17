@@ -234,7 +234,6 @@ public class IndexStatementConditionTest {
                 .forClass(IndexStatementCondition.class)
                 .withNonnullFields("value")
                 .withNonnullFields("config")
-                .withNonnullFields("tableSet")
                 .withIgnoredFields("LOGGER")
                 .verify();
     }
