@@ -63,16 +63,10 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     private final String value;
     private final ConditionConfig config;
-    private final Set<Table<?>> tableSet;
 
     public IndexStatementCondition(final String value, final ConditionConfig config) {
-        this(value, config, new HashSet<>());
-    }
-
-    private IndexStatementCondition(final String value, final ConditionConfig config, final Set<Table<?>> tableSet) {
         this.value = value;
         this.config = config;
-        this.tableSet = tableSet;
     }
 
     public Condition condition() {
@@ -82,15 +76,7 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             );
         }
         final Condition newCondition;
-        if (tableSet.isEmpty()) {
-            // get all tables that pattern match with search value
-            final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
-            final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
-                    config.context(),
-                    tableFilteringCondition
-            );
-            tableSet.addAll(conditionMatchingTables.tables());
-        }
+        final Set<Table<?>> tableSet = requiredTables();
         if (tableSet.isEmpty()) {
             newCondition = DSL.trueCondition();
         }
@@ -129,10 +115,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     @Override
     public Set<Table<?>> requiredTables() {
-        if (tableSet.isEmpty()) {
-            condition();
-        }
-        return tableSet;
+        final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
+        final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
+                config.context(),
+                tableFilteringCondition
+        );
+        return new HashSet<>(conditionMatchingTables.tables());
     }
 
     @Override
@@ -147,11 +135,11 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         }
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.tableSet.equals(cast.tableSet);
+        return this.value.equals(cast.value) && this.config.equals(cast.config);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config, tableSet);
+        return Objects.hash(value, config);
     }
 }
