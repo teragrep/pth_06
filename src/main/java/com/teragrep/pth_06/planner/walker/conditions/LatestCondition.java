@@ -63,7 +63,8 @@ public final class LatestCondition implements QueryCondition {
 
     public Condition condition() {
         // SQL connection uses localTime in the session, so we use unix to come over the conversions
-        final Instant instant = Instant.ofEpochSecond(Integer.parseInt(value));
+        final long epochSeconds = Long.parseLong(value);
+        final Instant instant = Instant.ofEpochSecond(epochSeconds);
         final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
         Condition condition;
         condition = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);

@@ -68,6 +68,18 @@ public class EarliestConditionTest {
     }
 
     @Test
+    public void largePositiveNumberInputTest() {
+        final QueryCondition earliestCondition = new EarliestCondition("29786022887");
+        Assertions.assertDoesNotThrow(earliestCondition::condition);
+    }
+
+    @Test
+    public void largeNegativeNumberInputTest() {
+        final QueryCondition earliestCondition = new EarliestCondition("-29786022887");
+        Assertions.assertDoesNotThrow(earliestCondition::condition);
+    }
+
+    @Test
     public void equalsTest() {
         EarliestCondition eq1 = new EarliestCondition("946677600");
         EarliestCondition eq2 = new EarliestCondition("946677600");
