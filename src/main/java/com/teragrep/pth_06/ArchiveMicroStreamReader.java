@@ -61,6 +61,7 @@ import org.apache.spark.sql.connector.read.streaming.MicroBatchStream;
 import org.apache.spark.sql.connector.read.streaming.Offset;
 import org.apache.spark.sql.execution.streaming.LongOffset;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,10 +75,10 @@ import org.slf4j.LoggerFactory;
  * <h1>Archive Micro Stream Reader</h1> Custom Spark Structured Streaming Datasource that reads data from Archive and
  * Kafka in micro-batches.
  *
- * @see MicroBatchStream
- * @since 02/03/2021
  * @author Mikko Kortelainen
  * @author Eemeli Hukka
+ * @see MicroBatchStream
+ * @since 02/03/2021
  */
 public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
@@ -93,7 +94,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Constructor for ArchiveMicroStreamReader
-     * 
+     *
      * @param config Datasource configuration object
      */
     ArchiveMicroStreamReader(Config config) {
@@ -138,7 +139,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Used when Spark requests the initial offset when starting a new query.
-     * 
+     *
      * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      * @throws IllegalStateException if no datasources were enabled
      */
@@ -170,7 +171,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         return rv;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Offset deserializeOffset(String json) {
         LOGGER.debug("ArchiveMicroStreamReader.deserializeOffset json <{}>", json);
@@ -179,7 +182,9 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         return offset;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void commit(Offset offset) {
         LOGGER.debug("ArchiveMicroStreamReader.commit offset <{}>", offset);
@@ -189,18 +194,29 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         LOGGER.debug("ArchiveMicroStreamReader.commit exit");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void stop() {
         LOGGER.debug("ArchiveMicroStreamReader.stop called");
         if (this.config.isKafkaEnabled) {
-            kq.close();
+            try {
+                kq.close();
+            }
+            catch (final IOException exception) {
+                LOGGER
+                        .error(
+                                "Error closing kafka query while calling stop() with message <{}>",
+                                exception.getMessage()
+                        );
+            }
         }
     }
 
     /**
      * Used when Spark progresses the query further to fetch more data.
-     * 
+     *
      * @return {@link DatasourceOffset} object containing all necessary offsets for the enabled datasources.
      */
     @Override
@@ -233,7 +249,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
 
     /**
      * Forms the batch between start and end offsets and forms the input partitions from that batch.
-     * 
+     *
      * @param start Start offset
      * @param end   End offset
      * @return InputPartitions as an array

@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import org.apache.kafka.common.TopicPartition;
 
+import java.io.Closeable;
 import java.util.Map;
 
 /**
@@ -56,7 +57,7 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public interface KafkaQuery {
+public interface KafkaQuery extends Closeable {
 
     public abstract Map<TopicPartition, Long> getInitialEndOffsets();
 
@@ -65,6 +66,4 @@ public interface KafkaQuery {
     public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
 
     public abstract void commit(KafkaOffset offset);
-
-    public abstract void close();
 }
