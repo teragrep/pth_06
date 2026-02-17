@@ -220,9 +220,6 @@ class StreamDBClientTest {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
         // Set logdate to 2023-10-04 and set logtime-string in path to 2023100502 UTC.
-        Instant instant = Instant.ofEpochSecond(1696471200L);
-        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        ZonedDateTime instantPlusHour = instantZonedDateTime.plusHours(1);
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
         // Set logdate to 2023-10-04 and set logtime-string in path to 2023100503 UTC
@@ -250,10 +247,8 @@ class StreamDBClientTest {
     public void pullToSliceTableInvalidIndexTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        Instant instant = Instant.ofEpochSecond(1696471200L);
-        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
-        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100502 UTC.
+        LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -264,7 +259,7 @@ class StreamDBClientTest {
         Assertions.assertDoesNotThrow(() -> {
             try (final StreamDBClient sdc = new StreamDBClient(config)) {
                 // 0 rows should be pulled to sliceTable
-                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
                 Assertions.assertEquals(0, rows);
             }
         });
@@ -524,6 +519,7 @@ class StreamDBClientTest {
         Assertions.assertFalse(remaining.isStub, "out of range logfile should remain in slice table");
     }
 
+    @Disabled("Removed support for old logtime source, only epoch_hour supported.")
     @Test
     public void deleteRangeRemovesNullLogtimeRowsOutsideOfRange() {
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
@@ -716,10 +712,9 @@ class StreamDBClientTest {
     public void logtagIdTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
-        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -735,7 +730,7 @@ class StreamDBClientTest {
                 final long earliestEpoch = instantEarliestZonedDateTime.toEpochSecond(); // 2023-10-04 00:00 UTC-4
 
                 // Pull the records from a specific logdate to the slicetable for further processing.
-                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
                 Assertions.assertEquals(1, rows);
 
                 // Get the offset for the first non-empty hour of records from the slicetable.
@@ -757,10 +752,9 @@ class StreamDBClientTest {
     public void logtagTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC-4, but set epoch values to null.
+        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
-        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
-        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
         // Assert StreamDBClient methods work as expected with the test data.
@@ -771,11 +765,8 @@ class StreamDBClientTest {
         final Config config = new Config(opts);
         Assertions.assertDoesNotThrow(() -> {
             try (final StreamDBClient sdc = new StreamDBClient(config)) {
-                Instant instantEarliest = Instant.ofEpochSecond(1696392000L);
-                ZonedDateTime instantEarliestZonedDateTime = ZonedDateTime.ofInstant(instantEarliest, zoneId);
-
                 // Pull the records from a specific logdate to the slicetable for further processing.
-                int rows = sdc.pullToSliceTable(Date.valueOf(instantEarliestZonedDateTime.toLocalDate()));
+                int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
                 // Assert that no rows were pulled to slicetable because of queryXML condition.
                 Assertions.assertEquals(0, rows);
             }
@@ -786,8 +777,9 @@ class StreamDBClientTest {
     public void pullToSliceTableSkipsCorruptedLogfilesTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        ZonedDateTime zdt = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
-        LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(zdt.toEpochSecond(), false);
+        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        Instant instant = Instant.ofEpochSecond(1696471200L);
+        LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(corruptedLogfileRecord).execute();
         // Add the ID of the inserted logfile to corrupted_archive table
         CorruptedArchiveRecord corruptedArchiveRecord = new CorruptedArchiveRecord(corruptedLogfileRecord.getId());
@@ -798,7 +790,7 @@ class StreamDBClientTest {
         final Config config = new Config(opts);
         final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
         // Pull the records from a specific logdate to the slicetable for further processing.
-        int rows = sdc.pullToSliceTable(Date.valueOf(zdt.toLocalDate()));
+        int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
         // Assert that the record with ID present in corrupted_archive table is not included in the query result
         Assertions.assertEquals(0, rows);
         WeightedOffset nextHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(0L);
@@ -849,19 +841,19 @@ class StreamDBClientTest {
 
         // Get the logfile results from the known hour range.
         Assertions.assertEquals(1696467600L, latestOffset);
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Do the same for sdcUTC
-        Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> hourRangeUTC = sdcUTC
+        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRangeUTC = sdcUTC
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRangeUTC.size());
         // Assert that the resulting logfile metadata is as expected for logdate and logtime, they should not be affected by session timezone.
         ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 1, 0, 0, 0, ZoneId.of("UTC"));
-        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(8, Long.class));
-        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRangeUTC.get(0).get(8, Long.class));
-        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(5, Date.class));
-        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRangeUTC.get(0).get(5, Date.class));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(7, Long.class));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRangeUTC.get(0).get(7, Long.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(4, Date.class));
+        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRangeUTC.get(0).get(4, Date.class));
     }
 
     @Test
