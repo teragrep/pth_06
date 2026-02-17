@@ -45,20 +45,28 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import java.util.Collections;
+import java.util.List;
 
-import java.util.Map;
+public interface Topics<T> {
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+    public abstract List<T> asList();
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    public static class FakeTopics implements Topics {
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+        private final List list;
 
+        public FakeTopics() {
+            this.list = Collections.emptyList();
+        }
+
+        public FakeTopics(final List list) {
+            this.list = list;
+        }
+
+        @Override
+        public List asList() {
+            return list;
+        }
+    }
 }

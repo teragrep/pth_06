@@ -45,20 +45,37 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+/** Snapshot of Kafka topics */
+public final class TopicsFromKafka implements Topics<String> {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    private final Logger LOGGER = LoggerFactory.getLogger(TopicsFromKafka.class);
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
+    private final Consumer<byte[], byte[]> consumer;
+    private final SetOnce<List<String>> setOnce;
 
+    public TopicsFromKafka(final Consumer<byte[], byte[]> consumer) {
+        this(consumer, new SetOnce<>());
+    }
+
+    private TopicsFromKafka(final Consumer<byte[], byte[]> consumer, final SetOnce<List<String>> setOnce) {
+        this.consumer = consumer;
+        this.setOnce = setOnce;
+    }
+
+    @Override
+    public List<String> asList() {
+        if (!setOnce.isSet()) {
+            final List<String> topics = new ArrayList<>(consumer.listTopics(Duration.ofSeconds(60)).keySet());
+            setOnce.set(topics);
+        }
+        return setOnce.value();
+    }
 }

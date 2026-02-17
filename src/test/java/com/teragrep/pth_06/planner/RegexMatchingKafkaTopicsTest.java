@@ -45,20 +45,35 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.kafka.common.TopicPartition;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
-/**
- * <h1>Kafka Query</h1> Interface for a Kafka query.
- *
- * @since 08/06/2022
- * @author Mikko Kortelainen
- */
-public interface KafkaQuery {
+public final class RegexMatchingKafkaTopicsTest {
 
-    public abstract Map<TopicPartition, Long> endOffsets();
+    @Test
+    public void testRegexFiltering() {
+        final List<String> topicsList = Arrays.asList("topic-1", "topic-2");
+        final Topics.FakeTopics topics = new Topics.FakeTopics(topicsList);
+        final RegexMatchingKafkaTopics regexMatchingKafkaTopics = new RegexMatchingKafkaTopics(
+                topics,
+                Pattern.compile("^topic-1$")
+        );
+        Assertions.assertEquals(1, regexMatchingKafkaTopics.asList().size());
+        Assertions.assertEquals("topic-1", regexMatchingKafkaTopics.asList().get(0));
+    }
 
-    public abstract Map<TopicPartition, Long> beginningOffsets();
-
+    @Test
+    public void testNoMatch() {
+        final List<String> topicsList = Arrays.asList("topic-1", "topic-2");
+        final Topics.FakeTopics topics = new Topics.FakeTopics(topicsList);
+        final RegexMatchingKafkaTopics regexMatchingKafkaTopics = new RegexMatchingKafkaTopics(
+                topics,
+                Pattern.compile("^nomatches$")
+        );
+        Assertions.assertEquals(0, regexMatchingKafkaTopics.asList().size());
+    }
 }
