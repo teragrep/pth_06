@@ -20,5 +20,6 @@ var searchData=
   ['streamdbclient_17',['StreamDBClient',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html',1,'com::teragrep::pth_06::planner']]],
   ['streamrecord_18',['StreamRecord',['../classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1streamdb_1_1tables_1_1records_1_1StreamRecord.html',1,'com::teragrep::pth_06::jooq::generated::streamdb::tables::records']]],
   ['stringequalscondition_19',['StringEqualsCondition',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1StringEqualsCondition.html',1,'com::teragrep::pth_06::planner::walker::conditions']]],
-  ['stringequalsconditiontest_20',['StringEqualsConditionTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1StringEqualsConditionTest.html',1,'com::teragrep::pth_06::planner::walker::conditions']]]
+  ['stringequalsconditiontest_20',['StringEqualsConditionTest',['../classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1StringEqualsConditionTest.html',1,'com::teragrep::pth_06::planner::walker::conditions']]],
+  ['stubable_21',['Stubable',['../interfacecom_1_1teragrep_1_1pth__06_1_1Stubable.html',1,'com::teragrep::pth_06']]]
 ];

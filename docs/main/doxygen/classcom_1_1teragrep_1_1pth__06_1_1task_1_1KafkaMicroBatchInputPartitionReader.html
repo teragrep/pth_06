@@ -144,7 +144,7 @@ Private Attributes</h2></td></tr>
 <dl class="section since"><dt>Since</dt><dd>08/06/2022 </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Mikko Kortelainen </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00082">82</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00084">84</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a19f13b96f8f0e76bb9a7909fd1b4ec52" name="a19f13b96f8f0e76bb9a7909fd1b4ec52"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a19f13b96f8f0e76bb9a7909fd1b4ec52">&#9670;&#160;</a></span>KafkaMicroBatchInputPartitionReader() <span class="overload">[1/2]</span></h2>
@@ -202,58 +202,58 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00102">102</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  110</span>      {</div>
-<div class="line"><span class="lineno">  111</span>        this.skipNonRFC5424Records = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">skipNonRFC5424Records</a>;</div>
-<div class="line"><span class="lineno">  112</span> </div>
-<div class="line"><span class="lineno">  113</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">startTime</a> = Instant.now();</div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00104">104</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  112</span>      {</div>
+<div class="line"><span class="lineno">  113</span>        this.skipNonRFC5424Records = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">skipNonRFC5424Records</a>;</div>
 <div class="line"><span class="lineno">  114</span> </div>
-<div class="line"><span class="lineno">  115</span>        <span class="comment">// print out execution</span></div>
-<div class="line"><span class="lineno">  116</span>        String hostname;</div>
-<div class="line"><span class="lineno">  117</span>        <span class="keywordflow">try</span> {</div>
-<div class="line"><span class="lineno">  118</span>            hostname = InetAddress.getLocalHost().getHostName();</div>
-<div class="line"><span class="lineno">  119</span>        }</div>
-<div class="line"><span class="lineno">  120</span>        <span class="keywordflow">catch</span> (UnknownHostException e) {</div>
-<div class="line"><span class="lineno">  121</span>            hostname = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><span class="lineno">  122</span>        }</div>
-<div class="line"><span class="lineno">  123</span> </div>
-<div class="line"><span class="lineno">  124</span>        LOGGER</div>
-<div class="line"><span class="lineno">  125</span>                .info(</div>
-<div class="line"><span class="lineno">  126</span>                        <span class="stringliteral">&quot;KafkaMicroBatchInputPartitionReader instantiated for&quot;</span> + <span class="stringliteral">&quot; topic &lt;&quot;</span> + topicPartition.topic()</div>
-<div class="line"><span class="lineno">  127</span>                                + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; partition &lt;&quot;</span> + topicPartition.partition() + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; on host &lt;&quot;</span> + hostname</div>
-<div class="line"><span class="lineno">  128</span>                                + <span class="stringliteral">&quot;&gt;&quot;</span></div>
-<div class="line"><span class="lineno">  129</span>                );</div>
-<div class="line"><span class="lineno">  130</span> </div>
-<div class="line"><span class="lineno">  131</span>        this.kafkaRecordConverter = <span class="keyword">new</span> KafkaRecordConverter();</div>
+<div class="line"><span class="lineno">  115</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">startTime</a> = Instant.now();</div>
+<div class="line"><span class="lineno">  116</span> </div>
+<div class="line"><span class="lineno">  117</span>        <span class="comment">// print out execution</span></div>
+<div class="line"><span class="lineno">  118</span>        String hostname;</div>
+<div class="line"><span class="lineno">  119</span>        <span class="keywordflow">try</span> {</div>
+<div class="line"><span class="lineno">  120</span>            hostname = InetAddress.getLocalHost().getHostName();</div>
+<div class="line"><span class="lineno">  121</span>        }</div>
+<div class="line"><span class="lineno">  122</span>        <span class="keywordflow">catch</span> (UnknownHostException e) {</div>
+<div class="line"><span class="lineno">  123</span>            hostname = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><span class="lineno">  124</span>        }</div>
+<div class="line"><span class="lineno">  125</span> </div>
+<div class="line"><span class="lineno">  126</span>        LOGGER</div>
+<div class="line"><span class="lineno">  127</span>                .info(</div>
+<div class="line"><span class="lineno">  128</span>                        <span class="stringliteral">&quot;KafkaMicroBatchInputPartitionReader instantiated for&quot;</span> + <span class="stringliteral">&quot; topic &lt;&quot;</span> + topicPartition.topic()</div>
+<div class="line"><span class="lineno">  129</span>                                + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; partition &lt;&quot;</span> + topicPartition.partition() + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; on host &lt;&quot;</span> + hostname</div>
+<div class="line"><span class="lineno">  130</span>                                + <span class="stringliteral">&quot;&gt;&quot;</span></div>
+<div class="line"><span class="lineno">  131</span>                );</div>
 <div class="line"><span class="lineno">  132</span> </div>
-<div class="line"><span class="lineno">  133</span>        <span class="keywordflow">if</span> (</div>
-<div class="line"><span class="lineno">  134</span>            executorConfig.containsKey(<span class="stringliteral">&quot;useMockKafkaConsumer&quot;</span>)</div>
-<div class="line"><span class="lineno">  135</span>                    &amp;&amp; <span class="stringliteral">&quot;true&quot;</span>.equals(executorConfig.get(<span class="stringliteral">&quot;useMockKafkaConsumer&quot;</span>))</div>
-<div class="line"><span class="lineno">  136</span>        ) {</div>
-<div class="line"><span class="lineno">  137</span>            LOGGER.warn(<span class="stringliteral">&quot;useMockKafkaConsumer is set, initialized MockKafkaConsumer&quot;</span>);</div>
-<div class="line"><span class="lineno">  138</span>            this.kafkaConsumer = MockKafkaConsumerFactory.getConsumer();</div>
-<div class="line"><span class="lineno">  139</span>        }</div>
-<div class="line"><span class="lineno">  140</span>        <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">  141</span>            this.kafkaConsumer = <span class="keyword">new</span> KafkaConsumer&lt;&gt;(executorKafkaProperties);</div>
-<div class="line"><span class="lineno">  142</span>            this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.assign(Collections.singletonList(topicPartition));</div>
-<div class="line"><span class="lineno">  143</span>        }</div>
-<div class="line"><span class="lineno">  144</span> </div>
-<div class="line"><span class="lineno">  145</span>        this.endOffset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>;</div>
-<div class="line"><span class="lineno">  146</span>        LOGGER.debug(<span class="stringliteral">&quot;startOffset: &quot;</span> + startOffset + <span class="stringliteral">&quot;, &quot;</span> + <span class="stringliteral">&quot;endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
-<div class="line"><span class="lineno">  147</span>        this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.seek(topicPartition, startOffset);</div>
-<div class="line"><span class="lineno">  148</span> </div>
-<div class="line"><span class="lineno">  149</span>        <span class="comment">// set cut-off time</span></div>
-<div class="line"><span class="lineno">  150</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a> = Math</div>
-<div class="line"><span class="lineno">  151</span>                .multiplyExact(Long.parseLong(executorConfig.get(<span class="stringliteral">&quot;includeEpochAndAfter&quot;</span>)), 1000L * 1000L);</div>
-<div class="line"><span class="lineno">  152</span> </div>
-<div class="line"><span class="lineno">  153</span>        this.metricRegistry = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>;</div>
-<div class="line"><span class="lineno">  154</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a45317e4602f0edc61a84959453064df8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.metricRegistry</a></div><div class="ttdeci">final MetricRegistry metricRegistry</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00100">KafkaMicroBatchInputPartitionReader.java:100</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a4cbb9f2315124a0781eb9668ab88e847"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.endOffset</a></div><div class="ttdeci">final long endOffset</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00091">KafkaMicroBatchInputPartitionReader.java:91</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a4e8a9a4a22a1b65e8f91b5f14c01f3c3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaConsumer</a></div><div class="ttdeci">final Consumer&lt; byte[], byte[]&gt; kafkaConsumer</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00089">KafkaMicroBatchInputPartitionReader.java:89</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a9e989305348757c081fbc318c3a4d4ef"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.includeRowsAtAndAfterEpochMicros</a></div><div class="ttdeci">final long includeRowsAtAndAfterEpochMicros</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00094">KafkaMicroBatchInputPartitionReader.java:94</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab4cb2b34df1f216ce69d247a35cd5c81"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.skipNonRFC5424Records</a></div><div class="ttdeci">final boolean skipNonRFC5424Records</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00095">KafkaMicroBatchInputPartitionReader.java:95</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab84773ad2435ae521973bb8b71146288"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.startTime</a></div><div class="ttdeci">Instant startTime</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00097">KafkaMicroBatchInputPartitionReader.java:97</a></div></div>
+<div class="line"><span class="lineno">  133</span>        this.kafkaRecordConverter = <span class="keyword">new</span> KafkaRecordConverter();</div>
+<div class="line"><span class="lineno">  134</span> </div>
+<div class="line"><span class="lineno">  135</span>        <span class="keywordflow">if</span> (</div>
+<div class="line"><span class="lineno">  136</span>            executorConfig.containsKey(<span class="stringliteral">&quot;useMockKafkaConsumer&quot;</span>)</div>
+<div class="line"><span class="lineno">  137</span>                    &amp;&amp; <span class="stringliteral">&quot;true&quot;</span>.equals(executorConfig.get(<span class="stringliteral">&quot;useMockKafkaConsumer&quot;</span>))</div>
+<div class="line"><span class="lineno">  138</span>        ) {</div>
+<div class="line"><span class="lineno">  139</span>            LOGGER.warn(<span class="stringliteral">&quot;useMockKafkaConsumer is set, initialized MockKafkaConsumer&quot;</span>);</div>
+<div class="line"><span class="lineno">  140</span>            this.kafkaConsumer = MockKafkaConsumerFactory.getConsumer();</div>
+<div class="line"><span class="lineno">  141</span>        }</div>
+<div class="line"><span class="lineno">  142</span>        <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">  143</span>            this.kafkaConsumer = <span class="keyword">new</span> KafkaConsumer&lt;&gt;(executorKafkaProperties);</div>
+<div class="line"><span class="lineno">  144</span>            this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.assign(Collections.singletonList(topicPartition));</div>
+<div class="line"><span class="lineno">  145</span>        }</div>
+<div class="line"><span class="lineno">  146</span> </div>
+<div class="line"><span class="lineno">  147</span>        this.endOffset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>;</div>
+<div class="line"><span class="lineno">  148</span>        LOGGER.debug(<span class="stringliteral">&quot;startOffset: &quot;</span> + startOffset + <span class="stringliteral">&quot;, &quot;</span> + <span class="stringliteral">&quot;endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
+<div class="line"><span class="lineno">  149</span>        this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.seek(topicPartition, startOffset);</div>
+<div class="line"><span class="lineno">  150</span> </div>
+<div class="line"><span class="lineno">  151</span>        <span class="comment">// set cut-off time</span></div>
+<div class="line"><span class="lineno">  152</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a> = Math</div>
+<div class="line"><span class="lineno">  153</span>                .multiplyExact(Long.parseLong(executorConfig.get(<span class="stringliteral">&quot;includeEpochAndAfter&quot;</span>)), 1000L * 1000L);</div>
+<div class="line"><span class="lineno">  154</span> </div>
+<div class="line"><span class="lineno">  155</span>        this.metricRegistry = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>;</div>
+<div class="line"><span class="lineno">  156</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a45317e4602f0edc61a84959453064df8"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.metricRegistry</a></div><div class="ttdeci">final MetricRegistry metricRegistry</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00102">KafkaMicroBatchInputPartitionReader.java:102</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a4cbb9f2315124a0781eb9668ab88e847"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.endOffset</a></div><div class="ttdeci">final long endOffset</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00093">KafkaMicroBatchInputPartitionReader.java:93</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a4e8a9a4a22a1b65e8f91b5f14c01f3c3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaConsumer</a></div><div class="ttdeci">final Consumer&lt; byte[], byte[]&gt; kafkaConsumer</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00091">KafkaMicroBatchInputPartitionReader.java:91</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a9e989305348757c081fbc318c3a4d4ef"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.includeRowsAtAndAfterEpochMicros</a></div><div class="ttdeci">final long includeRowsAtAndAfterEpochMicros</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00096">KafkaMicroBatchInputPartitionReader.java:96</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab4cb2b34df1f216ce69d247a35cd5c81"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.skipNonRFC5424Records</a></div><div class="ttdeci">final boolean skipNonRFC5424Records</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00097">KafkaMicroBatchInputPartitionReader.java:97</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab84773ad2435ae521973bb8b71146288"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.startTime</a></div><div class="ttdeci">Instant startTime</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00099">KafkaMicroBatchInputPartitionReader.java:99</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -295,25 +295,25 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00157">157</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  162</span>      {</div>
-<div class="line"><span class="lineno">  163</span> </div>
-<div class="line"><span class="lineno">  164</span>        this.skipNonRFC5424Records = <span class="keyword">false</span>;</div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00159">159</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  164</span>      {</div>
 <div class="line"><span class="lineno">  165</span> </div>
-<div class="line"><span class="lineno">  166</span>        this.kafkaRecordConverter = <span class="keyword">new</span> KafkaRecordConverter();</div>
+<div class="line"><span class="lineno">  166</span>        this.skipNonRFC5424Records = <span class="keyword">false</span>;</div>
 <div class="line"><span class="lineno">  167</span> </div>
-<div class="line"><span class="lineno">  168</span>        this.kafkaConsumer = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>;</div>
-<div class="line"><span class="lineno">  169</span>        this.endOffset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>;</div>
-<div class="line"><span class="lineno">  170</span> </div>
-<div class="line"><span class="lineno">  171</span>        this.currentOffset = startOffset;</div>
-<div class="line"><span class="lineno">  172</span>        LOGGER.debug(<span class="stringliteral">&quot;@VisibleForTesting &quot;</span> + <span class="stringliteral">&quot;startOffset: &quot;</span> + startOffset + <span class="stringliteral">&quot;, &quot;</span> + <span class="stringliteral">&quot;endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
-<div class="line"><span class="lineno">  173</span>        this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.seek(topicPartition, startOffset);</div>
-<div class="line"><span class="lineno">  174</span> </div>
-<div class="line"><span class="lineno">  175</span>        <span class="comment">// set cut-off time</span></div>
-<div class="line"><span class="lineno">  176</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a> = Math.multiplyExact(Long.MIN_VALUE / (1000 * 1000), 1000L * 1000L);</div>
-<div class="line"><span class="lineno">  177</span> </div>
-<div class="line"><span class="lineno">  178</span>        this.metricRegistry = <span class="keyword">new</span> MetricRegistry();</div>
-<div class="line"><span class="lineno">  179</span>    }</div>
+<div class="line"><span class="lineno">  168</span>        this.kafkaRecordConverter = <span class="keyword">new</span> KafkaRecordConverter();</div>
+<div class="line"><span class="lineno">  169</span> </div>
+<div class="line"><span class="lineno">  170</span>        this.kafkaConsumer = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>;</div>
+<div class="line"><span class="lineno">  171</span>        this.endOffset = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>;</div>
+<div class="line"><span class="lineno">  172</span> </div>
+<div class="line"><span class="lineno">  173</span>        this.currentOffset = startOffset;</div>
+<div class="line"><span class="lineno">  174</span>        LOGGER.debug(<span class="stringliteral">&quot;@VisibleForTesting &quot;</span> + <span class="stringliteral">&quot;startOffset: &quot;</span> + startOffset + <span class="stringliteral">&quot;, &quot;</span> + <span class="stringliteral">&quot;endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
+<div class="line"><span class="lineno">  175</span>        this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.seek(topicPartition, startOffset);</div>
+<div class="line"><span class="lineno">  176</span> </div>
+<div class="line"><span class="lineno">  177</span>        <span class="comment">// set cut-off time</span></div>
+<div class="line"><span class="lineno">  178</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a> = Math.multiplyExact(Long.MIN_VALUE / (1000 * 1000), 1000L * 1000L);</div>
+<div class="line"><span class="lineno">  179</span> </div>
+<div class="line"><span class="lineno">  180</span>        this.metricRegistry = <span class="keyword">new</span> MetricRegistry();</div>
+<div class="line"><span class="lineno">  181</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -333,18 +333,18 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00288">288</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  288</span>                        {</div>
-<div class="line"><span class="lineno">  289</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.close(Duration.ofSeconds(60)); <span class="comment">// TODO parametrize</span></div>
-<div class="line"><span class="lineno">  290</span> </div>
-<div class="line"><span class="lineno">  291</span>        <span class="keywordtype">long</span> timeTaken = Instant.now().getEpochSecond() - <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">startTime</a>.getEpochSecond();</div>
-<div class="line"><span class="lineno">  292</span>        LOGGER</div>
-<div class="line"><span class="lineno">  293</span>                .warn(</div>
-<div class="line"><span class="lineno">  294</span>                        <span class="stringliteral">&quot;KafkaMicroBatchInputPartitionReader took &lt;&quot;</span> + timeTaken + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; for processing dataLength &lt;&quot;</span></div>
-<div class="line"><span class="lineno">  295</span>                                + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> + <span class="stringliteral">&quot;&gt;&quot;</span></div>
-<div class="line"><span class="lineno">  296</span>                );</div>
-<div class="line"><span class="lineno">  297</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab03e83cf831b8cf4a551a4204da48b35"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.dataLength</a></div><div class="ttdeci">long dataLength</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00098">KafkaMicroBatchInputPartitionReader.java:98</a></div></div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00297">297</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  297</span>                        {</div>
+<div class="line"><span class="lineno">  298</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.close(Duration.ofSeconds(60)); <span class="comment">// TODO parametrize</span></div>
+<div class="line"><span class="lineno">  299</span> </div>
+<div class="line"><span class="lineno">  300</span>        <span class="keywordtype">long</span> timeTaken = Instant.now().getEpochSecond() - <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab84773ad2435ae521973bb8b71146288">startTime</a>.getEpochSecond();</div>
+<div class="line"><span class="lineno">  301</span>        LOGGER</div>
+<div class="line"><span class="lineno">  302</span>                .warn(</div>
+<div class="line"><span class="lineno">  303</span>                        <span class="stringliteral">&quot;KafkaMicroBatchInputPartitionReader took &lt;&quot;</span> + timeTaken + <span class="stringliteral">&quot;&gt;&quot;</span> + <span class="stringliteral">&quot; for processing dataLength &lt;&quot;</span></div>
+<div class="line"><span class="lineno">  304</span>                                + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> + <span class="stringliteral">&quot;&gt;&quot;</span></div>
+<div class="line"><span class="lineno">  305</span>                );</div>
+<div class="line"><span class="lineno">  306</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_ab03e83cf831b8cf4a551a4204da48b35"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.dataLength</a></div><div class="ttdeci">long dataLength</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00100">KafkaMicroBatchInputPartitionReader.java:100</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -372,22 +372,22 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00246">246</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  246</span>                                                                                                       {</div>
-<div class="line"><span class="lineno">  247</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> + consumerRecord.serializedValueSize();</div>
-<div class="line"><span class="lineno">  248</span>        <span class="comment">// kafka provided data</span></div>
-<div class="line"><span class="lineno">  249</span>        <span class="keywordtype">long</span> offset = consumerRecord.offset();</div>
-<div class="line"><span class="lineno">  250</span>        <span class="keywordtype">int</span> partition = consumerRecord.partition();</div>
-<div class="line"><span class="lineno">  251</span>        String topic = consumerRecord.topic();</div>
-<div class="line"><span class="lineno">  252</span>        <span class="keywordtype">byte</span>[] key = consumerRecord.key();</div>
-<div class="line"><span class="lineno">  253</span>        <span class="keywordtype">byte</span>[] value = consumerRecord.value();</div>
-<div class="line"><span class="lineno">  254</span> </div>
-<div class="line"><span class="lineno">  255</span>        <span class="comment">// process rfc5424 provided data</span></div>
-<div class="line"><span class="lineno">  256</span>        ByteArrayInputStream payload = <span class="keyword">new</span> ByteArrayInputStream(value);</div>
-<div class="line"><span class="lineno">  257</span> </div>
-<div class="line"><span class="lineno">  258</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#af9a32c9a5bc593c496d6ae91b023d6f0">kafkaRecordConverter</a>.convert(payload, String.valueOf(partition), offset);</div>
-<div class="line"><span class="lineno">  259</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_af9a32c9a5bc593c496d6ae91b023d6f0"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#af9a32c9a5bc593c496d6ae91b023d6f0">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaRecordConverter</a></div><div class="ttdeci">final KafkaRecordConverter kafkaRecordConverter</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00088">KafkaMicroBatchInputPartitionReader.java:88</a></div></div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00248">248</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  248</span>                                                                                                       {</div>
+<div class="line"><span class="lineno">  249</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab03e83cf831b8cf4a551a4204da48b35">dataLength</a> + consumerRecord.serializedValueSize();</div>
+<div class="line"><span class="lineno">  250</span>        <span class="comment">// kafka provided data</span></div>
+<div class="line"><span class="lineno">  251</span>        <span class="keywordtype">long</span> offset = consumerRecord.offset();</div>
+<div class="line"><span class="lineno">  252</span>        <span class="keywordtype">int</span> partition = consumerRecord.partition();</div>
+<div class="line"><span class="lineno">  253</span>        String topic = consumerRecord.topic();</div>
+<div class="line"><span class="lineno">  254</span>        <span class="keywordtype">byte</span>[] key = consumerRecord.key();</div>
+<div class="line"><span class="lineno">  255</span>        <span class="keywordtype">byte</span>[] value = consumerRecord.value();</div>
+<div class="line"><span class="lineno">  256</span> </div>
+<div class="line"><span class="lineno">  257</span>        <span class="comment">// process rfc5424 provided data</span></div>
+<div class="line"><span class="lineno">  258</span>        ByteArrayInputStream payload = <span class="keyword">new</span> ByteArrayInputStream(value);</div>
+<div class="line"><span class="lineno">  259</span> </div>
+<div class="line"><span class="lineno">  260</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#af9a32c9a5bc593c496d6ae91b023d6f0">kafkaRecordConverter</a>.convert(payload, String.valueOf(partition), offset);</div>
+<div class="line"><span class="lineno">  261</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_af9a32c9a5bc593c496d6ae91b023d6f0"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#af9a32c9a5bc593c496d6ae91b023d6f0">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaRecordConverter</a></div><div class="ttdeci">final KafkaRecordConverter kafkaRecordConverter</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00090">KafkaMicroBatchInputPartitionReader.java:90</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -411,24 +411,31 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00269">269</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  269</span>                                                     {</div>
-<div class="line"><span class="lineno">  270</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> recordsProcessed = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>).getCount();</div>
-<div class="line"><span class="lineno">  271</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).mark(recordsProcessed);</div>
-<div class="line"><span class="lineno">  272</span>        <span class="keyword">final</span> <span class="keywordtype">double</span> recordsPerSecond = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).getMeanRate();</div>
-<div class="line"><span class="lineno">  273</span>        <span class="keyword">final</span> SettableGauge&lt;Long&gt; latestKafkaTimestamp = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.gauge(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>);</div>
-<div class="line"><span class="lineno">  274</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> bytesProcessed = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;BytesProcessed&quot;</span>).getCount();</div>
-<div class="line"><span class="lineno">  275</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).mark(bytesProcessed);</div>
-<div class="line"><span class="lineno">  276</span>        <span class="keyword">final</span> <span class="keywordtype">double</span> bytesPerSecond = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).getMeanRate();</div>
-<div class="line"><span class="lineno">  277</span> </div>
-<div class="line"><span class="lineno">  278</span>        <span class="keywordflow">return</span> <span class="keyword">new</span> CustomTaskMetric[] {</div>
-<div class="line"><span class="lineno">  279</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>, recordsProcessed),</div>
-<div class="line"><span class="lineno">  280</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>, (<span class="keywordtype">long</span>) recordsPerSecond),</div>
-<div class="line"><span class="lineno">  281</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;BytesProcessed&quot;</span>, bytesProcessed),</div>
-<div class="line"><span class="lineno">  282</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>, (<span class="keywordtype">long</span>) bytesPerSecond),</div>
-<div class="line"><span class="lineno">  283</span>                <span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>, latestKafkaTimestamp.getValue())</div>
-<div class="line"><span class="lineno">  284</span>        };</div>
-<div class="line"><span class="lineno">  285</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00271">271</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  271</span>                                                     {</div>
+<div class="line"><span class="lineno">  272</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> recordsProcessed = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>).getCount();</div>
+<div class="line"><span class="lineno">  273</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).mark(recordsProcessed);</div>
+<div class="line"><span class="lineno">  274</span> </div>
+<div class="line"><span class="lineno">  275</span>        <span class="keyword">final</span> <span class="keywordtype">double</span> recordsPerSecond = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).getMeanRate();</div>
+<div class="line"><span class="lineno">  276</span> </div>
+<div class="line"><span class="lineno">  277</span>        <span class="keyword">final</span> SettableGauge&lt;MetricValue&lt;Long&gt;&gt; latestKafkaTimestamp = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a></div>
+<div class="line"><span class="lineno">  278</span>                .gauge(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>, () -&gt; <span class="keyword">new</span> DefaultSettableGauge&lt;&gt;(<span class="keyword">new</span> MetricValueStub&lt;&gt;()));</div>
+<div class="line"><span class="lineno">  279</span> </div>
+<div class="line"><span class="lineno">  280</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> bytesProcessed = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;BytesProcessed&quot;</span>).getCount();</div>
+<div class="line"><span class="lineno">  281</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).mark(bytesProcessed);</div>
+<div class="line"><span class="lineno">  282</span>        <span class="keyword">final</span> <span class="keywordtype">double</span> bytesPerSecond = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).getMeanRate();</div>
+<div class="line"><span class="lineno">  283</span> </div>
+<div class="line"><span class="lineno">  284</span>        <span class="keyword">final</span> List&lt;CustomTaskMetric&gt; customTaskMetrics = <span class="keyword">new</span> ArrayList&lt;&gt;();</div>
+<div class="line"><span class="lineno">  285</span>        customTaskMetrics.add(<span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>, recordsProcessed));</div>
+<div class="line"><span class="lineno">  286</span>        customTaskMetrics.add(<span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>, (<span class="keywordtype">long</span>) recordsPerSecond));</div>
+<div class="line"><span class="lineno">  287</span>        customTaskMetrics.add(<span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;BytesProcessed&quot;</span>, bytesProcessed));</div>
+<div class="line"><span class="lineno">  288</span>        customTaskMetrics.add(<span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>, (<span class="keywordtype">long</span>) bytesPerSecond));</div>
+<div class="line"><span class="lineno">  289</span>        <span class="keywordflow">if</span> (!latestKafkaTimestamp.getValue().isStub()) {</div>
+<div class="line"><span class="lineno">  290</span>            customTaskMetrics.add(<span class="keyword">new</span> TaskMetric(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>, latestKafkaTimestamp.getValue().value()));</div>
+<div class="line"><span class="lineno">  291</span>        }</div>
+<div class="line"><span class="lineno">  292</span> </div>
+<div class="line"><span class="lineno">  293</span>        <span class="keywordflow">return</span> customTaskMetrics.toArray(<span class="keyword">new</span> CustomTaskMetric[0]);</div>
+<div class="line"><span class="lineno">  294</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -447,14 +454,14 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00262">262</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  262</span>                             {</div>
-<div class="line"><span class="lineno">  263</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>).inc();</div>
-<div class="line"><span class="lineno">  264</span>        LOGGER.debug(<span class="stringliteral">&quot;get(): &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a>);</div>
-<div class="line"><span class="lineno">  265</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a>;</div>
-<div class="line"><span class="lineno">  266</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a9ea6669d51e6d1ef0c171e13adb16ed2"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.currentRow</a></div><div class="ttdeci">InternalRow currentRow</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00093">KafkaMicroBatchInputPartitionReader.java:93</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_adb87dbded3f1f35cd217d09610053566"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.currentOffset</a></div><div class="ttdeci">long currentOffset</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00092">KafkaMicroBatchInputPartitionReader.java:92</a></div></div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00264">264</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  264</span>                             {</div>
+<div class="line"><span class="lineno">  265</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;RecordsProcessed&quot;</span>).inc();</div>
+<div class="line"><span class="lineno">  266</span>        LOGGER.debug(<span class="stringliteral">&quot;get(): &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a>);</div>
+<div class="line"><span class="lineno">  267</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a>;</div>
+<div class="line"><span class="lineno">  268</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a9ea6669d51e6d1ef0c171e13adb16ed2"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.currentRow</a></div><div class="ttdeci">InternalRow currentRow</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00095">KafkaMicroBatchInputPartitionReader.java:95</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_adb87dbded3f1f35cd217d09610053566"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.currentOffset</a></div><div class="ttdeci">long currentOffset</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00094">KafkaMicroBatchInputPartitionReader.java:94</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -478,72 +485,72 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00182">182</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  182</span>                          {</div>
-<div class="line"><span class="lineno">  183</span>        <span class="keywordtype">boolean</span> rv = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  184</span> </div>
-<div class="line"><span class="lineno">  185</span>        <span class="keywordflow">while</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> &lt; <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a> - 1) { <span class="comment">// end exclusive</span></div>
-<div class="line"><span class="lineno">  186</span>            <span class="keywordflow">while</span> (!<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a>.hasNext()) {</div>
-<div class="line"><span class="lineno">  187</span>                <span class="comment">// still need to consume more, infinitely loop because connection problems may cause return of an empty iterator</span></div>
-<div class="line"><span class="lineno">  188</span>                <span class="keywordflow">try</span> {</div>
-<div class="line"><span class="lineno">  189</span>                    ConsumerRecords&lt;byte[], byte[]&gt; kafkaRecords = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.poll(Duration.ofSeconds(60)); <span class="comment">// TODO parametrize</span></div>
-<div class="line"><span class="lineno">  190</span>                    <span class="keywordflow">if</span> (kafkaRecords.isEmpty()) {</div>
-<div class="line"><span class="lineno">  191</span>                        LOGGER.warn(<span class="stringliteral">&quot;kafkaRecords empty after poll, will retry.&quot;</span>);</div>
-<div class="line"><span class="lineno">  192</span>                    }</div>
-<div class="line"><span class="lineno">  193</span>                    <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a> = kafkaRecords.iterator();</div>
-<div class="line"><span class="lineno">  194</span>                    LOGGER.debug(<span class="stringliteral">&quot;polled at currentOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> + <span class="stringliteral">&quot; endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
-<div class="line"><span class="lineno">  195</span>                }</div>
-<div class="line"><span class="lineno">  196</span>                <span class="keywordflow">catch</span> (TopicAuthorizationException topicAuthorizationException) {</div>
-<div class="line"><span class="lineno">  197</span>                    <span class="comment">// not authorized to access this topic, bailing out</span></div>
-<div class="line"><span class="lineno">  198</span>                    LOGGER.warn(<span class="stringliteral">&quot;Task triggered TopicAuthorizationException: &quot;</span> + topicAuthorizationException);</div>
-<div class="line"><span class="lineno">  199</span>                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  200</span>                }</div>
-<div class="line"><span class="lineno">  201</span>            }</div>
-<div class="line"><span class="lineno">  202</span> </div>
-<div class="line"><span class="lineno">  203</span>            ConsumerRecord&lt;byte[], byte[]&gt; consumerRecord = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a>.next();</div>
-<div class="line"><span class="lineno">  204</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> = consumerRecord.offset(); <span class="comment">// update current</span></div>
-<div class="line"><span class="lineno">  205</span> </div>
-<div class="line"><span class="lineno">  206</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;BytesProcessed&quot;</span>).inc(consumerRecord.serializedValueSize());</div>
-<div class="line"><span class="lineno">  207</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).mark();</div>
-<div class="line"><span class="lineno">  208</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).mark();</div>
-<div class="line"><span class="lineno">  209</span>            <span class="keyword">final</span> SettableGauge&lt;Long&gt; kafkaTsGauge = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.gauge(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>);</div>
-<div class="line"><span class="lineno">  210</span>            kafkaTsGauge.setValue(consumerRecord.timestamp());</div>
-<div class="line"><span class="lineno">  211</span> </div>
-<div class="line"><span class="lineno">  212</span>            <span class="keywordflow">try</span> {</div>
-<div class="line"><span class="lineno">  213</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a6867e621ed6821e58bb3dcbdcaf3b507">convertToRow</a>(consumerRecord);</div>
-<div class="line"><span class="lineno">  214</span>            }</div>
-<div class="line"><span class="lineno">  215</span>            <span class="keywordflow">catch</span> (IOException ioException) {</div>
-<div class="line"><span class="lineno">  216</span>                <span class="keywordflow">throw</span> <span class="keyword">new</span> UncheckedIOException(ioException);</div>
-<div class="line"><span class="lineno">  217</span>            }</div>
-<div class="line"><span class="lineno">  218</span>            <span class="keywordflow">catch</span> (ParseException parseException) {</div>
-<div class="line"><span class="lineno">  219</span>                LOGGER</div>
-<div class="line"><span class="lineno">  220</span>                        .warn(</div>
-<div class="line"><span class="lineno">  221</span>                                <span class="stringliteral">&quot;Kafka Record at offset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> + <span class="stringliteral">&quot; produced an exception while parsing: &quot;</span></div>
-<div class="line"><span class="lineno">  222</span>                                        + parseException</div>
-<div class="line"><span class="lineno">  223</span>                        );</div>
-<div class="line"><span class="lineno">  224</span>                <span class="comment">// skip</span></div>
-<div class="line"><span class="lineno">  225</span>                <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">skipNonRFC5424Records</a>) {</div>
-<div class="line"><span class="lineno">  226</span>                    <span class="keywordflow">continue</span>;</div>
-<div class="line"><span class="lineno">  227</span>                }</div>
-<div class="line"><span class="lineno">  228</span>                <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">  229</span>                    <span class="keywordflow">throw</span> parseException;</div>
-<div class="line"><span class="lineno">  230</span>                }</div>
-<div class="line"><span class="lineno">  231</span> </div>
-<div class="line"><span class="lineno">  232</span>            }</div>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00184">184</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  184</span>                          {</div>
+<div class="line"><span class="lineno">  185</span>        <span class="keywordtype">boolean</span> rv = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  186</span> </div>
+<div class="line"><span class="lineno">  187</span>        <span class="keywordflow">while</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> &lt; <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a> - 1) { <span class="comment">// end exclusive</span></div>
+<div class="line"><span class="lineno">  188</span>            <span class="keywordflow">while</span> (!<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a>.hasNext()) {</div>
+<div class="line"><span class="lineno">  189</span>                <span class="comment">// still need to consume more, infinitely loop because connection problems may cause return of an empty iterator</span></div>
+<div class="line"><span class="lineno">  190</span>                <span class="keywordflow">try</span> {</div>
+<div class="line"><span class="lineno">  191</span>                    ConsumerRecords&lt;byte[], byte[]&gt; kafkaRecords = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4e8a9a4a22a1b65e8f91b5f14c01f3c3">kafkaConsumer</a>.poll(Duration.ofSeconds(60)); <span class="comment">// TODO parametrize</span></div>
+<div class="line"><span class="lineno">  192</span>                    <span class="keywordflow">if</span> (kafkaRecords.isEmpty()) {</div>
+<div class="line"><span class="lineno">  193</span>                        LOGGER.warn(<span class="stringliteral">&quot;kafkaRecords empty after poll, will retry.&quot;</span>);</div>
+<div class="line"><span class="lineno">  194</span>                    }</div>
+<div class="line"><span class="lineno">  195</span>                    <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a> = kafkaRecords.iterator();</div>
+<div class="line"><span class="lineno">  196</span>                    LOGGER.debug(<span class="stringliteral">&quot;polled at currentOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> + <span class="stringliteral">&quot; endOffset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a4cbb9f2315124a0781eb9668ab88e847">endOffset</a>);</div>
+<div class="line"><span class="lineno">  197</span>                }</div>
+<div class="line"><span class="lineno">  198</span>                <span class="keywordflow">catch</span> (TopicAuthorizationException topicAuthorizationException) {</div>
+<div class="line"><span class="lineno">  199</span>                    <span class="comment">// not authorized to access this topic, bailing out</span></div>
+<div class="line"><span class="lineno">  200</span>                    LOGGER.warn(<span class="stringliteral">&quot;Task triggered TopicAuthorizationException: &quot;</span> + topicAuthorizationException);</div>
+<div class="line"><span class="lineno">  201</span>                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  202</span>                }</div>
+<div class="line"><span class="lineno">  203</span>            }</div>
+<div class="line"><span class="lineno">  204</span> </div>
+<div class="line"><span class="lineno">  205</span>            ConsumerRecord&lt;byte[], byte[]&gt; consumerRecord = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">kafkaRecordsIterator</a>.next();</div>
+<div class="line"><span class="lineno">  206</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> = consumerRecord.offset(); <span class="comment">// update current</span></div>
+<div class="line"><span class="lineno">  207</span> </div>
+<div class="line"><span class="lineno">  208</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.counter(<span class="stringliteral">&quot;BytesProcessed&quot;</span>).inc(consumerRecord.serializedValueSize());</div>
+<div class="line"><span class="lineno">  209</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;BytesPerSecond&quot;</span>).mark();</div>
+<div class="line"><span class="lineno">  210</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.meter(<span class="stringliteral">&quot;RecordsPerSecond&quot;</span>).mark();</div>
+<div class="line"><span class="lineno">  211</span>            <span class="keyword">final</span> SettableGauge&lt;MetricValue&lt;Long&gt;&gt; kafkaTsGauge = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a45317e4602f0edc61a84959453064df8">metricRegistry</a>.gauge(<span class="stringliteral">&quot;LatestKafkaTimestamp&quot;</span>);</div>
+<div class="line"><span class="lineno">  212</span>            kafkaTsGauge.setValue(<span class="keyword">new</span> MetricValueImpl&lt;&gt;(consumerRecord.timestamp()));</div>
+<div class="line"><span class="lineno">  213</span> </div>
+<div class="line"><span class="lineno">  214</span>            <span class="keywordflow">try</span> {</div>
+<div class="line"><span class="lineno">  215</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a6867e621ed6821e58bb3dcbdcaf3b507">convertToRow</a>(consumerRecord);</div>
+<div class="line"><span class="lineno">  216</span>            }</div>
+<div class="line"><span class="lineno">  217</span>            <span class="keywordflow">catch</span> (IOException ioException) {</div>
+<div class="line"><span class="lineno">  218</span>                <span class="keywordflow">throw</span> <span class="keyword">new</span> UncheckedIOException(ioException);</div>
+<div class="line"><span class="lineno">  219</span>            }</div>
+<div class="line"><span class="lineno">  220</span>            <span class="keywordflow">catch</span> (ParseException parseException) {</div>
+<div class="line"><span class="lineno">  221</span>                LOGGER</div>
+<div class="line"><span class="lineno">  222</span>                        .warn(</div>
+<div class="line"><span class="lineno">  223</span>                                <span class="stringliteral">&quot;Kafka Record at offset: &quot;</span> + <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#adb87dbded3f1f35cd217d09610053566">currentOffset</a> + <span class="stringliteral">&quot; produced an exception while parsing: &quot;</span></div>
+<div class="line"><span class="lineno">  224</span>                                        + parseException</div>
+<div class="line"><span class="lineno">  225</span>                        );</div>
+<div class="line"><span class="lineno">  226</span>                <span class="comment">// skip</span></div>
+<div class="line"><span class="lineno">  227</span>                <span class="keywordflow">if</span> (<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#ab4cb2b34df1f216ce69d247a35cd5c81">skipNonRFC5424Records</a>) {</div>
+<div class="line"><span class="lineno">  228</span>                    <span class="keywordflow">continue</span>;</div>
+<div class="line"><span class="lineno">  229</span>                }</div>
+<div class="line"><span class="lineno">  230</span>                <span class="keywordflow">else</span> {</div>
+<div class="line"><span class="lineno">  231</span>                    <span class="keywordflow">throw</span> parseException;</div>
+<div class="line"><span class="lineno">  232</span>                }</div>
 <div class="line"><span class="lineno">  233</span> </div>
-<div class="line"><span class="lineno">  234</span>            <span class="comment">// do the time based inclusion</span></div>
-<div class="line"><span class="lineno">  235</span>            <span class="keywordtype">long</span> rfc5424time = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a>.getLong(0); <span class="comment">// timestamp as epochMicros</span></div>
-<div class="line"><span class="lineno">  236</span>            <span class="keywordflow">if</span> (rfc5424time &gt;= <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a>) {</div>
-<div class="line"><span class="lineno">  237</span>                rv = <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">  238</span>                <span class="keywordflow">break</span>;</div>
-<div class="line"><span class="lineno">  239</span>            }</div>
-<div class="line"><span class="lineno">  240</span>        }</div>
-<div class="line"><span class="lineno">  241</span> </div>
-<div class="line"><span class="lineno">  242</span>        LOGGER.debug(<span class="stringliteral">&quot;next rv: &quot;</span> + rv);</div>
-<div class="line"><span class="lineno">  243</span>        <span class="keywordflow">return</span> rv;</div>
-<div class="line"><span class="lineno">  244</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a28de49193e89e8278bf36c6c57064ed3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaRecordsIterator</a></div><div class="ttdeci">Iterator&lt; ConsumerRecord&lt; byte[], byte[]&gt; &gt; kafkaRecordsIterator</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00086">KafkaMicroBatchInputPartitionReader.java:86</a></div></div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a6867e621ed6821e58bb3dcbdcaf3b507"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a6867e621ed6821e58bb3dcbdcaf3b507">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.convertToRow</a></div><div class="ttdeci">InternalRow convertToRow(ConsumerRecord&lt; byte[], byte[]&gt; consumerRecord)</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00246">KafkaMicroBatchInputPartitionReader.java:246</a></div></div>
+<div class="line"><span class="lineno">  234</span>            }</div>
+<div class="line"><span class="lineno">  235</span> </div>
+<div class="line"><span class="lineno">  236</span>            <span class="comment">// do the time based inclusion</span></div>
+<div class="line"><span class="lineno">  237</span>            <span class="keywordtype">long</span> rfc5424time = <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9ea6669d51e6d1ef0c171e13adb16ed2">currentRow</a>.getLong(0); <span class="comment">// timestamp as epochMicros</span></div>
+<div class="line"><span class="lineno">  238</span>            <span class="keywordflow">if</span> (rfc5424time &gt;= <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a9e989305348757c081fbc318c3a4d4ef">includeRowsAtAndAfterEpochMicros</a>) {</div>
+<div class="line"><span class="lineno">  239</span>                rv = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">  240</span>                <span class="keywordflow">break</span>;</div>
+<div class="line"><span class="lineno">  241</span>            }</div>
+<div class="line"><span class="lineno">  242</span>        }</div>
+<div class="line"><span class="lineno">  243</span> </div>
+<div class="line"><span class="lineno">  244</span>        LOGGER.debug(<span class="stringliteral">&quot;next rv: &quot;</span> + rv);</div>
+<div class="line"><span class="lineno">  245</span>        <span class="keywordflow">return</span> rv;</div>
+<div class="line"><span class="lineno">  246</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a28de49193e89e8278bf36c6c57064ed3"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a28de49193e89e8278bf36c6c57064ed3">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.kafkaRecordsIterator</a></div><div class="ttdeci">Iterator&lt; ConsumerRecord&lt; byte[], byte[]&gt; &gt; kafkaRecordsIterator</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00088">KafkaMicroBatchInputPartitionReader.java:88</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader_html_a6867e621ed6821e58bb3dcbdcaf3b507"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1KafkaMicroBatchInputPartitionReader.html#a6867e621ed6821e58bb3dcbdcaf3b507">com.teragrep.pth_06.task.KafkaMicroBatchInputPartitionReader.convertToRow</a></div><div class="ttdeci">InternalRow convertToRow(ConsumerRecord&lt; byte[], byte[]&gt; consumerRecord)</div><div class="ttdef"><b>Definition</b> <a href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00248">KafkaMicroBatchInputPartitionReader.java:248</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -578,7 +585,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00092">92</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00094">94</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -602,7 +609,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00093">93</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00095">95</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -626,7 +633,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00098">98</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00100">100</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -650,7 +657,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00091">91</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00093">93</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -674,7 +681,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00094">94</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00096">96</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -698,7 +705,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00089">89</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00091">91</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -722,7 +729,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00088">88</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00090">90</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -746,7 +753,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00086">86</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00088">88</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -770,7 +777,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00100">100</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00102">102</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -794,7 +801,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00095">95</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00097">97</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
@@ -818,7 +825,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00097">97</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html#l00099">99</a> of file <a class="el" href="KafkaMicroBatchInputPartitionReader_8java_source.html">KafkaMicroBatchInputPartitionReader.java</a>.</p>
 
 </div>
 </div>
