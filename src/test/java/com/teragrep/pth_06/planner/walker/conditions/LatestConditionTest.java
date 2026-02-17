@@ -77,6 +77,18 @@ public class LatestConditionTest {
     }
 
     @Test
+    public void largePositiveNumberInputTest() {
+        final QueryCondition latestCondition = new LatestCondition("29786022887");
+        Assertions.assertDoesNotThrow(latestCondition::condition);
+    }
+
+    @Test
+    public void largeNegativeNumberInputTest() {
+        final QueryCondition eq = new LatestCondition("-29786022887");
+        Assertions.assertDoesNotThrow(eq::condition);
+    }
+
+    @Test
     public void equalsTest() {
         LatestCondition eq1 = new LatestCondition("946720800");
         eq1.condition();

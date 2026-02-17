@@ -64,8 +64,8 @@ public final class EarliestCondition implements QueryCondition {
     public Condition condition() {
         // SQL connection uses localTime in the session, so we use unix to come over the conversions
         // hour based files are being used so earliest needs conversion to the point of the last hour
-        final int earliestFromElement = Integer.parseInt(value);
-        final int earliestEpochHour = earliestFromElement - earliestFromElement % 3600;
+        final long earliestFromElement = Long.parseLong(value);
+        final long earliestEpochHour = earliestFromElement - earliestFromElement % 3600;
         final Instant instant = Instant.ofEpochSecond(earliestEpochHour);
         final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
         Condition condition;
