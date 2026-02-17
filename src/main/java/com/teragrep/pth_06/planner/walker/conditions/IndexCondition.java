@@ -47,7 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
+import org.jooq.Field;
 
 import java.util.Objects;
 
@@ -66,25 +66,22 @@ public final class IndexCondition implements QueryCondition {
     }
 
     public Condition condition() {
-        Condition condition;
-        if ("*".equalsIgnoreCase(value)) {
-            condition = DSL.trueCondition();
-        }
-        else if (streamQuery) {
-            condition = STREAMDB.STREAM.DIRECTORY.like(value.replace('*', '%'));
+        final boolean isNotEquals = "NOT_EQUALS".equalsIgnoreCase(operation);
+        final Field<String> field;
+        if (streamQuery) {
+            field = STREAMDB.STREAM.DIRECTORY;
         }
         else {
-            condition = GetArchivedObjectsFilterTable.directory.like(value.replace('*', '%').toLowerCase());
+            field = GetArchivedObjectsFilterTable.directory;
         }
-        if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
-            if ("*".equalsIgnoreCase(value)) {
-                condition = DSL.falseCondition();
-            }
-            else {
-                condition = condition.not();
-            }
+        final QueryCondition finalCondition;
+        if (isNotEquals) {
+            finalCondition = new NegatedCondition(new StringLikeCondition(value, field));
         }
-        return condition;
+        else {
+            finalCondition = new StringLikeCondition(value, field);
+        }
+        return finalCondition.condition();
     }
 
     @Override

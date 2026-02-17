@@ -45,63 +45,42 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
+import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
-import org.jooq.Field;
+import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Objects;
+public final class NegatedConditionTest {
 
-import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
-
-public final class SourceTypeCondition implements QueryCondition {
-
-    private final String value;
-    private final String operation;
-    private final boolean streamQuery;
-
-    public SourceTypeCondition(String value, String operation, boolean streamQuery) {
-        this.value = value;
-        this.operation = operation;
-        this.streamQuery = streamQuery;
+    @Test
+    void testNegatesTrueCondition() {
+        final QueryCondition negated = new NegatedCondition(DSL.trueCondition());
+        Assertions.assertEquals(DSL.falseCondition(), negated.condition());
     }
 
-    public Condition condition() {
-        final boolean isNotEquals = "NOT_EQUALS".equalsIgnoreCase(operation);
-        final Field<String> field;
-        if (streamQuery) {
-            field = STREAMDB.STREAM.STREAM_;
-        }
-        else {
-            field = GetArchivedObjectsFilterTable.stream;
-        }
-        final QueryCondition finalCondition;
-        if (isNotEquals) {
-            finalCondition = new NegatedCondition(new StringLikeCondition(value, field));
-        }
-        else {
-            finalCondition = new StringLikeCondition(value, field);
-        }
-        return finalCondition.condition();
+    @Test
+    void testNegatesFalseCondition() {
+        final QueryCondition negated = new NegatedCondition(DSL.falseCondition());
+        Assertions.assertEquals(DSL.trueCondition(), negated.condition());
     }
 
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
-        }
-        if (object == null) {
-            return false;
-        }
-        if (object.getClass() != this.getClass()) {
-            return false;
-        }
-        final SourceTypeCondition cast = (SourceTypeCondition) object;
-        return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
-                && this.operation.equals(cast.operation);
+    @Test
+    void testNegatesNormalCondition() {
+        final Condition original = DSL.field("target_field", String.class).like("test");
+        final QueryCondition negated = new NegatedCondition(original);
+        Assertions.assertEquals(original.not(), negated.condition());
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(value, operation, streamQuery);
+    @Test
+    void testConstructorWithQueryCondition() {
+        final Condition original = DSL.field("target_field", String.class).like("test");
+        final QueryCondition negated = new NegatedCondition(original);
+        Assertions.assertEquals(original.not(), negated.condition());
+    }
+
+    @Test
+    public void testContract() {
+        EqualsVerifier.forClass(NegatedCondition.class).verify();
     }
 }
