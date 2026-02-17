@@ -156,25 +156,26 @@ Private Attributes</h2></td></tr>
 <p class="definition">Definition at line <a class="el" href="LatestCondition_8java_source.html#l00064">64</a> of file <a class="el" href="LatestCondition_8java_source.html">LatestCondition.java</a>.</p>
 <div class="fragment"><div class="line"><span class="lineno">   64</span>                                 {</div>
 <div class="line"><span class="lineno">   65</span>        <span class="comment">// SQL connection uses localTime in the session, so we use unix to come over the conversions</span></div>
-<div class="line"><span class="lineno">   66</span>        <span class="keyword">final</span> Instant instant = Instant.ofEpochSecond(Integer.parseInt(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>));</div>
-<div class="line"><span class="lineno">   67</span>        <span class="keyword">final</span> java.sql.Date timeQualifier = <span class="keyword">new</span> Date(instant.toEpochMilli());</div>
-<div class="line"><span class="lineno">   68</span>        Condition <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a>;</div>
-<div class="line"><span class="lineno">   69</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);</div>
-<div class="line"><span class="lineno">   70</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a></div>
-<div class="line"><span class="lineno">   71</span>                .and(</div>
-<div class="line"><span class="lineno">   72</span>                        <span class="stringliteral">&quot;UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,&#39;[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$&#39;), 1, 10), &#39;%Y%m%d%H&#39;))&quot;</span></div>
-<div class="line"><span class="lineno">   73</span>                                + <span class="stringliteral">&quot; &lt;= &quot;</span> + instant.getEpochSecond()</div>
-<div class="line"><span class="lineno">   74</span>                );</div>
-<div class="line"><span class="lineno">   75</span>        <span class="comment">// raw SQL used here since following not supported for mariadb:</span></div>
-<div class="line"><span class="lineno">   76</span>        <span class="comment">// queryCondition = queryCondition.and(toTimestamp(</span></div>
-<div class="line"><span class="lineno">   77</span>        <span class="comment">// regexpReplaceAll(JOURNALDB.LOGFILE.PATH, &quot;((^.*\\/.*-)|(\\.log\\.gz.*))&quot;, &quot;&quot;),</span></div>
-<div class="line"><span class="lineno">   78</span>        <span class="comment">// &quot;YYYYMMDDHH24&quot;).lessOrEqual(Timestamp.from(instant)));</span></div>
-<div class="line"><span class="lineno">   79</span>        <span class="comment">// to match</span></div>
-<div class="line"><span class="lineno">   80</span>        <span class="comment">// 2021/09-27/sc-99-99-14-244/messages/messages-2021092722.gz.4</span></div>
-<div class="line"><span class="lineno">   81</span>        <span class="comment">// 2018/04-29/sc-99-99-14-245/f17/f17.logGLOB-2018042900.log.gz</span></div>
-<div class="line"><span class="lineno">   82</span>        <span class="comment">// NOTE uses literal path</span></div>
-<div class="line"><span class="lineno">   83</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a>;</div>
-<div class="line"><span class="lineno">   84</span>    }</div>
+<div class="line"><span class="lineno">   66</span>        <span class="keyword">final</span> <span class="keywordtype">long</span> epochSeconds = Long.parseLong(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>);</div>
+<div class="line"><span class="lineno">   67</span>        <span class="keyword">final</span> Instant instant = Instant.ofEpochSecond(epochSeconds);</div>
+<div class="line"><span class="lineno">   68</span>        <span class="keyword">final</span> java.sql.Date timeQualifier = <span class="keyword">new</span> Date(instant.toEpochMilli());</div>
+<div class="line"><span class="lineno">   69</span>        Condition <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a>;</div>
+<div class="line"><span class="lineno">   70</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);</div>
+<div class="line"><span class="lineno">   71</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a></div>
+<div class="line"><span class="lineno">   72</span>                .and(</div>
+<div class="line"><span class="lineno">   73</span>                        <span class="stringliteral">&quot;UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,&#39;[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$&#39;), 1, 10), &#39;%Y%m%d%H&#39;))&quot;</span></div>
+<div class="line"><span class="lineno">   74</span>                                + <span class="stringliteral">&quot; &lt;= &quot;</span> + instant.getEpochSecond()</div>
+<div class="line"><span class="lineno">   75</span>                );</div>
+<div class="line"><span class="lineno">   76</span>        <span class="comment">// raw SQL used here since following not supported for mariadb:</span></div>
+<div class="line"><span class="lineno">   77</span>        <span class="comment">// queryCondition = queryCondition.and(toTimestamp(</span></div>
+<div class="line"><span class="lineno">   78</span>        <span class="comment">// regexpReplaceAll(JOURNALDB.LOGFILE.PATH, &quot;((^.*\\/.*-)|(\\.log\\.gz.*))&quot;, &quot;&quot;),</span></div>
+<div class="line"><span class="lineno">   79</span>        <span class="comment">// &quot;YYYYMMDDHH24&quot;).lessOrEqual(Timestamp.from(instant)));</span></div>
+<div class="line"><span class="lineno">   80</span>        <span class="comment">// to match</span></div>
+<div class="line"><span class="lineno">   81</span>        <span class="comment">// 2021/09-27/sc-99-99-14-244/messages/messages-2021092722.gz.4</span></div>
+<div class="line"><span class="lineno">   82</span>        <span class="comment">// 2018/04-29/sc-99-99-14-245/f17/f17.logGLOB-2018042900.log.gz</span></div>
+<div class="line"><span class="lineno">   83</span>        <span class="comment">// NOTE uses literal path</span></div>
+<div class="line"><span class="lineno">   84</span>        <span class="keywordflow">return</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a>;</div>
+<div class="line"><span class="lineno">   85</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition_html_a0eb702f806e372e4bd2f5e9b67e1b9a1"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">com.teragrep.pth_06.planner.walker.conditions.LatestCondition.condition</a></div><div class="ttdeci">Condition condition()</div><div class="ttdef"><b>Definition</b> <a href="LatestCondition_8java_source.html#l00064">LatestCondition.java:64</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -205,20 +206,20 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestCondition_8java_source.html#l00087">87</a> of file <a class="el" href="LatestCondition_8java_source.html">LatestCondition.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   87</span>                                               {</div>
-<div class="line"><span class="lineno">   88</span>        <span class="keywordflow">if</span> (<span class="keyword">this</span> == <span class="keywordtype">object</span>) {</div>
-<div class="line"><span class="lineno">   89</span>            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">   90</span>        }</div>
-<div class="line"><span class="lineno">   91</span>        <span class="keywordflow">if</span> (<span class="keywordtype">object</span> == <span class="keyword">null</span>) {</div>
-<div class="line"><span class="lineno">   92</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">   93</span>        }</div>
-<div class="line"><span class="lineno">   94</span>        <span class="keywordflow">if</span> (<span class="keywordtype">object</span>.getClass() != this.getClass()) {</div>
-<div class="line"><span class="lineno">   95</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">   96</span>        }</div>
-<div class="line"><span class="lineno">   97</span>        <span class="keyword">final</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#ab3250b530420c13641e5a9274936a65a">LatestCondition</a> cast = (<a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#ab3250b530420c13641e5a9274936a65a">LatestCondition</a>) <span class="keywordtype">object</span>;</div>
-<div class="line"><span class="lineno">   98</span>        <span class="keywordflow">return</span> this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>.equals(cast.value);</div>
-<div class="line"><span class="lineno">   99</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestCondition_8java_source.html#l00088">88</a> of file <a class="el" href="LatestCondition_8java_source.html">LatestCondition.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   88</span>                                               {</div>
+<div class="line"><span class="lineno">   89</span>        <span class="keywordflow">if</span> (<span class="keyword">this</span> == <span class="keywordtype">object</span>) {</div>
+<div class="line"><span class="lineno">   90</span>            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">   91</span>        }</div>
+<div class="line"><span class="lineno">   92</span>        <span class="keywordflow">if</span> (<span class="keywordtype">object</span> == <span class="keyword">null</span>) {</div>
+<div class="line"><span class="lineno">   93</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">   94</span>        }</div>
+<div class="line"><span class="lineno">   95</span>        <span class="keywordflow">if</span> (<span class="keywordtype">object</span>.getClass() != this.getClass()) {</div>
+<div class="line"><span class="lineno">   96</span>            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">   97</span>        }</div>
+<div class="line"><span class="lineno">   98</span>        <span class="keyword">final</span> <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#ab3250b530420c13641e5a9274936a65a">LatestCondition</a> cast = (<a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#ab3250b530420c13641e5a9274936a65a">LatestCondition</a>) <span class="keywordtype">object</span>;</div>
+<div class="line"><span class="lineno">   99</span>        <span class="keywordflow">return</span> this.<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>.equals(cast.value);</div>
+<div class="line"><span class="lineno">  100</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition_html_ab3250b530420c13641e5a9274936a65a"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#ab3250b530420c13641e5a9274936a65a">com.teragrep.pth_06.planner.walker.conditions.LatestCondition.LatestCondition</a></div><div class="ttdeci">LatestCondition(String value)</div><div class="ttdef"><b>Definition</b> <a href="LatestCondition_8java_source.html#l00060">LatestCondition.java:60</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -248,10 +249,10 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestCondition_8java_source.html#l00102">102</a> of file <a class="el" href="LatestCondition_8java_source.html">LatestCondition.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  102</span>                          {</div>
-<div class="line"><span class="lineno">  103</span>        <span class="keywordflow">return</span> Objects.hashCode(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>);</div>
-<div class="line"><span class="lineno">  104</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestCondition_8java_source.html#l00103">103</a> of file <a class="el" href="LatestCondition_8java_source.html">LatestCondition.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  103</span>                          {</div>
+<div class="line"><span class="lineno">  104</span>        <span class="keywordflow">return</span> Objects.hashCode(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a2d4962af7fabb5583bbf336a81fd9ecd">value</a>);</div>
+<div class="line"><span class="lineno">  105</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">

@@ -89,6 +89,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a21e7f8703e63549ebc035cbfead59275"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7b1851375afa8c23f5508d2fa35bb5b" id="r_aa7b1851375afa8c23f5508d2fa35bb5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest.html#aa7b1851375afa8c23f5508d2fa35bb5b">conditionUpdatedTest</a> ()</td></tr>
 <tr class="separator:aa7b1851375afa8c23f5508d2fa35bb5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a679b01bfa74e3dc46c047e5f4af91ef5" id="r_a679b01bfa74e3dc46c047e5f4af91ef5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest.html#a679b01bfa74e3dc46c047e5f4af91ef5">largePositiveNumberInputTest</a> ()</td></tr>
+<tr class="separator:a679b01bfa74e3dc46c047e5f4af91ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ab00d9349f709834a53cb36533228fe" id="r_a2ab00d9349f709834a53cb36533228fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest.html#a2ab00d9349f709834a53cb36533228fe">largeNegativeNumberInputTest</a> ()</td></tr>
+<tr class="separator:a2ab00d9349f709834a53cb36533228fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaccaab58dbf6125df7b7eab0dc77c627" id="r_aaccaab58dbf6125df7b7eab0dc77c627"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest.html#aaccaab58dbf6125df7b7eab0dc77c627">equalsTest</a> ()</td></tr>
 <tr class="separator:aaccaab58dbf6125df7b7eab0dc77c627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae20515157cadafedaac53c8aa0bdf977" id="r_ae20515157cadafedaac53c8aa0bdf977"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest.html#ae20515157cadafedaac53c8aa0bdf977">notEqualsTest</a> ()</td></tr>
@@ -182,10 +186,10 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00108">108</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  108</span>                                             {</div>
-<div class="line"><span class="lineno">  109</span>        EqualsVerifier.forClass(LatestCondition.class).withNonnullFields(<span class="stringliteral">&quot;value&quot;</span>).verify();</div>
-<div class="line"><span class="lineno">  110</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00120">120</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  120</span>                                             {</div>
+<div class="line"><span class="lineno">  121</span>        EqualsVerifier.forClass(LatestCondition.class).withNonnullFields(<span class="stringliteral">&quot;value&quot;</span>).verify();</div>
+<div class="line"><span class="lineno">  122</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -204,17 +208,17 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00080">80</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   80</span>                             {</div>
-<div class="line"><span class="lineno">   81</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">   82</span>        eq1.condition();</div>
-<div class="line"><span class="lineno">   83</span>        LatestCondition eq2 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">   84</span>        LatestCondition eq3 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">   85</span>        eq3.condition();</div>
-<div class="line"><span class="lineno">   86</span>        LatestCondition eq4 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">   87</span>        Assertions.assertEquals(eq1, eq2);</div>
-<div class="line"><span class="lineno">   88</span>        Assertions.assertEquals(eq3, eq4);</div>
-<div class="line"><span class="lineno">   89</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00092">92</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   92</span>                             {</div>
+<div class="line"><span class="lineno">   93</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">   94</span>        eq1.condition();</div>
+<div class="line"><span class="lineno">   95</span>        LatestCondition eq2 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">   96</span>        LatestCondition eq3 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">   97</span>        eq3.condition();</div>
+<div class="line"><span class="lineno">   98</span>        LatestCondition eq4 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">   99</span>        Assertions.assertEquals(eq1, eq2);</div>
+<div class="line"><span class="lineno">  100</span>        Assertions.assertEquals(eq3, eq4);</div>
+<div class="line"><span class="lineno">  101</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -238,20 +242,66 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00099">99</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   99</span>                               {</div>
-<div class="line"><span class="lineno">  100</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">  101</span>        LatestCondition eq2 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">  102</span>        LatestCondition notEq = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;1000&quot;</span>);</div>
-<div class="line"><span class="lineno">  103</span>        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());</div>
-<div class="line"><span class="lineno">  104</span>        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());</div>
-<div class="line"><span class="lineno">  105</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00111">111</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  111</span>                               {</div>
+<div class="line"><span class="lineno">  112</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">  113</span>        LatestCondition eq2 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">  114</span>        LatestCondition notEq = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;1000&quot;</span>);</div>
+<div class="line"><span class="lineno">  115</span>        Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());</div>
+<div class="line"><span class="lineno">  116</span>        Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());</div>
+<div class="line"><span class="lineno">  117</span>    }</div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestConditionTest_a14480192bf05110803f911352dd456d5_cgraph.svg" width="720" height="51"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
 </div>
 
+</div>
+</div>
+<a id="a2ab00d9349f709834a53cb36533228fe" name="a2ab00d9349f709834a53cb36533228fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ab00d9349f709834a53cb36533228fe">&#9670;&#160;</a></span>largeNegativeNumberInputTest()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.planner.walker.conditions.LatestConditionTest.largeNegativeNumberInputTest </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00086">86</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   86</span>                                               {</div>
+<div class="line"><span class="lineno">   87</span>        <span class="keyword">final</span> QueryCondition eq = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;-29786022887&quot;</span>);</div>
+<div class="line"><span class="lineno">   88</span>        Assertions.assertDoesNotThrow(eq::condition);</div>
+<div class="line"><span class="lineno">   89</span>    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a679b01bfa74e3dc46c047e5f4af91ef5" name="a679b01bfa74e3dc46c047e5f4af91ef5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a679b01bfa74e3dc46c047e5f4af91ef5">&#9670;&#160;</a></span>largePositiveNumberInputTest()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.planner.walker.conditions.LatestConditionTest.largePositiveNumberInputTest </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00080">80</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   80</span>                                               {</div>
+<div class="line"><span class="lineno">   81</span>        <span class="keyword">final</span> QueryCondition latestCondition = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;29786022887&quot;</span>);</div>
+<div class="line"><span class="lineno">   82</span>        Assertions.assertDoesNotThrow(latestCondition::condition);</div>
+<div class="line"><span class="lineno">   83</span>    }</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="ae20515157cadafedaac53c8aa0bdf977" name="ae20515157cadafedaac53c8aa0bdf977"></a>
@@ -269,12 +319,12 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00092">92</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   92</span>                                {</div>
-<div class="line"><span class="lineno">   93</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
-<div class="line"><span class="lineno">   94</span>        LatestCondition notEq = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;1000&quot;</span>);</div>
-<div class="line"><span class="lineno">   95</span>        Assertions.assertNotEquals(eq1, notEq);</div>
-<div class="line"><span class="lineno">   96</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="LatestConditionTest_8java_source.html#l00104">104</a> of file <a class="el" href="LatestConditionTest_8java_source.html">LatestConditionTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  104</span>                                {</div>
+<div class="line"><span class="lineno">  105</span>        LatestCondition eq1 = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;946720800&quot;</span>);</div>
+<div class="line"><span class="lineno">  106</span>        LatestCondition notEq = <span class="keyword">new</span> LatestCondition(<span class="stringliteral">&quot;1000&quot;</span>);</div>
+<div class="line"><span class="lineno">  107</span>        Assertions.assertNotEquals(eq1, notEq);</div>
+<div class="line"><span class="lineno">  108</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
