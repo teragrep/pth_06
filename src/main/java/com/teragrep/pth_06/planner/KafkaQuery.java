@@ -56,7 +56,7 @@ import java.util.Map;
  * @since 08/06/2022
  * @author Mikko Kortelainen
  */
-public interface KafkaQuery extends AutoCloseable {
+public interface KafkaQuery {
 
     public abstract Map<TopicPartition, Long> getInitialEndOffsets();
 
@@ -65,4 +65,6 @@ public interface KafkaQuery extends AutoCloseable {
     public abstract Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset);
 
     public abstract void commit(KafkaOffset offset);
+
+    public abstract void close();
 }
