@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1WithoutFiltersConditionTest.html" target="_top" xlink:title="Comparing Condition equality using toString() since jooq Condition uses just toString() to check for ...">
+<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ValidElement.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="248,-30 0,-30 0,0 248,0 248,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.teragrep.pth_06.planner.walker.conditions.</text>
-<text text-anchor="middle" x="124" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">WithoutFiltersConditionTest</text>
+<text text-anchor="middle" x="124" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">ValidElement</text>
 </a>
 </g>
 </g>

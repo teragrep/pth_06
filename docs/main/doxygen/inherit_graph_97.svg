@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1MockS3.html" target="_top" xlink:title=" ">
+<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EventMetadataTest.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="159,-30 0,-30 0,0 159,0 159,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.teragrep.pth_06.task.s3.</text>
-<text text-anchor="middle" x="79.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">MockS3</text>
+<text text-anchor="middle" x="79.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">EventMetadataTest</text>
 </a>
 </g>
 </g>
