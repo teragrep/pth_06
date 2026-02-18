@@ -188,10 +188,10 @@ class StreamDBClientTest {
     public void pullToSliceTableSingleTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-05 and set logtime-string in path to 2023100502 UTC, but set epoch values to null.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
-        // Set logdate to 2023-10-06 and set logtime-string in path to 2023100602 UTC, but set epoch values to null.
+        // Set logdate and logtime to 2023-10-05:22 UTC-4 and set epoch_hour in path to 2023-10-06:02 UTC.
         LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696471200L + 24L * 3600L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
@@ -201,7 +201,7 @@ class StreamDBClientTest {
         final Config config = new Config(opts);
         Assertions.assertDoesNotThrow(() -> {
             try (final StreamDBClient sdc = new StreamDBClient(config)) {
-                // Only the row with logdate of "2023-10-4" should be pulled to slicetable.
+                // Only the row with epoch_hour referring to 2023-10-5 should be pulled to slicetable.
                 int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
                 Assertions.assertEquals(1, rows);
             }
@@ -215,10 +215,10 @@ class StreamDBClientTest {
     public void pullToSliceTableMultiTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100502 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100503 UTC
+        // Set logdate and logtime to 2023-10-04:23 UTC-4 and set epoch_hour in path to 2023-10-05:03 UTC.
         LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696471200L + 3600L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
@@ -228,7 +228,7 @@ class StreamDBClientTest {
         final Config config = new Config(opts);
         Assertions.assertDoesNotThrow(() -> {
             try (final StreamDBClient sdc = new StreamDBClient(config)) {
-                // Both of the rows in the database for logdate of "2023-10-5" should be pulled to the slicetable.
+                // Both of the rows in the database with epoch_hour referring to "2023-10-5" should be pulled to the slicetable.
                 int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
                 Assertions.assertEquals(2, rows);
             }
@@ -243,7 +243,7 @@ class StreamDBClientTest {
     public void pullToSliceTableInvalidIndexTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100502 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
@@ -268,7 +268,7 @@ class StreamDBClientTest {
     public void epochHourTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate and logtime to 2023-10-04 instead of the correct 2023-10-05 which epoch_hour is at, to test if epoch_hour takes priority or not.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
 
@@ -349,11 +349,11 @@ class StreamDBClientTest {
     public void getNextHourAndSizeFromSliceTableEpochTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100422 UTC.
+        // Set logdate and logtime to 2023-10-04:18 UTC-4 and set epoch_hour in path to 2023-10-04:22 UTC.
         Instant instant = Instant.ofEpochSecond(1696456800L);
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696456800L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
-        // Set logdate to 2023-10-04 and set logtime-string in path to 2023100423 UTC.
+        // Set logdate and logtime to 2023-10-04:19 UTC-4 and set epoch_hour in path to 2023-10-04:23 UTC.
         LogfileRecord logfileRecord2 = logfileRecordForEpoch(1696456800L + 3600L, false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
@@ -629,7 +629,7 @@ class StreamDBClientTest {
 
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200);
         Instant instantPlusHour = instant.plusSeconds(3600);
         LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
@@ -668,7 +668,7 @@ class StreamDBClientTest {
 
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-04 22:00 UTC-4.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
         ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
         ZonedDateTime instantPlusHour = instantZonedDateTime.plusHours(1);
@@ -709,7 +709,7 @@ class StreamDBClientTest {
     public void logtagIdTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
         LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
@@ -749,7 +749,7 @@ class StreamDBClientTest {
     public void logtagTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
         LogfileRecord logfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
@@ -774,7 +774,7 @@ class StreamDBClientTest {
     public void pullToSliceTableSkipsCorruptedLogfilesTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Inserting logfile with logtime of 2023-10-05 02:00 UTC.
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
         Instant instant = Instant.ofEpochSecond(1696471200L);
         LogfileRecord corruptedLogfileRecord = logfileRecordForEpoch(instant.getEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(corruptedLogfileRecord).execute();
@@ -899,7 +899,7 @@ class StreamDBClientTest {
     public void epochHourTimezoneTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
-        // Create a LogfileRecord object with epoch_hour of 2023-10-05 01:00 UTC.
+        // Set logdate and logtime to 2023-10-04:21 UTC-4 and set epoch_hour in path to 2023-10-05:01 UTC.
         LogfileRecord logfileRecord = logfileRecordForEpoch(1696467600L, false);
         // Insert the logfileRecord to the database using JOOQ.
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
