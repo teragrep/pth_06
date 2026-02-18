@@ -148,9 +148,8 @@ public class XmlWalkerTest {
         LOGGER.debug("Result=" + result);
         LOGGER.debug("---------------");
         q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like '%'\n" + "  or (\n"
-                + "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + "  )\n" + ")";
+        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
         result = conditionWalker.fromString(q, true).toString();
         assertEquals(e, result);
     }
@@ -159,9 +158,8 @@ public class XmlWalkerTest {
     void fromStringOrAnd1Test() throws Exception {
         String q, e, result;
         q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like '%'\n" + "  or (\n"
-                + "    \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + "  )\n" + ")";
+        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
         result = conditionWalker.fromString(q, true).toString();
         assertEquals(e, result);
     }
@@ -173,9 +171,8 @@ public class XmlWalkerTest {
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         e = "(\n" + "  (\n" + "    not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n"
                 + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n"
-                + "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" + "  )\n" + "  or (\n"
-                + "    \"streamdb\".\"stream\".\"directory\" like '%'\n"
-                + "    and \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" + "  )\n" + ")";
+                + "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" + "  )\n"
+                + "  or \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" + ")";
         result = conditionWalker.fromString(q, true).toString();
         assertEquals(e, result);
     }
@@ -188,8 +185,7 @@ public class XmlWalkerTest {
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n"
-                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
                 + "  )\n" + ")";
@@ -204,8 +200,7 @@ public class XmlWalkerTest {
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"directory\" like '%'\n"
-                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n"

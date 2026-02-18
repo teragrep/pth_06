@@ -45,63 +45,49 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
-import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import java.util.Objects;
 
-import static com.teragrep.pth_06.jooq.generated.streamdb.Streamdb.STREAMDB;
-
-public final class SourceTypeCondition implements QueryCondition {
+public final class StringLikeCondition implements QueryCondition {
 
     private final String value;
-    private final String operation;
-    private final boolean streamQuery;
+    private final Field<String> field;
 
-    public SourceTypeCondition(String value, String operation, boolean streamQuery) {
+    public StringLikeCondition(final String value, final Field<String> field) {
         this.value = value;
-        this.operation = operation;
-        this.streamQuery = streamQuery;
-    }
-
-    public Condition condition() {
-        final boolean isNotEquals = "NOT_EQUALS".equalsIgnoreCase(operation);
-        final Field<String> field;
-        if (streamQuery) {
-            field = STREAMDB.STREAM.STREAM_;
-        }
-        else {
-            field = GetArchivedObjectsFilterTable.stream;
-        }
-        final QueryCondition finalCondition;
-        if (isNotEquals) {
-            finalCondition = new NegatedCondition(new StringLikeCondition(value, field));
-        }
-        else {
-            finalCondition = new StringLikeCondition(value, field);
-        }
-        return finalCondition.condition();
+        this.field = field;
     }
 
     @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
+    public Condition condition() {
+        if ("*".equalsIgnoreCase(value)) {
+            return DSL.trueCondition();
         }
-        if (object == null) {
-            return false;
+        final String likeValue = value.replace('*', '%');
+        return field.like(likeValue);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        final boolean rv;
+        if (o == null) {
+            rv = false;
         }
-        if (object.getClass() != this.getClass()) {
-            return false;
+        else if (getClass() != o.getClass()) {
+            rv = false;
         }
-        final SourceTypeCondition cast = (SourceTypeCondition) object;
-        return this.streamQuery == cast.streamQuery && this.value.equals(cast.value)
-                && this.operation.equals(cast.operation);
+        else {
+            final StringLikeCondition that = (StringLikeCondition) o;
+            rv = Objects.equals(value, that.value) && Objects.equals(field, that.field);
+        }
+        return rv;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, operation, streamQuery);
+        return Objects.hash(value, field);
     }
 }

@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +77,46 @@ public class SourceTypeConditionTest {
         Condition streamElementCondition = new SourceTypeCondition("f17", "NOT_EQUALS", true).condition();
         Assertions.assertEquals(e, elementCondition.toString());
         Assertions.assertEquals(eStream, streamElementCondition.toString());
+    }
+
+    @Test
+    public void wildcardAsTrueTest() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("*", "EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("*", "EQUALS", true);
+        Assertions.assertEquals(DSL.trueCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.trueCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void wildcardNegationAsFalseTest() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("*", "NOT_EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("*", "NOT_EQUALS", true);
+        Assertions.assertEquals(DSL.falseCondition(), elementCondition.condition());
+        Assertions.assertEquals(DSL.falseCondition(), streamElementCondition.condition());
+    }
+
+    @Test
+    public void testPartialWildcard() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("value*", "EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("value*", "EQUALS", true);
+        String e = "\"getArchivedObjects_filter_table\".\"stream\" like 'value%'";
+        String eStream = "\"streamdb\".\"stream\".\"stream\" like 'value%'";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
+    }
+
+    @Test
+    public void testPartialWildcardNegation() {
+        SourceTypeCondition elementCondition = new SourceTypeCondition("value*", "NOT_EQUALS", false);
+        SourceTypeCondition streamElementCondition = new SourceTypeCondition("value*", "NOT_EQUALS", true);
+        String e = "not (\"getArchivedObjects_filter_table\".\"stream\" like 'value%')";
+        String eStream = "not (\"streamdb\".\"stream\".\"stream\" like 'value%')";
+        Condition elementResult = elementCondition.condition();
+        Condition streamElementResult = streamElementCondition.condition();
+        Assertions.assertEquals(e, elementResult.toString());
+        Assertions.assertEquals(eStream, streamElementResult.toString());
     }
 
     @Test

@@ -47,6 +47,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 
 import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
+import org.jooq.Field;
 
 import java.util.Objects;
 
@@ -65,17 +66,22 @@ public final class HostCondition implements QueryCondition {
     }
 
     public Condition condition() {
-        Condition condition;
+        final boolean isNotEquals = "NOT_EQUALS".equalsIgnoreCase(operation);
+        final Field<String> field;
         if (streamQuery) {
-            condition = STREAMDB.HOST.NAME.like(value.replace('*', '%'));
+            field = STREAMDB.HOST.NAME;
         }
         else {
-            condition = GetArchivedObjectsFilterTable.host.like(value.replace('*', '%').toLowerCase());
+            field = GetArchivedObjectsFilterTable.host;
         }
-        if ("NOT_EQUALS".equalsIgnoreCase(operation)) {
-            condition = condition.not();
+        final QueryCondition finalCondition;
+        if (isNotEquals) {
+            finalCondition = new NegatedCondition(new StringLikeCondition(value, field));
         }
-        return condition;
+        else {
+            finalCondition = new StringLikeCondition(value, field);
+        }
+        return finalCondition.condition();
     }
 
     @Override
