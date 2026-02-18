@@ -414,6 +414,7 @@
               <file>${project.basedir}/eclipse-java-formatter.xml</file>
               <version>4.10.0</version>
             </eclipse>
+            <toggleOffOn></toggleOffOn>
             <removeUnusedImports></removeUnusedImports>
             <licenseHeader>
               <file>${project.basedir}/license-header</file>

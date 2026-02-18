@@ -63,36 +63,24 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     private final String value;
     private final ConditionConfig config;
-    private final Condition condition;
-    private final Set<Table<?>> tableSet;
 
-    public IndexStatementCondition(String value, ConditionConfig config) {
-        this(value, config, DSL.noCondition());
-    }
-
-    public IndexStatementCondition(String value, ConditionConfig config, Condition condition) {
+    public IndexStatementCondition(final String value, final ConditionConfig config) {
         this.value = value;
         this.config = config;
-        this.condition = condition;
-        this.tableSet = new HashSet<>();
     }
 
     public Condition condition() {
         if (!config.bloomEnabled()) {
-            LOGGER.debug("Indexstatement reached with bloom disabled");
-            return condition;
-        }
-        Condition newCondition = condition;
-        if (tableSet.isEmpty()) {
-            // get all tables that pattern match with search value
-            final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
-            final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
-                    config.context(),
-                    tableFilteringCondition
+            throw new IllegalStateException(
+                    "IndexStatementCondition.condition() is not supported when bloom is disabled"
             );
-            tableSet.addAll(conditionMatchingTables.tables());
         }
-        if (!tableSet.isEmpty()) {
+        final Condition newCondition;
+        final Set<Table<?>> tableSet = requiredTables();
+        if (tableSet.isEmpty()) {
+            newCondition = DSL.trueCondition();
+        }
+        else {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Found pattern match on <{}> table(s)", tableSet.size());
             }
@@ -127,10 +115,12 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     @Override
     public Set<Table<?>> requiredTables() {
-        if (tableSet.isEmpty()) {
-            condition();
-        }
-        return tableSet;
+        final QueryCondition tableFilteringCondition = new RegexLikeCondition(value);
+        final DatabaseTables conditionMatchingTables = new ConditionMatchBloomDBTables(
+                config.context(),
+                tableFilteringCondition
+        );
+        return new HashSet<>(conditionMatchingTables.tables());
     }
 
     @Override
@@ -145,12 +135,11 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
             return false;
         }
         final IndexStatementCondition cast = (IndexStatementCondition) object;
-        return this.value.equals(cast.value) && this.config.equals(cast.config) && this.condition.equals(cast.condition)
-                && this.tableSet.equals(cast.tableSet);
+        return this.value.equals(cast.value) && this.config.equals(cast.config);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(value, config, condition, tableSet);
+        return Objects.hash(value, config);
     }
 }
