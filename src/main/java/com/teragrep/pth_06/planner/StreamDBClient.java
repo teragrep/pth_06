@@ -202,20 +202,15 @@ public final class StreamDBClient implements AutoCloseable {
 
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
-        final Field<Date> logdateFunction = DSL
-                .field(
-                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
-                        JOURNALDB.LOGFILE.EPOCH_HOUR
-                );
         SelectConditionStep<Record1<Integer>> corruptedLogfilesField = DSL
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
                 .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
-        SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+        SelectOnConditionStep<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
-                        JOURNALDB.HOST.NAME, logdateFunction, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
-                        nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        JOURNALDB.HOST.NAME, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH, nestedTopNQuery.logtime(),
+                        JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
@@ -301,7 +296,7 @@ public final class StreamDBClient implements AutoCloseable {
         return deletedRowsCount;
     }
 
-    Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
+    Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> getHourRange(
             long excludedStartHour,
             long includedEndHour
     ) {
@@ -310,11 +305,10 @@ public final class StreamDBClient implements AutoCloseable {
                         "StreamDBClient.getHourRange called excludedStartHour <{}> includedEndHour <{}>",
                         excludedStartHour, includedEndHour
                 );
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result = ctx
+        Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> result = ctx
                 .select(
-                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logdate,
-                        SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
-                        SliceTable.uncompressedFilesize
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.bucket,
+                        SliceTable.path, SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
                 )
                 .from(SliceTable.SLICE_TABLE)
                 .where(SliceTable.logtime.greaterThan(excludedStartHour).and(SliceTable.logtime.lessOrEqual(includedEndHour)).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).fetch();

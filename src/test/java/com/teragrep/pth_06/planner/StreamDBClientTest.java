@@ -293,12 +293,11 @@ class StreamDBClientTest {
         Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
         latestOffset = nextHourAndSizeFromSliceTable.offset();
         Assertions.assertEquals(1696471200L, latestOffset);
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
-        // Assert that the resulting logfile metadata is as expected for logdate and logtime.
-        Assertions.assertEquals(1696471200L, hourRange.get(0).get(7, Long.class));
-        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(4, Date.class));
+        // Assert that the resulting logfile metadata is as expected for logtime.
+        Assertions.assertEquals(1696471200L, hourRange.get(0).get(6, Long.class));
     }
 
     /**
@@ -336,7 +335,7 @@ class StreamDBClientTest {
                 long latestOffset = nextHourAndSizeFromSliceTable.offset();
                 // zonedDateTime is used for checking timestamp errors caused by synthetic creation of logtime from logfile path column using regex.
                 Assertions.assertEquals(instantZonedDateTime.toEpochSecond(), latestOffset);
-                Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRange = sdc
                         .getHourRange(earliestEpoch, latestOffset);
                 Assertions.assertEquals(1, hourRange.size());
                 // Assert that resulting logfile metadata for logtime is affected by the session timezone when epoch columns are null and session timezone is America/New_York.
@@ -738,7 +737,7 @@ class StreamDBClientTest {
                 Assertions.assertFalse(nextHourAndSizeFromSliceTable.isStub);
                 final long latestOffset = nextHourAndSizeFromSliceTable.offset();
                 // Get the record from slicetable and assert that it was found with the queryXML condition.
-                Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+                Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRange = sdc
                         .getHourRange(earliestEpoch, latestOffset);
                 Assertions.assertEquals(1, hourRange.size());
             }
@@ -841,19 +840,17 @@ class StreamDBClientTest {
 
         // Get the logfile results from the known hour range.
         Assertions.assertEquals(1696467600L, latestOffset);
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = sdc
+        Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRange = sdc
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRange.size());
         // Do the same for sdcUTC
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRangeUTC = sdcUTC
+        Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRangeUTC = sdcUTC
                 .getHourRange(earliestEpoch, latestOffset);
         Assertions.assertEquals(1, hourRangeUTC.size());
-        // Assert that the resulting logfile metadata is as expected for logdate and logtime, they should not be affected by session timezone.
+        // Assert that the resulting logfile metadata is as expected for logtime, they should not be affected by session timezone.
         ZonedDateTime zonedDateTimeUTC = ZonedDateTime.of(2023, 10, 5, 1, 0, 0, 0, ZoneId.of("UTC"));
-        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(7, Long.class));
-        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRangeUTC.get(0).get(7, Long.class));
-        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRange.get(0).get(4, Date.class));
-        Assertions.assertEquals(Date.valueOf("2023-10-5"), hourRangeUTC.get(0).get(4, Date.class));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(6, Long.class));
+        Assertions.assertEquals(zonedDateTimeUTC.toEpochSecond(), hourRangeUTC.get(0).get(6, Long.class));
     }
 
     @Test
