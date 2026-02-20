@@ -51,6 +51,7 @@ import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import com.teragrep.pth_06.planner.walker.KafkaWalker;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.TopicAuthorizationException;
@@ -263,5 +264,17 @@ public class KafkaQueryProcessor implements KafkaQuery {
     @Override
     public void commit(KafkaOffset offset) {
         // no-op
+    }
+
+    @Override
+    public void close() throws IOException {
+        LOGGER.debug("close() called unsubscribing and closing consumer");
+        try {
+            kafkaConsumer.unsubscribe();
+            kafkaConsumer.close(Duration.ofSeconds(30));
+        }
+        catch (final KafkaException | IllegalArgumentException exception) {
+            throw new IOException("Error during closing: " + exception.getMessage(), exception);
+        }
     }
 }
