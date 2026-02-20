@@ -86,7 +86,7 @@ public class KafkaQueryProcessor implements KafkaQuery {
     public KafkaQueryProcessor(Config config) {
         this.persistedEndOffsetMap = new HashMap<>();
         this.continuousProcessing = config.kafkaConfig.kafkaContinuousProcessing;
-        Map<String, Object> executorKafkaProperties = config.kafkaConfig.driverOpts;
+        Map<String, Object> executorKafkaProperties = config.kafkaConfig.executorOpts;
         this.kafkaConsumer = new KafkaConsumer<>(executorKafkaProperties);
 
         String topicsRegexString = null;
