@@ -11,10 +11,10 @@
 <!-- Node0 -->
 <g id="Node000000" class="node">
 <title>Node0</title>
-<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1streamdb_1_1Tables.html" target="_top" xlink:title="Convenience access to all tables in streamdb.">
+<g id="a_Node000000"><a xlink:href="classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1streamdb_1_1Keys_1_1UniqueKeys0.html" target="_top" xlink:title=" ">
 <polygon fill="white" stroke="#666666" points="247,-30 0,-30 0,0 247,0 247,-30"/>
 <text text-anchor="start" x="8" y="-18" font-family="Helvetica,sans-Serif" font-size="10.00">com.teragrep.pth_06.jooq.generated.streamdb.</text>
-<text text-anchor="middle" x="123.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Tables</text>
+<text text-anchor="middle" x="123.5" y="-7" font-family="Helvetica,sans-Serif" font-size="10.00">Keys.UniqueKeys0</text>
 </a>
 </g>
 </g>
