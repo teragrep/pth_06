@@ -68,20 +68,17 @@ public final class NestedTopNQuery {
     private final String innerTableName = "limited";
     private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
 
-    // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
-    private final SafeLogtimeFunction logtimeFunction = new SafeLogtimeFunction(JOURNALDB.LOGFILE.PATH);
-
     private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
     private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
     private final Field<String> stream = DSL.field(DSL.name(innerTableName, "stream"), String.class);
-    private final Field<Long> logtime = DSL.field(DSL.name(innerTableName, "logtime"), Long.class);
-    private final Field<Long> logtimeForOrderBy = DSL.field("logtime", Long.class);
+    private final Field<Long> epochHour = DSL.field(DSL.name(innerTableName, "epochHour"), Long.class);
+    private final Field<Long> epochHourForOrderBy = DSL.field("epochHour", Long.class);
 
     private final SelectField<?>[] resultFields = {
             JOURNALDB.LOGFILE.ID.as(id),
             GetArchivedObjectsFilterTable.directory.as(directory),
             GetArchivedObjectsFilterTable.stream.as(stream),
-            logtimeFunction.asField().as(logtime)
+            JOURNALDB.LOGFILE.EPOCH_HOUR.as(epochHour)
     };
 
     public NestedTopNQuery(final StreamDBClient streamDBClient, final boolean isDebug) {
@@ -117,14 +114,19 @@ public final class NestedTopNQuery {
         }
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
+        final Field<Date> logdateFunction = DSL
+                .field(
+                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
+                        JOURNALDB.LOGFILE.EPOCH_HOUR
+                );
         return selectOnConditionStep
-                .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
-                .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
+                .where(logdateFunction.eq(day).and(journaldbConditionArg))
+                .orderBy(epochHourForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
     }
 
     public Field<Long> logtime() {
-        return logtime;
+        return epochHour;
     }
 
     public Field<String> stream() {
@@ -145,17 +147,17 @@ public final class NestedTopNQuery {
             return false;
         }
         final NestedTopNQuery that = (NestedTopNQuery) o;
-        return Objects.equals(logger, that.logger) && Objects.equals(streamDBClient, that.streamDBClient) && Objects
-                .equals(innerTableName, that.innerTableName) && Objects.equals(innerTable, that.innerTable)
-                && Objects.equals(logtimeFunction, that.logtimeFunction) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(logtime, that.logtime) && Objects.equals(logtimeForOrderBy, that.logtimeForOrderBy) && Objects.deepEquals(resultFields, that.resultFields);
+        return Objects.equals(logger, that.logger) && Objects
+                .equals(streamDBClient, that.streamDBClient) && Objects.equals(innerTableName, that.innerTableName)
+                && Objects.equals(innerTable, that.innerTable) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(epochHour, that.epochHour) && Objects.equals(epochHourForOrderBy, that.epochHourForOrderBy) && Objects.deepEquals(resultFields, that.resultFields);
     }
 
     @Override
     public int hashCode() {
         return Objects
                 .hash(
-                        logger, streamDBClient, innerTableName, innerTable, logtimeFunction, id, directory, stream,
-                        logtime, logtimeForOrderBy, Arrays.hashCode(resultFields)
+                        logger, streamDBClient, innerTableName, innerTable, id, directory, stream, epochHour,
+                        epochHourForOrderBy, Arrays.hashCode(resultFields)
                 );
     }
 }

@@ -164,6 +164,7 @@ CREATE TABLE `corrupted_archive` (
 INSERT INTO logtag (id, logtag) VALUES (1, 'example');
 INSERT INTO host (id, name) VALUES (1, 'testHost1');
 INSERT INTO bucket (id, name) VALUES (1, 'bucket1');
+INSERT INTO bucket (id, name) VALUES (2, 'bucket2');
 INSERT INTO category (id, name) VALUES (1, 'testCategory');
 INSERT INTO source_system (id, name) VALUES (2, 'testSourceSystem2');
 flush privileges;
