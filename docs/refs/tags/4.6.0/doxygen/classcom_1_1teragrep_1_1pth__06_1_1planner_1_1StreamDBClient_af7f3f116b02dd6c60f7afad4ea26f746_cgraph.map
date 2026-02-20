@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.planner.StreamDBClient.close" name="com.teragrep.pth_06.planner.StreamDBClient.close">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,37,219,77"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="267,5,497,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="219,42,253,38,253,43,219,47"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#ad52486032735bfcfefd8234ee71af7ed" title=" " alt="" coords="267,69,497,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="219,67,253,71,253,77,219,73"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="545,5,776,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="498,23,532,23,532,28,498,28"/>
+</map>

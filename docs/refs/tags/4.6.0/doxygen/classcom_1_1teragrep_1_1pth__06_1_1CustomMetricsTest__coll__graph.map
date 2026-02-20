@@ -1,0 +1,8 @@
+<map id="com.teragrep.pth_06.CustomMetricsTest" name="com.teragrep.pth_06.CustomMetricsTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,211,216,251"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html" title=" " alt="" coords="13,5,209,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,59,105,108,105,148,111,210,106,211,100,148,100,108,104,59"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html" title=" " alt="" coords="258,108,454,148"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="171,48,311,105,309,110,169,53"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="298,156,158,213,156,208,296,151"/>
+</map>
