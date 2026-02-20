@@ -156,7 +156,7 @@ Private Attributes</h2></td></tr>
 <div class="fragment"><div class="line"><span class="lineno">   86</span>                                              {</div>
 <div class="line"><span class="lineno">   87</span>        this.persistedEndOffsetMap = <span class="keyword">new</span> HashMap&lt;&gt;();</div>
 <div class="line"><span class="lineno">   88</span>        this.continuousProcessing = config.kafkaConfig.kafkaContinuousProcessing;</div>
-<div class="line"><span class="lineno">   89</span>        Map&lt;String, Object&gt; executorKafkaProperties = config.kafkaConfig.driverOpts;</div>
+<div class="line"><span class="lineno">   89</span>        Map&lt;String, Object&gt; executorKafkaProperties = config.kafkaConfig.executorOpts;</div>
 <div class="line"><span class="lineno">   90</span>        this.kafkaConsumer = <span class="keyword">new</span> KafkaConsumer&lt;&gt;(executorKafkaProperties);</div>
 <div class="line"><span class="lineno">   91</span> </div>
 <div class="line"><span class="lineno">   92</span>        String topicsRegexString = <span class="keyword">null</span>;</div>
