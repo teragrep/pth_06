@@ -96,6 +96,7 @@ public class Indexes {
     public static final Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Indexes0.LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID;
     public static final Index LOGFILE_FK_LOGFILE__CI_ID = Indexes0.LOGFILE_FK_LOGFILE__CI_ID;
     public static final Index LOGFILE_FK_LOGFILE__LOGTAG_ID = Indexes0.LOGFILE_FK_LOGFILE__LOGTAG_ID;
+    public static final Index LOGFILE_FK_LOGFILE__OBJECT_FORMAT_ID = Indexes0.LOGFILE_FK_LOGFILE__OBJECT_FORMAT_ID;
     public static final Index LOGFILE_IX_LOGFILE_EPOCH_EXPIRES = Indexes0.LOGFILE_IX_LOGFILE_EPOCH_EXPIRES;
     public static final Index LOGFILE_IX_LOGFILE_EXPIRATION = Indexes0.LOGFILE_IX_LOGFILE_EXPIRATION;
     public static final Index LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID = Indexes0.LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID;
@@ -125,6 +126,7 @@ public class Indexes {
         public static Index LOGFILE_CIX_LOGFILE_LOGDATE_HOST_ID_LOGTAG_ID = Internal.createIndex("cix_logfile_logdate_host_id_logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGDATE, Logfile.LOGFILE.HOST_ID, Logfile.LOGFILE.LOGTAG_ID }, false);
         public static Index LOGFILE_FK_LOGFILE__CI_ID = Internal.createIndex("fk_logfile__ci_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.CI_ID }, false);
         public static Index LOGFILE_FK_LOGFILE__LOGTAG_ID = Internal.createIndex("fk_logfile__logtag_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.LOGTAG_ID }, false);
+        public static Index LOGFILE_FK_LOGFILE__OBJECT_FORMAT_ID = Internal.createIndex("fk_logfile__object_format_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.OBJECT_FORMAT_ID }, false);
         public static Index LOGFILE_IX_LOGFILE_EPOCH_EXPIRES = Internal.createIndex("ix_logfile_epoch_expires", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EPOCH_EXPIRES }, false);
         public static Index LOGFILE_IX_LOGFILE_EXPIRATION = Internal.createIndex("ix_logfile_expiration", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.EXPIRATION }, false);
         public static Index LOGFILE_IX_LOGFILE__SOURCE_SYSTEM_ID = Internal.createIndex("ix_logfile__source_system_id", Logfile.LOGFILE, new OrderField[] { Logfile.LOGFILE.SOURCE_SYSTEM_ID }, false);
