@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 public final class XmlToSqlTest {
 
     @Test
-    void testStreamDBQueryIndexNotEquals() {
+    public void testStreamDBQueryIndexNotEquals() {
         final String query = "<index value=\"haproxy\" operation=\"NOT_EQUALS\"/>";
         final String expected = "not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')";
         final String result = Assertions
@@ -61,7 +61,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void testStreamDBQueryIndexAndSourceType() {
+    public void testStreamDBQueryIndexAndSourceType() {
         final String query = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
         final String expected = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
                 + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
@@ -71,7 +71,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_StreamDB_NotIndexOrSourcetype() {
+    public void testStreamDBQueryNotIndexOrSourcetype() {
         final String query = "<OR><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
         final String expected = "(\n" + "  not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n"
                 + "  or \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
@@ -92,7 +92,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_OrTimestampGTE() {
+    public void testJournalDBQueryTimestampBetweenGreaterThanOrEqual() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611612000\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         // spotless:off
         final String expected = "(\n" +
@@ -115,7 +115,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void testJournalDBQueryOrTimestampLessThanEquals() {
+    public void testJournalDBQueryOrTimestampLessThanEquals() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><latest value=\"1611611999\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         final String expected = "(\n" + "  (\n"
                 + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
@@ -132,7 +132,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_OrTimestampBetween() {
+    public void testJournalDBQueryOrTimestampBetween() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         // spotless:off
         final String expected = "(\n" +
@@ -157,7 +157,7 @@ public final class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_AndTimestampBetween() {
+    public void testJournalDBQueryAndTimestampBetween() {
         final String query = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
         // spotless:off
         final String expected = "(\n" +
