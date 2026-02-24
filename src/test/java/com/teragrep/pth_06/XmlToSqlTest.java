@@ -49,7 +49,16 @@ import com.teragrep.pth_06.planner.walker.ConditionWalker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
 public final class XmlToSqlTest {
+
+    private final ZoneId systemDefault = ZoneId.systemDefault();
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Test
     public void testStreamDBQueryIndexNotEquals() {
@@ -95,6 +104,9 @@ public final class XmlToSqlTest {
     public void testJournalDBQueryTimestampBetweenGreaterThanOrEqual() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611612000\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         // spotless:off
+        final long earliestEpoch = 1611612000;
+        final ZonedDateTime earliestDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(earliestEpoch), systemDefault);
+        final String earliestDate = earliestDateTime.toLocalDate().format(formatter);
         final String expected = "(\n" +
                 "  (\n" +
                 "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n" +
@@ -104,8 +116,8 @@ public final class XmlToSqlTest {
                 "  or (\n" +
                 "    true\n" +
                 "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611612000)\n" +
+                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '"+ earliestDate + "'\n" +
+                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "+ earliestDateTime.toEpochSecond() +")\n" +
                 "  )\n" +
                 ")";
         // spotless:on
@@ -117,15 +129,18 @@ public final class XmlToSqlTest {
     @Test
     public void testJournalDBQueryOrTimestampLessThanEquals() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><latest value=\"1611611999\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
+        final long latestEpoch = 1611611999L;
+        final ZonedDateTime latestDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(latestEpoch), systemDefault);
+        final String latestDate = latestDateTime.toLocalDate().format(formatter);
         final String expected = "(\n" + "  (\n"
                 + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-01-25'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1611611999)\n"
-                + "  )\n" + ")";
+                + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + latestDate + "'\n"
+                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
+                + latestDateTime.toEpochSecond() + ")\n" + "  )\n" + ")";
         final String result = Assertions
                 .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false).toString());
         Assertions.assertEquals(expected, result);
@@ -134,6 +149,13 @@ public final class XmlToSqlTest {
     @Test
     public void testJournalDBQueryOrTimestampBetween() {
         final String query = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
+        final long earliestEpoch = 1611657303L;
+        final long latestEpoch = 1619437701L;
+        final ZonedDateTime earliestDateTime = ZonedDateTime
+                .ofInstant(Instant.ofEpochSecond(earliestEpoch), systemDefault);
+        final ZonedDateTime latestDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(latestEpoch), systemDefault);
+        final String earliestDate = earliestDateTime.toLocalDate().format(formatter);
+        final String latestDate = latestDateTime.toLocalDate().format(formatter);
         // spotless:off
         final String expected = "(\n" +
                 "  (\n" +
@@ -144,10 +166,10 @@ public final class XmlToSqlTest {
                 "  or (\n" +
                 "    true\n" +
                 "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n" +
-                "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n" +
-                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n" +
+                "    and \"journaldb\".\"logfile\".\"logdate\" >= date '"+ earliestDate +"'\n" +
+                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "+ earliestDateTime.truncatedTo(ChronoUnit.HOURS).toEpochSecond() + ")\n" +
+                "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + latestDate + "'\n" +
+                "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "+ latestDateTime.toEpochSecond()+ ")\n" +
                 "  )\n" +
                 ")";
         // spotless:on
@@ -159,15 +181,22 @@ public final class XmlToSqlTest {
     @Test
     public void testJournalDBQueryAndTimestampBetween() {
         final String query = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
+        final long earliestEpoch = 0L;
+        final long latestEpoch = 1893491420;
+        final ZonedDateTime earliestDateTime = ZonedDateTime
+                .ofInstant(Instant.ofEpochSecond(earliestEpoch), systemDefault);
+        final ZonedDateTime latestDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(latestEpoch), systemDefault);
+        final String earliestDate = earliestDateTime.toLocalDate().format(formatter);
+        final String latestDate = latestDateTime.toLocalDate().format(formatter);
         // spotless:off
         final String expected = "(\n" +
                 "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n" +
                 "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n" +
                 "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n" +
-                "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n" +
-                "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n" +
-                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" >= date '"+ earliestDate + "'\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "+ earliestDateTime.toEpochSecond() + ")\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" <= date '" + latestDate + "'\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "+ latestDateTime.toEpochSecond() +")\n" +
                 ")";
         // spotless:on
         final String result = Assertions
