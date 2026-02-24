@@ -277,7 +277,11 @@ public final class ElementConditionTest {
         element.setAttribute("operation", "EQUALS");
         final IllegalStateException exception = Assertions
                 .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, config).condition());
-        Assertions.assertEquals("Unsupported JournalDB query element tag <invalidtag>", exception.getMessage());
+        Assertions
+                .assertEquals(
+                        "Unsupported JournalDB query element tag <invalidtag> with operation <EQUALS>",
+                        exception.getMessage()
+                );
     }
 
     @Test

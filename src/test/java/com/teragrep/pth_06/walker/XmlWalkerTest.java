@@ -53,11 +53,20 @@ import org.junit.jupiter.api.Test;
 public final class XmlWalkerTest {
 
     @Test
-    public void testSingleIndexNotEquals() {
+    public void testStreamDBQuerySingleIndexNotEquals() {
         final String query = "<index value=\"testindex\" operation=\"NOT_EQUALS\"/>";
         final String expected = "not (\"streamdb\".\"stream\".\"directory\" like 'testindex')";
         final String result = Assertions
                 .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
+    }
+
+    @Test
+    public void testJournalDBQuerySingleIndexNotEquals() {
+        final String query = "<index value=\"testindex\" operation=\"NOT_EQUALS\"/>";
+        final String expected = "not (\"getArchivedObjects_filter_table\".\"directory\" like 'testindex')";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false).toString());
         Assertions.assertEquals(expected, result);
     }
 
