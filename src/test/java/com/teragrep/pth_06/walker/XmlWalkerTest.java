@@ -46,190 +46,158 @@
 package com.teragrep.pth_06.walker;
 
 import com.teragrep.pth_06.planner.walker.ConditionWalker;
-import com.teragrep.pth_06.planner.walker.PlainWalker;
 import org.jooq.Condition;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+public final class XmlWalkerTest {
 
-public class XmlWalkerTest {
-
-    private final Logger LOGGER = LoggerFactory.getLogger(XmlWalkerTest.class);
-
-    ConditionWalker conditionWalker;
-
-    @org.junit.jupiter.api.BeforeEach
-    void setUp() {
-        conditionWalker = new ConditionWalker();
-    }
-
-    @org.junit.jupiter.api.AfterEach
-    void tearDown() {
-        conditionWalker = null;
+    @Test
+    public void testSingleIndexNotEquals() {
+        final String query = "<index value=\"testindex\" operation=\"NOT_EQUALS\"/>";
+        final String expected = "not (\"streamdb\".\"stream\".\"directory\" like 'testindex')";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringIntendTest() throws Exception {
-        PlainWalker walker = new PlainWalker();
-        String q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"2021-01-21T11:58:37\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        walker.fromString(q);
-        LOGGER.debug("---------------");
-        q = "<AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
-        walker.fromString(q);
-        LOGGER.debug("---------------");
+    public void testAndCombination() {
+        final String query = "<AND><index value=\"testindex\" operation=\"EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND>";
+        final String expected = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'testindex'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringTest() throws Exception {
-        String q = "<index value=\"haproxy\" operation=\"NOT_EQUALS\"/>";
-        String e = "not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')";
-        String result = conditionWalker.fromString(q, true).toString();
-        LOGGER.debug("Query   =" + q);
-        LOGGER.debug("Expected=" + e);
-        LOGGER.debug("Result  =" + result);
-        assertEquals(e, result);
+    public void testOrCombinationWithNotEquals() {
+        final String query = "<OR><index value=\"testindex\" operation=\"NOT_EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></OR>";
+        final String expected = "(\n" + "  not (\"streamdb\".\"stream\".\"directory\" like 'testindex')\n"
+                + "  or \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringAndTest() throws Exception {
-        String q = "<AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND>";
-        String e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
-
-        Condition cond = conditionWalker.fromString(q, true);
-        LOGGER.debug("ConditionWalkerResult=" + cond.toString());
-
-        String result = cond.toString();
-        LOGGER.debug("Query   =" + q);
-        LOGGER.debug("Expected=" + e);
-        LOGGER.debug("Result  =" + result);
-        assertEquals(e, result);
+    public void testOrCombinationWithEquals() {
+        final String query = "<OR><index value=\"testindex\" operation=\"EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></OR>";
+        final String expected = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'testindex'\n"
+                + "  or \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringOrNETest() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        e = "(\n" + "  not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n"
-                + "  or \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    public void testAndWithIndexStatementIgnored() {
+        final String query = "<AND><AND><index operation=\"EQUALS\" value=\"testindex\"/><sourcetype operation=\"EQUALS\" value=\"test:sourcetype\"/></AND><NOT><indexstatement operation=\"EQUALS\" value=\"src\"/></NOT></AND>";
+        final String expected = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'testindex'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringNotTest() throws Exception {
-        String q, e, result;
-        // index=cpu sourcetype=log:cpu:0 NOT src
-        q = "<OR><index value=\"cpu\" operation=\"EQUALS\"/><sourcetype value=\"log:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n"
-                + "  or \"streamdb\".\"stream\".\"stream\" like 'log:haproxy:haproxy'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void testOrWithWildcardIndex() {
+        final String query = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"testindex\" operation=\"EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND></OR>";
+        final String expected = "(\n" + "  true\n" + "  or (\n"
+                + "    \"streamdb\".\"stream\".\"directory\" like 'testindex'\n"
+                + "    and \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + "  )\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringNot1Test() throws Exception {
-        String q, e, result;
-        q = "<AND><AND><index operation=\"EQUALS\" value=\"cpu\"/><sourcetype operation=\"EQUALS\" value=\"log:cpu:0\"/></AND><NOT><indexstatement operation=\"EQUALS\" value=\"src\"/></NOT></AND>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'cpu'\n"
-                + "  and \"streamdb\".\"stream\".\"stream\" like 'log:cpu:0'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    public void testAlwaysTrueWithAndNotIgnored() {
+        final String query = "<AND><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"testindex\" operation=\"EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND></AND>";
+        final String expected = "(\n" + "  true\n" + "  and \"streamdb\".\"stream\".\"directory\" like 'testindex'\n"
+                + "  and \"streamdb\".\"stream\".\"stream\" like 'test:sourcetype'\n" + ")";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringOrAndTest() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></OR>";
-        result = conditionWalker.fromString(q, true).toString();
-        LOGGER.debug("Query=" + q);
-        LOGGER.debug("Result=" + result);
-        LOGGER.debug("---------------");
-        q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void testEarliestDroppedFromStreamDBQuery() {
+        final String query = "<OR><host value=\"testhost\" operation=\"EQUALS\"/><earliest value=\"1611657303\" operation=\"GE\"/></OR>";
+        final String expected = "\"streamdb\".\"host\".\"name\" like 'testhost'";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringOrAnd1Test() throws Exception {
-        String q, e, result;
-        q = "<OR><index value=\"*\" operation=\"EQUALS\"/><AND><index value=\"haproxy\" operation=\"EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND></OR>";
-        e = "(\n" + "  \"streamdb\".\"stream\".\"directory\" like 'haproxy'\n"
-                + "  and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void testIndexStringDroppedFromStreamDBQuery() {
+        final String query = "<OR><host value=\"testhost\" operation=\"EQUALS\"/><indexstring value=\"Denied\" /></OR>";
+        final String expected = "\"streamdb\".\"host\".\"name\" like 'testhost'";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, true).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringDropTimesTest() throws Exception {
-        String q, e, result;
-        // Drop indexstring and earliest from query
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" + "  (\n" + "    not (\"streamdb\".\"stream\".\"directory\" like 'haproxy')\n"
-                + "    and \"streamdb\".\"stream\".\"stream\" like 'example:haproxy:haproxy'\n"
-                + "    and \"streamdb\".\"host\".\"name\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or \"streamdb\".\"host\".\"name\" like 'firewall.example.com'\n" + ")";
-        result = conditionWalker.fromString(q, true).toString();
-        assertEquals(e, result);
+    void testIndexStringDroppedFromJournalDBQuery() {
+        final String query = "<OR><host value=\"testhost\" operation=\"EQUALS\"/><indexstring value=\"Denied\" /></OR>";
+        final String expected = "\"getArchivedObjects_filter_table\".\"host\" like 'testhost'";
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringTimeRangesTest() throws Exception {
-        String q, e, result;
-        // Drop indexstring and earliest from query
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
-                + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
+    public void testComplexQueryWithWildcardIndexAndEarliest() {
+        final String query = "<OR><AND><AND><index value=\"testindex\" operation=\"NOT_EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND></OR>";
+        final String expected = "(\n" + "  (\n"
+                + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'testindex')\n"
+                + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'test:sourcetype'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    true\n"
+                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
                 + "  )\n" + ")";
-        result = conditionWalker.fromString(q, false).toString();
-        assertEquals(e, result);
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false).toString());
+        Assertions.assertEquals(expected, result);
     }
 
     @Test
-    void fromStringTimeRangesUsingEpochTest() throws Exception {
-        String q, e, result;
-        q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
-                + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
+    public void testComplexQueryOrAndStructureWithPlainWildcardIndex() {
+        final String query = "<OR><AND><AND><index value=\"testindex\" operation=\"NOT_EQUALS\"/><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
+        final String expected = "(\n" + "  (\n"
+                + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'testindex')\n"
+                + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'test:sourcetype'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
-                + "  or (\n" + "    \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
+                + "  or (\n" + "    true\n"
+                + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n"
                 + "  )\n" + ")";
-        Condition cond = conditionWalker.fromString(q, false);
-        if (cond != null) {
-            result = conditionWalker.fromString(q, false).toString();
-        }
-        else {
-            result = "illegal null condition";
-        }
-        assertEquals(e, result);
+        final Condition condition = Assertions.assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false));
+        Assertions.assertNotNull(condition);
+        Assertions.assertEquals(expected, condition.toString());
     }
 
     @Test
-    void fromStringTimeRanges0ToEpochTest() throws Exception {
-        String q, e, result;
-        q = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
-        e = "(\n" + "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n"
-                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n"
-                + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n"
+    public void testComplexQueryWithZeroEpochTimeRange() {
+        final String query = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"testindex\" operation=\"EQUALS\"/></AND><sourcetype value=\"test:sourcetype\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
+        final String expected = "(\n" + "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n"
+                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'testindex'\n"
+                + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'test:sourcetype'\n"
                 + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
                 + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n"
                 + ")";
-        Condition cond = conditionWalker.fromString(q, false);
-        result = cond.toString();
-        assertEquals(e, result);
+        final String result = Assertions
+                .assertDoesNotThrow(() -> new ConditionWalker().fromString(query, false).toString());
+        Assertions.assertEquals(expected, result);
     }
 }

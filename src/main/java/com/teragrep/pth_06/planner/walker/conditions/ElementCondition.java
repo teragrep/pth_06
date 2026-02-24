@@ -132,7 +132,9 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
             condition = DSL.noCondition();
         }
         else {
-            throw new IllegalStateException("Unsupported JournalDB query element tag <" + tag + ">");
+            throw new IllegalStateException(
+                    "Unsupported JournalDB query element tag <" + tag + "> with operation <" + operation + ">"
+            );
         }
         return condition;
     }
