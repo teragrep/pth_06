@@ -1,5 +1,7 @@
 <map id="com.teragrep.pth_06.planner.walker.conditions.IndexStatementCondition.condition" name="com.teragrep.pth_06.planner.walker.conditions.IndexStatementCondition.condition">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,336,45"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,37,336,77"/>
 <area shape="rect" id="Node000002" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1QueryCondition.html#aac40ccff3997039d273d50bd5ca122c0" title=" " alt="" coords="384,5,715,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,23,370,23,370,28,336,28"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,41,370,38,370,43,337,46"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1IndexStatementCondition.html#a9e6273506853ee6766c3649611404828" title=" " alt="" coords="384,69,715,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="337,69,370,72,370,77,336,74"/>
 </map>

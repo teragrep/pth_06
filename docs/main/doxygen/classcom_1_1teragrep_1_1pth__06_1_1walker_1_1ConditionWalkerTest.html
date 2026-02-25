@@ -74,6 +74,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">com.teragrep.pth_06.walker.ConditionWalkerTest Class Reference</div></div>
@@ -83,6 +84,15 @@ $(function() {
 <p>Comparing Condition equality using toString() since jooq Condition uses just toString() to check for equality.  
  <a href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:abc30e98b86f0e64228abf161e06484ac" id="r_abc30e98b86f0e64228abf161e06484ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html#abc30e98b86f0e64228abf161e06484ac">testTwoIndexStatementsMatchDifferentBloomTablesWithAnd</a> ()</td></tr>
+<tr class="separator:abc30e98b86f0e64228abf161e06484ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad78c3048aa2f09fc74bc0b4e04a71f" id="r_a6ad78c3048aa2f09fc74bc0b4e04a71f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html#a6ad78c3048aa2f09fc74bc0b4e04a71f">testTwoIndexStatementsMatchDifferentBloomTablesWithOr</a> ()</td></tr>
+<tr class="separator:a6ad78c3048aa2f09fc74bc0b4e04a71f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4c1d612084fee6fa7276d408b525af8" id="r_af4c1d612084fee6fa7276d408b525af8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html#af4c1d612084fee6fa7276d408b525af8">testMultiIndexStatementConditionBloomEnabled</a> ()</td></tr>
+<tr class="separator:af4c1d612084fee6fa7276d408b525af8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
 <tr class="memitem:aed3e3346b13e9476ad0b1195d4c602d4" id="r_aed3e3346b13e9476ad0b1195d4c602d4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1walker_1_1ConditionWalkerTest.html#aed3e3346b13e9476ad0b1195d4c602d4">writeFilter</a> (String tableName, int filterId)</td></tr>
@@ -93,8 +103,196 @@ Private Member Functions</h2></td></tr>
 <p>inherited from QueryPart</p>
 <dl class="section see"><dt>See also</dt><dd>org.jooq.QueryPart </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00070">70</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00074">74</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="af4c1d612084fee6fa7276d408b525af8" name="af4c1d612084fee6fa7276d408b525af8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4c1d612084fee6fa7276d408b525af8">&#9670;&#160;</a></span>testMultiIndexStatementConditionBloomEnabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.walker.ConditionWalkerTest.testMultiIndexStatementConditionBloomEnabled </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00648">648</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  648</span>                                                               {</div>
+<div class="line"><span class="lineno">  649</span>        <span class="keyword">final</span> ConditionWalker walker = <span class="keyword">new</span> ConditionWalker(DSL.using(conn), <span class="keyword">true</span>);</div>
+<div class="line"><span class="lineno">  650</span>        <span class="keyword">final</span> String query = <span class="stringliteral">&quot;&lt;OR&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;192.168.1.1\&quot;/&gt;&quot;</span></div>
+<div class="line"><span class="lineno">  651</span>                + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;nomatch\&quot;/&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;/OR&gt;&quot;</span>;</div>
+<div class="line"><span class="lineno">  652</span>        <span class="keyword">final</span> Condition condition = Assertions.assertDoesNotThrow(() -&gt; walker.fromString(query, <span class="keyword">false</span>));</div>
+<div class="line"><span class="lineno">  653</span>        <span class="keyword">final</span> Set&lt;Table&lt;?&gt;&gt; tables = walker.conditionRequiredTables();</div>
+<div class="line"><span class="lineno">  654</span>        Assertions.assertEquals(1, tables.size());</div>
+<div class="line"><span class="lineno">  655</span>        <span class="keyword">final</span> List&lt;String&gt; tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());</div>
+<div class="line"><span class="lineno">  656</span>        <span class="keyword">final</span> List&lt;String&gt; expectedTableNames = Arrays.asList(<span class="stringliteral">&quot;pattern_test_ip&quot;</span>);</div>
+<div class="line"><span class="lineno">  657</span>        Assertions.assertEquals(expectedTableNames, tableNames);</div>
+<div class="line"><span class="lineno">  658</span>        <span class="comment">// spotless:off</span></div>
+<div class="line"><span class="lineno">  659</span>        <span class="keyword">final</span> String expected =</div>
+<div class="line"><span class="lineno">  660</span>                <span class="stringliteral">&quot;(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  661</span>                        <span class="stringliteral">&quot;  (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  662</span>                        <span class="stringliteral">&quot;    bloommatch(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  663</span>                        <span class="stringliteral">&quot;      (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  664</span>                        <span class="stringliteral">&quot;        select \&quot;term_0_pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  665</span>                        <span class="stringliteral">&quot;        from \&quot;term_0_pattern_test_ip\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  666</span>                        <span class="stringliteral">&quot;        where (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  667</span>                        <span class="stringliteral">&quot;          term_id = 0\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  668</span>                        <span class="stringliteral">&quot;          and type_id = \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter_type_id\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  669</span>                        <span class="stringliteral">&quot;        )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  670</span>                        <span class="stringliteral">&quot;      ),\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  671</span>                        <span class="stringliteral">&quot;      \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  672</span>                        <span class="stringliteral">&quot;    ) = true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  673</span>                        <span class="stringliteral">&quot;    and \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is not null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  674</span>                        <span class="stringliteral">&quot;  )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  675</span>                        <span class="stringliteral">&quot;  or \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  676</span>                        <span class="stringliteral">&quot;  or true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  677</span>                        <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><span class="lineno">  678</span>        <span class="comment">// spotless:on</span></div>
+<div class="line"><span class="lineno">  679</span>        Assertions.assertEquals(expected, condition.toString());</div>
+<div class="line"><span class="lineno">  680</span>    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="abc30e98b86f0e64228abf161e06484ac" name="abc30e98b86f0e64228abf161e06484ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc30e98b86f0e64228abf161e06484ac">&#9670;&#160;</a></span>testTwoIndexStatementsMatchDifferentBloomTablesWithAnd()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.walker.ConditionWalkerTest.testTwoIndexStatementsMatchDifferentBloomTablesWithAnd </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00546">546</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  546</span>                                                                         {</div>
+<div class="line"><span class="lineno">  547</span>        <span class="keyword">final</span> ConditionWalker walker = <span class="keyword">new</span> ConditionWalker(DSL.using(conn), <span class="keyword">true</span>);</div>
+<div class="line"><span class="lineno">  548</span>        <span class="keyword">final</span> String query = <span class="stringliteral">&quot;&lt;AND&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;192.168.1.1\&quot;/&gt;&quot;</span></div>
+<div class="line"><span class="lineno">  549</span>                + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;123e4567-e89b-12d3-a456-426655440000\&quot;/&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;/AND&gt;&quot;</span>;</div>
+<div class="line"><span class="lineno">  550</span>        <span class="keyword">final</span> Condition condition = Assertions.assertDoesNotThrow(() -&gt; walker.fromString(query, <span class="keyword">false</span>));</div>
+<div class="line"><span class="lineno">  551</span>        <span class="keyword">final</span> Set&lt;Table&lt;?&gt;&gt; tables = walker.conditionRequiredTables();</div>
+<div class="line"><span class="lineno">  552</span>        Assertions.assertEquals(2, tables.size());</div>
+<div class="line"><span class="lineno">  553</span>        <span class="keyword">final</span> List&lt;String&gt; tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());</div>
+<div class="line"><span class="lineno">  554</span>        <span class="keyword">final</span> List&lt;String&gt; expectedTableNames = Arrays.asList(<span class="stringliteral">&quot;pattern_test_ip&quot;</span>, <span class="stringliteral">&quot;pattern_test_uuid&quot;</span>);</div>
+<div class="line"><span class="lineno">  555</span>        Assertions.assertEquals(expectedTableNames, tableNames);</div>
+<div class="line"><span class="lineno">  556</span>        <span class="comment">// spotless:off</span></div>
+<div class="line"><span class="lineno">  557</span>        <span class="keyword">final</span> String expected =</div>
+<div class="line"><span class="lineno">  558</span>                <span class="stringliteral">&quot;(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  559</span>                        <span class="stringliteral">&quot;  (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  560</span>                        <span class="stringliteral">&quot;    (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  561</span>                        <span class="stringliteral">&quot;      bloommatch(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  562</span>                        <span class="stringliteral">&quot;        (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  563</span>                        <span class="stringliteral">&quot;          select \&quot;term_0_pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  564</span>                        <span class="stringliteral">&quot;          from \&quot;term_0_pattern_test_ip\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  565</span>                        <span class="stringliteral">&quot;          where (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  566</span>                        <span class="stringliteral">&quot;            term_id = 0\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  567</span>                        <span class="stringliteral">&quot;            and type_id = \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter_type_id\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  568</span>                        <span class="stringliteral">&quot;          )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  569</span>                        <span class="stringliteral">&quot;        ),\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  570</span>                        <span class="stringliteral">&quot;        \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  571</span>                        <span class="stringliteral">&quot;      ) = true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  572</span>                        <span class="stringliteral">&quot;      and \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is not null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  573</span>                        <span class="stringliteral">&quot;    )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  574</span>                        <span class="stringliteral">&quot;    or \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  575</span>                        <span class="stringliteral">&quot;  )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  576</span>                        <span class="stringliteral">&quot;  and (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  577</span>                        <span class="stringliteral">&quot;    (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  578</span>                        <span class="stringliteral">&quot;      bloommatch(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  579</span>                        <span class="stringliteral">&quot;        (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  580</span>                        <span class="stringliteral">&quot;          select \&quot;term_1_pattern_test_uuid\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  581</span>                        <span class="stringliteral">&quot;          from \&quot;term_1_pattern_test_uuid\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  582</span>                        <span class="stringliteral">&quot;          where (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  583</span>                        <span class="stringliteral">&quot;            term_id = 1\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  584</span>                        <span class="stringliteral">&quot;            and type_id = \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter_type_id\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  585</span>                        <span class="stringliteral">&quot;          )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  586</span>                        <span class="stringliteral">&quot;        ),\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  587</span>                        <span class="stringliteral">&quot;        \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  588</span>                        <span class="stringliteral">&quot;      ) = true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  589</span>                        <span class="stringliteral">&quot;      and \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot; is not null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  590</span>                        <span class="stringliteral">&quot;    )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  591</span>                        <span class="stringliteral">&quot;    or \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot; is null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  592</span>                        <span class="stringliteral">&quot;  )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  593</span>                        <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><span class="lineno">  594</span>        <span class="comment">// spotless:on</span></div>
+<div class="line"><span class="lineno">  595</span>        Assertions.assertEquals(expected, condition.toString());</div>
+<div class="line"><span class="lineno">  596</span>    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a6ad78c3048aa2f09fc74bc0b4e04a71f" name="a6ad78c3048aa2f09fc74bc0b4e04a71f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ad78c3048aa2f09fc74bc0b4e04a71f">&#9670;&#160;</a></span>testTwoIndexStatementsMatchDifferentBloomTablesWithOr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.walker.ConditionWalkerTest.testTwoIndexStatementsMatchDifferentBloomTablesWithOr </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00599">599</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  599</span>                                                                        {</div>
+<div class="line"><span class="lineno">  600</span>        <span class="keyword">final</span> ConditionWalker walker = <span class="keyword">new</span> ConditionWalker(DSL.using(conn), <span class="keyword">true</span>);</div>
+<div class="line"><span class="lineno">  601</span>        <span class="keyword">final</span> String query = <span class="stringliteral">&quot;&lt;OR&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;192.168.1.1\&quot;/&gt;&quot;</span></div>
+<div class="line"><span class="lineno">  602</span>                + <span class="stringliteral">&quot;&lt;indexstatement operation=\&quot;EQUALS\&quot; value = \&quot;123e4567-e89b-12d3-a456-426655440000\&quot;/&gt;&quot;</span> + <span class="stringliteral">&quot;&lt;/OR&gt;&quot;</span>;</div>
+<div class="line"><span class="lineno">  603</span>        <span class="keyword">final</span> Condition condition = Assertions.assertDoesNotThrow(() -&gt; walker.fromString(query, <span class="keyword">false</span>));</div>
+<div class="line"><span class="lineno">  604</span>        <span class="keyword">final</span> Set&lt;Table&lt;?&gt;&gt; tables = walker.conditionRequiredTables();</div>
+<div class="line"><span class="lineno">  605</span>        Assertions.assertEquals(2, tables.size());</div>
+<div class="line"><span class="lineno">  606</span>        <span class="keyword">final</span> List&lt;String&gt; tableNames = tables.stream().map(Named::getName).sorted().collect(Collectors.toList());</div>
+<div class="line"><span class="lineno">  607</span>        <span class="keyword">final</span> List&lt;String&gt; expectedTableNames = Arrays.asList(<span class="stringliteral">&quot;pattern_test_ip&quot;</span>, <span class="stringliteral">&quot;pattern_test_uuid&quot;</span>);</div>
+<div class="line"><span class="lineno">  608</span>        Assertions.assertEquals(expectedTableNames, tableNames);</div>
+<div class="line"><span class="lineno">  609</span>        <span class="comment">// spotless:off</span></div>
+<div class="line"><span class="lineno">  610</span>        <span class="keyword">final</span> String expected =</div>
+<div class="line"><span class="lineno">  611</span>                <span class="stringliteral">&quot;(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  612</span>                        <span class="stringliteral">&quot;  (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  613</span>                        <span class="stringliteral">&quot;    bloommatch(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  614</span>                        <span class="stringliteral">&quot;      (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  615</span>                        <span class="stringliteral">&quot;        select \&quot;term_0_pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  616</span>                        <span class="stringliteral">&quot;        from \&quot;term_0_pattern_test_ip\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  617</span>                        <span class="stringliteral">&quot;        where (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  618</span>                        <span class="stringliteral">&quot;          term_id = 0\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  619</span>                        <span class="stringliteral">&quot;          and type_id = \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter_type_id\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  620</span>                        <span class="stringliteral">&quot;        )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  621</span>                        <span class="stringliteral">&quot;      ),\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  622</span>                        <span class="stringliteral">&quot;      \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  623</span>                        <span class="stringliteral">&quot;    ) = true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  624</span>                        <span class="stringliteral">&quot;    and \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is not null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  625</span>                        <span class="stringliteral">&quot;  )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  626</span>                        <span class="stringliteral">&quot;  or \&quot;bloomdb\&quot;.\&quot;pattern_test_ip\&quot;.\&quot;filter\&quot; is null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  627</span>                        <span class="stringliteral">&quot;  or (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  628</span>                        <span class="stringliteral">&quot;    bloommatch(\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  629</span>                        <span class="stringliteral">&quot;      (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  630</span>                        <span class="stringliteral">&quot;        select \&quot;term_1_pattern_test_uuid\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  631</span>                        <span class="stringliteral">&quot;        from \&quot;term_1_pattern_test_uuid\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  632</span>                        <span class="stringliteral">&quot;        where (\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  633</span>                        <span class="stringliteral">&quot;          term_id = 1\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  634</span>                        <span class="stringliteral">&quot;          and type_id = \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter_type_id\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  635</span>                        <span class="stringliteral">&quot;        )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  636</span>                        <span class="stringliteral">&quot;      ),\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  637</span>                        <span class="stringliteral">&quot;      \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot;\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  638</span>                        <span class="stringliteral">&quot;    ) = true\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  639</span>                        <span class="stringliteral">&quot;    and \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot; is not null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  640</span>                        <span class="stringliteral">&quot;  )\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  641</span>                        <span class="stringliteral">&quot;  or \&quot;bloomdb\&quot;.\&quot;pattern_test_uuid\&quot;.\&quot;filter\&quot; is null\n&quot;</span> +</div>
+<div class="line"><span class="lineno">  642</span>                        <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><span class="lineno">  643</span>        <span class="comment">// spotless:on</span></div>
+<div class="line"><span class="lineno">  644</span>        Assertions.assertEquals(expected, condition.toString());</div>
+<div class="line"><span class="lineno">  645</span>    }</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="aed3e3346b13e9476ad0b1195d4c602d4" name="aed3e3346b13e9476ad0b1195d4c602d4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aed3e3346b13e9476ad0b1195d4c602d4">&#9670;&#160;</a></span>writeFilter()</h2>
 
@@ -129,27 +327,27 @@ Private Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00531">531</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  531</span>                                                             {</div>
-<div class="line"><span class="lineno">  532</span>        Assertions.assertDoesNotThrow(() -&gt; {</div>
-<div class="line"><span class="lineno">  533</span>            conn.prepareStatement(<span class="stringliteral">&quot;CREATE SCHEMA IF NOT EXISTS BLOOMDB&quot;</span>).execute();</div>
-<div class="line"><span class="lineno">  534</span>            conn.prepareStatement(<span class="stringliteral">&quot;USE BLOOMDB&quot;</span>).execute();</div>
-<div class="line"><span class="lineno">  535</span>            String sql = <span class="stringliteral">&quot;INSERT INTO `&quot;</span> + tableName + <span class="stringliteral">&quot;` (`partition_id`, `filter_type_id`, `filter`) &quot;</span></div>
-<div class="line"><span class="lineno">  536</span>                    + <span class="stringliteral">&quot;VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)&quot;</span>;</div>
-<div class="line"><span class="lineno">  537</span>            PreparedStatement stmt = conn.prepareStatement(sql);</div>
-<div class="line"><span class="lineno">  538</span>            BloomFilter filter = BloomFilter.create(1000, 0.01);</div>
-<div class="line"><span class="lineno">  539</span>            <span class="keyword">final</span> ByteArrayOutputStream filterBAOS = <span class="keyword">new</span> ByteArrayOutputStream();</div>
-<div class="line"><span class="lineno">  540</span>            Assertions.assertDoesNotThrow(() -&gt; {</div>
-<div class="line"><span class="lineno">  541</span>                filter.writeTo(filterBAOS);</div>
-<div class="line"><span class="lineno">  542</span>                filterBAOS.close();</div>
-<div class="line"><span class="lineno">  543</span>            });</div>
-<div class="line"><span class="lineno">  544</span>            stmt.setInt(1, 1);</div>
-<div class="line"><span class="lineno">  545</span>            stmt.setInt(2, filterId);</div>
-<div class="line"><span class="lineno">  546</span>            stmt.setBytes(3, filterBAOS.toByteArray());</div>
-<div class="line"><span class="lineno">  547</span>            stmt.executeUpdate();</div>
-<div class="line"><span class="lineno">  548</span>            stmt.close();</div>
-<div class="line"><span class="lineno">  549</span>        });</div>
-<div class="line"><span class="lineno">  550</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="ConditionWalkerTest_8java_source.html#l00682">682</a> of file <a class="el" href="ConditionWalkerTest_8java_source.html">ConditionWalkerTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  682</span>                                                             {</div>
+<div class="line"><span class="lineno">  683</span>        Assertions.assertDoesNotThrow(() -&gt; {</div>
+<div class="line"><span class="lineno">  684</span>            conn.prepareStatement(<span class="stringliteral">&quot;CREATE SCHEMA IF NOT EXISTS BLOOMDB&quot;</span>).execute();</div>
+<div class="line"><span class="lineno">  685</span>            conn.prepareStatement(<span class="stringliteral">&quot;USE BLOOMDB&quot;</span>).execute();</div>
+<div class="line"><span class="lineno">  686</span>            String sql = <span class="stringliteral">&quot;INSERT INTO `&quot;</span> + tableName + <span class="stringliteral">&quot;` (`partition_id`, `filter_type_id`, `filter`) &quot;</span></div>
+<div class="line"><span class="lineno">  687</span>                    + <span class="stringliteral">&quot;VALUES (?, (SELECT `id` FROM `filtertype` WHERE id=?), ?)&quot;</span>;</div>
+<div class="line"><span class="lineno">  688</span>            PreparedStatement stmt = conn.prepareStatement(sql);</div>
+<div class="line"><span class="lineno">  689</span>            BloomFilter filter = BloomFilter.create(1000, 0.01);</div>
+<div class="line"><span class="lineno">  690</span>            <span class="keyword">final</span> ByteArrayOutputStream filterBAOS = <span class="keyword">new</span> ByteArrayOutputStream();</div>
+<div class="line"><span class="lineno">  691</span>            Assertions.assertDoesNotThrow(() -&gt; {</div>
+<div class="line"><span class="lineno">  692</span>                filter.writeTo(filterBAOS);</div>
+<div class="line"><span class="lineno">  693</span>                filterBAOS.close();</div>
+<div class="line"><span class="lineno">  694</span>            });</div>
+<div class="line"><span class="lineno">  695</span>            stmt.setInt(1, 1);</div>
+<div class="line"><span class="lineno">  696</span>            stmt.setInt(2, filterId);</div>
+<div class="line"><span class="lineno">  697</span>            stmt.setBytes(3, filterBAOS.toByteArray());</div>
+<div class="line"><span class="lineno">  698</span>            stmt.executeUpdate();</div>
+<div class="line"><span class="lineno">  699</span>            stmt.close();</div>
+<div class="line"><span class="lineno">  700</span>        });</div>
+<div class="line"><span class="lineno">  701</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>

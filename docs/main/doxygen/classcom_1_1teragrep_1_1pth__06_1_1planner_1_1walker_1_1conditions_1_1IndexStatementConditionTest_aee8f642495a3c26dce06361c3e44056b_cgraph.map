@@ -1,5 +1,10 @@
 <map id="com.teragrep.pth_06.planner.walker.conditions.IndexStatementConditionTest.noMatchesTest" name="com.teragrep.pth_06.planner.walker.conditions.IndexStatementConditionTest.noMatchesTest">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,336,45"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1IndexStatementCondition.html#a9e6273506853ee6766c3649611404828" title=" " alt="" coords="384,5,715,45"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,23,370,23,370,28,336,28"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,41,336,81"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1IndexStatementCondition.html#ad8a40368c02dae91ddc55b86e2ab7e10" title=" " alt="" coords="384,12,715,52"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,46,370,43,370,49,337,51"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1IndexStatementCondition.html#a9e6273506853ee6766c3649611404828" title=" " alt="" coords="763,69,1093,109"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="336,65,749,80,749,85,336,70"/>
+<area shape="rect" id="Node000003" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1QueryCondition.html#aac40ccff3997039d273d50bd5ca122c0" title=" " alt="" coords="763,5,1093,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="715,26,748,26,749,31,715,32"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="683,49,782,65,781,70,682,55"/>
 </map>
