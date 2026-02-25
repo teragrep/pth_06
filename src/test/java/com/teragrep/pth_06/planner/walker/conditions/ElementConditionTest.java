@@ -167,8 +167,7 @@ public final class ElementConditionTest {
             Element element = document.createElement(tag);
             element.setAttribute("value", "1000");
             element.setAttribute("operation", "EQUALS");
-            Assertions
-                    .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, streamConfig).condition());
+            Assertions.assertEquals(DSL.noCondition(), new ElementCondition(element, streamConfig).condition());
             loops++;
         }
         Assertions.assertEquals(5, loops);
@@ -262,12 +261,12 @@ public final class ElementConditionTest {
 
     @Test
     public void testUnsupportedStreamDBTagMessage() {
-        final Element element = document.createElement("earliest");
+        final Element element = document.createElement("unsupported");
         element.setAttribute("value", "1000");
         element.setAttribute("operation", "EQUALS");
         final IllegalStateException exception = Assertions
                 .assertThrows(IllegalStateException.class, () -> new ElementCondition(element, streamConfig).condition());
-        Assertions.assertEquals("Unsupported StreamDB query element tag <earliest>", exception.getMessage());
+        Assertions.assertEquals("Unsupported StreamDB query element tag <unsupported>", exception.getMessage());
     }
 
     @Test
