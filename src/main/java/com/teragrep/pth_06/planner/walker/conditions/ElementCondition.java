@@ -87,11 +87,14 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
         else if ("host".equalsIgnoreCase(tag)) {
             final QueryCondition host = new HostCondition(value, operation, true);
             condition = host.condition();
-        } else if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
+        }
+        else if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
             condition = DSL.noCondition();
-        } else if ("latest".equalsIgnoreCase(tag) || "index_latest".equalsIgnoreCase(tag)) {
+        }
+        else if ("latest".equalsIgnoreCase(tag) || "index_latest".equalsIgnoreCase(tag)) {
             condition = DSL.noCondition();
-        } else if ("indexstatement".equalsIgnoreCase(tag)) {
+        }
+        else if ("indexstatement".equalsIgnoreCase(tag)) {
             condition = DSL.noCondition();
         }
         else {
