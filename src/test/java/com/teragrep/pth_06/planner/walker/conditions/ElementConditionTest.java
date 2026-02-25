@@ -158,7 +158,7 @@ public final class ElementConditionTest {
     }
 
     @Test
-    public void testRecognizedButUnsupportedTagsPassthrough() {
+    public void testStreamDBQueryRecognizedButUnsupportedTagsPassthrough() {
         String[] tags = {
                 "earliest", "latest", "index_earliest", "index_latest", "indexstatement"
         };
