@@ -90,7 +90,7 @@ public final class BatchCalculator {
         else if (useArchive()) {
             slice.addAll(new ArchiveRangeProcessor(archiveQuery).processRange(start, end));
         }
-         if (useKafka()) {
+        if (useKafka()) {
             slice.addAll(new KafkaRangeProcessor(kafkaQuery).processRange(start, end));
         }
 

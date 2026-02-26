@@ -52,9 +52,6 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -64,11 +61,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -118,7 +115,7 @@ public class HBaseQueryImplTest {
 
     @BeforeEach
     public void beforeEach() {
-        url = "jdbc:h2:mem:" + UUID.randomUUID()
+        url = "jdbc:h2:mem:test_" + UUID.randomUUID()
                 + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
         opts.put("DBurl", url);
         conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
@@ -175,10 +172,21 @@ public class HBaseQueryImplTest {
         Assertions.assertTrue(testCluster.isClusterRunning(), "Hbase test cluster should be running");
         logfileTable = Assertions
                 .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())), "LogfileTable object should be created");
-        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
-                .getVirtualDatabaseMap();
-        Assertions
-                .assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()), "Test data should be correctly inserted to LogfileTable");
+        final List<MockDBRow> mockDBRows = new ArrayList<>(new MockDBRowSource().asPriorityQueue());
+        int rowInsertionLoops = 0;
+        for (final MockDBRow row : mockDBRows) {
+            Assertions
+                    .assertDoesNotThrow(
+                            () -> logfileTable
+                                    .insertRow(
+                                            row.id(), row.directory(), row.stream(), row.host(), row.logtag(),
+                                            row.logdate(), row.bucket(), row.path(), row.logtime(), row.filesize(),
+                                            row.uncompressedFilesize()
+                                    )
+                    );
+            rowInsertionLoops++;
+        }
+        Assertions.assertEquals(mockDBRows.size(), rowInsertionLoops);
         ResultScanner scanner = Assertions
                 .assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()), "Scanner should be opened to LogfileTable to inspect test data insertion");
         int resultCount = 0;
@@ -186,10 +194,7 @@ public class HBaseQueryImplTest {
             Assertions.assertFalse(result.isEmpty(), "Scanner should not get an empty result");
             resultCount++;
         }
-        Assertions
-                .assertEquals(
-                        virtualDatabaseMap.size(), resultCount, "Scanner result count should match the test data size"
-                );
+        Assertions.assertEquals(mockDBRows.size(), resultCount, "Scanner result count should match the test data size");
         scanner.close();
     }
 

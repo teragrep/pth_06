@@ -47,34 +47,27 @@ package com.teragrep.pth_06.scheduler;
 /**
  * @class HBaseBatchSliceCollection
  * @brief extends BatchSliceCollection
- *
- * @responsibilities
- * - creates a collection of batch slices from a hbase query results
+ * @responsibilities - creates a collection of batch slices from a hbase query results
  * - ensures a batch limit is observed in batches
  * - ensures that hourly results are synchronized across multiple indexes
- *
- * @collaborators
- * - HBaseQuery
+ * @collaborators - HBaseQuery
  * - SynchronizedHourlyResults
  * - BatchSizeLimit
  * - Config
- *
- * @startuml
- * class HBaseBatchSliceCollection {
- *     + processRange(Offset start, Offset end)
+ * @startuml class HBaseBatchSliceCollection {
+ * + processRange(Offset start, Offset end)
  * }
- *
+ * <p>
  * HBaseBatchSliceCollection --> HBaseQuery : results source
  * HBaseBatchSliceCollection --> SynchronizedHourlyResults : syncs results for hour
  * HBaseBatchSliceCollection --> BatchSizeLimit : limits the results per hour
  * HBaseBatchSliceCollection --> Config : options for used objects
- *
+ * <p>
  * Collaborators:
  * - HBaseQuery
  * - SynchronizedHourlyResults
  * - BatchSizeLimit
  * - Config
- *
  * @enduml
  */
 
@@ -88,19 +81,19 @@ import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Creates batches results from a HBase query for a desired offset range
  */
-public final class HBaseBatchSliceCollection extends BatchSliceCollection {
+public final class HBaseBatchSliceCollection {
 
     private final Logger LOGGER = LoggerFactory.getLogger(HBaseBatchSliceCollection.class);
     private final HBaseQuery hBaseQuery;
     private final byte[] meta; // column family
 
     public HBaseBatchSliceCollection(final HBaseQuery hBaseQuery) {
-        super();
         this.hBaseQuery = hBaseQuery;
         this.meta = Bytes.toBytes("meta");
     }
@@ -108,17 +101,15 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
     /**
      * Creates batches from query results for the provided offset range
      */
-    public HBaseBatchSliceCollection processRange(final Offset start, final Offset end) {
-        this.clear(); // clear internal list
+    public List<BatchUnit> processRange(final Offset start, final Offset end) {
         final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
         final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
         LOGGER.info("HBaseQuery process range <{}>-<{}>", startOffsetLong, endOffsetLong);
         if (!hBaseQuery.isOpen()) {
             hBaseQuery.open(startOffsetLong);
         }
-
+        final List<BatchUnit> batchUnits = new ArrayList<>();
         final List<Result> results = hBaseQuery.currentBatch();
-
         for (final Result result : results) {
             final String id = Bytes.toString(result.getValue(meta, Bytes.toBytes("i")));
             final String directory = Bytes.toString(result.getValue(meta, Bytes.toBytes("d")));
@@ -130,7 +121,6 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
             final long filesize = ULong.valueOf(Bytes.toLong(result.getValue(meta, Bytes.toBytes("fs")))).longValue();
             final byte[] uncompressedFileSizeBytes = result.getValue(meta, Bytes.toBytes("ufs"));
             final long uncompressedFileSize;
-
             // uncompressed can be null, null values are replicated as empty byte arrays to hbase
             if (uncompressedFileSizeBytes.length == 0) {
                 uncompressedFileSize = -1L;
@@ -138,10 +128,9 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
             else {
                 uncompressedFileSize = ULong.valueOf(Bytes.toLong(uncompressedFileSizeBytes)).longValue();
             }
-
-            this
+            batchUnits
                     .add(
-                            new BatchSlice(
+                            new BatchUnit(
                                     new ArchiveS3ObjectMetadata(
                                             id,
                                             bucket,
@@ -156,7 +145,6 @@ public final class HBaseBatchSliceCollection extends BatchSliceCollection {
                             )
                     );
         }
-
-        return this;
+        return batchUnits;
     }
 }

@@ -127,4 +127,9 @@ public final class MockMeteredArchiveQueryProcessor implements ArchiveQuery {
     public Long getInitialOffset() {
         return archiveQuery.getInitialOffset();
     }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }

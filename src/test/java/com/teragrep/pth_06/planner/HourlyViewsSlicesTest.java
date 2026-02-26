@@ -58,9 +58,6 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -71,14 +68,13 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.nio.ByteBuffer;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -195,16 +191,25 @@ public class HourlyViewsSlicesTest {
         Assertions.assertTrue(testCluster.isClusterRunning());
         logfileTable = Assertions
                 .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
-        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
-                .getVirtualDatabaseMap();
-        Assertions.assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()));
+        final List<MockDBRow> mockDBRows = new ArrayList<>(new MockDBRowSource().asPriorityQueue());
+        for (final MockDBRow row : mockDBRows) {
+            Assertions
+                    .assertDoesNotThrow(
+                            () -> logfileTable
+                                    .insertRow(
+                                            row.id(), row.directory(), row.stream(), row.host(), row.logtag(),
+                                            row.logdate(), row.bucket(), row.path(), row.logtime(), row.filesize(),
+                                            row.uncompressedFilesize()
+                                    )
+                    );
+        }
         ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
         int resultCount = 0;
         for (org.apache.hadoop.hbase.client.Result result : scanner) {
             Assertions.assertFalse(result.isEmpty());
             resultCount++;
         }
-        Assertions.assertEquals(virtualDatabaseMap.size(), resultCount);
+        Assertions.assertEquals(mockDBRows.size(), resultCount);
         scanner.close();
     }
 

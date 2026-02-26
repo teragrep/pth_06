@@ -45,9 +45,12 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
+import com.teragrep.pth_06.MockS3Configuration;
+import com.teragrep.pth_06.MockS3DataProvider;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.LogfileTable;
-import com.teragrep.pth_06.planner.MockDBData;
+import com.teragrep.pth_06.planner.MockDBRow;
+import com.teragrep.pth_06.planner.MockDBRowSource;
 import com.teragrep.pth_06.planner.source.LazySource;
 import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
@@ -56,9 +59,6 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -68,26 +68,39 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ScanPlanViewTest {
 
-    private final String s3endpoint = "http://127.0.0.1:48080";
-    private final String s3identity = "s3identity";
-    private final String s3credential = "s3credential";
     private final String userName = "sa";
     private final String password = "";
     private Connection conn;
     private final Map<String, String> opts = new HashMap<>();
     private TestingHBaseCluster testCluster;
     private LogfileTable logfileTable;
-    private final MockS3 mockS3 = new MockS3(s3endpoint, s3identity, s3credential);
+
+    private final MockS3Configuration mockS3Configuration = new MockS3Configuration(
+            "http://127.0.0.1:48080",
+            "s3identity",
+            "s3credential"
+    );
+
+    private final MockS3 mockS3 = new MockS3(
+            mockS3Configuration.s3endpoint(),
+            mockS3Configuration.s3identity(),
+            mockS3Configuration.s3credential()
+    );
+
+    private final MockS3DataProvider mockS3DataProvider = new MockS3DataProvider(
+            new MockDBRowSource(),
+            mockS3Configuration
+    );
 
     @BeforeAll
     public void setup() {
@@ -187,17 +200,26 @@ public class ScanPlanViewTest {
         Assertions.assertTrue(testCluster.isClusterRunning());
         logfileTable = Assertions
                 .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
-        TreeMap<Long, Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> virtualDatabaseMap = new MockDBData()
-                .getVirtualDatabaseMap();
-        Assertions.assertDoesNotThrow(() -> logfileTable.insertResults(virtualDatabaseMap.values()));
-        ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
+        final List<MockDBRow> mockDBRows = new ArrayList<>(new MockDBRowSource().asPriorityQueue());
+
+        for (final MockDBRow row : mockDBRows) {
+            Assertions
+                    .assertDoesNotThrow(
+                            () -> logfileTable
+                                    .insertRow(
+                                            row.id(), row.directory(), row.stream(), row.host(), row.logtag(),
+                                            row.logdate(), row.bucket(), row.path(), row.logtime(), row.filesize(),
+                                            row.uncompressedFilesize()
+                                    )
+                    );
+        }
+        final ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
         int resultCount = 0;
-        for (org.apache.hadoop.hbase.client.Result result : scanner) {
-            byte[] rowKeyBytes = result.getRow();
+        for (final org.apache.hadoop.hbase.client.Result result : scanner) {
             Assertions.assertFalse(result.isEmpty());
             resultCount++;
         }
-        Assertions.assertEquals(virtualDatabaseMap.size(), resultCount);
+        Assertions.assertEquals(mockDBRows.size(), resultCount);
         scanner.close();
     }
 

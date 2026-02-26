@@ -56,7 +56,6 @@ import org.jooq.SQLDialect;
 import org.jooq.conf.MappedSchema;
 import org.jooq.conf.RenderMapping;
 import org.jooq.conf.Settings;
-import org.jooq.conf.ThrowExceptions;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,18 +116,8 @@ public final class ScanPlanCollection {
         catch (final SQLException e) {
             throw new RuntimeException("Error getting connection: " + e.getMessage());
         }
-
-        final Settings settings;
-        if (config.archiveConfig.hideDatabaseExceptions) {
-            settings = new Settings()
-                    .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName))).withThrowExceptions(ThrowExceptions.THROW_NONE);
-            LOGGER.warn("SQL Exceptions set to THROW_NONE");
-        }
-        else {
-            settings = new Settings()
-                    .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
-        }
-
+        final Settings settings = new Settings()
+                .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         if (scanPlans.isEmpty()) {
             collectScanPlans(ctx, root);

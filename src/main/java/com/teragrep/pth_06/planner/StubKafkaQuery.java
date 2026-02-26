@@ -48,9 +48,15 @@ package com.teragrep.pth_06.planner;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
 import org.apache.kafka.common.TopicPartition;
 
+import java.io.IOException;
 import java.util.Map;
 
 public final class StubKafkaQuery implements KafkaQuery {
+
+    @Override
+    public boolean isStub() {
+        return true;
+    }
 
     @Override
     public Map<TopicPartition, Long> getInitialEndOffsets() {
@@ -73,7 +79,7 @@ public final class StubKafkaQuery implements KafkaQuery {
     }
 
     @Override
-    public boolean isStub() {
-        return true;
+    public void close() throws IOException {
+        throw new UnsupportedOperationException("close() is not supported for StubKafkaQuery");
     }
 }

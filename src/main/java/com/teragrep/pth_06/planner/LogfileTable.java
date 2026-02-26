@@ -58,16 +58,12 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.TableDescriptor;
 import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.jooq.Record11;
-import org.jooq.Result;
-import org.jooq.types.ULong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Date;
-import java.util.Collection;
 
 /**
  * Provides access to hbase logfile table
@@ -129,55 +125,42 @@ public final class LogfileTable {
     }
 
     // used in testing
-    public void insertResults(
-            final Collection<Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>>> dataMap
+    public void insertRow(
+            final long id,
+            final String directory,
+            final String stream,
+            final String host,
+            final String logtag,
+            final Date logdate,
+            final String bucket,
+            final String path,
+            final long logtime,
+            final long filesize,
+            final Long uncompressedFilesize
     ) throws IOException {
-        LOGGER.info("Inserting <{}> row(s) to logfile table", dataMap.size());
-        final Table table = table();
-
-        for (
-            final Result<Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong>> result : dataMap
-        ) {
-
-            for (
-                final Record11<ULong, String, String, String, String, Date, String, String, Long, ULong, ULong> record : result
-            ) {
-                long id = record.get(0, ULong.class).longValue();
-                String directory = record.get(1, String.class);
-                String stream = record.get(2, String.class);
-                String host = record.get(3, String.class);
-                String logtag = record.get(4, String.class);
-                Date logdate = record.get(5, Date.class);
-                String bucket = record.get(6, String.class);
-                String path = record.get(7, String.class);
-                Long logtime = record.get(8, Long.class);
-                long filesize = record.get(9, ULong.class).longValue();
-                ULong uncompressedFilesize = record.get(10, ULong.class);
-
-                ByteBuffer rowKeyBuffer = ByteBuffer.allocate(Long.BYTES * 3);
-                rowKeyBuffer.putLong(1L); // expects stream_id of 1
-                rowKeyBuffer.putLong(logtime);
-                rowKeyBuffer.putLong(id);
-
-                Put put = new Put(rowKeyBuffer.array());
-                byte[] family = Bytes.toBytes("meta");
-                put.addColumn(family, Bytes.toBytes("i"), Bytes.toBytes(id));
-                put.addColumn(family, Bytes.toBytes("d"), Bytes.toBytes(directory));
-                put.addColumn(family, Bytes.toBytes("s"), Bytes.toBytes(stream));
-                put.addColumn(family, Bytes.toBytes("h"), Bytes.toBytes(host));
-                put.addColumn(family, Bytes.toBytes("lt"), Bytes.toBytes(logtag));
-                put.addColumn(family, Bytes.toBytes("ld"), Bytes.toBytes(logdate.toString())); // as String
-                put.addColumn(family, Bytes.toBytes("b"), Bytes.toBytes(bucket));
-                put.addColumn(family, Bytes.toBytes("p"), Bytes.toBytes(path));
-                put.addColumn(family, Bytes.toBytes("t"), Bytes.toBytes(logtime));
-                put.addColumn(family, Bytes.toBytes("fs"), Bytes.toBytes(filesize));
-                if (uncompressedFilesize == null) {
-                    put.addColumn(family, Bytes.toBytes("ufs"), new byte[0]);
-                }
-                else {
-                    put.addColumn(family, Bytes.toBytes("ufs"), Bytes.toBytes(uncompressedFilesize.longValue()));
-                }
-
+        try (final Table table = table()) {
+            final ByteBuffer rowKeyBuffer = ByteBuffer.allocate(Long.BYTES * 3);
+            rowKeyBuffer.putLong(1L); // expects stream_id of 1
+            rowKeyBuffer.putLong(logtime);
+            rowKeyBuffer.putLong(id);
+            final Put put = new Put(rowKeyBuffer.array());
+            final byte[] family = Bytes.toBytes("meta");
+            put.addColumn(family, Bytes.toBytes("i"), Bytes.toBytes(id));
+            put.addColumn(family, Bytes.toBytes("d"), Bytes.toBytes(directory));
+            put.addColumn(family, Bytes.toBytes("s"), Bytes.toBytes(stream));
+            put.addColumn(family, Bytes.toBytes("h"), Bytes.toBytes(host));
+            put.addColumn(family, Bytes.toBytes("lt"), Bytes.toBytes(logtag));
+            put.addColumn(family, Bytes.toBytes("ld"), Bytes.toBytes(logdate.toString())); // as String
+            put.addColumn(family, Bytes.toBytes("b"), Bytes.toBytes(bucket));
+            put.addColumn(family, Bytes.toBytes("p"), Bytes.toBytes(path));
+            put.addColumn(family, Bytes.toBytes("t"), Bytes.toBytes(logtime));
+            put.addColumn(family, Bytes.toBytes("fs"), Bytes.toBytes(filesize));
+            if (uncompressedFilesize == null) {
+                LOGGER.info("uncompressed filesize was null, setting to zero bytes");
+                put.addColumn(family, Bytes.toBytes("ufs"), new byte[0]);
+            }
+            else {
+                put.addColumn(family, Bytes.toBytes("ufs"), Bytes.toBytes(uncompressedFilesize));
                 table.put(put);
             }
         }

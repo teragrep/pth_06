@@ -56,8 +56,8 @@ import com.teragrep.pth_06.planner.factory.HBaseQueryFactory;
 import com.teragrep.pth_06.planner.factory.KafkaQueryFactory;
 import com.teragrep.pth_06.planner.offset.DatasourceOffset;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import com.teragrep.pth_06.scheduler.Batch;
-import com.teragrep.pth_06.scheduler.BatchSlice;
+import com.teragrep.pth_06.scheduler.BatchCalculator;
+import com.teragrep.pth_06.scheduler.BatchUnit;
 import com.teragrep.pth_06.task.ArchiveMicroBatchInputPartition;
 import com.teragrep.pth_06.task.TeragrepPartitionReaderFactory;
 import com.teragrep.pth_06.task.KafkaMicroBatchInputPartition;
@@ -135,7 +135,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         this.kafkaQuery = kafkaQuery;
         this.hBaseQuery = hbaseQuery;
 
-        this.batchCalculator = new BatchCalculator(this.config, this.aq, this.kq);
+        this.batchCalculator = new BatchCalculator(this.config, this.archiveQuery, this.kafkaQuery, this.hBaseQuery);
         LOGGER.debug("ArchiveMicroStreamReader test ctor exit");
     }
 
@@ -216,7 +216,7 @@ public final class ArchiveMicroStreamReader implements MicroBatchStream {
         LOGGER.debug("ArchiveMicroStreamReader.stop called");
         if (this.config.isKafkaEnabled) {
             try {
-                kq.close();
+                kafkaQuery.close();
             }
             catch (final IOException exception) {
                 LOGGER
