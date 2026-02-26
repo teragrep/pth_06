@@ -62,7 +62,7 @@ import java.util.PriorityQueue;
  * Each batch is constructed from a {@link RangeProcessor}, which in turn consists of multiple {@link BatchUnit}s. Each
  * of the slices contain the actual data.
  *
- * @author Eemeli Hukka, Mikko Kortelainen
+ * @author Eemeli Hukka, Mikko Kortelainen, Ville Manninen
  */
 public final class BatchCalculator {
 
@@ -84,13 +84,13 @@ public final class BatchCalculator {
 
         List<BatchUnit> slice = new ArrayList<>();
 
-        if (useHBase()) {
-            slice.addAll(new HBaseBatchSliceCollection(hbaseQuery).processRange(start, end));
+        if (!hbaseQuery.isStub()) {
+            slice.addAll(new HBaseRangeProcessor(hbaseQuery).processRange(start, end));
         }
-        else if (useArchive()) {
+        else if (!archiveQuery.isStub()) {
             slice.addAll(new ArchiveRangeProcessor(archiveQuery).processRange(start, end));
         }
-        if (useKafka()) {
+        if (!kafkaQuery.isStub()) {
             slice.addAll(new KafkaRangeProcessor(kafkaQuery).processRange(start, end));
         }
 
@@ -129,17 +129,5 @@ public final class BatchCalculator {
 
         LOGGER.debug("getBatch <{}> ", taskSliceQueues);
         return taskSliceQueues;
-    }
-
-    private boolean useHBase() {
-        return !hbaseQuery.isStub();
-    }
-
-    private boolean useArchive() {
-        return !archiveQuery.isStub();
-    }
-
-    private boolean useKafka() {
-        return !kafkaQuery.isStub();
     }
 }

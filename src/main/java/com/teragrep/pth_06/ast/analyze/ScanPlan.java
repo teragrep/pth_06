@@ -45,12 +45,12 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
-import com.teragrep.pth_06.Stubbable;
+import com.teragrep.pth_06.Stubable;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 
 /** Logical plan for a row key range scan of HBase */
-public interface ScanPlan extends Stubbable {
+public interface ScanPlan extends Stubable {
 
     /** Prepares the logical plan to a HBase Scan object */
     public abstract Scan toScan();

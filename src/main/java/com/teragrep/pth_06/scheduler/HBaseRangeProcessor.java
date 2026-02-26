@@ -43,9 +43,41 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06;
+package com.teragrep.pth_06.scheduler;
 
-public interface Stubbable {
+import com.teragrep.pth_06.planner.HBaseQuery;
+import com.teragrep.pth_06.planner.offset.DatasourceOffset;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.spark.sql.connector.read.streaming.Offset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    public abstract boolean isStub();
+import java.util.ArrayList;
+import java.util.List;
+
+final class HBaseRangeProcessor implements RangeProcessor {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(HBaseRangeProcessor.class);
+    private final HBaseQuery hBaseQuery;
+
+    HBaseRangeProcessor(final HBaseQuery hBaseQuery) {
+        this.hBaseQuery = hBaseQuery;
+    }
+
+    @Override
+    public List<BatchUnit> processRange(final Offset start, final Offset end) {
+        final long startOffsetLong = ((DatasourceOffset) start).getArchiveOffset().offset();
+        final long endOffsetLong = ((DatasourceOffset) end).getArchiveOffset().offset();
+        LOGGER.info("HBaseQuery process range <{}>-<{}>", startOffsetLong, endOffsetLong);
+        if (!hBaseQuery.isOpen()) {
+            hBaseQuery.open(startOffsetLong);
+        }
+        final List<Result> results = hBaseQuery.currentBatch();
+        final List<BatchUnit> batchUnits = new ArrayList<>();
+        for (final Result result : results) {
+            final BatchUnit batchUnit = new HBaseResult(result).toBatchUnit();
+            batchUnits.add(batchUnit);
+        }
+        return batchUnits;
+    }
 }

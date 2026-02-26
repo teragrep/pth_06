@@ -45,12 +45,12 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubbable;
+import com.teragrep.pth_06.Stubable;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HBaseQuery extends Stubbable, AutoCloseable, QueryMetrics {
+public interface HBaseQuery extends Stubable, AutoCloseable, QueryMetrics {
 
     public abstract void open(final long startOffset);
 

@@ -45,12 +45,12 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubbable;
+import com.teragrep.pth_06.Stubable;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface HourlySlices extends Stubbable {
+public interface HourlySlices extends Stubable {
 
     public abstract boolean hasNext();
 

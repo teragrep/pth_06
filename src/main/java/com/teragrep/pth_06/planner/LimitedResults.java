@@ -45,12 +45,12 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubbable;
+import com.teragrep.pth_06.Stubable;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
 
-public interface LimitedResults extends Stubbable {
+public interface LimitedResults extends Stubable {
 
     public abstract List<Result> results();
 
