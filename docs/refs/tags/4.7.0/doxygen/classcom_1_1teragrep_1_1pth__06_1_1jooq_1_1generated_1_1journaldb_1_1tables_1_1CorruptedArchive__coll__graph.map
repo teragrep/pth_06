@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive" name="com.teragrep.pth_06.jooq.generated.journaldb.tables.CorruptedArchive">
+<area shape="rect" id="Node000001" title="Contains logfiles that are both archives and detected to be corrupted." alt="" coords="839,5,1211,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,20,219,60"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,18,268,15,417,7,569,6,838,12,838,17,569,11,418,13,268,20,233,23"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1jooq_1_1generated_1_1journaldb_1_1tables_1_1CorruptedArchive.html" title="Contains logfiles that are both archives and detected to be corrupted." alt="" coords="268,68,640,108"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="233,54,311,65,311,71,232,59"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="650,64,842,43,842,48,650,69"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="416,52,429,44,454,41,475,43,490,49,496,58,494,68,488,67,491,59,486,53,474,49,454,47,431,49,418,56"/>
+</map>
