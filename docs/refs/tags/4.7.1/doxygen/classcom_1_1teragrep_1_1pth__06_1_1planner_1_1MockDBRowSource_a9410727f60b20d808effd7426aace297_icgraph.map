@@ -1,0 +1,5 @@
+<map id="com.teragrep.pth_06.planner.MockDBRowSource.asPriorityQueue" name="com.teragrep.pth_06.planner.MockDBRowSource.asPriorityQueue">
+<area shape="rect" id="Node000001" title="Provides a new copy of a PriorityQueue with mock data." alt="" coords="379,5,635,45"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBNonSyslogRowSource.html#a970d8d3a5e44f2ae4e9088f219652716" title=" " alt="" coords="5,5,331,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="365,28,331,28,331,23,365,23"/>
+</map>
