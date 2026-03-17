@@ -139,7 +139,7 @@ public final class EpochMigrationRowConverter implements RowConverter {
                         );
             }
             this.objectContent = s3object.getObjectContent();
-            final BufferedInputStream bufferedInputStream = new BufferedInputStream(objectContent, 8 * 1024 * 1024);
+            final BufferedInputStream bufferedInputStream = new BufferedInputStream(objectContent, 256 * 1024);
             final GZIPInputStream gz = new GZIPInputStream(bufferedInputStream);
             rfc5424Frame.load(gz);
             LOGGER.trace("S3FileHandler.open() Initialized result set with element lists");
