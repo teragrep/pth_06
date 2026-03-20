@@ -142,16 +142,16 @@ public final class ElementConditionTest {
 
     @Test
     public void testTimeQualifiers() {
-        String[] tags = {
+        final String[] tags = {
                 "earliest", "latest", "index_earliest", "index_latest"
         };
         int loops = 0;
-        for (String tag : tags) {
-            Element element = document.createElement(tag);
+        for (final String tag : tags) {
+            final Element element = document.createElement(tag);
             element.setAttribute("value", "1000");
             element.setAttribute("operation", "EQUALS");
-            Condition condition = new ElementCondition(element, config).condition();
-            Assertions.assertTrue(condition.toString().contains("date"));
+            final Condition condition = new ElementCondition(element, config).condition();
+            Assertions.assertTrue(condition.toString().contains("epoch_hour"));
             loops++;
         }
         Assertions.assertEquals(4, loops);
