@@ -48,6 +48,7 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -60,19 +61,15 @@ public class LatestConditionTest {
 
     @Test
     public void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("1000").condition();
+        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" <= 1000";
+        final Condition elementCondition = new LatestCondition("1000").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }
 
     @Test
     public void conditionUpdatedTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
-                + ")";
-        Condition elementCondition = new LatestCondition("946720800").condition();
+        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" <= 946720800";
+        final Condition elementCondition = new LatestCondition("946720800").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }
 
@@ -83,35 +80,42 @@ public class LatestConditionTest {
     }
 
     @Test
+    @Disabled("LatestCondition now uses ULong epoch_hour and does not allow negative values")
     public void largeNegativeNumberInputTest() {
         final QueryCondition eq = new LatestCondition("-29786022887");
         Assertions.assertDoesNotThrow(eq::condition);
     }
 
     @Test
+    public void zeroInputTest() {
+        final QueryCondition latestCondition = new LatestCondition("0");
+        Assertions.assertDoesNotThrow(latestCondition::condition);
+    }
+
+    @Test
     public void equalsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
+        final LatestCondition eq1 = new LatestCondition("946720800");
         eq1.condition();
-        LatestCondition eq2 = new LatestCondition("946720800");
-        LatestCondition eq3 = new LatestCondition("946720800");
+        final LatestCondition eq2 = new LatestCondition("946720800");
+        final LatestCondition eq3 = new LatestCondition("946720800");
         eq3.condition();
-        LatestCondition eq4 = new LatestCondition("946720800");
+        final LatestCondition eq4 = new LatestCondition("946720800");
         Assertions.assertEquals(eq1, eq2);
         Assertions.assertEquals(eq3, eq4);
     }
 
     @Test
     public void notEqualsTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        LatestCondition notEq = new LatestCondition("1000");
+        final LatestCondition eq1 = new LatestCondition("946720800");
+        final LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertNotEquals(eq1, notEq);
     }
 
     @Test
     public void hashCodeTest() {
-        LatestCondition eq1 = new LatestCondition("946720800");
-        LatestCondition eq2 = new LatestCondition("946720800");
-        LatestCondition notEq = new LatestCondition("1000");
+        final LatestCondition eq1 = new LatestCondition("946720800");
+        final LatestCondition eq2 = new LatestCondition("946720800");
+        final LatestCondition notEq = new LatestCondition("1000");
         Assertions.assertEquals(eq1.hashCode(), eq2.hashCode());
         Assertions.assertNotEquals(eq1.hashCode(), notEq.hashCode());
     }
