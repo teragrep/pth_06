@@ -48,7 +48,6 @@ package com.teragrep.pth_06.planner.walker.conditions;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.jooq.Condition;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -80,10 +79,9 @@ public class LatestConditionTest {
     }
 
     @Test
-    @Disabled("LatestCondition now uses ULong epoch_hour and does not allow negative values")
-    public void largeNegativeNumberInputTest() {
-        final QueryCondition eq = new LatestCondition("-29786022887");
-        Assertions.assertDoesNotThrow(eq::condition);
+    public void negativeNumberInputExceptionTest() {
+        final QueryCondition eq = new LatestCondition("-1");
+        Assertions.assertThrows(NumberFormatException.class, () -> eq.condition());
     }
 
     @Test
