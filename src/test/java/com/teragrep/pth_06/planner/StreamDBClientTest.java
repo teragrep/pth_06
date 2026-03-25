@@ -854,6 +854,90 @@ class StreamDBClientTest {
     }
 
     @Test
+    public void earliestConditionInclusionTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set the queryXML earliest epoch_hour to 1696471200 greater or equal, which is the epoch_hour of the inserted logfile.
+        opts.put("queryXML", "<earliest value=\"1696471200\" operation=\"GE\"/>");
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // The row with epoch_hour referring to 2023-10-5 should be pulled to slicetable.
+                final int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+                Assertions.assertEquals(1, rows);
+            }
+        });
+    }
+
+    @Test
+    public void earliestConditionExclusionTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set the queryXML earliest epoch_hour to 1696471201 greater or equal, filtering out the inserted logfile.
+        opts.put("queryXML", "<earliest value=\"1696471201\" operation=\"GE\"/>");
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // No rows with epoch_hour referring to 2023-10-5 should be pulled to slicetable.
+                final int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+                Assertions.assertEquals(0, rows);
+            }
+        });
+    }
+
+    @Test
+    public void latestConditionInclusionTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set the queryXML latest epoch_hour to 1696471200 less or equal, which is the epoch_hour of the inserted logfile.
+        opts.put("queryXML", "<latest value=\"1696471200\" operation=\"LE\"/>");
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // The row with epoch_hour referring to 2023-10-5 should be pulled to slicetable.
+                final int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+                Assertions.assertEquals(1, rows);
+            }
+        });
+    }
+
+    @Test
+    public void latestConditionExclusionTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Set logdate and logtime to 2023-10-04:22 UTC-4 and set epoch_hour in path to 2023-10-05:02 UTC.
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(1696471200L, false);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        // Set the queryXML latest epoch_hour to 1696471199 less or equal, filtering out the inserted logfile.
+        opts.put("queryXML", "<latest value=\"1696471199\" operation=\"LE\"/>");
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // No rows with epoch_hour referring to 2023-10-5 should be pulled to slicetable.
+                final int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-5"));
+                Assertions.assertEquals(0, rows);
+            }
+        });
+    }
+
+    @Test
     public void equalsHashCodeContractTest() {
         EqualsVerifier
                 .forClass(StreamDBClient.class)
