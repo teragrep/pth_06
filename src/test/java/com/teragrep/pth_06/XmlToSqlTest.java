@@ -51,9 +51,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Date;
-import java.time.Instant;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class XmlToSqlTest {
@@ -161,19 +159,15 @@ public class XmlToSqlTest {
         String e;
         String result;
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611612000\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        // Add time ranges
-        Instant fromTime = Instant.ofEpochSecond(1611612000);
-        Date fromDate = new Date(fromTime.toEpochMilli());
+
         LOGGER.debug("Journal-DB");
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
-                + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
-        result = parser.fromString(q, false).toString();
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" >= 1611612000\n" + "  )\n" + ")";
+        result = assertDoesNotThrow(() -> parser.fromString(q, false).toString());
         LOGGER.debug("Query=" + q);
         LOGGER.debug("Expected=" + e);
         LOGGER.debug("Result=" + result);
@@ -181,24 +175,20 @@ public class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_OrTimestampLTE() throws Exception {
-        String q;
-        String e;
-        String result;
+    void fromStringTest_JournalDB_OrTimestampLTE() {
+        final String q;
+        final String e;
+        final String result;
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><latest value=\"1611611999\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        // Add time ranges
-        Instant fromTime = Instant.ofEpochSecond(1611611999);
-        Date fromDate = new Date(fromTime.toEpochMilli());
+
         LOGGER.debug("Journal-DB");
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
-                + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
-        result = parser.fromString(q, false).toString();
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" <= 1611611999\n" + "  )\n" + ")";
+        result = assertDoesNotThrow(() -> parser.fromString(q, false).toString());
         LOGGER.debug("Query=" + q);
         LOGGER.debug("Expected=" + e);
         LOGGER.debug("Result=" + result);
@@ -206,28 +196,20 @@ public class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_OrTimestampBetween() throws Exception {
-        String q;
-        String e;
-        String result;
+    void fromStringTest_JournalDB_OrTimestampBetween() {
+        final String q;
+        final String e;
+        final String result;
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
-        // Add time ranges
-        Instant fromTime = Instant.ofEpochSecond(1611655200);
-        Date fromDate = new Date(fromTime.toEpochMilli());
-        Instant toTime = Instant.ofEpochSecond(1619437701);
-        Date toDate = new Date(toTime.toEpochMilli());
+
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
-                + fromTime.getEpochSecond() + ")\n" + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + toDate
-                + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
-                + toTime.getEpochSecond() + ")\n" + "  )\n" + ")";
-        result = parser.fromString(q, false).toString();
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" >= 1611657303\n"
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" <= 1619437701\n" + "  )\n" + ")";
+        result = assertDoesNotThrow(() -> parser.fromString(q, false).toString());
         LOGGER.debug("Query=" + q);
         LOGGER.debug("Expected=" + e);
         LOGGER.debug("Result=" + result);
@@ -235,27 +217,18 @@ public class XmlToSqlTest {
     }
 
     @Test
-    void fromStringTest_JournalDB_AndTimestampBetween() throws Exception {
-        String q;
-        String e;
-        String result;
+    void fromStringTest_JournalDB_AndTimestampBetween() {
+        final String q;
+        final String e;
+        final String result;
         q = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
-        // Add time ranges
-        Instant fromTime = Instant.ofEpochSecond(0);
-        Date fromDate = new Date(fromTime.toEpochMilli());
-        Instant toTime = Instant.ofEpochSecond(1893491420);
-        Date toDate = new Date(toTime.toEpochMilli());
 
         e = "(\n" + "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
-                + fromTime.getEpochSecond() + ")\n" + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '" + toDate
-                + "'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
-                + toTime.getEpochSecond() + ")\n" + ")";
-        result = parser.fromString(q, false).toString();
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" >= 0\n"
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" <= 1893491420\n" + ")";
+        result = assertDoesNotThrow(() -> parser.fromString(q, false).toString());
         LOGGER.debug("Query=" + q);
         LOGGER.debug("Expected=" + e);
         LOGGER.debug("Result=" + result);

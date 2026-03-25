@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XmlWalkerTest {
 
@@ -178,8 +178,8 @@ public class XmlWalkerTest {
     }
 
     @Test
-    void fromStringTimeRangesTest() throws Exception {
-        String q, e, result;
+    void fromStringTimeRangesTest() {
+        final String q, e, result;
         // Drop indexstring and earliest from query
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
@@ -187,50 +187,38 @@ public class XmlWalkerTest {
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
-                + "  )\n" + ")";
-        result = conditionWalker.fromString(q, false).toString();
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" >= 1611657303\n" + "  )\n" + ")";
+        result = assertDoesNotThrow(() -> conditionWalker.fromString(q, false).toString());
         assertEquals(e, result);
     }
 
     @Test
-    void fromStringTimeRangesUsingEpochTest() throws Exception {
-        String q, e, result;
+    void fromStringTimeRangesUsingEpochTest() {
+        final String q, e, result;
         q = "<OR><AND><AND><index value=\"haproxy\" operation=\"NOT_EQUALS\"/><sourcetype value=\"example:haproxy:haproxy\" operation=\"EQUALS\"/></AND><host value=\"loadbalancer.example.com\" operation=\"EQUALS\"/></AND><AND><AND><AND><AND><index value=\"*\" operation=\"EQUALS\"/><host value=\"firewall.example.com\" operation=\"EQUALS\"/></AND><earliest value=\"1611657303\" operation=\"GE\"/></AND><latest value=\"1619437701\" operation=\"LE\"/></AND><indexstring value=\"Denied\" /></AND></OR>";
         e = "(\n" + "  (\n" + "    not (\"getArchivedObjects_filter_table\".\"directory\" like 'haproxy')\n"
                 + "    and \"getArchivedObjects_filter_table\".\"stream\" like 'example:haproxy:haproxy'\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n"
-                + "  )\n" + ")";
-        Condition cond = conditionWalker.fromString(q, false);
-        if (cond != null) {
-            result = conditionWalker.fromString(q, false).toString();
-        }
-        else {
-            result = "illegal null condition";
-        }
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" >= 1611657303\n"
+                + "    and \"journaldb\".\"logfile\".\"epoch_hour\" <= 1619437701\n" + "  )\n" + ")";
+        final Condition cond = assertDoesNotThrow(() -> conditionWalker.fromString(q, false));
+        assertNotNull(cond);
+        result = assertDoesNotThrow(() -> conditionWalker.fromString(q, false).toString());
         assertEquals(e, result);
     }
 
     @Test
-    void fromStringTimeRanges0ToEpochTest() throws Exception {
-        String q, e, result;
+    void fromStringTimeRanges0ToEpochTest() {
+        final String q, e, result;
         q = "<AND><AND><AND><host value=\"sc-99-99-14-25\" operation=\"EQUALS\"/><index value=\"cpu\" operation=\"EQUALS\"/></AND><sourcetype value=\"log:cpu:0\" operation=\"EQUALS\"/></AND><AND><earliest value=\"0\" operation=\"GE\"/><latest value=\"1893491420\" operation=\"LE\"/></AND></AND>";
         e = "(\n" + "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n"
-                + ")";
-        Condition cond = conditionWalker.fromString(q, false);
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" >= 0\n"
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" <= 1893491420\n" + ")";
+        final Condition cond = assertDoesNotThrow(() -> conditionWalker.fromString(q, false));
         result = cond.toString();
         assertEquals(e, result);
     }
