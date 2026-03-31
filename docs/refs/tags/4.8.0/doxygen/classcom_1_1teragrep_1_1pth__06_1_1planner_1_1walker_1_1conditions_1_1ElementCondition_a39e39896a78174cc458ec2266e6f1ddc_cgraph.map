@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.planner.walker.conditions.ElementCondition.requiredTables" name="com.teragrep.pth_06.planner.walker.conditions.ElementCondition.requiredTables">
+<area shape="rect" id="Node000001" title="A set of tables needed to be joined to the query to use this condition." alt="" coords="5,37,336,77"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1IndexStatementCondition.html#a9e6273506853ee6766c3649611404828" title=" " alt="" coords="384,5,715,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,41,370,38,370,43,337,46"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ValidElement.html#ac0ea2df270c90db9d9cc284d8f56222d" title=" " alt="" coords="384,69,715,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="337,69,370,72,370,77,336,74"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1ValidElement.html#a5b8694849043fd75636eea63a160b5b1" title=" " alt="" coords="763,69,1093,109"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="715,87,749,87,749,92,715,92"/>
+</map>
