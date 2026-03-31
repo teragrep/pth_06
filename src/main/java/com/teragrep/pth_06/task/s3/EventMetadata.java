@@ -85,7 +85,7 @@ final class EventMetadata {
         final EpochMicros epochMicros = new EpochMicros(rfc5424Timestamp);
         final PathExtractedTimestamp pathExtractedTimestamp = new PathExtractedTimestamp(path);
         timestampBuilder
-                .add("rfc5242timestamp", String.valueOf(rfc5424Frame.timestamp))
+                .add("rfc5424timestamp", String.valueOf(rfc5424Frame.timestamp))
                 .add("epoch", epochMicros.asLong())
                 .add("path-extracted", pathExtractedTimestamp.toZonedDateTime().toString())
                 .add("path-extracted-precision", pathExtractedTimestamp.hasHourlyData() ? "hourly" : "daily")
