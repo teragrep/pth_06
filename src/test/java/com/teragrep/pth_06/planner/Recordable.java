@@ -45,12 +45,10 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.jooq.Record10;
+import org.jooq.Record9;
 import org.jooq.types.ULong;
-
-import java.sql.Date;
 
 public interface Recordable {
 
-    Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong> asRecord();
+    Record9<ULong, String, String, String, String, String, Long, ULong, ULong> asRecord();
 }

@@ -60,10 +60,8 @@ public class EarliestConditionTest {
 
     @Test
     public void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
+        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" >= 1000";
+        final Condition elementCondition = new EarliestCondition("1000").condition();
         Assertions.assertEquals(e, elementCondition.toString());
     }
 
@@ -74,8 +72,14 @@ public class EarliestConditionTest {
     }
 
     @Test
-    public void largeNegativeNumberInputTest() {
-        final QueryCondition earliestCondition = new EarliestCondition("-29786022887");
+    public void negativeNumberInputExceptionTest() {
+        final QueryCondition earliestCondition = new EarliestCondition("-1");
+        Assertions.assertThrows(NumberFormatException.class, () -> earliestCondition.condition());
+    }
+
+    @Test
+    public void zeroInputTest() {
+        final QueryCondition earliestCondition = new EarliestCondition("0");
         Assertions.assertDoesNotThrow(earliestCondition::condition);
     }
 
