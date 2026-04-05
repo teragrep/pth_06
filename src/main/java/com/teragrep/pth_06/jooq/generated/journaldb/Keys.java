@@ -119,8 +119,8 @@ public class Keys {
     public static final ForeignKey<CorruptedArchiveRecord, LogfileRecord> CORRUPTED_ARCHIVE_IBFK_1 = ForeignKeys0.CORRUPTED_ARCHIVE_IBFK_1;
     public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = ForeignKeys0.LOGFILE_IBFK_1;
     public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = ForeignKeys0.LOGFILE_IBFK_2;
-    public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = ForeignKeys0.FK_LOGFILE__LOGTAG_ID;
     public static final ForeignKey<LogfileRecord, CiRecord> FK_LOGFILE__CI_ID = ForeignKeys0.FK_LOGFILE__CI_ID;
+    public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = ForeignKeys0.FK_LOGFILE__LOGTAG_ID;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
@@ -152,7 +152,7 @@ public class Keys {
         public static final ForeignKey<CorruptedArchiveRecord, LogfileRecord> CORRUPTED_ARCHIVE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGFILE_PRIMARY, CorruptedArchive.CORRUPTED_ARCHIVE, "corrupted_archive_ibfk_1", CorruptedArchive.CORRUPTED_ARCHIVE.LOGFILE_ID);
         public static final ForeignKey<LogfileRecord, BucketRecord> LOGFILE_IBFK_1 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_BUCKET_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_1", Logfile.LOGFILE.BUCKET_ID);
         public static final ForeignKey<LogfileRecord, HostRecord> LOGFILE_IBFK_2 = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_HOST_PRIMARY, Logfile.LOGFILE, "logfile_ibfk_2", Logfile.LOGFILE.HOST_ID);
-        public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "fk_logfile__logtag_id", Logfile.LOGFILE.LOGTAG_ID);
         public static final ForeignKey<LogfileRecord, CiRecord> FK_LOGFILE__CI_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_CI_PRIMARY, Logfile.LOGFILE, "fk_logfile__ci_id", Logfile.LOGFILE.CI_ID);
+        public static final ForeignKey<LogfileRecord, LogtagRecord> FK_LOGFILE__LOGTAG_ID = Internal.createForeignKey(com.teragrep.pth_06.jooq.generated.journaldb.Keys.KEY_LOGTAG_PRIMARY, Logfile.LOGFILE, "fk_logfile__logtag_id", Logfile.LOGFILE.LOGTAG_ID);
     }
 }
