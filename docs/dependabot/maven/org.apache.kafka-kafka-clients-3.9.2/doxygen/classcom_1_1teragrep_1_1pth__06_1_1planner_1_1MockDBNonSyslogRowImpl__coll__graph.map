@@ -1,0 +1,8 @@
+<map id="com.teragrep.pth_06.planner.MockDBNonSyslogRowImpl" name="com.teragrep.pth_06.planner.MockDBNonSyslogRowImpl">
+<area shape="rect" id="Node000001" title="Wrapper around MockDBRow where isSyslog() returns false." alt="" coords="5,183,219,223"/>
+<area shape="rect" id="Node000002" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1MockDBRow.html" title=" " alt="" coords="5,80,219,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,134,112,159,113,183,108,183,107,159,107,134"/>
+<area shape="poly" id="edge3_Node000001_Node000002" title=" " alt="" coords="115,134,115,183,109,183,109,134"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,219,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="115,44,115,80,109,80,109,44"/>
+</map>
