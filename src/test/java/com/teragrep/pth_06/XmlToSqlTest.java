@@ -171,7 +171,7 @@ public class XmlToSqlTest {
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
+                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
                 + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
         result = parser.fromString(q, false).toString();
         LOGGER.debug("Query=" + q);
@@ -196,7 +196,7 @@ public class XmlToSqlTest {
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
+                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
                 + fromTime.getEpochSecond() + ")\n" + "  )\n" + ")";
         result = parser.fromString(q, false).toString();
         LOGGER.debug("Query=" + q);
@@ -222,10 +222,10 @@ public class XmlToSqlTest {
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
                 + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
+                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
                 + fromTime.getEpochSecond() + ")\n" + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '" + toDate
                 + "'\n"
-                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
+                + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
                 + toTime.getEpochSecond() + ")\n" + "  )\n" + ")";
         result = parser.fromString(q, false).toString();
         LOGGER.debug("Query=" + q);
@@ -250,10 +250,10 @@ public class XmlToSqlTest {
                 + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n"
                 + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '" + fromDate + "'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= "
                 + fromTime.getEpochSecond() + ")\n" + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '" + toDate
                 + "'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= "
                 + toTime.getEpochSecond() + ")\n" + ")";
         result = parser.fromString(q, false).toString();
         LOGGER.debug("Query=" + q);

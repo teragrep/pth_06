@@ -70,7 +70,7 @@ public final class LatestCondition implements QueryCondition {
         condition = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);
         condition = condition
                 .and(
-                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))"
+                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))"
                                 + " <= " + instant.getEpochSecond()
                 );
         // raw SQL used here since following not supported for mariadb:
