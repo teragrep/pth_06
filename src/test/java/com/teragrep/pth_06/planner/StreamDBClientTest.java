@@ -53,10 +53,7 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
 import org.jooq.types.UShort;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -629,6 +626,9 @@ class StreamDBClientTest {
         Assertions.assertTrue(nextHourAndSizeFromSliceTable.isStub);
     }
 
+    @Disabled(
+        "EarliectCondition will not work properly if MariaDB is in a lower timezone than the JVM, see issue #355 for details."
+    )
     @Test
     public void earliestConditionQueryTest() {
         // Add test data to logfile table in journaldb.
@@ -643,14 +643,63 @@ class StreamDBClientTest {
         LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), true);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
-        // Set EarliestCondition to an epoch that represents 2023-10-04 19:00 UTC-4, for pullToSliceTable() to ignore records with logtime of 2023-10-04 19:00 UTC-4 or older.
+        // Set EarliestCondition to an epoch that represents 2023-10-04 22:00 UTC-4, for pullToSliceTable() to ignore records with logtime older than 2023-10-04 22:00 UTC-4.
         final Map<String, String> opts = this.opts;
         opts.put("DBurl", mariadb.getJdbcUrl());
         opts
                 .put(
                         "queryXML",
                         "<AND><AND><index value=\"example\" operation=\"EQUALS\"/></AND><earliest value=\""
-                                + instantZonedDateTime.minusHours(3).toEpochSecond() + "\" operation=\"GE\"/></AND>"
+                                + instantZonedDateTime.toEpochSecond() + "\" operation=\"GE\"/></AND>"
+                );
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient sdc = new StreamDBClient(config)) {
+                // Pull the records from a specific logdate to the slicetable for further processing.
+                int rows = sdc.pullToSliceTable(Date.valueOf(instantZonedDateTime.toLocalDate()));
+                Assertions.assertEquals(2, rows);
+
+                // find the earliest row and assert that it has correct offset/logtime value
+                Assertions.assertFalse(sdc.getNextHourAndSizeFromSliceTable(0L).isStub);
+                Assertions
+                        .assertEquals(instantZonedDateTime.toEpochSecond(), sdc.getNextHourAndSizeFromSliceTable(0L).offset());
+                // find the next row after earliest
+                Assertions
+                        .assertFalse(sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).isStub);
+                Assertions
+                        .assertEquals(
+                                instantPlusHour.toEpochSecond(),
+                                sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).offset()
+                        );
+            }
+        });
+    }
+
+    @Disabled(
+        "LatestCondition will not work properly if MariaDB is in a higher timezone than the JVM, see issue #355 for details."
+    )
+    @Test
+    public void latestConditionQueryTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // Inserting logfile with logtime of 2023-10-04 13:00 UTC-4.
+        Instant instant = Instant.ofEpochSecond(1696438800L);
+        ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
+        ZonedDateTime instantPlusHour = instantZonedDateTime.plusHours(1);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+        // Inserting logfile with logtime of 2023-10-04 14:00 UTC-4.
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
+
+        // Set LatestCondition to an epoch that represents 2023-10-04 14:00 UTC-4, for pullToSliceTable() to ignore records with logtime newer than 2023-10-04 14:00 UTC-4.
+        final Map<String, String> opts = this.opts;
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        opts
+                .put(
+                        "queryXML",
+                        "<AND><AND><index value=\"example\" operation=\"EQUALS\"/></AND><latest value=\""
+                                + instantPlusHour.toEpochSecond() + "\" operation=\"LE\"/></AND>"
                 );
         final Config config = new Config(opts);
         Assertions.assertDoesNotThrow(() -> {

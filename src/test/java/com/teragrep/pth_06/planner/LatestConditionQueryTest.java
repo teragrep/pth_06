@@ -94,7 +94,7 @@ class LatestConditionQueryTest {
 
     @BeforeEach
     public void setup() {
-        // Start mariadb testcontainer with timezone set to America/New_York (UTC-4). Also creates a second streamdb database inside the container alongside the default journaldb.
+        // Start mariadb testcontainer with timezone set to system default. Also creates a second streamdb database inside the container alongside the default journaldb.
         mariadb = Assertions
                 .assertDoesNotThrow(() -> new MariaDBContainer<>(DockerImageName.parse("mariadb:10.5")).withPrivilegedMode(false).withUsername(streamDBUsername).withPassword(streamDBPassword).withCommand("--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=" + zoneId.getId()).withDatabaseName(journaldbName).withCopyFileToContainer(MountableFile.forClasspathResource("CREATE_STREAMDB_DB.sql"), "/docker-entrypoint-initdb.d/"));
         mariadb.start();
