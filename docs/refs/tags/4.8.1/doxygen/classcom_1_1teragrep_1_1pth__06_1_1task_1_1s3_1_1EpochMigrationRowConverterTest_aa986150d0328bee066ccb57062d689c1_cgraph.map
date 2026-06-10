@@ -1,0 +1,7 @@
+<map id="com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.testNonSyslogRow" name="com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.testNonSyslogRow">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,30,276,85"/>
+<area shape="rect" id="Node000002" href="$interfacecom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1RowConverter.html#a93e9a08ca2f202c0a41252b44d6b8bff" title=" " alt="" coords="324,5,536,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="276,40,310,36,311,41,276,45"/>
+<area shape="rect" id="Node000003" href="$interfacecom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1RowConverter.html#a2d2520e119db0be65c3e5550fe47020c" title=" " alt="" coords="324,69,536,109"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="276,70,311,73,310,79,276,75"/>
+</map>

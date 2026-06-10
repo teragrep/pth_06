@@ -1,0 +1,7 @@
+<map id="com.teragrep.pth_06.planner.offset.DatasourceOffset" name="com.teragrep.pth_06.planner.offset.DatasourceOffset">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,260,119"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="50,5,111,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,41,122,77,118,80,94,44"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="135,5,234,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="172,44,147,80,143,77,167,41"/>
+</map>

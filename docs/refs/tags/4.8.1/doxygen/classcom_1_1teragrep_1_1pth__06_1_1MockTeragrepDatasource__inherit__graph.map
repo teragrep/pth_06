@@ -1,0 +1,11 @@
+<map id="com.teragrep.pth_06.MockTeragrepDatasource" name="com.teragrep.pth_06.MockTeragrepDatasource">
+<area shape="rect" id="Node000001" title=" " alt="" coords="191,79,387,119"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,156,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,33,240,76,238,81,123,38"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="180,5,291,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="253,40,278,77,274,80,249,43"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="315,5,371,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="330,43,304,80,300,77,325,40"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="395,5,507,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="417,39,329,81,327,76,414,34"/>
+</map>

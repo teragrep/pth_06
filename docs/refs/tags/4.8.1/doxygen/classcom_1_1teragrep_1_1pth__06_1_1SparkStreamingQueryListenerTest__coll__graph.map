@@ -1,0 +1,8 @@
+<map id="com.teragrep.pth_06.SparkStreamingQueryListenerTest" name="com.teragrep.pth_06.SparkStreamingQueryListenerTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,211,212,251"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3Configuration.html" title=" " alt="" coords="11,5,207,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,59,103,108,103,148,109,210,104,211,98,148,98,108,102,59"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1MockS3DataProvider.html" title=" " alt="" coords="256,108,452,148"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="169,48,309,105,307,110,167,53"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="296,156,156,213,154,208,294,151"/>
+</map>

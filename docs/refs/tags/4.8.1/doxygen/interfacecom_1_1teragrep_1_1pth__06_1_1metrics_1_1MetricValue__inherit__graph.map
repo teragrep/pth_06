@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.metrics.MetricValue&lt; T &gt;" name="com.teragrep.pth_06.metrics.MetricValue&lt; T &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="272,37,487,77"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1MetricValueImpl.html" title=" " alt="" coords="535,5,749,45"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="500,40,534,36,535,41,500,45"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1metrics_1_1MetricValueStub.html" title=" " alt="" coords="535,69,749,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="500,69,535,74,534,79,500,75"/>
+<area shape="rect" id="Node000002" href="$interfacecom_1_1teragrep_1_1pth__06_1_1Stubable.html" title=" " alt="" coords="5,45,224,70"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="237,55,272,55,272,60,237,60"/>
+</map>

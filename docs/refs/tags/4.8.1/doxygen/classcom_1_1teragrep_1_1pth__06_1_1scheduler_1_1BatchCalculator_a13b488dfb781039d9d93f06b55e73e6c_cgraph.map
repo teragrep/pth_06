@@ -1,0 +1,9 @@
+<map id="com.teragrep.pth_06.scheduler.BatchCalculator.buildBatch" name="com.teragrep.pth_06.scheduler.BatchCalculator.buildBatch">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,232,45"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchTaskQueue.html#a5a12217f55e121452b9c064187d81ac9" title=" " alt="" coords="280,5,507,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="232,23,266,23,266,28,232,28"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchTaskQueue.html#a8bbebebaa1d1a99732e76b990c03afd2" title=" " alt="" coords="555,5,781,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="507,23,541,23,541,28,507,28"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1scheduler_1_1BatchUnit.html#a8669229df9fa027d92c9a38970427a5b" title=" " alt="" coords="829,5,1056,45"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="782,23,815,23,815,28,782,28"/>
+</map>
