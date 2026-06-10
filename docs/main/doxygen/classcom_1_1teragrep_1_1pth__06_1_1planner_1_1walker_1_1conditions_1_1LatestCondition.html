@@ -163,7 +163,7 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   70</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = JOURNALDB.LOGFILE.LOGDATE.lessOrEqual(timeQualifier);</div>
 <div class="line"><span class="lineno">   71</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a> = <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1planner_1_1walker_1_1conditions_1_1LatestCondition.html#a0eb702f806e372e4bd2f5e9b67e1b9a1">condition</a></div>
 <div class="line"><span class="lineno">   72</span>                .and(</div>
-<div class="line"><span class="lineno">   73</span>                        <span class="stringliteral">&quot;UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,&#39;[0-9]+(\\.log)?\\.gz(\\.[0-9]*)?$&#39;), 1, 10), &#39;%Y%m%d%H&#39;))&quot;</span></div>
+<div class="line"><span class="lineno">   73</span>                        <span class="stringliteral">&quot;UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,&#39;[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$&#39;), 1, 10), &#39;%Y%m%d%H&#39;))&quot;</span></div>
 <div class="line"><span class="lineno">   74</span>                                + <span class="stringliteral">&quot; &lt;= &quot;</span> + instant.getEpochSecond()</div>
 <div class="line"><span class="lineno">   75</span>                );</div>
 <div class="line"><span class="lineno">   76</span>        <span class="comment">// raw SQL used here since following not supported for mariadb:</span></div>
