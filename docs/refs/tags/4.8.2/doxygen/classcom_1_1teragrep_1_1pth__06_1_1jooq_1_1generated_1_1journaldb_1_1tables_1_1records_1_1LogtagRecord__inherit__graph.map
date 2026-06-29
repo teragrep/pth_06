@@ -1,0 +1,7 @@
+<map id="com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogtagRecord" name="com.teragrep.pth_06.jooq.generated.journaldb.tables.records.LogtagRecord">
+<area shape="rect" id="Node000001" title="Contains logtag values that are identified using the ID." alt="" coords="5,93,429,133"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="36,5,199,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,52,197,91,193,95,148,56"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="223,13,415,38"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="296,49,241,95,238,91,293,45"/>
+</map>
