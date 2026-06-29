@@ -97,11 +97,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a9237e12c78f46b89e89862f593c01013"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa986150d0328bee066ccb57062d689c1" id="r_aa986150d0328bee066ccb57062d689c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#aa986150d0328bee066ccb57062d689c1">testNonSyslogRow</a> ()</td></tr>
 <tr class="separator:aa986150d0328bee066ccb57062d689c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8be60a0af37f8279ee95217a71e712e" id="r_ad8be60a0af37f8279ee95217a71e712e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#ad8be60a0af37f8279ee95217a71e712e">testNonGzipFormatFile</a> ()</td></tr>
+<tr class="separator:ad8be60a0af37f8279ee95217a71e712e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
 <tr class="memitem:a4ebfcd682f8e3bc5aaabf47eb875e53d" id="r_a4ebfcd682f8e3bc5aaabf47eb875e53d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a4ebfcd682f8e3bc5aaabf47eb875e53d">load</a> (final String content)  throws IOException </td></tr>
 <tr class="separator:a4ebfcd682f8e3bc5aaabf47eb875e53d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab50afd888132c039918c9274cfa876fd" id="r_ab50afd888132c039918c9274cfa876fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#ab50afd888132c039918c9274cfa876fd">loadNonGzipFormat</a> (final String content)  throws IOException </td></tr>
+<tr class="separator:ab50afd888132c039918c9274cfa876fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82dc3446a945bbaef7275cae07e14037" id="r_a82dc3446a945bbaef7275cae07e14037"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a82dc3446a945bbaef7275cae07e14037">ensureBucketExists</a> ()</td></tr>
 <tr class="separator:a82dc3446a945bbaef7275cae07e14037"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -167,19 +171,19 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00183">183</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  183</span>                                      {</div>
-<div class="line"><span class="lineno">  184</span>        <span class="keywordtype">boolean</span> bucketExists = <span class="keyword">false</span>;</div>
-<div class="line"><span class="lineno">  185</span>        <span class="keywordflow">for</span> (<span class="keyword">final</span> Bucket existingBucket : <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.listBuckets()) {</div>
-<div class="line"><span class="lineno">  186</span>            <span class="keywordflow">if</span> (existingBucket.getName().equals(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>)) {</div>
-<div class="line"><span class="lineno">  187</span>                bucketExists = <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">  188</span>                <span class="keywordflow">break</span>;</div>
-<div class="line"><span class="lineno">  189</span>            }</div>
-<div class="line"><span class="lineno">  190</span>        }</div>
-<div class="line"><span class="lineno">  191</span>        <span class="keywordflow">if</span> (!bucketExists) {</div>
-<div class="line"><span class="lineno">  192</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.createBucket(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>);</div>
-<div class="line"><span class="lineno">  193</span>        }</div>
-<div class="line"><span class="lineno">  194</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00235">235</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  235</span>                                      {</div>
+<div class="line"><span class="lineno">  236</span>        <span class="keywordtype">boolean</span> bucketExists = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  237</span>        <span class="keywordflow">for</span> (<span class="keyword">final</span> Bucket existingBucket : <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.listBuckets()) {</div>
+<div class="line"><span class="lineno">  238</span>            <span class="keywordflow">if</span> (existingBucket.getName().equals(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>)) {</div>
+<div class="line"><span class="lineno">  239</span>                bucketExists = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">  240</span>                <span class="keywordflow">break</span>;</div>
+<div class="line"><span class="lineno">  241</span>            }</div>
+<div class="line"><span class="lineno">  242</span>        }</div>
+<div class="line"><span class="lineno">  243</span>        <span class="keywordflow">if</span> (!bucketExists) {</div>
+<div class="line"><span class="lineno">  244</span>            <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.createBucket(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>);</div>
+<div class="line"><span class="lineno">  245</span>        }</div>
+<div class="line"><span class="lineno">  246</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a00f2710a63b79e7aa2c594875b5ae7ca"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.amazonS3</a></div><div class="ttdeci">final AmazonS3 amazonS3</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00081">EpochMigrationRowConverterTest.java:81</a></div></div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a443a392ca372b408c132423959a7a09e"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.bucket</a></div><div class="ttdeci">final String bucket</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00069">EpochMigrationRowConverterTest.java:69</a></div></div>
 </div><!-- fragment -->
@@ -209,16 +213,51 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00174">174</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  174</span>                                                               {</div>
-<div class="line"><span class="lineno">  175</span>        <span class="keyword">final</span> ByteArrayOutputStream baos = <span class="keyword">new</span> ByteArrayOutputStream();</div>
-<div class="line"><span class="lineno">  176</span>        <span class="keywordflow">try</span> (<span class="keyword">final</span> GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(baos)) {</div>
-<div class="line"><span class="lineno">  177</span>            gzip.write(content.getBytes(StandardCharsets.UTF_8));</div>
-<div class="line"><span class="lineno">  178</span>        }</div>
-<div class="line"><span class="lineno">  179</span>        <span class="keyword">final</span> ByteArrayInputStream inStream = <span class="keyword">new</span> ByteArrayInputStream(baos.toByteArray());</div>
-<div class="line"><span class="lineno">  180</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.putObject(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a3895bbe87ece6c586243b223dc1a87f0">path</a>, inStream, <span class="keyword">null</span>);</div>
-<div class="line"><span class="lineno">  181</span>    }</div>
+<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00218">218</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  218</span>                                                               {</div>
+<div class="line"><span class="lineno">  219</span>        <span class="keyword">final</span> ByteArrayOutputStream baos = <span class="keyword">new</span> ByteArrayOutputStream();</div>
+<div class="line"><span class="lineno">  220</span>        <span class="keywordflow">try</span> (<span class="keyword">final</span> GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(baos)) {</div>
+<div class="line"><span class="lineno">  221</span>            gzip.write(content.getBytes(StandardCharsets.UTF_8));</div>
+<div class="line"><span class="lineno">  222</span>        }</div>
+<div class="line"><span class="lineno">  223</span>        <span class="keyword">final</span> ByteArrayInputStream inStream = <span class="keyword">new</span> ByteArrayInputStream(baos.toByteArray());</div>
+<div class="line"><span class="lineno">  224</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.putObject(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a3895bbe87ece6c586243b223dc1a87f0">path</a>, inStream, <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  225</span>    }</div>
 <div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a3895bbe87ece6c586243b223dc1a87f0"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a3895bbe87ece6c586243b223dc1a87f0">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.path</a></div><div class="ttdeci">final String path</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00070">EpochMigrationRowConverterTest.java:70</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ab50afd888132c039918c9274cfa876fd" name="ab50afd888132c039918c9274cfa876fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab50afd888132c039918c9274cfa876fd">&#9670;&#160;</a></span>loadNonGzipFormat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.loadNonGzipFormat </td>
+          <td>(</td>
+          <td class="paramtype">final String&#160;</td>
+          <td class="paramname"><em>content</em></td><td>)</td>
+          <td> throws IOException</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00227">227</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  227</span>                                                                            {</div>
+<div class="line"><span class="lineno">  228</span>        <span class="keyword">final</span> ByteArrayOutputStream baos = <span class="keyword">new</span> ByteArrayOutputStream();</div>
+<div class="line"><span class="lineno">  229</span>        baos.write(content.getBytes(StandardCharsets.UTF_8));</div>
+<div class="line"><span class="lineno">  230</span>        <span class="keyword">final</span> ByteArrayInputStream bais = <span class="keyword">new</span> ByteArrayInputStream(baos.toByteArray());</div>
+<div class="line"><span class="lineno">  231</span>        <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>.putObject(<a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>, <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a3895bbe87ece6c586243b223dc1a87f0">path</a>, bais, <span class="keyword">null</span>);</div>
+<div class="line"><span class="lineno">  232</span> </div>
+<div class="line"><span class="lineno">  233</span>    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -242,8 +281,75 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">   89</span>        Assertions.assertDoesNotThrow(mockS3::start);</div>
 <div class="line"><span class="lineno">   90</span>        <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a82dc3446a945bbaef7275cae07e14037">ensureBucketExists</a>();</div>
 <div class="line"><span class="lineno">   91</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a82dc3446a945bbaef7275cae07e14037"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a82dc3446a945bbaef7275cae07e14037">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.ensureBucketExists</a></div><div class="ttdeci">void ensureBucketExists()</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00183">EpochMigrationRowConverterTest.java:183</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a82dc3446a945bbaef7275cae07e14037"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a82dc3446a945bbaef7275cae07e14037">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.ensureBucketExists</a></div><div class="ttdeci">void ensureBucketExists()</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00235">EpochMigrationRowConverterTest.java:235</a></div></div>
 </div><!-- fragment -->
+</div>
+</div>
+<a id="ad8be60a0af37f8279ee95217a71e712e" name="ad8be60a0af37f8279ee95217a71e712e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8be60a0af37f8279ee95217a71e712e">&#9670;&#160;</a></span>testNonGzipFormatFile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.testNonGzipFormatFile </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="EpochMigrationRowConverterTest_8java_source.html#l00175">175</a> of file <a class="el" href="EpochMigrationRowConverterTest_8java_source.html">EpochMigrationRowConverterTest.java</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  175</span>                                        {</div>
+<div class="line"><span class="lineno">  176</span>        <span class="comment">// syslog message content should not be available as the object is unreadable non gzip format</span></div>
+<div class="line"><span class="lineno">  177</span>        <span class="keyword">final</span> String syslog = <span class="stringliteral">&quot;&lt;14&gt;1 2014-06-20T09:14:07.12345+00:00 host01 systemd DEA MSG-01 [sd_one@48577 id_one=\&quot;eno\&quot; id_two=\&quot;owt\&quot;][sd_two@48577 id_three=\&quot;eerht\&quot; id_four=\&quot;ruof\&quot;] msg\n&quot;</span>;</div>
+<div class="line"><span class="lineno">  178</span>        Assertions.assertDoesNotThrow(() -&gt; <a class="code hl_function" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#ab50afd888132c039918c9274cfa876fd">loadNonGzipFormat</a>(syslog));</div>
+<div class="line"><span class="lineno">  179</span>        <span class="keyword">final</span> RowConverter rowConverter = <span class="keyword">new</span> EpochMigrationRowConverter(</div>
+<div class="line"><span class="lineno">  180</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a00f2710a63b79e7aa2c594875b5ae7ca">amazonS3</a>,</div>
+<div class="line"><span class="lineno">  181</span>                <span class="stringliteral">&quot;id&quot;</span>,</div>
+<div class="line"><span class="lineno">  182</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a443a392ca372b408c132423959a7a09e">bucket</a>,</div>
+<div class="line"><span class="lineno">  183</span>                <a class="code hl_variable" href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a3895bbe87ece6c586243b223dc1a87f0">path</a>,</div>
+<div class="line"><span class="lineno">  184</span>                <span class="stringliteral">&quot;directory&quot;</span>,</div>
+<div class="line"><span class="lineno">  185</span>                <span class="stringliteral">&quot;stream&quot;</span>,</div>
+<div class="line"><span class="lineno">  186</span>                <span class="stringliteral">&quot;host&quot;</span></div>
+<div class="line"><span class="lineno">  187</span>        );</div>
+<div class="line"><span class="lineno">  188</span>        Assertions.assertDoesNotThrow(rowConverter::open);</div>
+<div class="line"><span class="lineno">  189</span>        Assertions.assertDoesNotThrow(() -&gt; {</div>
+<div class="line"><span class="lineno">  190</span>            Assertions.assertTrue(rowConverter.next(), <span class="stringliteral">&quot;first call should succeed&quot;</span>);</div>
+<div class="line"><span class="lineno">  191</span>        });</div>
+<div class="line"><span class="lineno">  192</span>        <span class="keyword">final</span> InternalRow internalRow = rowConverter.get();</div>
+<div class="line"><span class="lineno">  193</span>        <span class="keywordtype">long</span> time = internalRow.getLong(0);</div>
+<div class="line"><span class="lineno">  194</span>        <span class="keywordtype">long</span> expectedEpochSeconds = ZonedDateTime</div>
+<div class="line"><span class="lineno">  195</span>                .of(2007, 10, 8, 14, 0, 0, 0, ZoneId.of(<span class="stringliteral">&quot;Europe/Helsinki&quot;</span>))</div>
+<div class="line"><span class="lineno">  196</span>                .toEpochSecond();</div>
+<div class="line"><span class="lineno">  197</span>        Assertions</div>
+<div class="line"><span class="lineno">  198</span>                .assertEquals(</div>
+<div class="line"><span class="lineno">  199</span>                        expectedEpochSeconds * 1000 * 1000, time,</div>
+<div class="line"><span class="lineno">  200</span>                        <span class="stringliteral">&quot;epoch should be match the one extracted from the file path&quot;</span></div>
+<div class="line"><span class="lineno">  201</span>                );</div>
+<div class="line"><span class="lineno">  202</span> </div>
+<div class="line"><span class="lineno">  203</span>        <span class="keyword">final</span> String raw = internalRow.getString(1);</div>
+<div class="line"><span class="lineno">  204</span>        <span class="keyword">final</span> String expectedRaw = <span class="stringliteral">&quot;{\&quot;epochMigration\&quot;:true,\&quot;format\&quot;:\&quot;non-rfc5424\&quot;,\&quot;object\&quot;:{\&quot;bucket\&quot;:\&quot;bucket\&quot;,\&quot;path\&quot;:\&quot;2007/10-08/epoch/migration/test.logGLOB-2007100814.log.gz\&quot;,\&quot;partition\&quot;:\&quot;id\&quot;},\&quot;timestamp\&quot;:{\&quot;path-extracted\&quot;:\&quot;2007-10-08T14:00+03:00[Europe/Helsinki]\&quot;,\&quot;path-extracted-precision\&quot;:\&quot;hourly\&quot;,\&quot;source\&quot;:\&quot;object-path\&quot;}}&quot;</span>;</div>
+<div class="line"><span class="lineno">  205</span>        Assertions</div>
+<div class="line"><span class="lineno">  206</span>                .assertEquals(</div>
+<div class="line"><span class="lineno">  207</span>                        expectedRaw, raw,</div>
+<div class="line"><span class="lineno">  208</span>                        <span class="stringliteral">&quot;converted row should match the expected non-rfc5424 row since stream was unreadable&quot;</span></div>
+<div class="line"><span class="lineno">  209</span>                );</div>
+<div class="line"><span class="lineno">  210</span>        Assertions</div>
+<div class="line"><span class="lineno">  211</span>                .assertDoesNotThrow(</div>
+<div class="line"><span class="lineno">  212</span>                        () -&gt; Assertions</div>
+<div class="line"><span class="lineno">  213</span>                                .assertFalse(rowConverter.next(), <span class="stringliteral">&quot;no more rows available after first read attempt&quot;</span>)</div>
+<div class="line"><span class="lineno">  214</span>                );</div>
+<div class="line"><span class="lineno">  215</span>        Assertions.assertDoesNotThrow(rowConverter::close, <span class="stringliteral">&quot;row converter should be closed&quot;</span>);</div>
+<div class="line"><span class="lineno">  216</span>    }</div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_ab50afd888132c039918c9274cfa876fd"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#ab50afd888132c039918c9274cfa876fd">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.loadNonGzipFormat</a></div><div class="ttdeci">void loadNonGzipFormat(final String content)</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00227">EpochMigrationRowConverterTest.java:227</a></div></div>
+</div><!-- fragment --><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><iframe scrolling="no" frameborder="0" src="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_ad8be60a0af37f8279ee95217a71e712e_cgraph.svg" width="542" height="115"><p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p></iframe></div>
+</div>
+
 </div>
 </div>
 <a id="aa986150d0328bee066ccb57062d689c1" name="aa986150d0328bee066ccb57062d689c1"></a>
@@ -300,7 +406,7 @@ Private Attributes</h2></td></tr>
 <div class="line"><span class="lineno">  170</span>                );</div>
 <div class="line"><span class="lineno">  171</span>        Assertions.assertDoesNotThrow(rowConverter::close);</div>
 <div class="line"><span class="lineno">  172</span>    }</div>
-<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a4ebfcd682f8e3bc5aaabf47eb875e53d"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a4ebfcd682f8e3bc5aaabf47eb875e53d">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.load</a></div><div class="ttdeci">void load(final String content)</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00174">EpochMigrationRowConverterTest.java:174</a></div></div>
+<div class="ttc" id="aclasscom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest_html_a4ebfcd682f8e3bc5aaabf47eb875e53d"><div class="ttname"><a href="classcom_1_1teragrep_1_1pth__06_1_1task_1_1s3_1_1EpochMigrationRowConverterTest.html#a4ebfcd682f8e3bc5aaabf47eb875e53d">com.teragrep.pth_06.task.s3.EpochMigrationRowConverterTest.load</a></div><div class="ttdeci">void load(final String content)</div><div class="ttdef"><b>Definition</b> <a href="EpochMigrationRowConverterTest_8java_source.html#l00218">EpochMigrationRowConverterTest.java:218</a></div></div>
 </div><!-- fragment --><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
