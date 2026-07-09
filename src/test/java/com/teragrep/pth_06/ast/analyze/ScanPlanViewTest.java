@@ -1,0 +1,280 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
+package com.teragrep.pth_06.ast.analyze;
+
+import com.teragrep.pth_06.MockS3Configuration;
+import com.teragrep.pth_06.config.Config;
+import com.teragrep.pth_06.planner.LogfileTable;
+import com.teragrep.pth_06.planner.MockDBRow;
+import com.teragrep.pth_06.planner.MockDBRowSource;
+import com.teragrep.pth_06.planner.source.LazySource;
+import com.teragrep.pth_06.task.s3.MockS3;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.ResultScanner;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
+import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class ScanPlanViewTest {
+
+    private final String userName = "sa";
+    private final String password = "";
+    private Connection conn;
+    private final Map<String, String> opts = new HashMap<>();
+    private TestingHBaseCluster testCluster;
+    private LogfileTable logfileTable;
+
+    private final MockS3Configuration mockS3Configuration = new MockS3Configuration(
+            "http://127.0.0.1:48080",
+            "s3identity",
+            "s3credential"
+    );
+
+    private final MockS3 mockS3 = new MockS3(
+            mockS3Configuration.s3endpoint(),
+            mockS3Configuration.s3identity(),
+            mockS3Configuration.s3credential()
+    );
+
+    @BeforeAll
+    public void setup() {
+        Assertions.assertDoesNotThrow(mockS3::start);
+        opts
+                .put(
+                        "queryXML",
+                        "<AND><index operation=\"EQUALS\" value=\"f17_v2\"/><AND><earliest operation=\"EQUALS\" value=\"1262296800\"/><latest operation=\"EQUALS\" value=\"1263679200\"/></AND></AND>"
+                );
+        opts.put("archive.enabled", "true");
+        opts.put("hbase.enabled", "true");
+        opts.put("S3endPoint", "S3endPoint");
+        opts.put("S3identity", "S3identity");
+        opts.put("S3credential", "S3credential");
+        opts.put("DBusername", userName);
+        opts.put("DBpassword", password);
+        opts.put("quantumLength", "15");
+
+        final TestingHBaseClusterOption clusterOption = TestingHBaseClusterOption
+                .builder()
+                .numMasters(1)
+                .numRegionServers(1)
+                .build();
+        testCluster = TestingHBaseCluster.create(clusterOption);
+        Configuration conf = testCluster.getConf();
+        conf.set("hbase.master.hostname", "localhost");
+        conf.set("hbase.regionserver.hostname", "localhost");
+        conf.set("hbase.zookeeper.quorum", "localhost");
+        Assertions.assertDoesNotThrow(testCluster::start);
+    }
+
+    @AfterAll
+    public void stop() {
+        if (testCluster.isClusterRunning()) {
+            Assertions.assertDoesNotThrow(testCluster::stop);
+        }
+        Assertions.assertDoesNotThrow(logfileTable::close);
+        Assertions.assertDoesNotThrow(mockS3::stop);
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        opts.put("DBurl", url);
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+
+        final List<MockDBRow> mockDBRows = new ArrayList<>(new MockDBRowSource().asPriorityQueue());
+
+        Assertions.assertDoesNotThrow(() -> {
+            conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS STREAMDB").execute();
+            conn.prepareStatement("USE STREAMDB").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS host").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS stream").execute();
+            conn.prepareStatement("DROP TABLE IF EXISTS log_group").execute();
+
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `log_group` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  PRIMARY KEY (`id`)\n" + ")"
+                    )
+                    .execute();
+
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `host` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `name` varchar(175) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `gid` int(10) unsigned NOT NULL,\n" + "  PRIMARY KEY (`id`),\n"
+                                    + "  KEY `host_gid` (`gid`),\n" + "  KEY `idx_name_id` (`name`,`id`),\n"
+                                    + "  CONSTRAINT `host_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `log_group` (`id`) ON DELETE CASCADE\n"
+                                    + ")"
+                    )
+                    .execute();
+
+            conn
+                    .prepareStatement(
+                            "CREATE TABLE `stream` (\n" + "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\n"
+                                    + "  `gid` int(10) unsigned NOT NULL,\n"
+                                    + "  `directory` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `stream` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  `tag` varchar(48) COLLATE utf8mb4_unicode_ci NOT NULL,\n"
+                                    + "  PRIMARY KEY (`id`),\n" + "  KEY `stream_gid` (`gid`),\n"
+                                    + "  CONSTRAINT `stream_ibfk_1` FOREIGN KEY (`gid`) REFERENCES `log_group` (`id`) ON DELETE CASCADE\n"
+                                    + ") "
+                    )
+                    .execute();
+
+            conn.prepareStatement("INSERT INTO `log_group` (`name`) VALUES ('test_group');").execute();
+
+            final Set<String> insertedHosts = new HashSet<>();
+            try (
+                    PreparedStatement hostStmt = conn
+                            .prepareStatement("INSERT INTO `host` (`name`, `gid`) VALUES (?, 1);")
+            ) {
+                for (final MockDBRow row : mockDBRows) {
+                    final String hostName = row.host();
+                    if (insertedHosts.add(hostName)) {
+                        hostStmt.setString(1, hostName);
+                        hostStmt.execute();
+                    }
+                }
+            }
+            Assertions.assertEquals(32, insertedHosts.size());
+
+            final Set<String> insertedStreams = new HashSet<>();
+            try (
+                    PreparedStatement streamStmt = conn
+                            .prepareStatement(
+                                    "INSERT INTO `stream` (`gid`, `directory`, `stream`, `tag`) VALUES (1, ?, ?, ?);"
+                            )
+            ) {
+                for (final MockDBRow row : mockDBRows) {
+                    // Compound tracking token to identify unique combinations
+                    final String streamKey = row.directory() + "||" + row.stream() + "||" + row.logtag();
+                    if (insertedStreams.add(streamKey)) {
+                        streamStmt.setString(1, row.directory());
+                        streamStmt.setString(2, row.stream());
+                        streamStmt.setString(3, row.logtag());
+                        streamStmt.execute();
+                    }
+                }
+            }
+        });
+
+        Assertions.assertTrue(testCluster.isClusterRunning());
+        logfileTable = Assertions
+                .assertDoesNotThrow(() -> new LogfileTable(new Config(opts), new LazySource(testCluster.getConf())));
+
+        for (final MockDBRow row : mockDBRows) {
+            Assertions
+                    .assertDoesNotThrow(
+                            () -> logfileTable
+                                    .insertRow(
+                                            row.id(), row.directory(), row.stream(), row.host(), row.logtag(),
+                                            row.logdate(), row.bucket(), row.path(), row.logtime(), row.filesize(),
+                                            row.uncompressedFilesize()
+                                    )
+                    );
+        }
+        final ResultScanner scanner = Assertions.assertDoesNotThrow(() -> logfileTable.table().getScanner(new Scan()));
+        int resultCount = 0;
+        for (final org.apache.hadoop.hbase.client.Result result : scanner) {
+            Assertions.assertFalse(result.isEmpty());
+            resultCount++;
+        }
+        Assertions
+                .assertEquals(
+                        mockDBRows.size(), resultCount, "number of HBase rows should match the number of Mock DB rows"
+                );
+        scanner.close();
+    }
+
+    @AfterEach
+    public void close() {
+        Assertions.assertDoesNotThrow(conn::close);
+    }
+
+    @Test
+    public void testRangeInitiallyNotOpen() {
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
+        ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
+        Assertions.assertFalse(scanPlanView.isOpen());
+    }
+
+    @Test
+    public void testRangeInitiallyNotFinished() {
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
+        ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
+        Assertions.assertFalse(scanPlanView.isFinished());
+    }
+
+    // open
+    // close
+    // earliest
+    // nextHour
+    // buffered result used
+    // buffered result outside window ignored
+
+}

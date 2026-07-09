@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.Stubable;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.Record10;
 import org.jooq.Result;
@@ -58,7 +59,7 @@ import java.sql.Date;
  * @since 26/01/2022
  * @author Mikko Kortelainen
  */
-public interface ArchiveQuery {
+public interface ArchiveQuery extends Stubable {
 
     public abstract Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
             long startHour,

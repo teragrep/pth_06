@@ -62,12 +62,14 @@ public final class Config {
 
     public final BatchConfig batchConfig;
     public final AuditConfig auditConfig;
+    public final HBaseConfig hBaseConfig;
 
     public final LoggingConfig loggingConfig;
 
     public final SQLConfig sqlConfig;
 
     public final boolean isArchiveEnabled;
+    public final boolean isHbaseEnabled;
     public final boolean isKafkaEnabled;
 
     public final boolean isMetadataQuery;
@@ -82,6 +84,7 @@ public final class Config {
         auditConfig = new AuditConfig(opts);
 
         isArchiveEnabled = opts.getOrDefault("archive.enabled", "false").equalsIgnoreCase("true");
+        isHbaseEnabled = opts.getOrDefault("hbase.enabled", "false").equalsIgnoreCase("true");
         if (isArchiveEnabled) {
             archiveConfig = new ArchiveConfig(opts);
         }
@@ -95,6 +98,13 @@ public final class Config {
         }
         else {
             kafkaConfig = new KafkaConfig();
+        }
+
+        if (isHbaseEnabled) {
+            hBaseConfig = new HBaseConfig(opts);
+        }
+        else {
+            hBaseConfig = new HBaseConfig();
         }
 
         // check that at least one datasource is enabled
