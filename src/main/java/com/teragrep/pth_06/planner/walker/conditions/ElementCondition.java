@@ -88,6 +88,15 @@ public final class ElementCondition implements QueryCondition, BloomQueryConditi
             final QueryCondition host = new HostCondition(value, operation, true);
             condition = host.condition();
         }
+        else if ("earliest".equalsIgnoreCase(tag) || "index_earliest".equalsIgnoreCase(tag)) {
+            condition = DSL.noCondition();
+        }
+        else if ("latest".equalsIgnoreCase(tag) || "index_latest".equalsIgnoreCase(tag)) {
+            condition = DSL.noCondition();
+        }
+        else if ("indexstatement".equalsIgnoreCase(tag)) {
+            condition = DSL.noCondition();
+        }
         else {
             throw new IllegalStateException("Unsupported StreamDB query element tag <" + tag + ">");
         }
