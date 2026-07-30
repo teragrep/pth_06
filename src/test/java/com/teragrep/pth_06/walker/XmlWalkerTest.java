@@ -187,7 +187,7 @@ public class XmlWalkerTest {
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
+                + "    and \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(1611655200))\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
                 + "  )\n" + ")";
         result = conditionWalker.fromString(q, false).toString();
@@ -203,9 +203,9 @@ public class XmlWalkerTest {
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'loadbalancer.example.com'\n" + "  )\n"
                 + "  or (\n" + "    true\n"
                 + "    and \"getArchivedObjects_filter_table\".\"host\" like 'firewall.example.com'\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" >= date '2021-01-26'\n"
+                + "    and \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(1611655200))\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1611655200)\n"
-                + "    and \"journaldb\".\"logfile\".\"logdate\" <= date '2021-04-26'\n"
+                + "    and \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(1619437701))\n"
                 + "    and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1619437701)\n"
                 + "  )\n" + ")";
         Condition cond = conditionWalker.fromString(q, false);
@@ -225,9 +225,9 @@ public class XmlWalkerTest {
         e = "(\n" + "  \"getArchivedObjects_filter_table\".\"host\" like 'sc-99-99-14-25'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'cpu'\n"
                 + "  and \"getArchivedObjects_filter_table\".\"stream\" like 'log:cpu:0'\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
+                + "  and \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(0))\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2030-01-01'\n"
+                + "  and \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(1893491420))\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1893491420)\n"
                 + ")";
         Condition cond = conditionWalker.fromString(q, false);

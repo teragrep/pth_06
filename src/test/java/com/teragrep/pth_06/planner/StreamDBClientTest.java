@@ -626,9 +626,6 @@ class StreamDBClientTest {
         Assertions.assertTrue(nextHourAndSizeFromSliceTable.isStub);
     }
 
-    @Disabled(
-        "EarliectCondition will not work properly if MariaDB is in a lower timezone than the JVM, see issue #355 for details."
-    )
     @Test
     public void earliestConditionQueryTest() {
         // Add test data to logfile table in journaldb.
@@ -675,9 +672,6 @@ class StreamDBClientTest {
         });
     }
 
-    @Disabled(
-        "LatestCondition will not work properly if MariaDB is in a higher timezone than the JVM, see issue #355 for details."
-    )
     @Test
     public void latestConditionQueryTest() {
         // Add test data to logfile table in journaldb.
@@ -720,6 +714,33 @@ class StreamDBClientTest {
                                 instantPlusHour.toEpochSecond(),
                                 sdc.getNextHourAndSizeFromSliceTable(instantZonedDateTime.toEpochSecond()).offset()
                         );
+            }
+        });
+    }
+
+    /**
+     * Verifies that logdate filtering uses the database session timezone instead of the JVM timezone. This test relies
+     * on the test JVM timezone being different enough from the MariaDB session timezone (America/New_York) that
+     * 2023-10-04 22:00 America/New_York falls on a different calendar date. Workflow runners currently runs with UTC,
+     * which reproduces the original issue.
+     */
+    @Test
+    public void logfileDateFilteringUsesDatabaseSessionTimezoneTest() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        // 2023-10-04 22:00 America/New_York = 2023-10-05 02:00 UTC
+        final ZonedDateTime logTime = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
+        final long epoch = logTime.toEpochSecond();
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecordForEpoch(epoch, false)).execute();
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final String query = "<AND>" + "<index value=\"example\" operation=\"EQUALS\"/>" + "<earliest value=\"" + epoch
+                + "\" operation=\"GE\"/>" + "</AND>";
+        opts.put("queryXML", query);
+        final Config config = new Config(opts);
+        Assertions.assertDoesNotThrow(() -> {
+            try (StreamDBClient sdc = new StreamDBClient(config)) {
+                int rows = sdc.pullToSliceTable(Date.valueOf(logTime.toLocalDate()));
+                Assertions.assertEquals(1, rows, "Should find the row");
             }
         });
     }
