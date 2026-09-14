@@ -46,7 +46,6 @@
 package com.teragrep.pth_06.ast.analyze;
 
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 
 public final class StubScanPlan implements ScanPlan {
 
@@ -93,7 +92,7 @@ public final class StubScanPlan implements ScanPlan {
     }
 
     @Override
-    public FilterList filterList() {
+    public FilterGroup filterGroup() {
         throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 

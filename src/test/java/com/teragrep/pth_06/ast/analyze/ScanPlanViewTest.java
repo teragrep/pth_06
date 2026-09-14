@@ -55,7 +55,6 @@ import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
 import org.junit.jupiter.api.AfterAll;
@@ -258,14 +257,14 @@ public class ScanPlanViewTest {
 
     @Test
     public void testRangeInitiallyNotOpen() {
-        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterGroup());
         ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
         Assertions.assertFalse(scanPlanView.isOpen());
     }
 
     @Test
     public void testRangeInitiallyNotFinished() {
-        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterList());
+        ScanPlanImpl scanRange = new ScanPlanImpl(1, 1, 10000, new FilterGroup());
         ScanPlanView scanPlanView = new ScanPlanView(scanRange, logfileTable);
         Assertions.assertFalse(scanPlanView.isFinished());
     }

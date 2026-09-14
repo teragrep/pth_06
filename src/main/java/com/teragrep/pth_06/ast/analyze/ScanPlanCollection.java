@@ -109,18 +109,16 @@ public final class ScanPlanCollection {
         final String journaldbName = config.archiveConfig.dbJournalDbName;
         final String streamdbName = config.archiveConfig.dbStreamDbName;
         final String bloomdbName = config.archiveConfig.bloomDbName;
-        final Connection connection;
-        try {
-            connection = DriverManager.getConnection(url, userName, password);
-        }
-        catch (final SQLException e) {
-            throw new RuntimeException("Error getting connection: " + e.getMessage());
-        }
         final Settings settings = new Settings()
                 .withRenderMapping(new RenderMapping().withSchemata(new MappedSchema().withInput("streamdb").withOutput(streamdbName), new MappedSchema().withInput("journaldb").withOutput(journaldbName), new MappedSchema().withInput("bloomdb").withOutput(bloomdbName)));
-        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         if (scanPlans.isEmpty()) {
-            collectScanPlans(ctx, root);
+            try (final Connection connection = DriverManager.getConnection(url, userName, password)) {
+                final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
+                collectScanPlans(ctx, root);
+            }
+            catch (final SQLException e) {
+                throw new RuntimeException("Error getting connection: " + e.getMessage());
+            }
         }
         return scanPlans;
     }

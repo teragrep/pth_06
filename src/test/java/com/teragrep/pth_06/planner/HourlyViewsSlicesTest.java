@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.ast.analyze.FilterGroup;
 import com.teragrep.pth_06.ast.analyze.ScanPlan;
 import com.teragrep.pth_06.ast.analyze.ScanPlanImpl;
 import com.teragrep.pth_06.ast.analyze.ScanPlanView;
@@ -55,7 +56,6 @@ import com.teragrep.pth_06.task.s3.MockS3;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.testing.TestingHBaseCluster;
 import org.apache.hadoop.hbase.testing.TestingHBaseClusterOption;
 import org.junit.jupiter.api.AfterAll;
@@ -220,7 +220,7 @@ public class HourlyViewsSlicesTest {
 
     @Test
     public void testSingleView() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterGroup());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanPlanView);
         HourlyViewsSlices hourlyWindowsImpl = new HourlyViewsSlices(views, 1262296800);
@@ -238,7 +238,7 @@ public class HourlyViewsSlicesTest {
 
     @Test
     public void testMultipleHourlyResults() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1362296800, new FilterGroup());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         List<View> views = Collections.singletonList(scanPlanView);
         HourlyViewsSlices hourlyWindowsImpl = new HourlyViewsSlices(views, 1262296800);
@@ -257,8 +257,8 @@ public class HourlyViewsSlicesTest {
 
     @Test
     public void multipleScanRangeViewTest() {
-        ScanPlan scanPlan1 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
-        ScanPlan scanPlan2 = new ScanPlanImpl(1, 1, 1362296800, new FilterList());
+        ScanPlan scanPlan1 = new ScanPlanImpl(1, 1, 1362296800, new FilterGroup());
+        ScanPlan scanPlan2 = new ScanPlanImpl(1, 1, 1362296800, new FilterGroup());
         ScanPlanView scanPlanView1 = new ScanPlanView(scanPlan1, logfileTable);
         ScanPlanView scanPlanView2 = new ScanPlanView(scanPlan2, logfileTable);
         List<View> views = Arrays.asList(scanPlanView1, scanPlanView2);
@@ -279,7 +279,7 @@ public class HourlyViewsSlicesTest {
 
     @Test
     public void testHasNextReturnsFalseAfterAllViewsFinished() {
-        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1, 1, 1262296800, new FilterGroup());
         ScanPlanView scanPlanView = new ScanPlanView(scanPlan, logfileTable);
         HourlyViewsSlices syncResults = new HourlyViewsSlices(Collections.singletonList(scanPlanView), 1262296800);
         while (syncResults.hasNext()) {

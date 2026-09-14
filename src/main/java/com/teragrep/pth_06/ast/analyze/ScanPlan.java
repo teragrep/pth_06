@@ -47,7 +47,6 @@ package com.teragrep.pth_06.ast.analyze;
 
 import com.teragrep.stb_01.Stubable;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.FilterList;
 
 /** Logical plan for a row key range scan of HBase */
 public interface ScanPlan extends Stubable {
@@ -70,7 +69,7 @@ public interface ScanPlan extends Stubable {
 
     public abstract long latest();
 
-    public abstract FilterList filterList();
+    public abstract FilterGroup filterGroup();
 
     /**
      * Returns true if the ranges overlap or touch

@@ -67,7 +67,7 @@ public final class PlannedScans {
     public List<ScanPlan> planListForGroup(final StreamIDGroup streamIDGroup) {
         final List<ScanPlan> plannedScans = new ArrayList<>();
         for (final long streamId : streamIDGroup.combinedStreamIds()) {
-            final ScanPlan scanPlan = new ScanPlanImpl(streamId, earliest, latest, filterGroup.filterList());
+            final ScanPlan scanPlan = new ScanPlanImpl(streamId, earliest, latest, filterGroup);
             plannedScans.add(scanPlan);
         }
         return plannedScans;

@@ -54,6 +54,7 @@ import org.apache.hadoop.hbase.filter.RegexStringComparator;
 import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -61,6 +62,10 @@ public final class FilterGroup {
 
     private final List<HostExpression> hostList;
     private final List<SourceTypeExpression> sourceTypeList;
+
+    public FilterGroup() {
+        this(Collections.emptyList(), Collections.emptyList());
+    }
 
     public FilterGroup(final ClassifiedXMLValueExpressions classifiedXMLValueExpressions) {
         this(classifiedXMLValueExpressions.hostList(), classifiedXMLValueExpressions.sourceTypeList());
@@ -74,7 +79,7 @@ public final class FilterGroup {
     public FilterList filterList() {
         final FilterList filterList = new FilterList();
 
-        for (HostExpression hostExpression : hostList) {
+        for (final HostExpression hostExpression : hostList) {
             final String value = hostExpression.value();
             final String operation = hostExpression.operation();
             final CompareOperator operator;

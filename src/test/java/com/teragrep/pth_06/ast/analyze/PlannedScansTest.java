@@ -51,7 +51,6 @@ import com.teragrep.pth_06.ast.expressions.HostExpression;
 import com.teragrep.pth_06.ast.expressions.IndexExpression;
 import com.teragrep.pth_06.ast.expressions.LatestExpression;
 import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -151,7 +150,7 @@ public final class PlannedScansTest {
         );
         final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
         final List<ScanPlan> expectedPlans = Collections
-                .singletonList(new ScanPlanImpl(1, 1000, 2000, new FilterList()));
+                .singletonList(new ScanPlanImpl(1, 1000, 2000, new FilterGroup()));
         Assertions.assertEquals(expectedPlans, scanPlans);
     }
 
@@ -171,7 +170,7 @@ public final class PlannedScansTest {
         );
         final List<ScanPlan> scanPlans = plannedScans.planListForGroup(streamIDGroup);
         final List<ScanPlan> expectedPlans = Arrays
-                .asList(new ScanPlanImpl(1, 1000, 2000, new FilterList()), new ScanPlanImpl(2, 1000, 2000, new FilterList()));
+                .asList(new ScanPlanImpl(1, 1000, 2000, new FilterGroup()), new ScanPlanImpl(2, 1000, 2000, new FilterGroup()));
         Assertions.assertEquals(expectedPlans, scanPlans);
     }
 

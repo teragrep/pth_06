@@ -45,69 +45,72 @@
  */
 package com.teragrep.pth_06.ast.analyze;
 
+import com.teragrep.pth_06.ast.expressions.HostExpression;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.apache.hadoop.hbase.filter.FilterList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
 
 public final class ScanPlanImplTest {
 
     @Test
     public void testMergeableEnd() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterGroup());
         Assertions.assertTrue(scanPlan.mergeable(intersectingScanPlan));
     }
 
     @Test
     public void testMergeableStart() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterGroup());
         Assertions.assertTrue(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testDifferentStreamIDDoesNotIntersect() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(2L, 18L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(2L, 18L, 30L, new FilterGroup());
         Assertions.assertFalse(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testDifferentFilterListDoesNotIntersect() {
-        FilterList mustPassAll = new FilterList(FilterList.Operator.MUST_PASS_ALL);
-        FilterList mustPassOne = new FilterList(FilterList.Operator.MUST_PASS_ONE);
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, mustPassAll);
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, mustPassOne);
+        List<HostExpression> hostList = Collections.singletonList(new HostExpression("host"));
+        FilterGroup hostListGroup = new FilterGroup(hostList, Collections.emptyList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, hostListGroup);
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 18L, 30L, new FilterGroup());
         Assertions.assertFalse(scanPlan.mergeable(intersectingScanPlan));
     }
 
     @Test
     public void testTouchingEdgesIntersect() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterGroup());
         Assertions.assertTrue(intersectingScanPlan.mergeable(scanPlan));
     }
 
     @Test
     public void testIntersectingMerge() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 20L, 30L, new FilterGroup());
         ScanPlan merged = scanPlan.merge(intersectingScanPlan);
-        Assertions.assertEquals(new ScanPlanImpl(1L, 10L, 30L, new FilterList()), merged);
+        Assertions.assertEquals(new ScanPlanImpl(1L, 10L, 30L, new FilterGroup()), merged);
     }
 
     @Test
     public void testEncompassingMerge() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
-        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 1L, 30L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
+        ScanPlan intersectingScanPlan = new ScanPlanImpl(1L, 1L, 30L, new FilterGroup());
         ScanPlan merged = scanPlan.merge(intersectingScanPlan);
-        Assertions.assertEquals(new ScanPlanImpl(1L, 1L, 30L, new FilterList()), merged);
+        Assertions.assertEquals(new ScanPlanImpl(1L, 1L, 30L, new FilterGroup()), merged);
     }
 
     @Test
     public void testRangeBetweenUpdatedEarliestUpdated() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBetween = scanPlan.toRangeBetween(15L, 20L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(15L, rangeBetween.earliest());
@@ -116,7 +119,7 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testRangeBetweenUpdatedLatestUpdated() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 15L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
@@ -125,7 +128,7 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testRangeBetweenUpdatedEarliestWithinBounds() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBetween = scanPlan.toRangeBetween(1L, 20L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
@@ -134,14 +137,14 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testRangeBetweenUpdatedLatestToEarliest() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 10L);
         Assertions.assertTrue(rangeBetween.isStub());
     }
 
     @Test
     public void testRangeBetweenUpdatedLatestWithinBounds() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBetween = scanPlan.toRangeBetween(10L, 30L);
         Assertions.assertFalse(rangeBetween.isStub());
         Assertions.assertEquals(10L, rangeBetween.earliest());
@@ -150,7 +153,7 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testToRangeOutsideBoundsStub() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan rangeBehind = scanPlan.toRangeBetween(1L, 9L);
         ScanPlan rangeAfter = scanPlan.toRangeBetween(21L, 50L);
         Assertions.assertTrue(rangeBehind.isStub());
@@ -159,7 +162,7 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testFromEarliest() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan fromEarliest = scanPlan.rangeFromEarliest(15L);
         Assertions.assertEquals(15L, fromEarliest.earliest());
         Assertions.assertEquals(20L, fromEarliest.latest());
@@ -167,7 +170,7 @@ public final class ScanPlanImplTest {
 
     @Test
     public void testFromLatest() {
-        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterList());
+        ScanPlan scanPlan = new ScanPlanImpl(1L, 10L, 20L, new FilterGroup());
         ScanPlan fromEarliest = scanPlan.rangeUntilLatest(15L);
         Assertions.assertEquals(10L, fromEarliest.earliest());
         Assertions.assertEquals(15L, fromEarliest.latest());
@@ -177,7 +180,7 @@ public final class ScanPlanImplTest {
     public void testContract() {
         EqualsVerifier
                 .forClass(ScanPlanImpl.class)
-                .withNonnullFields("streamId", "earliest", "latest", "filterList")
+                .withNonnullFields("streamId", "earliest", "latest", "filterGroup")
                 .verify();
     }
 }
