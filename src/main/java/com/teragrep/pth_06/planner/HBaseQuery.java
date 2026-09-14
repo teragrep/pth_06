@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubable;
+import com.teragrep.stb_01.Stubable;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;

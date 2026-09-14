@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubable;
+import com.teragrep.stb_01.Stubable;
 import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 import org.jooq.Record10;
 import org.jooq.Result;

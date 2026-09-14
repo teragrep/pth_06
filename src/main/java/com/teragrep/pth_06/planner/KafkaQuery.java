@@ -45,8 +45,8 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.Stubable;
 import com.teragrep.pth_06.planner.offset.KafkaOffset;
+import com.teragrep.stb_01.Stubable;
 import org.apache.kafka.common.TopicPartition;
 
 import java.io.Closeable;
