@@ -94,7 +94,7 @@ public final class StreamDBCondition implements QueryCondition {
     public Condition condition() {
         final String value = index.value();
         final String operation = index.operation();
-        LOGGER.info("Building condition for index <{}>, hosts: <{}>, sourcetypes <{}>", value, hosts, sourcetypes);
+        LOGGER.debug("Building condition for index <{}>, hosts: <{}>, sourcetypes <{}>", value, hosts, sourcetypes);
         Condition result = new IndexCondition(value, operation, true).condition();
         if (!hosts.isEmpty()) {
             result = result.and(hostCondition());
@@ -102,7 +102,7 @@ public final class StreamDBCondition implements QueryCondition {
         if (!sourcetypes.isEmpty()) {
             result = result.and(sourceTypeCondition());
         }
-        LOGGER.info("Condition: <{}>", result);
+        LOGGER.debug("Condition: <{}>", result);
         return result;
     }
 
