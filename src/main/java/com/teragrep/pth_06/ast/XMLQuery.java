@@ -110,37 +110,34 @@ public final class XMLQuery {
         final String value = element.getAttribute("value");
         final String operation = element.getAttribute("operation");
         final Expression result;
-        switch (tagName.toLowerCase()) {
-            case "and":
-                final List<Expression> andExpressionChildren = visitLogical(element);
-                result = new AndExpression(andExpressionChildren);
-                break;
-            case "or":
-                final List<Expression> orExpressionChildren = visitLogical(element);
-                result = new OrExpression(orExpressionChildren);
-                break;
-            case "index":
-                result = new IndexExpression(value, operation);
-                break;
-            case "host":
-                result = new HostExpression(value, operation);
-                break;
-            case "sourcetype":
-                result = new SourceTypeExpression(value, operation);
-                break;
-            case "earliest":
-            case "index_earliest":
-                result = new EarliestExpression(value, operation);
-                break;
-            case "latest":
-            case "index_latest":
-                result = new LatestExpression(value, operation);
-                break;
-            case "indexstatement":
-                result = new IndexStatementExpression(value, operation);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported element <" + tagName + ">");
+        if ("and".equalsIgnoreCase(tagName)) {
+            final List<Expression> andExpressionChildren = visitLogical(element);
+            result = new AndExpression(andExpressionChildren);
+        }
+        else if ("or".equalsIgnoreCase(tagName)) {
+            final List<Expression> orExpressionChildren = visitLogical(element);
+            result = new OrExpression(orExpressionChildren);
+        }
+        else if ("index".equalsIgnoreCase(tagName)) {
+            result = new IndexExpression(value, operation);
+        }
+        else if ("host".equalsIgnoreCase(tagName)) {
+            result = new HostExpression(value, operation);
+        }
+        else if ("sourcetype".equalsIgnoreCase(tagName)) {
+            result = new SourceTypeExpression(value, operation);
+        }
+        else if ("earliest".equalsIgnoreCase(tagName) || "index_earliest".equalsIgnoreCase(tagName)) {
+            result = new EarliestExpression(value, operation);
+        }
+        else if ("latest".equalsIgnoreCase(tagName) || "index_latest".equalsIgnoreCase(tagName)) {
+            result = new LatestExpression(value, operation);
+        }
+        else if ("indexstatement".equalsIgnoreCase(tagName)) {
+            result = new IndexStatementExpression(value, operation);
+        }
+        else {
+            throw new IllegalArgumentException("Unsupported element <" + tagName + ">");
         }
         return result;
     }
