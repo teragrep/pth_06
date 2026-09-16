@@ -63,7 +63,8 @@ import java.util.Objects;
 
 public final class StreamDBCondition implements QueryCondition {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(StreamDBCondition.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamDBCondition.class);
+
     private final IndexExpression index;
     private final List<HostExpression> hosts;
     private final List<SourceTypeExpression> sourcetypes;
@@ -72,12 +73,20 @@ public final class StreamDBCondition implements QueryCondition {
         this(index, Collections.emptyList(), Collections.emptyList());
     }
 
+    public StreamDBCondition(final IndexExpression index, final HostExpression hostExpression) {
+        this(index, Collections.singletonList(hostExpression), Collections.emptyList());
+    }
+
+    public StreamDBCondition(final IndexExpression index, final SourceTypeExpression sourceTypeExpression) {
+        this(index, Collections.emptyList(), Collections.singletonList(sourceTypeExpression));
+    }
+
     public StreamDBCondition(
             final IndexExpression index,
-            final HostExpression host,
-            final SourceTypeExpression sourcetype
+            final HostExpression hostExpression,
+            final SourceTypeExpression sourceTypeExpression
     ) {
-        this(index, Collections.singletonList(host), Collections.singletonList(sourcetype));
+        this(index, Collections.singletonList(hostExpression), Collections.singletonList(sourceTypeExpression));
     }
 
     public StreamDBCondition(
@@ -92,48 +101,31 @@ public final class StreamDBCondition implements QueryCondition {
 
     @Override
     public Condition condition() {
-        final String value = index.value();
-        final String operation = index.operation();
-        LOGGER.debug("Building condition for index <{}>, hosts: <{}>, sourcetypes <{}>", value, hosts, sourcetypes);
-        Condition result = new IndexCondition(value, operation, true).condition();
-        if (!hosts.isEmpty()) {
-            result = result.and(hostCondition());
-        }
-        if (!sourcetypes.isEmpty()) {
-            result = result.and(sourceTypeCondition());
-        }
+        final Condition result = indexCondition().and(hostCondition()).and(sourceTypeCondition());
         LOGGER.debug("Condition: <{}>", result);
         return result;
     }
 
+    private Condition indexCondition() {
+        final String value = index.value();
+        final String operation = index.operation();
+        return new IndexCondition(value, operation, true).condition();
+    }
+
     private Condition sourceTypeCondition() {
         Condition condition = DSL.noCondition();
-        for (final SourceTypeExpression sourceType : sourcetypes) {
-            final String value = sourceType.value();
-            final String operation = sourceType.operation();
-            final Condition sourceTypeCondition = new SourceTypeCondition(value, operation, true).condition();
-            if (condition == DSL.noCondition()) { // if first replace
-                condition = sourceTypeCondition;
-            }
-            else {
-                condition = condition.and(sourceTypeCondition);
-            }
+        for (final SourceTypeExpression sourceTypeExpression : sourcetypes) {
+            final Condition sourceTypeCondition = new SourceTypeCondition(sourceTypeExpression, true).condition();
+            condition = condition.and(sourceTypeCondition);
         }
         return condition;
     }
 
     private Condition hostCondition() {
         Condition condition = DSL.noCondition();
-        for (final HostExpression host : hosts) {
-            final String value = host.value();
-            final String operation = host.operation();
-            final Condition hostCondition = new HostCondition(value, operation, true).condition();
-            if (condition == DSL.noCondition()) { // if first replace
-                condition = hostCondition;
-            }
-            else {
-                condition = condition.and(hostCondition);
-            }
+        for (final HostExpression hostExpression : hosts) {
+            final Condition hostCondition = new HostCondition(hostExpression, true).condition();
+            condition = condition.and(hostCondition);
         }
         return condition;
     }

@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.LatestExpression;
 import org.jooq.Condition;
 
 import java.sql.Date;
@@ -56,6 +57,10 @@ import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 public final class LatestCondition implements QueryCondition {
 
     private final String value;
+
+    public LatestCondition(LatestExpression latestExpression) {
+        this(latestExpression.value());
+    }
 
     public LatestCondition(String value) {
         this.value = value;
