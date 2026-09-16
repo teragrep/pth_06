@@ -98,7 +98,7 @@ public final class BatchSizeLimitedResultsTest {
                 1,
                 new MetricRegistry()
         );
-        final LimitedResults stubResults = new StubLimitedResults();
+        final LimitedResults stubResults = new LimitedResultsStub();
         Assertions.assertFalse(batchSizeLimitedResults.isStub());
         Assertions.assertTrue(stubResults.isStub());
     }

@@ -48,8 +48,9 @@ package com.teragrep.pth_06.planner;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
+import java.util.Objects;
 
-public final class StubLimitedResults implements LimitedResults {
+public final class LimitedResultsStub implements LimitedResults {
 
     @Override
     public List<Result> results() {
@@ -64,5 +65,15 @@ public final class StubLimitedResults implements LimitedResults {
     @Override
     public boolean isStub() {
         return true;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
     }
 }

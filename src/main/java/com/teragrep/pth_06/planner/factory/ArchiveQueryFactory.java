@@ -48,7 +48,7 @@ package com.teragrep.pth_06.planner.factory;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.ArchiveQuery;
 import com.teragrep.pth_06.planner.ArchiveQueryProcessor;
-import com.teragrep.pth_06.planner.StubArchiveQuery;
+import com.teragrep.pth_06.planner.ArchiveQueryStub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +68,7 @@ public final class ArchiveQueryFactory implements Factory<ArchiveQuery> {
             archiveQuery = new ArchiveQueryProcessor(config);
         }
         else {
-            archiveQuery = new StubArchiveQuery();
+            archiveQuery = new ArchiveQueryStub();
         }
         return archiveQuery;
     }

@@ -45,50 +45,52 @@
  */
 package com.teragrep.pth_06.planner;
 
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
-import org.jooq.Record10;
-import org.jooq.Result;
-import org.jooq.types.ULong;
+import com.teragrep.pth_06.planner.offset.KafkaOffset;
+import org.apache.kafka.common.TopicPartition;
 
-import java.sql.Date;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 
-public final class StubArchiveQuery implements ArchiveQuery {
-
-    @Override
-    public Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
-            long startHour,
-            long endHour
-    ) {
-        throw new UnsupportedOperationException("processBetweenUnixEpochHours() is not supported for StubArchiveQuery");
-    }
-
-    @Override
-    public void commit(long offset) {
-        throw new UnsupportedOperationException("commit() is not supported for StubArchiveQuery");
-    }
-
-    @Override
-    public Long getInitialOffset() {
-        throw new UnsupportedOperationException("getInitialOffset() is not supported for StubArchiveQuery");
-    }
-
-    @Override
-    public Long incrementAndGetLatestOffset() {
-        throw new UnsupportedOperationException("incrementAndGetLatestOffset() is not supported for StubArchiveQuery");
-    }
-
-    @Override
-    public Long mostRecentOffset() {
-        throw new UnsupportedOperationException("mostRecentOffset() is not supported for StubArchiveQuery");
-    }
-
-    @Override
-    public CustomTaskMetric[] currentDatabaseMetrics() {
-        throw new UnsupportedOperationException("currentDatabaseMetrics() is not supported for StubArchiveQuery");
-    }
+public final class KafkaQueryStub implements KafkaQuery {
 
     @Override
     public boolean isStub() {
         return true;
+    }
+
+    @Override
+    public Map<TopicPartition, Long> getInitialEndOffsets() {
+        throw new UnsupportedOperationException("getInitialEndOffsets() is not supported for StubKafkaQuery");
+    }
+
+    @Override
+    public Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset) {
+        throw new UnsupportedOperationException("getEndOffsets() is not supported for StubKafkaQuery");
+    }
+
+    @Override
+    public Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset) {
+        throw new UnsupportedOperationException("getBeginningOffsets() is not supported for StubKafkaQuery");
+    }
+
+    @Override
+    public void commit(KafkaOffset offset) {
+        throw new UnsupportedOperationException("commit() is not supported for StubKafkaQuery");
+    }
+
+    @Override
+    public void close() throws IOException {
+        throw new UnsupportedOperationException("close() is not supported for StubKafkaQuery");
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
     }
 }

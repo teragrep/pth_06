@@ -48,7 +48,7 @@ package com.teragrep.pth_06.planner.factory;
 import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.KafkaQuery;
 import com.teragrep.pth_06.planner.KafkaQueryProcessor;
-import com.teragrep.pth_06.planner.StubKafkaQuery;
+import com.teragrep.pth_06.planner.KafkaQueryStub;
 
 public final class KafkaQueryFactory implements Factory<KafkaQuery> {
 
@@ -64,7 +64,7 @@ public final class KafkaQueryFactory implements Factory<KafkaQuery> {
             kafkaQuery = new KafkaQueryProcessor(config);
         }
         else {
-            kafkaQuery = new StubKafkaQuery();
+            kafkaQuery = new KafkaQueryStub();
         }
         return kafkaQuery;
     }

@@ -83,8 +83,8 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
                 new ScanPlanCollection(config),
                 new LogfileTable(config, source),
                 new MetricRegistry(),
-                new StubHourlySlices(),
-                new StubLimitedResults()
+                new HourlySlicesStub(),
+                new LimitedResultsStub()
         );
     }
 
@@ -126,8 +126,8 @@ public final class HBaseQueryImpl implements HBaseQuery, QueryMetrics {
     public void close() {
         if (isOpen()) {
             hourlySlices.close();
-            this.hourlySlices = new StubHourlySlices();
-            this.limitedResults = new StubLimitedResults();
+            this.hourlySlices = new HourlySlicesStub();
+            this.limitedResults = new LimitedResultsStub();
         }
     }
 

@@ -43,14 +43,13 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06.planner;
+package com.teragrep.pth_06.ast.analyze;
 
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.apache.hadoop.hbase.client.Scan;
 
-import java.util.List;
+import java.util.Objects;
 
-public final class StubHBaseQuery implements HBaseQuery {
+public final class ScanPlanStub implements ScanPlan {
 
     @Override
     public boolean isStub() {
@@ -58,47 +57,65 @@ public final class StubHBaseQuery implements HBaseQuery {
     }
 
     @Override
-    public void open(final long startOffset) {
-        throw new UnsupportedOperationException("open() not supported for StubHBaseQuery");
+    public Scan toScan() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public void close() {
-        throw new UnsupportedOperationException("close() not supported for StubHBaseQuery");
+    public ScanPlan rangeFromEarliest(final long earliest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    /** new ScanRange with new latest value if inside the scope, otherwise no changes */
+    @Override
+    public ScanPlan rangeUntilLatest(final long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
+    }
+
+    /** Returns stub when new range is outside the original range */
+    @Override
+    public ScanPlan toRangeBetween(final long earliest, final long latest) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public boolean isOpen() {
-        throw new UnsupportedOperationException("isOpen() not supported for StubHBaseQuery");
-    }
-
-    @Override
-    public List<Result> currentBatch() {
-        throw new UnsupportedOperationException("nextBatch() not supported for StubHBaseQuery");
+    public long streamId() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
     public long earliest() {
-        throw new UnsupportedOperationException("earliest() not supported for StubHBaseQuery");
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
     public long latest() {
-        throw new UnsupportedOperationException("latest() not supported for StubHBaseQuery");
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public void commit(final long latest) {
-        throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
+    public FilterGroup filterGroup() {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public long mostRecentOffset() {
-        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
+    public boolean mergeable(final ScanPlan scanPlan) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
 
     @Override
-    public CustomTaskMetric[] currentDatabaseMetrics() {
-        throw new UnsupportedOperationException("currentDatabaseMetrics() not supported for StubHBaseQuery");
+    public ScanPlan merge(final ScanPlan scanPlan) {
+        throw new UnsupportedOperationException("Method not supported for StubScanRange");
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
+    }
+
 }

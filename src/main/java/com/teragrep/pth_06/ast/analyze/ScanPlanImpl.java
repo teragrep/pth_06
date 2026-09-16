@@ -116,17 +116,17 @@ public final class ScanPlanImpl implements ScanPlan {
                 updatedLatest = latestLimit;
             }
             if (updatedEarliest == updatedLatest) {
-                result = new StubScanPlan();
+                result = new ScanPlanStub();
             }
             else if (updatedEarliest > updatedLatest) {
-                result = new StubScanPlan();
+                result = new ScanPlanStub();
             }
             else {
                 result = new ScanPlanImpl(streamId, updatedEarliest, updatedLatest, filterGroup);
             }
         }
         else {
-            result = new StubScanPlan();
+            result = new ScanPlanStub();
         }
         return result;
     }

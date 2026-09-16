@@ -48,8 +48,9 @@ package com.teragrep.pth_06.planner;
 import org.apache.hadoop.hbase.client.Result;
 
 import java.util.List;
+import java.util.Objects;
 
-public final class StubHourlySlices implements HourlySlices {
+public final class HourlySlicesStub implements HourlySlices {
 
     @Override
     public boolean hasNext() {
@@ -69,5 +70,15 @@ public final class StubHourlySlices implements HourlySlices {
     @Override
     public boolean isStub() {
         return true;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
     }
 }

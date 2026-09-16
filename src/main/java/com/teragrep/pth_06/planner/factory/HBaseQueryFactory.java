@@ -49,7 +49,7 @@ import com.teragrep.pth_06.config.Config;
 import com.teragrep.pth_06.planner.HBaseQuery;
 import com.teragrep.pth_06.planner.HBaseQueryImpl;
 import com.teragrep.pth_06.planner.source.LazySource;
-import com.teragrep.pth_06.planner.StubHBaseQuery;
+import com.teragrep.pth_06.planner.HBaseQueryStub;
 import org.apache.hadoop.conf.Configuration;
 
 public final class HBaseQueryFactory implements Factory<HBaseQuery> {
@@ -67,7 +67,7 @@ public final class HBaseQueryFactory implements Factory<HBaseQuery> {
             hbaseQuery = new HBaseQueryImpl(config, new LazySource(hadoopConfig));
         }
         else {
-            hbaseQuery = new StubHBaseQuery();
+            hbaseQuery = new HBaseQueryStub();
         }
         return hbaseQuery;
     }

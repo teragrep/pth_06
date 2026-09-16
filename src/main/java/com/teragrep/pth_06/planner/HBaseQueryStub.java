@@ -45,13 +45,13 @@
  */
 package com.teragrep.pth_06.planner;
 
-import com.teragrep.pth_06.planner.offset.KafkaOffset;
-import org.apache.kafka.common.TopicPartition;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
 
-import java.io.IOException;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 
-public final class StubKafkaQuery implements KafkaQuery {
+public final class HBaseQueryStub implements HBaseQuery {
 
     @Override
     public boolean isStub() {
@@ -59,27 +59,57 @@ public final class StubKafkaQuery implements KafkaQuery {
     }
 
     @Override
-    public Map<TopicPartition, Long> getInitialEndOffsets() {
-        throw new UnsupportedOperationException("getInitialEndOffsets() is not supported for StubKafkaQuery");
+    public void open(final long startOffset) {
+        throw new UnsupportedOperationException("open() not supported for StubHBaseQuery");
     }
 
     @Override
-    public Map<TopicPartition, Long> getEndOffsets(KafkaOffset startOffset) {
-        throw new UnsupportedOperationException("getEndOffsets() is not supported for StubKafkaQuery");
+    public void close() {
+        throw new UnsupportedOperationException("close() not supported for StubHBaseQuery");
     }
 
     @Override
-    public Map<TopicPartition, Long> getBeginningOffsets(KafkaOffset endOffset) {
-        throw new UnsupportedOperationException("getBeginningOffsets() is not supported for StubKafkaQuery");
+    public boolean isOpen() {
+        throw new UnsupportedOperationException("isOpen() not supported for StubHBaseQuery");
     }
 
     @Override
-    public void commit(KafkaOffset offset) {
-        throw new UnsupportedOperationException("commit() is not supported for StubKafkaQuery");
+    public List<Result> currentBatch() {
+        throw new UnsupportedOperationException("nextBatch() not supported for StubHBaseQuery");
     }
 
     @Override
-    public void close() throws IOException {
-        throw new UnsupportedOperationException("close() is not supported for StubKafkaQuery");
+    public long earliest() {
+        throw new UnsupportedOperationException("earliest() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public long latest() {
+        throw new UnsupportedOperationException("latest() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public void commit(final long latest) {
+        throw new UnsupportedOperationException("commit() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public long mostRecentOffset() {
+        throw new UnsupportedOperationException("mostRecentOffset() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        throw new UnsupportedOperationException("currentDatabaseMetrics() not supported for StubHBaseQuery");
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
     }
 }
