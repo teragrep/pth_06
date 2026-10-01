@@ -123,11 +123,11 @@ Configures the common options
 |Option |Purpose |Type
 
 |archive.enabled
-|Enables database results.
+|Enables long-term archive results.
 |Boolean
 
 |kafka.enabled
-|Enables database results.
+|Enables near real-time kafka results.
 |Boolean
 
 |S3endPoint
