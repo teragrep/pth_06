@@ -10,7 +10,7 @@ image:https://img.shields.io/badge/Scala-2.12-red.svg[Scala Version, link="https
 
 // Add a short description of your project. Tell what your project does and what it's used for.
 
-Provides an custom datasource for the Teragrep archive data.
+Provides a custom datasource for the Teragrep archive data.
 
 == Features
 
@@ -25,13 +25,14 @@ See the official documentation on https://docs.teragrep.com[docs.teragrep.com].
 
 == Limitations
 
-- Designed for Java 8 other versions are not tested and might break or not work correctly.
+- Designed on Java 8 and confirmed to also work on Java 11.
 - Core spark and aws features are marked as provided to keep project lightweight and ready to deploy to a spark cluster.
 
 
 == How to [compile/use/implement]
 
 === How to Add to Your Project
+
 We start by adding the project to our version control, here is an example with Maven:
 
 [source]
@@ -81,7 +82,8 @@ Here is an example of an XML where we query for results that are in the index `e
 You can use `<AND>` and `<OR>` to create very specific queries.
 
 
-Currently supported XML Elements and their supported operations
+Currently supported XML Elements and their supported operations.
+
 |===
 |Element |Purpose| Operations
 
@@ -106,7 +108,7 @@ Currently supported XML Elements and their supported operations
 |EQUALS, NOT_EQUALS
 
 |<indexstatement>
-|keyword filter
+|keyword filter, this is required only when using bloomfilter accelerated searches
 |EQUALS
 |===
 
@@ -121,71 +123,79 @@ Configures the common options
 |Option |Purpose |Type
 
 |archive.enabled
-|Enables database results
+|Enables database results.
 |Boolean
 
 |kafka.enabled
-|Enables database results
+|Enables database results.
 |Boolean
 
 |S3endPoint
-|S3 end point
+|S3 end point.
 |Required String
 
 |S3identity
-|S3 identity
+|S3 identity.
 |Required String
 
 |S3credential
-|S3 credential
+|S3 credential.
 |Required String
 
 |DBusername
-|Database username
+|Database username.
 |Required String
 
 |DBpassword
-|Database password
+|Database password.
 |Required String
 
 |DBurl
-|Database url
+|Database url.
 |Required String
 
 |bloom.enabled
-|Enable Bloom filter pattern acceleration, requires bloom filter creation using pth_10
+|Enable Bloom filter pattern acceleration, requires bloom filter creation using PTH_10.
 |Boolean
 
 |bloom.withoutFilters
-|Enable option to filter results based if they have a filter with a certain pattern created
+|Enable option to filter results based if they have a filter with a certain pattern created.
+
+Admin command.
 |Boolean
 
 |bloom.withoutFiltersPattern
-|The pattern that is used to check if a filter with that pattern has been created for the result
+|The pattern that is used to check if a filter with that pattern has been created for the result.
+
+Admin command.
 |String
 
 |DBbloomdbname
-|Bloom database name
+|Bloom database name.
 |String
 
 |DBjournaldbname
-|Journal database name
+|Journal database name.
 |String
 
 |DBstreamdbname
-|Stream database name
+|Stream database name.
 |String
 
 |skipNonRFC5424Files
-|Enables skipping of results that are not in the RFC5424 standard
+|Enables skipping of results that are not in the RFC5424 standard.
 |Boolean
 
 |epochMigrationMode
-|Enables epoch migration mode, used  by admin to migrate missing epoch values to the metadata
+|Enables epoch migration mode, used  by admin to migrate missing epoch values to the metadata.
+
+Admin command.
 |Boolean
 
 |archive.includeBeforeEpoch
-|Sets an upper time limit for query results, useful when your program has a set query start time which you don't want to exceed
+|Option to precede the query earliest value by a amount of time, i.e. including previous timezones or wrong epoch values.
+
+Admin command.
 |Long
 
 |===
@@ -193,25 +203,26 @@ Configures the common options
 
 ==== Audit Options
 
-Configures the audit query
+Configures the auditing information for the query, provides a way to log the reason why the query is made and by whom.
 
 |===
 |Option |Purpose |Type
 
 |TeragrepAuditQuery
-|Query XML string used to determine the results
+|Query XML string used to determine the results.
 |String
 
 |TeragrepAuditReason
-|Reason for Audit
+|Reason for making the query, i.e. why did I access this dataset.
 |String
 
 |TeragrepAuditUser
-|User that is performing the audit
+|User ID who is executing the query.
 |String
 
 |TeragrepAuditPluginClassName
-|Sets a custom audit plugin class
+|Implementation of RAD_01 to provide further audit information for the query.
+Including information about who accessed which records and what data did they contain. This is to satisfy the full audit trail requirement.
 |String
 |===
 
@@ -221,27 +232,33 @@ Configures the audit query
 Configures the batch size settings, used for fine-tuning performance.
 
 |===
-|Option |Purpose | Type
+|Option |Purpose | Type | Recommended Default
 
 |num_partitions
-|Number of partitions in Spark
+|Number of partitions in Spark.
 |Integer
+| 24
 
 |quantumLength
-|Base weight factor used to calculate maximum data weight per task
+|Base weight factor used to calculate maximum data weight per task.
 |Integer
+| 15
 
 |batch.size.fileCompressionRatio
-|Average Compression rate of the S3 files after the archive process
+|Average Compression rate of the S3 files after the archive process.
 |Float
+|15.5
 
 |batch.size.processingSpeed
-|Processing speed
+|Processing speed.
 |Float
+|136.5
 
 |batch.size.totalObjectCountLimit
-|Limits the total maximum objects for batch
+|Limits the total maximum objects for batch.
 |Long
+|1000
+
 |===
 
 ==== Kafka Config
@@ -252,11 +269,11 @@ Configures Kafka, you can also add common Kafka options like `kafka.bootstrap.se
 |Option |Purpose |Type
 
 |kafka.continuousProcessing
-|Enables continuous processing of results
+|Enables continuous processing mode which means that the query will not self-terminate.
 |Boolean
 
 |skipNonRFC5424Files
-|Enables skipping Kafka results that are not in the RFC5424 standard
+|Enables skipping Kafka results that are not in the RFC5424 standard.
 |Boolean
 
 |===
@@ -269,7 +286,7 @@ Configures logging.
 |Option |Purpose |Type
 
 |logging.debug.enabled
-|Enables debug logging
+|Enables debug logging.
 |Boolean
 
 |===
@@ -281,15 +298,15 @@ Configures SQL behavior
 |Option |Purpose |Type
 
 |sql.log.enabled
-|Enables SQL log
+|Enables SQL log.
 |Boolean
 
 |sql.executeLogging.enabled
-|Enables SQL execute logging
+|Enables SQL execute logging.
 |Boolean
 
 |hideDatabaseExceptions
-|Hides all exceptions caused during SQL processing
+|Hides all exceptions caused during SQL processing.
 |Boolean
 |===
 
