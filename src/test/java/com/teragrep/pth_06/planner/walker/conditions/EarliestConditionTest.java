@@ -60,11 +60,20 @@ public class EarliestConditionTest {
 
     @Test
     public void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= date '1970-01-01'\n"
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(0))\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 0)\n"
                 + ")";
-        Condition elementCondition = new EarliestCondition("1000").condition();
-        Assertions.assertEquals(e, elementCondition.toString());
+        Condition condition = new EarliestCondition("1000").condition();
+        Assertions.assertEquals(e, condition.toString());
+    }
+
+    @Test
+    public void conditionTruncatesToHourlyBoundaryTest() {
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(3600))\n"
+                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 3600)\n"
+                + ")";
+        Condition condition = new EarliestCondition("3700").condition();
+        Assertions.assertEquals(e, condition.toString());
     }
 
     @Test

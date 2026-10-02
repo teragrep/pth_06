@@ -60,7 +60,7 @@ public class LatestConditionTest {
 
     @Test
     public void conditionTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '1970-01-01'\n"
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(1000))\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1000)\n"
                 + ")";
         Condition elementCondition = new LatestCondition("1000").condition();
@@ -69,7 +69,7 @@ public class LatestConditionTest {
 
     @Test
     public void conditionUpdatedTest() {
-        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= date '2000-01-01'\n"
+        String e = "(\n" + "  \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(946720800))\n"
                 + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 946720800)\n"
                 + ")";
         Condition elementCondition = new LatestCondition("946720800").condition();

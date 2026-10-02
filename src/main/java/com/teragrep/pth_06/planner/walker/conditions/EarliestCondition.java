@@ -46,9 +46,10 @@
 package com.teragrep.pth_06.planner.walker.conditions;
 
 import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 import java.sql.Date;
-import java.time.Instant;
 import java.util.Objects;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
@@ -62,19 +63,11 @@ public final class EarliestCondition implements QueryCondition {
     }
 
     public Condition condition() {
-        // SQL connection uses localTime in the session, so we use unix to come over the conversions
-        // hour based files are being used so earliest needs conversion to the point of the last hour
         final long earliestFromElement = Long.parseLong(value);
+        // hour based files are being used so earliest needs conversion to the point of the last hour
         final long earliestEpochHour = earliestFromElement - earliestFromElement % 3600;
-        final Instant instant = Instant.ofEpochSecond(earliestEpochHour);
-        final java.sql.Date timeQualifier = new Date(instant.toEpochMilli());
-        Condition condition;
-        condition = JOURNALDB.LOGFILE.LOGDATE.greaterOrEqual(timeQualifier);
-        condition = condition
-                .and(
-                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H'))"
-                                + " >= " + instant.getEpochSecond()
-                );
+        // FROM_UNIXTIME() is evaluated by MariaDB using the connection session timezone
+        final Field<Date> fromUnixTimeField = DSL.field("DATE(FROM_UNIXTIME({0}))", Date.class, earliestEpochHour);
         // raw SQL used here since following not supported for mariadb:
         // queryCondition = queryCondition.and(toTimestamp(
         // regexpReplaceAll(JOURNALDB.LOGFILE.PATH, "((^.*\\/.*-)|(\\.log\\.gz.*))", ""),
@@ -83,7 +76,12 @@ public final class EarliestCondition implements QueryCondition {
         // 2021/09-27/sc-99-99-14-244/messages/messages-2021092722.gz.4
         // 2018/04-29/sc-99-99-14-245/f17/f17.logGLOB-2018042900.log.gz
         // NOTE uses literal path
-        return condition;
+        final Condition logtimeCondition = DSL
+                .condition(
+                        "UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= {0}",
+                        earliestEpochHour
+                );
+        return JOURNALDB.LOGFILE.LOGDATE.greaterOrEqual(fromUnixTimeField).and(logtimeCondition);
     }
 
     @Override
