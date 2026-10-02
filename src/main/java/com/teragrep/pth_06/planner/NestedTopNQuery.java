@@ -116,10 +116,8 @@ public final class NestedTopNQuery {
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
         final Field<Date> logdateFunction = DSL
-                .field(
-                        "CAST(date_add('1970-01-01', interval {0} second) as DATE)", Date.class,
-                        JOURNALDB.LOGFILE.EPOCH_HOUR
-                );
+                .dateAdd(DSL.inline(Date.valueOf("1970-01-01")), JOURNALDB.LOGFILE.EPOCH_HOUR, DatePart.SECOND)
+                .cast(Date.class);
         return selectOnConditionStep
                 .where(logdateFunction.eq(day).and(journaldbConditionArg))
                 .orderBy(epochHourForOrderBy, JOURNALDB.LOGFILE.ID.asc())
