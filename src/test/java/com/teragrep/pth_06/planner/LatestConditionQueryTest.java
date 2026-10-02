@@ -185,9 +185,9 @@ class LatestConditionQueryTest {
         Instant instant = Instant.ofEpochSecond(1696438800L);
         ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
         ZonedDateTime instantPlusHour = instantZonedDateTime.plusHours(1);
-        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
-        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), true);
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         final Map<String, String> opts = this.opts;
@@ -228,9 +228,9 @@ class LatestConditionQueryTest {
         Instant instant = Instant.ofEpochSecond(1696438800L);
         ZonedDateTime instantZonedDateTime = ZonedDateTime.ofInstant(instant, zoneId);
         ZonedDateTime instantPlusHour = instantZonedDateTime.plusHours(1);
-        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), true);
+        LogfileRecord logfileRecord = logfileRecordForEpoch(instantZonedDateTime.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
-        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), true);
+        LogfileRecord logfileRecord2 = logfileRecordForEpoch(instantPlusHour.toEpochSecond(), false);
         ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord2).execute();
 
         final Map<String, String> opts = this.opts;
