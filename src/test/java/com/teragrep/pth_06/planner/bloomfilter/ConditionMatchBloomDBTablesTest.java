@@ -60,12 +60,11 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ConditionMatchBloomDBTablesTest {
 
-    final String url = "jdbc:h2:mem:test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     final String userName = "sa";
     final String password = "";
     // matches IPv4
@@ -74,10 +73,13 @@ public class ConditionMatchBloomDBTablesTest {
     final String ipStartingWith255 = "(\\b25[0-5]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}";
     final String parenthesesPattern = "\\((.*?)\\)";
     final List<String> patternList = new ArrayList<>(Arrays.asList(ipRegex, ipStartingWith255, parenthesesPattern));
-    final Connection conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
+    Connection conn;
 
-    @BeforeAll
+    @BeforeEach
     public void setup() {
+        final String url = "jdbc:h2:mem:" + UUID.randomUUID()
+                + ";MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
+        conn = Assertions.assertDoesNotThrow(() -> DriverManager.getConnection(url, userName, password));
         Assertions.assertDoesNotThrow(() -> {
             conn.prepareStatement("CREATE SCHEMA IF NOT EXISTS BLOOMDB").execute();
             conn.prepareStatement("USE BLOOMDB").execute();
@@ -127,7 +129,7 @@ public class ConditionMatchBloomDBTablesTest {
         });
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         Assertions.assertDoesNotThrow(conn::close);
     }

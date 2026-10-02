@@ -1,0 +1,40 @@
+name: Upload Release to GitHub Packages
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  upload:
+    name: Upload
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Local Maven Repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      - name: Publish to GitHub Packages
+        run: | 
+          if [ "${{ github.repository_owner }}" = "teragrep" ]; then 
+            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" clean deploy -Pbuild-shaded-jar,publish-github-packages
+          else
+            mvn --batch-mode -Drevision=${{ github.event.release.tag_name }}-${{ github.actor }} -Dsha1= -Dchangelist= -Dgithub.packages.url="https://maven.pkg.github.com/${{ github.repository_owner }}/pth_06" -Dgpg.skip=true clean deploy -Pbuild-shaded-jar,publish-github-packages
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

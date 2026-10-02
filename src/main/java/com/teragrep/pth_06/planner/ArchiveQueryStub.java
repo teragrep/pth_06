@@ -43,9 +43,63 @@
  * Teragrep, the applicable Commercial License may apply to this file if you as
  * a licensee so wish it.
  */
-package com.teragrep.pth_06;
+package com.teragrep.pth_06.planner;
 
-public interface Stubable {
+import org.apache.spark.sql.connector.metric.CustomTaskMetric;
+import org.jooq.Record10;
+import org.jooq.Result;
+import org.jooq.types.ULong;
 
-    public abstract boolean isStub();
+import java.sql.Date;
+import java.util.Objects;
+
+public final class ArchiveQueryStub implements ArchiveQuery {
+
+    @Override
+    public Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> processBetweenUnixEpochHours(
+            long startHour,
+            long endHour
+    ) {
+        throw new UnsupportedOperationException("processBetweenUnixEpochHours() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public void commit(long offset) {
+        throw new UnsupportedOperationException("commit() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public Long getInitialOffset() {
+        throw new UnsupportedOperationException("getInitialOffset() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public Long incrementAndGetLatestOffset() {
+        throw new UnsupportedOperationException("incrementAndGetLatestOffset() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public Long mostRecentOffset() {
+        throw new UnsupportedOperationException("mostRecentOffset() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public CustomTaskMetric[] currentDatabaseMetrics() {
+        throw new UnsupportedOperationException("currentDatabaseMetrics() is not supported for StubArchiveQuery");
+    }
+
+    @Override
+    public boolean isStub() {
+        return true;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getClass().getName());
+    }
 }

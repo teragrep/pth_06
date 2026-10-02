@@ -234,4 +234,9 @@ public class ArchiveQueryProcessor implements ArchiveQuery {
     public CustomTaskMetric[] currentDatabaseMetrics() {
         return sdc.currentDatabaseMetrics();
     }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }
