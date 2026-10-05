@@ -119,9 +119,6 @@ public final class NestedTopNQuery implements LogfileSelection {
         }
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
-        final Field<Date> logdateFunction = DSL
-                .dateAdd(DSL.inline(Date.valueOf("1970-01-01")), JOURNALDB.LOGFILE.EPOCH_HOUR, DatePart.SECOND)
-                .cast(Date.class);
         return selectOnConditionStep
                 .where(epochDayCondition(day).and(journaldbConditionArg))
                 .orderBy(epochHourForOrderBy, JOURNALDB.LOGFILE.ID.asc())
@@ -129,11 +126,12 @@ public final class NestedTopNQuery implements LogfileSelection {
     }
 
     private Condition epochDayCondition(Date day) {
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        // Detach day from local timezone
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         final java.util.Date parse;
         try {
-            parse = dateFormat.parse(day.toString() + " 00:00:00");
+            parse = dateFormat.parse(day.toString());
         }
         catch (ParseException e) {
             throw new RuntimeException(e);
