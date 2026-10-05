@@ -53,9 +53,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TimeZone;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
@@ -120,9 +123,24 @@ public final class NestedTopNQuery implements LogfileSelection {
                 .dateAdd(DSL.inline(Date.valueOf("1970-01-01")), JOURNALDB.LOGFILE.EPOCH_HOUR, DatePart.SECOND)
                 .cast(Date.class);
         return selectOnConditionStep
-                .where(logdateFunction.eq(day).and(journaldbConditionArg))
+                .where(epochDayCondition(day).and(journaldbConditionArg))
                 .orderBy(epochHourForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
+    }
+
+    private Condition epochDayCondition(Date day) {
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final java.util.Date parse;
+        try {
+            parse = dateFormat.parse(day.toString() + " 00:00:00");
+        }
+        catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        final ULong startOfDayEpoch = ULong.valueOf(parse.getTime() / 1000);
+        final ULong endOfDayEpoch = ULong.valueOf((parse.getTime() / 1000) + 86400);
+        return JOURNALDB.LOGFILE.EPOCH_HOUR.between(startOfDayEpoch, endOfDayEpoch);
     }
 
     @Override
