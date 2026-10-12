@@ -58,11 +58,27 @@ class EpochDayConditionTest {
 
     @Test
     void conditionTest() {
-        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" between 1728000 and 1814400";
+        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" between 1791763200 and 1791849600";
         final LocalDate localDate = LocalDate.of(2026, 10, 12);
-        final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
+        final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
         final Condition epochDayCondition = new EpochDayCondition(day).condition();
         Assertions.assertEquals(e, epochDayCondition.toString());
+    }
+
+    @Test
+    void condition0EpochTest() {
+        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" between 0 and 86400";
+        final LocalDate localDate = LocalDate.of(1970, 1, 1);
+        final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
+        final Condition epochDayCondition = new EpochDayCondition(day).condition();
+        Assertions.assertEquals(e, epochDayCondition.toString());
+    }
+
+    @Test
+    void conditionNegativeEpochExceptionTest() {
+        final LocalDate localDate = LocalDate.of(1969, 12, 31);
+        final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
+        Assertions.assertThrows(NumberFormatException.class, () -> new EpochDayCondition(day).condition());
     }
 
     @Test
