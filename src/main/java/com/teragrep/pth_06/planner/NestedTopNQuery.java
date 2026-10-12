@@ -53,12 +53,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
@@ -127,17 +126,9 @@ public final class NestedTopNQuery implements LogfileSelection {
 
     private Condition epochDayCondition(Date day) {
         // Detach day from local timezone
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        final java.util.Date parse;
-        try {
-            parse = dateFormat.parse(day.toString());
-        }
-        catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        final ULong startOfDayEpoch = ULong.valueOf(parse.getTime() / 1000);
-        final ULong endOfDayEpoch = ULong.valueOf((parse.getTime() / 1000) + 86400);
+        final LocalDate localDate = day.toLocalDate();
+        final ULong startOfDayEpoch = ULong.valueOf(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
+        final ULong endOfDayEpoch = ULong.valueOf(localDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
         return JOURNALDB.LOGFILE.EPOCH_HOUR.between(startOfDayEpoch, endOfDayEpoch);
     }
 
