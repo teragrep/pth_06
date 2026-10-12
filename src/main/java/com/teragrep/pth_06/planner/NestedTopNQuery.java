@@ -46,6 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import com.teragrep.pth_06.ConfiguredLogger;
+import com.teragrep.pth_06.planner.walker.conditions.EpochDayCondition;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
@@ -53,8 +54,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
@@ -118,18 +117,11 @@ public final class NestedTopNQuery implements LogfileSelection {
         }
 
         logger.debug("NestedTopNQuery.getTableStatement exit");
+        final Condition epochDayCondition = new EpochDayCondition(day).condition();
         return selectOnConditionStep
-                .where(epochDayCondition(day).and(journaldbConditionArg))
+                .where(epochDayCondition.and(journaldbConditionArg))
                 .orderBy(epochHourForOrderBy, JOURNALDB.LOGFILE.ID.asc())
                 .asTable(innerTable);
-    }
-
-    private Condition epochDayCondition(Date day) {
-        // Detach day from local timezone
-        final LocalDate localDate = day.toLocalDate();
-        final ULong startOfDayEpoch = ULong.valueOf(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
-        final ULong endOfDayEpoch = ULong.valueOf(localDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
-        return JOURNALDB.LOGFILE.EPOCH_HOUR.between(startOfDayEpoch, endOfDayEpoch);
     }
 
     @Override
