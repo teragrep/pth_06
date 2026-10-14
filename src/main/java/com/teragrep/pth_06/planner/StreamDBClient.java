@@ -103,8 +103,9 @@ public final class StreamDBClient implements AutoCloseable {
     private final ConditionWalker walker;
     private final boolean isDebugEnabled;
     private final boolean isLogSQL;
+    private final boolean isEpochMigrationMode;
     private final GetArchivedObjectsFilterTable filterTable;
-    private final NestedTopNQuery nestedTopNQuery;
+    private final LogfileSelection logfileSelection;
     private final SliceTable sliceTable;
 
     public StreamDBClient(Config config) throws SQLException {
@@ -114,6 +115,8 @@ public final class StreamDBClient implements AutoCloseable {
         LOGGER.debug("StreamDBClient ctor called with config <[{}]>", config);
         this.bloomEnabled = config.archiveConfig.bloomEnabled;
         LOGGER.info("StreamDBClient bloom.enabled: " + this.bloomEnabled);
+        this.isEpochMigrationMode = config.archiveConfig.epochMigrationMode;
+        LOGGER.info("StreamDBClient epochMigrationMode <" + this.isEpochMigrationMode + ">");
 
         final String userName = config.archiveConfig.dbUsername;
         final String password = config.archiveConfig.dbPassword;
@@ -141,7 +144,14 @@ public final class StreamDBClient implements AutoCloseable {
         this.connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
         this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
-        this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
+
+        if (isEpochMigrationMode) {
+            this.logfileSelection = new EpochMigrationSelection(this, isDebugEnabled);
+        }
+        else {
+            this.logfileSelection = new NestedTopNQuery(this, isDebugEnabled);
+        }
+
         this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
         if (isSQLThrowExceptionsNone) {
@@ -207,27 +217,40 @@ public final class StreamDBClient implements AutoCloseable {
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
                 .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
-        SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+
+        final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
-                        JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
+                        JOURNALDB.LOGFILE.ID, logfileSelection.directory(), logfileSelection.stream(),
                         JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
-                        nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        logfileSelection.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
+                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
-                .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
+                .from(logfileSelection.table(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
-                .on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id()))
+                .on(JOURNALDB.LOGFILE.ID.eq(logfileSelection.id()))
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
-                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
-                .join(JOURNALDB.LOGTAG)
-                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
-                .andNotExists(corruptedLogfilesField);
+                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
+
+        final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> finalSelect;
+
+        if (!isEpochMigrationMode) {
+            finalSelect = select
+                    .join(JOURNALDB.LOGTAG)
+                    .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
+                    .andNotExists(corruptedLogfilesField);
+        }
+        else {
+            finalSelect = select.andNotExists(corruptedLogfilesField);
+        }
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
 
-        try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
+        try (
+                final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(finalSelect)
+        ) {
             if (isLogSQL) {
                 LOGGER
                         .info(
@@ -346,10 +369,10 @@ public final class StreamDBClient implements AutoCloseable {
             return false;
         }
         final StreamDBClient that = (StreamDBClient) o;
-        return includeBeforeEpoch == that.includeBeforeEpoch
-                && bloomEnabled == that.bloomEnabled && isDebugEnabled == that.isDebugEnabled && Objects
+        return includeBeforeEpoch == that.includeBeforeEpoch && bloomEnabled == that.bloomEnabled
+                && isDebugEnabled == that.isDebugEnabled && isEpochMigrationMode == that.isEpochMigrationMode && Objects
                         .equals(LOGGER, that.LOGGER)
-                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
+                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL && Objects.equals(logfileSelection, that.logfileSelection);
     }
 
     @Override
@@ -357,7 +380,8 @@ public final class StreamDBClient implements AutoCloseable {
         return Objects
                 .hash(
                         LOGGER, metricRegistry, connection, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition,
-                        walker, isDebugEnabled, filterTable, sliceTable, isLogSQL
+                        walker, isDebugEnabled, isEpochMigrationMode, filterTable, sliceTable, isLogSQL,
+                        logfileSelection
                 );
     }
 }

@@ -1,0 +1,146 @@
+/*
+ * Teragrep Archive Datasource (pth_06)
+ * Copyright (C) 2021-2024 Suomen Kanuuna Oy
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *
+ * Additional permission under GNU Affero General Public License version 3
+ * section 7
+ *
+ * If you modify this Program, or any covered work, by linking or combining it
+ * with other code, such other code is not for that reason alone subject to any
+ * of the requirements of the GNU Affero GPL version 3 as long as this Program
+ * is the same Program as licensed from Suomen Kanuuna Oy without any additional
+ * modifications.
+ *
+ * Supplemented terms under GNU Affero General Public License version 3
+ * section 7
+ *
+ * Origin of the software must be attributed to Suomen Kanuuna Oy. Any modified
+ * versions must be marked as "Modified version of" The Program.
+ *
+ * Names of the licensors and authors may not be used for publicity purposes.
+ *
+ * No rights are granted for use of trade names, trademarks, or service marks
+ * which are in The Program if any.
+ *
+ * Licensee must indemnify licensors and authors for any liability that these
+ * contractual assumptions impose on licensors and authors.
+ *
+ * To the extent this program is licensed as part of the Commercial versions of
+ * Teragrep, the applicable Commercial License may apply to this file if you as
+ * a licensee so wish it.
+ */
+package com.teragrep.pth_06.planner;
+
+import com.teragrep.pth_06.ConfiguredLogger;
+import org.jooq.Condition;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.SelectField;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
+import org.jooq.types.ULong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Date;
+import java.util.Arrays;
+import java.util.Objects;
+
+import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
+
+public final class EpochMigrationSelection implements LogfileSelection {
+
+    private static final Logger classLogger = LoggerFactory.getLogger(EpochMigrationSelection.class);
+    private final ConfiguredLogger logger;
+    private final StreamDBClient streamDBClient;
+    private final String innerTableName = "limited";
+    private final Table<Record> innerTable = DSL.table(DSL.name(innerTableName));
+
+    // TODO refactor: heavily database session dependant: create synthetic logtime field, based on the path
+    private final SafeLogtimeFunction logtimeFunction = new SafeLogtimeFunction(JOURNALDB.LOGFILE.PATH);
+
+    private final Field<ULong> id = DSL.field(DSL.name(innerTableName, "id"), ULong.class);
+    private final Field<String> directory = DSL.field(DSL.name(innerTableName, "directory"), String.class);
+    private final Field<String> stream = DSL.field(DSL.name(innerTableName, "stream"), String.class);
+    private final Field<Long> logtime = DSL.field(DSL.name(innerTableName, "logtime"), Long.class);
+
+    private final SelectField<?>[] resultFields = {
+            JOURNALDB.LOGFILE.ID.as(id),
+            DSL.inline("_epoch_migration").as(directory),
+            DSL.inline("_epoch:migration").as(stream),
+            logtimeFunction.asField().as(logtime)
+    };
+
+    public EpochMigrationSelection(final StreamDBClient streamDBClient, final boolean isDebug) {
+        this(streamDBClient, new ConfiguredLogger(classLogger, isDebug));
+    }
+
+    public EpochMigrationSelection(final StreamDBClient streamDBClient, final ConfiguredLogger configuredLogger) {
+        this.streamDBClient = streamDBClient;
+        this.logger = configuredLogger;
+    }
+
+    @Override
+    public Table<Record> table(final Condition journalDBCondition, final Date day) {
+        logger.debug("EpochMigrationSelection.table() called for date <{}>", day);
+        return DSL
+                .select(resultFields)
+                .from(JOURNALDB.LOGFILE)
+                .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(JOURNALDB.LOGFILE.EPOCH_HOUR.isNull()))
+                .asTable(innerTable);
+    }
+
+    @Override
+    public Field<Long> logtime() {
+        return logtime;
+    }
+
+    @Override
+    public Field<String> stream() {
+        return stream;
+    }
+
+    @Override
+    public Field<String> directory() {
+        return directory;
+    }
+
+    @Override
+    public Field<ULong> id() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final EpochMigrationSelection that = (EpochMigrationSelection) o;
+        return Objects.equals(logger, that.logger) && Objects.equals(streamDBClient, that.streamDBClient) && Objects
+                .equals(innerTableName, that.innerTableName) && Objects.equals(innerTable, that.innerTable)
+                && Objects.equals(logtimeFunction, that.logtimeFunction) && Objects.equals(id, that.id) && Objects.equals(directory, that.directory) && Objects.equals(stream, that.stream) && Objects.equals(logtime, that.logtime) && Objects.deepEquals(resultFields, that.resultFields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(
+                        logger, streamDBClient, innerTableName, innerTable, logtimeFunction, id, directory, stream,
+                        logtime, Arrays.hashCode(resultFields)
+                );
+    }
+}

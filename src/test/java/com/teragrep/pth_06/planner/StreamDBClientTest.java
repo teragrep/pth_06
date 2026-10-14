@@ -725,10 +725,35 @@ class StreamDBClientTest {
     }
 
     @Test
+    public void epochMigrationIncludeLogfilesWithoutStreamMetadataTest() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+        ctx
+                .insertInto(JOURNALDB.LOGTAG)
+                .set(JOURNALDB.LOGTAG.ID, ULong.valueOf(2))
+                .set(JOURNALDB.LOGTAG.LOGTAG_, "unconfigured")
+                .execute();
+        ZonedDateTime date = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
+        LogfileRecord configured = logfileRecordForEpoch(date.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(configured).execute();
+        LogfileRecord unconfigured = logfileRecordForEpoch(date.plusHours(1).toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(unconfigured).execute();
+        Map<String, String> options = new HashMap<>(opts);
+        options.put("DBurl", mariadb.getJdbcUrl());
+        options.put("epochMigrationMode", "true");
+        options.put("queryXML", "<index value=\"nonexistent\" operation=\"EQUALS\"/>");
+        Config config = new Config(options);
+        Assertions.assertDoesNotThrow(() -> {
+            try (StreamDBClient client = new StreamDBClient(config)) {
+                int rows = client.pullToSliceTable(Date.valueOf(date.toLocalDate()));
+                Assertions.assertEquals(2, rows);
+            }
+        });
+    }
+
+    @Test
     public void equalsHashCodeContractTest() {
         EqualsVerifier
                 .forClass(StreamDBClient.class)
-                .withIgnoredFields("nestedTopNQuery")
-                .withPrefabValues(NestedTopNQuery.class, new NestedTopNQuery(null, false), new NestedTopNQuery(null, false)).verify();
+                .withPrefabValues(LogfileSelection.class, new NestedTopNQuery(null, false), new EpochMigrationSelection(null, false)).verify();
     }
 }
