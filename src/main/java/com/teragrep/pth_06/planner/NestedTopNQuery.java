@@ -117,7 +117,7 @@ public final class NestedTopNQuery implements LogfileSelection {
             }
         }
 
-        logger.debug("FilteredLogfileSelection.table() exit");
+        logger.debug("NestedTopNQuery.getTableStatement exit");
         return selectOnConditionStep
                 .where(JOURNALDB.LOGFILE.LOGDATE.eq(day).and(journaldbConditionArg))
                 .orderBy(logtimeForOrderBy, JOURNALDB.LOGFILE.ID.asc())
