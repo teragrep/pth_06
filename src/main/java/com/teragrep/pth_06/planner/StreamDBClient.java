@@ -143,16 +143,6 @@ public final class StreamDBClient implements AutoCloseable {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         this.connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
-
-        if (isEpochMigrationMode) {
-            this.logfileSelection = new EpochMigrationSelection(this, isDebugEnabled);
-        }
-        else {
-            this.logfileSelection = new NestedTopNQuery(this, isDebugEnabled);
-        }
-
-        this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
         if (isSQLThrowExceptionsNone) {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
@@ -180,16 +170,27 @@ public final class StreamDBClient implements AutoCloseable {
         this.walker = new ConditionWalker(ctx, bloomEnabled, filterlessSearch);
         Condition streamdbCondition;
 
-        try {
-            // Construct both streamDB and journalDB query conditions
-            streamdbCondition = walker.fromString(config.query, true);
-            this.journaldbCondition = walker.fromString(config.query, false);
+        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
+
+        if (isEpochMigrationMode) {
+            this.logfileSelection = new EpochMigrationSelection(this, isDebugEnabled);
+            this.journaldbCondition = DSL.noCondition(); // not required for epoch migration selection
         }
-        catch (ParserConfigurationException | IOException | SAXException e) {
-            throw new IllegalArgumentException(e);
+        else {
+            this.logfileSelection = new NestedTopNQuery(this, isDebugEnabled);
+            try {
+                // Construct both streamDB and journalDB query conditions
+                streamdbCondition = walker.fromString(config.query, true);
+                this.journaldbCondition = walker.fromString(config.query, false);
+                filterTable.create(streamdbCondition); // TEMPTABLE
+            }
+            catch (ParserConfigurationException | IOException | SAXException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
-        filterTable.create(streamdbCondition); // TEMPTABLE
+        this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
+
         sliceTable.create();
 
         // by default no cutoff
