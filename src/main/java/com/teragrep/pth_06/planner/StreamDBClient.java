@@ -231,26 +231,15 @@ public final class StreamDBClient implements AutoCloseable {
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
-                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID));
-
-        final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> finalSelect;
-
-        if (!isEpochMigrationMode) {
-            finalSelect = select
-                    .join(JOURNALDB.LOGTAG)
-                    .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
-                    .andNotExists(corruptedLogfilesField);
-        }
-        else {
-            finalSelect = select.andNotExists(corruptedLogfilesField);
-        }
+                .on(JOURNALDB.HOST.ID.eq(JOURNALDB.LOGFILE.HOST_ID))
+                .join(JOURNALDB.LOGTAG)
+                .on(JOURNALDB.LOGTAG.ID.eq(JOURNALDB.LOGFILE.LOGTAG_ID))
+                .andNotExists(corruptedLogfilesField);
 
         final Timer.Context timerCtx = metricRegistry.timer("ArchiveDatabaseLatency").time();
         final int rows;
 
-        try (
-                final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(finalSelect)
-        ) {
+        try (final InsertOnDuplicateStep<Record> selectStep = ctx.insertInto(SliceTable.SLICE_TABLE).select(select)) {
             if (isLogSQL) {
                 LOGGER
                         .info(
