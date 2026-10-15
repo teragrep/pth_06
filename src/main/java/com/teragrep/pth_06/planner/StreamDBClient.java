@@ -361,7 +361,7 @@ public final class StreamDBClient implements AutoCloseable {
         return includeBeforeEpoch == that.includeBeforeEpoch && bloomEnabled == that.bloomEnabled
                 && isDebugEnabled == that.isDebugEnabled && isEpochMigrationMode == that.isEpochMigrationMode && Objects
                         .equals(LOGGER, that.LOGGER)
-                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL && Objects.equals(logfileSelection, that.logfileSelection);
+                && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
     }
 
     @Override
@@ -369,8 +369,7 @@ public final class StreamDBClient implements AutoCloseable {
         return Objects
                 .hash(
                         LOGGER, metricRegistry, connection, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition,
-                        walker, isDebugEnabled, isEpochMigrationMode, filterTable, sliceTable, isLogSQL,
-                        logfileSelection
+                        walker, isDebugEnabled, isEpochMigrationMode, filterTable, sliceTable, isLogSQL
                 );
     }
 }
