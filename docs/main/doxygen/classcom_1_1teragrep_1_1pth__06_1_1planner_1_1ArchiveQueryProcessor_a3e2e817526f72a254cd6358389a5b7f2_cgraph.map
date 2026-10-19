@@ -1,16 +1,20 @@
 <map id="com.teragrep.pth_06.planner.ArchiveQueryProcessor.seekToResults" name="com.teragrep.pth_06.planner.ArchiveQueryProcessor.seekToResults">
-<area shape="rect" id="Node000001" title="Increment the rolling day and pull data for that day into the sliceTable." alt="" coords="5,97,275,137"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#adbe4b13c48e67d8d82ae4ed9ee93f7df" title=" " alt="" coords="323,97,556,137"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="275,114,309,114,309,120,275,120"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="916,97,1147,137"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="556,114,902,114,902,120,556,120"/>
-<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="1195,97,1425,137"/>
-<area shape="poly" id="edge8_Node000002_Node000004" title=" " alt="" coords="557,130,679,142,826,152,987,155,1146,146,1210,137,1210,142,1147,152,987,160,826,157,678,147,556,135"/>
-<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1NestedTopNQuery.html#ab9a75398ae4f26212f007ce95c24c26f" title=" " alt="" coords="604,37,868,77"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="538,94,623,77,624,83,540,100"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1147,114,1181,114,1181,120,1147,120"/>
-<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="836,75,919,92,918,97,835,80"/>
-<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="804,34,875,18,962,6,1055,4,1102,9,1147,19,1183,31,1218,49,1275,86,1272,91,1215,53,1181,36,1146,24,1101,14,1055,10,962,12,876,24,805,40"/>
-<area shape="rect" id="Node000006" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a03c44f8bbcceea9ce885498f428247cd" title=" " alt="" coords="916,33,1147,73"/>
-<area shape="poly" id="edge7_Node000005_Node000006" title=" " alt="" coords="868,53,902,52,902,58,868,58"/>
+<area shape="rect" id="Node000001" title="Increment the rolling day and pull data for that day into the sliceTable." alt="" coords="5,184,275,224"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#adbe4b13c48e67d8d82ae4ed9ee93f7df" title=" " alt="" coords="323,184,556,224"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="275,201,309,201,309,207,275,207"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="604,5,835,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="458,182,519,123,559,90,603,62,631,48,634,53,605,66,562,95,522,127,461,186"/>
+<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="883,35,1113,75"/>
+<area shape="poly" id="edge6_Node000002_Node000004" title=" " alt="" coords="466,182,526,142,564,122,603,105,670,86,739,72,869,57,870,62,740,77,671,91,605,111,566,127,529,147,469,186"/>
+<area shape="rect" id="Node000005" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#ae9fe5b432fa0283b3e920ef35708a47f" title=" " alt="" coords="613,120,826,160"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="527,181,617,160,619,166,528,187"/>
+<area shape="rect" id="Node000006" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a961353076692e43c7f2c6e4c999a7fc1" title=" " alt="" coords="613,184,826,224"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="556,201,599,201,599,207,556,207"/>
+<area shape="rect" id="Node000007" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a9f1ed318e7dde4f654fcc49842e3d610" title=" " alt="" coords="613,248,826,288"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="528,221,619,242,617,248,527,227"/>
+<area shape="rect" id="Node000008" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#ad2092163349971294d2187f6f5ecb132" title=" " alt="" coords="613,312,826,352"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="471,222,531,260,605,298,625,305,623,310,603,302,529,264,468,226"/>
+<area shape="rect" id="Node000009" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a5dee0969e35ee5a55f635c29e38ade31" title=" " alt="" coords="613,376,826,416"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="458,223,518,291,559,329,605,362,618,368,615,373,603,366,556,333,514,295,454,226"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="835,35,869,38,869,44,835,40"/>
 </map>

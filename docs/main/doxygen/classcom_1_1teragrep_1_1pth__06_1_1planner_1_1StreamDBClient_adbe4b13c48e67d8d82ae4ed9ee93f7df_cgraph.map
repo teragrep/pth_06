@@ -1,14 +1,18 @@
 <map id="com.teragrep.pth_06.planner.StreamDBClient.pullToSliceTable" name="com.teragrep.pth_06.planner.StreamDBClient.pullToSliceTable">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,97,239,137"/>
-<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="599,97,829,137"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="239,114,585,114,585,120,239,120"/>
-<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="877,97,1108,137"/>
-<area shape="poly" id="edge7_Node000001_Node000003" title=" " alt="" coords="239,130,362,142,509,152,669,155,829,146,892,137,893,142,830,152,669,160,509,157,361,147,239,135"/>
-<area shape="rect" id="Node000004" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1NestedTopNQuery.html#ab9a75398ae4f26212f007ce95c24c26f" title=" " alt="" coords="287,37,551,77"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="221,94,305,77,306,83,222,100"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="830,114,864,114,864,120,830,120"/>
-<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="518,75,602,92,601,97,517,80"/>
-<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="486,34,558,18,645,6,738,4,785,9,830,19,866,31,900,49,958,86,955,91,898,53,864,36,829,24,784,14,738,10,645,12,559,24,487,40"/>
-<area shape="rect" id="Node000005" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a03c44f8bbcceea9ce885498f428247cd" title=" " alt="" coords="599,33,829,73"/>
-<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="551,53,585,52,585,58,551,58"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,184,239,224"/>
+<area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#a432bade7d6310bed1e1b9a405fb53d56" title=" " alt="" coords="287,5,517,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,182,201,123,242,90,285,62,314,48,316,53,288,66,245,95,205,127,144,186"/>
+<area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1ConfiguredLogger.html#adbd659cefc990abe9b2da58d3dae9970" title=" " alt="" coords="565,35,796,75"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="149,182,209,142,247,122,286,105,353,86,422,72,552,57,552,62,422,77,354,91,288,111,249,127,212,147,151,186"/>
+<area shape="rect" id="Node000004" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#ae9fe5b432fa0283b3e920ef35708a47f" title=" " alt="" coords="295,120,509,160"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="210,181,300,160,301,166,211,187"/>
+<area shape="rect" id="Node000005" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a961353076692e43c7f2c6e4c999a7fc1" title=" " alt="" coords="295,184,509,224"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="239,201,282,201,282,207,239,207"/>
+<area shape="rect" id="Node000006" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a9f1ed318e7dde4f654fcc49842e3d610" title=" " alt="" coords="295,248,509,288"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="211,221,301,242,300,248,210,227"/>
+<area shape="rect" id="Node000007" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#ad2092163349971294d2187f6f5ecb132" title=" " alt="" coords="295,312,509,352"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="154,222,214,260,288,298,307,305,305,310,286,302,211,264,151,226"/>
+<area shape="rect" id="Node000008" href="$interfacecom_1_1teragrep_1_1pth__06_1_1planner_1_1LogfileSelection.html#a5dee0969e35ee5a55f635c29e38ade31" title=" " alt="" coords="295,376,509,416"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="141,223,200,291,242,329,288,362,300,368,298,373,285,366,238,333,196,295,137,226"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="518,35,552,38,552,44,517,40"/>
 </map>

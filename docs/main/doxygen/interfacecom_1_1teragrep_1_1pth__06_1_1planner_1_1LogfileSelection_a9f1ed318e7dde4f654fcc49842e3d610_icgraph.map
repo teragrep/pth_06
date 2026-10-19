@@ -1,5 +1,5 @@
-<map id="com.teragrep.pth_06.planner.NestedTopNQuery.getTableStatement" name="com.teragrep.pth_06.planner.NestedTopNQuery.getTableStatement">
-<area shape="rect" id="Node000001" title=" " alt="" coords="895,13,1159,53"/>
+<map id="com.teragrep.pth_06.planner.LogfileSelection.logtime" name="com.teragrep.pth_06.planner.LogfileSelection.logtime">
+<area shape="rect" id="Node000001" title=" " alt="" coords="895,13,1108,53"/>
 <area shape="rect" id="Node000002" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1StreamDBClient.html#adbe4b13c48e67d8d82ae4ed9ee93f7df" title=" " alt="" coords="613,13,847,53"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="881,35,847,35,847,30,881,30"/>
 <area shape="rect" id="Node000003" href="$classcom_1_1teragrep_1_1pth__06_1_1planner_1_1ArchiveQueryProcessor.html#a646c09c6ba9331c48df86960f4fa8bcb" title="Increments the latest offset value and returns that incremented offset." alt="" coords="5,5,248,60"/>
