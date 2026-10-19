@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.EarliestExpression;
 import org.jooq.Condition;
 
 import java.sql.Date;
@@ -56,6 +57,10 @@ import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 public final class EarliestCondition implements QueryCondition {
 
     private final String value;
+
+    public EarliestCondition(EarliestExpression earliestExpression) {
+        this(earliestExpression.value());
+    }
 
     public EarliestCondition(String value) {
         this.value = value;

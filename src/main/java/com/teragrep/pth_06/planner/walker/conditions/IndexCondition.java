@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.IndexExpression;
 import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -58,6 +59,10 @@ public final class IndexCondition implements QueryCondition {
     private final String value;
     private final String operation;
     private final boolean streamQuery;
+
+    public IndexCondition(IndexExpression indexExpression, boolean streamQuery) {
+        this(indexExpression.value(), indexExpression.operation(), streamQuery);
+    }
 
     public IndexCondition(String value, String operation, boolean streamQuery) {
         this.streamQuery = streamQuery;

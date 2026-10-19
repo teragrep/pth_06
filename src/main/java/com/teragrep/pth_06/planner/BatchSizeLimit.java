@@ -45,11 +45,14 @@
  */
 package com.teragrep.pth_06.planner;
 
+import com.teragrep.pth_06.config.BatchConfig;
+import com.teragrep.pth_06.config.Config;
+
 /**
  * Class for checking the batch size and ensuring that it does not grow over the given weight and total object count
  * limit.
  */
-final class BatchSizeLimit {
+public final class BatchSizeLimit {
 
     /** Maximum weight of the batch (length of executor queue * amount of executors) */
     final long maxWeight;
@@ -63,13 +66,21 @@ final class BatchSizeLimit {
     /** accumulated sum of object count */
     private long accumulatedObjectCount;
 
+    public BatchSizeLimit(final Config config) {
+        this(config.batchConfig);
+    }
+
+    public BatchSizeLimit(final BatchConfig batchConfig) {
+        this(((long) batchConfig.quantumLength * batchConfig.numPartitions), batchConfig.totalObjectCountLimit);
+    }
+
     /**
      * Initialize the BatchSizeLimit with the given maximum size and maximum object count.
      * 
      * @param maxWeight      quantumLength * numPartitions
      * @param maxObjectCount maximum objects per batch
      */
-    BatchSizeLimit(final long maxWeight, final long maxObjectCount) {
+    public BatchSizeLimit(final long maxWeight, final long maxObjectCount) {
         this.maxWeight = maxWeight;
         this.maxObjectCount = maxObjectCount;
         this.accumulatedWeight = 0F;
@@ -81,7 +92,7 @@ final class BatchSizeLimit {
      * 
      * @param weight weight of offset delta
      */
-    void add(float weight) {
+    public void add(float weight) {
         accumulatedWeight += weight;
         accumulatedObjectCount++;
     }
@@ -92,7 +103,7 @@ final class BatchSizeLimit {
      * 
      * @return if weight or object count is over the given limit
      */
-    boolean isOverLimit() {
+    public boolean isOverLimit() {
         final boolean tooHeavyWeight = accumulatedWeight > maxWeight;
         final boolean tooManyObjects = accumulatedObjectCount > maxObjectCount;
 

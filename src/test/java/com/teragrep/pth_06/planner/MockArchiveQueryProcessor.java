@@ -178,4 +178,9 @@ public final class MockArchiveQueryProcessor implements ArchiveQuery {
     public CustomTaskMetric[] currentDatabaseMetrics() {
         return new CustomTaskMetric[0];
     }
+
+    @Override
+    public boolean isStub() {
+        return false;
+    }
 }

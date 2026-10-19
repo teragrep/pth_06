@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.SourceTypeExpression;
 import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -58,6 +59,10 @@ public final class SourceTypeCondition implements QueryCondition {
     private final String value;
     private final String operation;
     private final boolean streamQuery;
+
+    public SourceTypeCondition(SourceTypeExpression sourceTypeCondition, boolean streamQuery) {
+        this(sourceTypeCondition.value(), sourceTypeCondition.operation(), streamQuery);
+    }
 
     public SourceTypeCondition(String value, String operation, boolean streamQuery) {
         this.value = value;

@@ -45,7 +45,7 @@
  */
 package com.teragrep.pth_06.metrics;
 
-import com.teragrep.pth_06.Stubable;
+import com.teragrep.stb_01.Stubable;
 
 public interface MetricValue<T> extends Stubable {
 

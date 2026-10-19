@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.IndexStatementExpression;
 import com.teragrep.pth_06.config.ConditionConfig;
 import com.teragrep.pth_06.planner.bloomfilter.*;
 import org.jooq.Condition;
@@ -63,6 +64,10 @@ public final class IndexStatementCondition implements QueryCondition, BloomQuery
 
     private final String value;
     private final ConditionConfig config;
+
+    public IndexStatementCondition(IndexStatementExpression indexStatementExpression, ConditionConfig config) {
+        this(indexStatementExpression.value(), config);
+    }
 
     public IndexStatementCondition(final String value, final ConditionConfig config) {
         this.value = value;

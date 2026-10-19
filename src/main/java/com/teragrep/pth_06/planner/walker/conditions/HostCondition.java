@@ -45,6 +45,7 @@
  */
 package com.teragrep.pth_06.planner.walker.conditions;
 
+import com.teragrep.pth_06.ast.expressions.HostExpression;
 import com.teragrep.pth_06.planner.GetArchivedObjectsFilterTable;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -59,10 +60,14 @@ public final class HostCondition implements QueryCondition {
     private final String operation;
     private final boolean streamQuery;
 
+    public HostCondition(HostExpression hostExpression, boolean streamQuery) {
+        this(hostExpression.value(), hostExpression.operation(), streamQuery);
+    }
+
     public HostCondition(String value, String operation, boolean streamQuery) {
-        this.streamQuery = streamQuery;
         this.value = value;
         this.operation = operation;
+        this.streamQuery = streamQuery;
     }
 
     public Condition condition() {
