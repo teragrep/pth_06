@@ -249,13 +249,16 @@ public class ConditionWalkerTest {
         DSLContext ctx = DSL.using(conn);
         ConditionWalker walker = new ConditionWalker(ctx, true, new FilterlessSearchImpl(ctx, ipRegex));
         String q = "<AND><index operation=\"EQUALS\" value=\"haproxy\"/><AND><earliest operation=\"GE\" value=\"1643207821\"/><latest operation=\"LE\" value=\"1729435021\"/></AND></AND>";
-        String e = "(\n" + "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n"
-                + "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '2022-01-26'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1643205600)\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2024-10-20'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1729435021)\n"
-                + ")";
+        // spotless:off
+        String e = "(\n" +
+                "  \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                "  and \"getArchivedObjects_filter_table\".\"directory\" like 'haproxy'\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(1643205600))\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1643205600)\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(1729435021))\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1729435021)\n" +
+                ")";
+        // spotless:on
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
         Assertions.assertEquals(1, walker.conditionRequiredTables().size());
@@ -296,24 +299,49 @@ public class ConditionWalkerTest {
     void testFullXMLTwoMatchingTables() {
         ConditionWalker walker = new ConditionWalker(DSL.using(conn), true);
         String q = "<AND><index operation=\"EQUALS\" value=\"search_bench\"/><AND><AND><AND><earliest operation=\"GE\" value=\"1643207821\"/><latest operation=\"LE\" value=\"1729435021\"/></AND><indexstatement operation=\"EQUALS\" value=\"192.168.1.1\"/></AND><indexstatement operation=\"EQUALS\" value=\"192.000.1.1\"/></AND></AND>";
-        String e = "(\n" + "  \"getArchivedObjects_filter_table\".\"directory\" like 'search_bench'\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" >= date '2022-01-26'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1643205600)\n"
-                + "  and \"journaldb\".\"logfile\".\"logdate\" <= date '2024-10-20'\n"
-                + "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1729435021)\n"
-                + "  and (\n" + "    (\n" + "      bloommatch(\n" + "        (\n"
-                + "          select \"term_0_pattern_test_ip\".\"filter\"\n"
-                + "          from \"term_0_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 0\n"
-                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
-                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
-                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
-                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + "  and (\n" + "    (\n"
-                + "      bloommatch(\n" + "        (\n" + "          select \"term_1_pattern_test_ip\".\"filter\"\n"
-                + "          from \"term_1_pattern_test_ip\"\n" + "          where (\n" + "            term_id = 1\n"
-                + "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" + "          )\n"
-                + "        ),\n" + "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" + "      ) = true\n"
-                + "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" + "    )\n"
-                + "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" + "  )\n" + ")";
+        // spotless:off
+        String e = "(\n" +
+                "  \"getArchivedObjects_filter_table\".\"directory\" like 'search_bench'\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" >= DATE(FROM_UNIXTIME(1643205600))\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) >= 1643205600)\n" +
+                "  and \"journaldb\".\"logfile\".\"logdate\" <= DATE(FROM_UNIXTIME(1729435021))\n" +
+                "  and (UNIX_TIMESTAMP(STR_TO_DATE(SUBSTRING(REGEXP_SUBSTR(path,'[0-9]+(\\.rfc5424)?(\\.log)?\\.gz(\\.[0-9]*)?$'), 1, 10), '%Y%m%d%H')) <= 1729435021)\n" +
+                "  and (\n" +
+                "    (\n" +
+                "      bloommatch(\n" +
+                "        (\n" +
+                "          select \"term_0_pattern_test_ip\".\"filter\"\n" +
+                "          from \"term_0_pattern_test_ip\"\n" +
+                "          where (\n" +
+                "            term_id = 0\n" +
+                "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                "          )\n" +
+                "        ),\n" +
+                "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                "      ) = true\n" +
+                "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                "    )\n" +
+                "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                "  )\n" +
+                "  and (\n" +
+                "    (\n" +
+                "      bloommatch(\n" +
+                "        (\n" +
+                "          select \"term_1_pattern_test_ip\".\"filter\"\n" +
+                "          from \"term_1_pattern_test_ip\"\n" +
+                "          where (\n" +
+                "            term_id = 1\n" +
+                "            and type_id = \"bloomdb\".\"pattern_test_ip\".\"filter_type_id\"\n" +
+                "          )\n" +
+                "        ),\n" +
+                "        \"bloomdb\".\"pattern_test_ip\".\"filter\"\n" +
+                "      ) = true\n" +
+                "      and \"bloomdb\".\"pattern_test_ip\".\"filter\" is not null\n" +
+                "    )\n" +
+                "    or \"bloomdb\".\"pattern_test_ip\".\"filter\" is null\n" +
+                "  )\n" +
+                ")";
+        // spotless:on
         Condition cond = Assertions.assertDoesNotThrow(() -> walker.fromString(q, false));
         Assertions.assertEquals(e, cond.toString());
     }
