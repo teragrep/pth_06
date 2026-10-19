@@ -60,7 +60,10 @@ import org.testcontainers.utility.MountableFile;
 
 import java.sql.*;
 import java.time.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
@@ -725,10 +728,63 @@ class StreamDBClientTest {
     }
 
     @Test
+    public void epochMigrationIncludeLogfilesWithoutStreamMetadataTest() {
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+
+        // insert 'unconfigured' logtag that has no references to the stream metadata
+        ctx
+                .insertInto(JOURNALDB.LOGTAG)
+                .set(JOURNALDB.LOGTAG.ID, ULong.valueOf(2))
+                .set(JOURNALDB.LOGTAG.LOGTAG_, "unconfigured")
+                .execute();
+
+        // insert a normal logfile
+        final ZonedDateTime date = ZonedDateTime.of(2023, 10, 4, 22, 0, 0, 0, zoneId);
+        final LogfileRecord configured = logfileRecordForEpoch(date.toEpochSecond(), true);
+        ctx.insertInto(JOURNALDB.LOGFILE).set(configured).execute();
+
+        // insert logfile using unconfigured logtag
+        final LogfileRecord unconfigured = logfileRecordForEpoch(date.plusHours(1).toEpochSecond(), true);
+        unconfigured.setLogtagId(ULong.valueOf(2));
+        ctx.insertInto(JOURNALDB.LOGFILE).set(unconfigured).execute();
+
+        final Map<String, String> options = new HashMap<>(opts);
+        options.put("DBurl", mariadb.getJdbcUrl());
+        options.put("epochMigrationMode", "true");
+        options.put("queryXML", "<index value=\"nonexistent\" operation=\"EQUALS\"/>");
+        final Config config = new Config(options);
+        final List<ULong> expectedIDs = Arrays.asList(ULong.valueOf(1696471200), ULong.valueOf(1696474800));
+        final List<ULong> actualIDs = new ArrayList<>();
+        Assertions.assertDoesNotThrow(() -> {
+            try (final StreamDBClient client = new StreamDBClient(config)) {
+                final int rows = client.pullToSliceTable(Date.valueOf(date.toLocalDate()));
+                Assertions.assertEquals(2, rows);
+
+                final Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> hourRange = client
+                        .getHourRange(0, Long.MAX_VALUE);
+                Assertions.assertEquals(2, hourRange.size(), "getHourRange() should get both inserted logfile records");
+                for (
+                    Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong> row : hourRange
+                ) {
+                    actualIDs.add(row.value1());
+                    Assertions
+                            .assertEquals(
+                                    "_epoch_migration", row.value2(),
+                                    "logfile records should have _epoch_migration as their directory value"
+                            );
+                    Assertions
+                            .assertEquals(
+                                    "_epoch:migration", row.value3(),
+                                    "logfile records should have _epoch:migration as their stream value"
+                            );
+                }
+            }
+        });
+        Assertions.assertEquals(expectedIDs, actualIDs);
+    }
+
+    @Test
     public void equalsHashCodeContractTest() {
-        EqualsVerifier
-                .forClass(StreamDBClient.class)
-                .withIgnoredFields("nestedTopNQuery")
-                .withPrefabValues(NestedTopNQuery.class, new NestedTopNQuery(null, false), new NestedTopNQuery(null, false)).verify();
+        EqualsVerifier.forClass(StreamDBClient.class).withIgnoredFields("logfileSelection").verify();
     }
 }

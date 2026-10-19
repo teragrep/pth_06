@@ -103,8 +103,9 @@ public final class StreamDBClient implements AutoCloseable {
     private final ConditionWalker walker;
     private final boolean isDebugEnabled;
     private final boolean isLogSQL;
+    private final boolean isEpochMigrationMode;
     private final GetArchivedObjectsFilterTable filterTable;
-    private final NestedTopNQuery nestedTopNQuery;
+    private final LogfileSelection logfileSelection;
     private final SliceTable sliceTable;
 
     public StreamDBClient(Config config) throws SQLException {
@@ -114,6 +115,8 @@ public final class StreamDBClient implements AutoCloseable {
         LOGGER.debug("StreamDBClient ctor called with config <[{}]>", config);
         this.bloomEnabled = config.archiveConfig.bloomEnabled;
         LOGGER.info("StreamDBClient bloom.enabled: " + this.bloomEnabled);
+        this.isEpochMigrationMode = config.archiveConfig.epochMigrationMode;
+        LOGGER.info("StreamDBClient epochMigrationMode <" + this.isEpochMigrationMode + ">");
 
         final String userName = config.archiveConfig.dbUsername;
         final String password = config.archiveConfig.dbPassword;
@@ -140,9 +143,6 @@ public final class StreamDBClient implements AutoCloseable {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
         this.connection = DriverManager.getConnection(url, userName, password);
         this.ctx = DSL.using(connection, SQLDialect.MYSQL, settings);
-        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
-        this.nestedTopNQuery = new NestedTopNQuery(this, isDebugEnabled);
-        this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
 
         if (isSQLThrowExceptionsNone) {
             // force sql mode to NO_ENGINE_SUBSTITUTION, STRICT mode
@@ -170,16 +170,27 @@ public final class StreamDBClient implements AutoCloseable {
         this.walker = new ConditionWalker(ctx, bloomEnabled, filterlessSearch);
         Condition streamdbCondition;
 
-        try {
-            // Construct both streamDB and journalDB query conditions
-            streamdbCondition = walker.fromString(config.query, true);
-            this.journaldbCondition = walker.fromString(config.query, false);
+        this.filterTable = new GetArchivedObjectsFilterTable(ctx, isDebugEnabled, isLogSQL);
+
+        if (isEpochMigrationMode) {
+            this.logfileSelection = new EpochMigrationSelection(this, isDebugEnabled);
+            this.journaldbCondition = DSL.noCondition(); // not required for epoch migration selection
         }
-        catch (ParserConfigurationException | IOException | SAXException e) {
-            throw new IllegalArgumentException(e);
+        else {
+            this.logfileSelection = new NestedTopNQuery(this, isDebugEnabled);
+            try {
+                // Construct both streamDB and journalDB query conditions
+                streamdbCondition = walker.fromString(config.query, true);
+                this.journaldbCondition = walker.fromString(config.query, false);
+                filterTable.create(streamdbCondition); // TEMPTABLE
+            }
+            catch (ParserConfigurationException | IOException | SAXException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
-        filterTable.create(streamdbCondition); // TEMPTABLE
+        this.sliceTable = new SliceTable(ctx, isDebugEnabled, isLogSQL);
+
         sliceTable.create();
 
         // by default no cutoff
@@ -207,15 +218,17 @@ public final class StreamDBClient implements AutoCloseable {
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
                 .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
-        SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+
+        final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
                 .select(
-                        JOURNALDB.LOGFILE.ID, nestedTopNQuery.directory(), nestedTopNQuery.stream(),
+                        JOURNALDB.LOGFILE.ID, logfileSelection.directory(), logfileSelection.stream(),
                         JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
-                        nestedTopNQuery.logtime(), JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        logfileSelection.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
+                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
-                .from(nestedTopNQuery.getTableStatement(journaldbCondition, day))
+                .from(logfileSelection.table(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
-                .on(JOURNALDB.LOGFILE.ID.eq(nestedTopNQuery.id()))
+                .on(JOURNALDB.LOGFILE.ID.eq(logfileSelection.id()))
                 .join(JOURNALDB.BUCKET)
                 .on(JOURNALDB.BUCKET.ID.eq(JOURNALDB.LOGFILE.BUCKET_ID))
                 .join(JOURNALDB.HOST)
@@ -346,8 +359,8 @@ public final class StreamDBClient implements AutoCloseable {
             return false;
         }
         final StreamDBClient that = (StreamDBClient) o;
-        return includeBeforeEpoch == that.includeBeforeEpoch
-                && bloomEnabled == that.bloomEnabled && isDebugEnabled == that.isDebugEnabled && Objects
+        return includeBeforeEpoch == that.includeBeforeEpoch && bloomEnabled == that.bloomEnabled
+                && isDebugEnabled == that.isDebugEnabled && isEpochMigrationMode == that.isEpochMigrationMode && Objects
                         .equals(LOGGER, that.LOGGER)
                 && Objects.equals(metricRegistry, that.metricRegistry) && Objects.equals(connection, that.connection) && Objects.equals(ctx, that.ctx) && Objects.equals(journaldbCondition, that.journaldbCondition) && Objects.equals(walker, that.walker) && Objects.equals(filterTable, that.filterTable) && Objects.equals(sliceTable, that.sliceTable) && isLogSQL == that.isLogSQL;
     }
@@ -357,7 +370,7 @@ public final class StreamDBClient implements AutoCloseable {
         return Objects
                 .hash(
                         LOGGER, metricRegistry, connection, ctx, includeBeforeEpoch, bloomEnabled, journaldbCondition,
-                        walker, isDebugEnabled, filterTable, sliceTable, isLogSQL
+                        walker, isDebugEnabled, isEpochMigrationMode, filterTable, sliceTable, isLogSQL
                 );
     }
 }

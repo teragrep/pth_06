@@ -60,7 +60,7 @@ import java.util.Set;
 
 import static com.teragrep.pth_06.jooq.generated.journaldb.Journaldb.JOURNALDB;
 
-public final class NestedTopNQuery {
+public final class NestedTopNQuery implements LogfileSelection {
 
     private static final Logger classLogger = LoggerFactory.getLogger(NestedTopNQuery.class);
     private final ConfiguredLogger logger;
@@ -94,7 +94,8 @@ public final class NestedTopNQuery {
         this.logger = configuredLogger;
     }
 
-    public Table<Record> getTableStatement(Condition journaldbConditionArg, Date day) {
+    @Override
+    public Table<Record> table(Condition journaldbConditionArg, Date day) {
         logger.debug("NestedTopNQuery.getTableStatement called condition <{}> date <{}>", journaldbConditionArg, day);
         SelectOnConditionStep<Record> selectOnConditionStep = DSL
                 .select(resultFields)
@@ -123,18 +124,22 @@ public final class NestedTopNQuery {
                 .asTable(innerTable);
     }
 
+    @Override
     public Field<Long> logtime() {
         return logtime;
     }
 
+    @Override
     public Field<String> stream() {
         return stream;
     }
 
+    @Override
     public Field<String> directory() {
         return directory;
     }
 
+    @Override
     public Field<ULong> id() {
         return id;
     }
