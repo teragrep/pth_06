@@ -78,7 +78,7 @@ class EpochDayConditionTest {
     void conditionNegativeEpochExceptionTest() {
         final LocalDate localDate = LocalDate.of(1969, 12, 31);
         final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
-        Assertions.assertThrows(NumberFormatException.class, () -> new EpochDayCondition(day).condition());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new EpochDayCondition(day).condition());
     }
 
     @Test

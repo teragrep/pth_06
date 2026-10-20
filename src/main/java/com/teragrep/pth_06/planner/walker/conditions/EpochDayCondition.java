@@ -69,7 +69,7 @@ public final class EpochDayCondition implements QueryCondition {
         final long startEpoch = localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
         final long endEpoch = localDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond();
         if (startEpoch < 0 || endEpoch < 0) {
-            throw new NumberFormatException("Date is before 1970-01-01 resulting in negative epoch value.");
+            throw new IllegalArgumentException("Date is before 1970-01-01 resulting in negative epoch value.");
         }
         return JOURNALDB.LOGFILE.EPOCH_HOUR.between(ULong.valueOf(startEpoch), ULong.valueOf(endEpoch));
     }
