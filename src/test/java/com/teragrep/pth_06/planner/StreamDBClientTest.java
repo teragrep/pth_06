@@ -1008,6 +1008,58 @@ class StreamDBClientTest {
         Assertions.assertEquals(secondZonedDateTimeUTC.toEpochSecond(), hourRange.get(1).get(6, Long.class));
     }
 
+    /**
+     * Testing handling of epoch_hour and logtime at and around midnight
+     */
+    @Test
+    public void epochHourMidnightPreviousDayTest() {
+        // Add test data to logfile table in journaldb.
+        final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
+
+        // Set epoch_hour in path to 2023-10-04:23 UTC.
+        final LogfileRecord logfileRecordMinusHour = logfileRecordForEpoch(1696464000L - 3600L, false);
+        // Insert the logfileRecord to the database using JOOQ.
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecordMinusHour).execute();
+
+        // Set epoch_hour in path to 2023-10-05:00 UTC.
+        final LogfileRecord logfileRecord = logfileRecordForEpoch(1696464000L, false);
+        // Insert the logfileRecord to the database using JOOQ.
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecord).execute();
+
+        // Set epoch_hour in path to 2023-10-05:01 UTC.
+        final LogfileRecord logfileRecordPlusHour = logfileRecordForEpoch(1696464000L + 3600L, false);
+        // Insert the logfileRecord to the database using JOOQ.
+        ctx.insertInto(JOURNALDB.LOGFILE).set(logfileRecordPlusHour).execute();
+
+        // Create an instance of StreamDBClient using the default server timezone (UTC-4).
+        final Map<String, String> opts = new HashMap<>(this.opts);
+        opts.put("DBurl", mariadb.getJdbcUrl());
+        final Config config = new Config(opts);
+        final StreamDBClient sdc = Assertions.assertDoesNotThrow(() -> new StreamDBClient(config));
+
+        final Long earliestEpoch = 1696377600L; // 2023-10-04:00
+
+        // Pull the records from a specific logdate to the slicetable for further processing, filtering out logfileRecord and logfileRecordPlusHour.
+        final int rows = sdc.pullToSliceTable(Date.valueOf("2023-10-4"));
+        // logfileRecord and logfileRecordPlusHour should not be included in the result
+        Assertions.assertEquals(1, rows);
+
+        // Get the offset for the first non-empty hour of records from the slicetable.
+        final WeightedOffset firstHourAndSizeFromSliceTable = sdc.getNextHourAndSizeFromSliceTable(earliestEpoch);
+        Assertions.assertFalse(firstHourAndSizeFromSliceTable.isStub);
+
+        final Long firstOffset = firstHourAndSizeFromSliceTable.offset();
+
+        // Get the logfile results from the known hour range.
+        Assertions.assertEquals(1696464000L - 3600L, firstOffset);
+        final Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> hourRange = sdc
+                .getHourRange(earliestEpoch, firstOffset);
+        Assertions.assertEquals(1, hourRange.size());
+        // Assert that the resulting logfile metadata is as expected for logtime, they should not be affected by session timezone.
+        final ZonedDateTime firstZonedDateTimeUTC = ZonedDateTime.of(2023, 10, 4, 23, 0, 0, 0, ZoneId.of("UTC"));
+        Assertions.assertEquals(firstZonedDateTimeUTC.toEpochSecond(), hourRange.get(0).get(6, Long.class));
+    }
+
     @Test
     public void epochMigrationIncludeLogfilesWithoutStreamMetadataTest() {
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
