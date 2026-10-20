@@ -71,7 +71,9 @@ public final class EpochDayCondition implements QueryCondition {
         if (startEpoch < 0 || endEpoch < 0) {
             throw new IllegalArgumentException("Date is before 1970-01-01 resulting in negative epoch value.");
         }
-        return JOURNALDB.LOGFILE.EPOCH_HOUR.between(ULong.valueOf(startEpoch), ULong.valueOf(endEpoch));
+        return JOURNALDB.LOGFILE.EPOCH_HOUR
+                .ge(ULong.valueOf(startEpoch))
+                .and(JOURNALDB.LOGFILE.EPOCH_HOUR.lt(ULong.valueOf(endEpoch)));
     }
 
     @Override

@@ -58,7 +58,8 @@ class EpochDayConditionTest {
 
     @Test
     void conditionTest() {
-        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" between 1791763200 and 1791849600";
+        final String e = "(\n" + "  \"journaldb\".\"logfile\".\"epoch_hour\" >= 1791763200\n"
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" < 1791849600\n" + ")";
         final LocalDate localDate = LocalDate.of(2026, 10, 12);
         final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
         final Condition epochDayCondition = new EpochDayCondition(day).condition();
@@ -67,7 +68,8 @@ class EpochDayConditionTest {
 
     @Test
     void condition0EpochTest() {
-        final String e = "\"journaldb\".\"logfile\".\"epoch_hour\" between 0 and 86400";
+        final String e = "(\n" + "  \"journaldb\".\"logfile\".\"epoch_hour\" >= 0\n"
+                + "  and \"journaldb\".\"logfile\".\"epoch_hour\" < 86400\n" + ")";
         final LocalDate localDate = LocalDate.of(1970, 1, 1);
         final Date day = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000);
         final Condition epochDayCondition = new EpochDayCondition(day).condition();
