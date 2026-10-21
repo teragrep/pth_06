@@ -213,18 +213,16 @@ public final class StreamDBClient implements AutoCloseable {
 
     public int pullToSliceTable(Date day) {
         LOGGER.debug("StreamDBClient.pullToSliceTable called for date <{}>", day);
-
         SelectConditionStep<Record1<Integer>> corruptedLogfilesField = DSL
                 .selectOne()
                 .from(JOURNALDB.CORRUPTED_ARCHIVE)
                 .where(JOURNALDB.LOGFILE.ID.eq(JOURNALDB.CORRUPTED_ARCHIVE.LOGFILE_ID));
 
-        final SelectOnConditionStep<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> select = ctx
+        final SelectOnConditionStep<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> select = ctx
                 .select(
                         JOURNALDB.LOGFILE.ID, logfileSelection.directory(), logfileSelection.stream(),
-                        JOURNALDB.HOST.NAME, JOURNALDB.LOGFILE.LOGDATE, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH,
-                        logfileSelection.logtime(), JOURNALDB.LOGFILE.FILE_SIZE,
-                        JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
+                        JOURNALDB.HOST.NAME, JOURNALDB.BUCKET.NAME, JOURNALDB.LOGFILE.PATH, logfileSelection.logtime(),
+                        JOURNALDB.LOGFILE.FILE_SIZE, JOURNALDB.LOGFILE.UNCOMPRESSED_FILE_SIZE
                 )
                 .from(logfileSelection.table(journaldbCondition, day))
                 .join(JOURNALDB.LOGFILE)
@@ -310,7 +308,7 @@ public final class StreamDBClient implements AutoCloseable {
         return deletedRowsCount;
     }
 
-    Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> getHourRange(
+    Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> getHourRange(
             long excludedStartHour,
             long includedEndHour
     ) {
@@ -319,11 +317,10 @@ public final class StreamDBClient implements AutoCloseable {
                         "StreamDBClient.getHourRange called excludedStartHour <{}> includedEndHour <{}>",
                         excludedStartHour, includedEndHour
                 );
-        Result<Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong>> result = ctx
+        Result<Record9<ULong, String, String, String, String, String, Long, ULong, ULong>> result = ctx
                 .select(
-                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logdate,
-                        SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
-                        SliceTable.uncompressedFilesize
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.bucket,
+                        SliceTable.path, SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
                 )
                 .from(SliceTable.SLICE_TABLE)
                 .where(SliceTable.logtime.greaterThan(excludedStartHour).and(SliceTable.logtime.lessOrEqual(includedEndHour)).and(SliceTable.logtime.lessThan(includeBeforeEpoch))).fetch();

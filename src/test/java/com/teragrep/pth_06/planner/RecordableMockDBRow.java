@@ -46,7 +46,7 @@
 package com.teragrep.pth_06.planner;
 
 import org.jooq.DSLContext;
-import org.jooq.Record10;
+import org.jooq.Record9;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.jooq.types.ULong;
@@ -128,19 +128,17 @@ public final class RecordableMockDBRow implements MockDBRow, Recordable {
     }
 
     @Override
-    public Record10<ULong, String, String, String, Date, String, String, Long, ULong, ULong> asRecord() {
-        final Record10<ULong, String, String, String, java.sql.Date, String, String, Long, ULong, ULong> newRecord = dslContext
+    public Record9<ULong, String, String, String, String, String, Long, ULong, ULong> asRecord() {
+        final Record9<ULong, String, String, String, String, String, Long, ULong, ULong> newRecord = dslContext
                 .newRecord(
-                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.logdate,
-                        SliceTable.bucket, SliceTable.path, SliceTable.logtime, SliceTable.filesize,
-                        SliceTable.uncompressedFilesize
+                        SliceTable.id, SliceTable.directory, SliceTable.stream, SliceTable.host, SliceTable.bucket,
+                        SliceTable.path, SliceTable.logtime, SliceTable.filesize, SliceTable.uncompressedFilesize
                 );
 
         newRecord.set(SliceTable.id, ULong.valueOf(origin.id()));
         newRecord.set(SliceTable.directory, origin.directory());
         newRecord.set(SliceTable.stream, origin.stream());
         newRecord.set(SliceTable.host, origin.host());
-        newRecord.set(SliceTable.logdate, origin.logdate());
         newRecord.set(SliceTable.bucket, origin.bucket());
         newRecord.set(SliceTable.path, origin.path());
         newRecord.set(SliceTable.logtime, origin.logtime());
