@@ -951,7 +951,7 @@ class StreamDBClientTest {
      * Testing handling of epoch_hour and logtime at and around midnight
      */
     @Test
-    public void epochHourMidnightTest() {
+    public void epochHourStartOfDayTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
 
@@ -1012,7 +1012,7 @@ class StreamDBClientTest {
      * Testing handling of epoch_hour and logtime at and around midnight
      */
     @Test
-    public void epochHourMidnightPreviousDayTest() {
+    public void epochHourEndOfDayTest() {
         // Add test data to logfile table in journaldb.
         final DSLContext ctx = DSL.using(connection, SQLDialect.MYSQL);
 
